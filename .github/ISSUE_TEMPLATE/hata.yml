@@ -1,0 +1,51 @@
+name: Hata bildirimi
+description: Beklendiği gibi çalışmayan bir şeyi bildir.
+labels: ["hata"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Güvenlik açığı mı buldun?** Burada paylaşma, [özel olarak bildir](https://github.com/aaudraa/KeyKey/security/advisories/new).
+
+        Kayıtlarda ve ekran görüntülerinde gerçek parola, 2FA anahtarı veya kişisel bilgi olmadığından emin ol.
+  - type: textarea
+    id: ne-oldu
+    attributes:
+      label: Ne oldu?
+      description: Gördüğün davranışı anlat.
+    validations:
+      required: true
+  - type: textarea
+    id: beklenen
+    attributes:
+      label: Ne olmasını bekliyordun?
+    validations:
+      required: true
+  - type: textarea
+    id: adimlar
+    attributes:
+      label: Yeniden üretme adımları
+      placeholder: |
+        1. Şu ekranı aç
+        2. Şuna dokun
+        3. Hatayı gör
+    validations:
+      required: true
+  - type: input
+    id: surum
+    attributes:
+      label: KeyKey sürümü veya commit
+    validations:
+      required: true
+  - type: input
+    id: cihaz
+    attributes:
+      label: Cihaz ve Android sürümü
+      placeholder: Örn. Pixel 8, Android 16 veya KeyKey_API_36 emülatörü
+    validations:
+      required: true
+  - type: textarea
+    id: ek-bilgi
+    attributes:
+      label: Ek bilgi
+      description: Kayıt çıktısı veya ekran görüntüsü varsa ekle.

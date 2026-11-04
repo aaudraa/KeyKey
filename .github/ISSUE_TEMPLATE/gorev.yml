@@ -1,0 +1,25 @@
+name: Görev
+description: Yol haritasındaki bir fazın parçası olan geliştirme işi.
+labels: ["görev"]
+body:
+  - type: textarea
+    id: amac
+    attributes:
+      label: Amaç
+      description: Bu görev neden yapılıyor?
+    validations:
+      required: true
+  - type: textarea
+    id: kabul
+    attributes:
+      label: Kabul kriterleri
+      description: Görevin bittiğini nasıl anlayacağız?
+      value: |
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
+    id: notlar
+    attributes:
+      label: Notlar
+      description: Teknik ayrıntılar, bağlantılar ve bağımlı olduğu işler.
