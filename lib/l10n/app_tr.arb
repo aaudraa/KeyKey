@@ -1,0 +1,9 @@
+{
+  "@@locale": "tr",
+  "navVault": "Kasa",
+  "navAuthenticator": "2FA",
+  "navSettings": "Ayarlar",
+  "vaultPlaceholder": "Parolaların yakında burada olacak.",
+  "authenticatorPlaceholder": "Doğrulama kodların yakında burada olacak.",
+  "settingsPlaceholder": "Ayarlar yakında burada olacak."
+}

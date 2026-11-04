@@ -1,0 +1,27 @@
+{
+  "@@locale": "en",
+  "navVault": "Vault",
+  "@navVault": {
+    "description": "Bottom navigation label and title of the password vault screen."
+  },
+  "navAuthenticator": "2FA",
+  "@navAuthenticator": {
+    "description": "Bottom navigation label and title of the two-factor codes screen."
+  },
+  "navSettings": "Settings",
+  "@navSettings": {
+    "description": "Bottom navigation label and title of the settings screen."
+  },
+  "vaultPlaceholder": "Your passwords will be here soon.",
+  "@vaultPlaceholder": {
+    "description": "Temporary message on the vault screen until the feature exists."
+  },
+  "authenticatorPlaceholder": "Your verification codes will be here soon.",
+  "@authenticatorPlaceholder": {
+    "description": "Temporary message on the two-factor screen until the feature exists."
+  },
+  "settingsPlaceholder": "Settings will be here soon.",
+  "@settingsPlaceholder": {
+    "description": "Temporary message on the settings screen until the feature exists."
+  }
+}
