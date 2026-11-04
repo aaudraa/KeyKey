@@ -52,6 +52,9 @@ Proje fazlar halinde ilerliyor ve her fazın kendi branch'i var. Çalışma düz
 flutter pub get
 flutter test
 flutter run
+
+# Emülatör testleri, çalışan bir emülatör gerekir
+flutter test integration_test -d <emülatör>
 ```
 
 Repoyu `C:\KeyKey` gibi kısa bir yola klonla. Uzun yollarda libsodium derlemesi hata verebiliyor. Ayrıntılar yol haritasının [Geliştirme ortamı](resources/yol-haritasi.md#geliştirme-ortamı) bölümünde.
