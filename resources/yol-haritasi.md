@@ -14,7 +14,7 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 | Faz | Konu | Büyüklük | Önce bitmeli | Branch | Durum |
 |---|---|---|---|---|---|
 | 0 | Repo ve GitHub altyapısı | S | — | `faz/0-repo-altyapisi` | Tamamlandı |
-| 1 | Flutter iskeleti ve CI | M | 0 | `faz/1-flutter-iskeleti` | Sırada |
+| 1 | Flutter iskeleti ve CI | M | 0 | `faz/1-flutter-iskeleti` | Sürüyor |
 | 2 | Kripto çekirdeği | L | 1 | `faz/2-kripto-cekirdegi` | Bekliyor |
 | 3 | Kasa, kilit ve biyometri | L | 2 | `faz/3-kasa-ve-kilit` | Bekliyor |
 | 4 | Parola kasası | L | 3 | `faz/4-parola-kasasi` | Bekliyor |
@@ -252,9 +252,9 @@ Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bi
 
 **Amaç:** Henüz özelliği olmayan ama çalışan bir uygulama ve kaliteyi koruyan otomatik kontroller.
 
-- [ ] Projeyi yalnızca Android için oluşturmak; paket kimliği ve `minSdk 30`
-- [ ] `MainActivity`'yi `FlutterFragmentActivity` yapmak (`BiometricPrompt` bunu gerektiriyor)
-- [ ] [Geliştirme ortamı](#geliştirme-ortamı) adımlarını README'nin geliştirme bölümüne eklemek
+- [x] Projeyi yalnızca Android için oluşturmak; paket kimliği ve `minSdk 30`
+- [x] `MainActivity`'yi `FlutterFragmentActivity` yapmak (`BiometricPrompt` bunu gerektiriyor)
+- [x] [Geliştirme ortamı](#geliştirme-ortamı) adımlarını README'nin geliştirme bölümüne eklemek
 - [ ] `very_good_analysis` ve mimarideki klasör yapısı
 - [ ] Riverpod, go_router ve açık/koyu Material 3 teması
 - [ ] Türkçe ve İngilizce yerelleştirme altyapısı
