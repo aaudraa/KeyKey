@@ -27,6 +27,36 @@ void main() {
     expect(find.byIcon(Icons.settings), findsOneWidget);
   });
 
+  testWidgets('tema sistem ayarını izliyor', (tester) async {
+    addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+
+    for (final brightness in Brightness.values) {
+      tester.platformDispatcher.platformBrightnessTestValue = brightness;
+      await tester.pumpWidget(const ProviderScope(child: KeyKeyApp()));
+      await tester.pumpAndSettle();
+
+      final context = tester.element(find.byType(NavigationBar));
+      expect(Theme.of(context).brightness, brightness);
+    }
+  });
+
+  testWidgets('dil cihaz diline göre seçiliyor', (tester) async {
+    addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+
+    const cases = [
+      (Locale('tr', 'TR'), 'Ayarlar'),
+      (Locale('en', 'US'), 'Settings'),
+      (Locale('de', 'DE'), 'Settings'),
+    ];
+    for (final (locale, label) in cases) {
+      tester.platformDispatcher.localesTestValue = [locale];
+      await tester.pumpWidget(const ProviderScope(child: KeyKeyApp()));
+      await tester.pumpAndSettle();
+
+      expect(find.text(label), findsOneWidget);
+    }
+  });
+
   testWidgets('libsodium bu Android sürümünde çalışıyor', (tester) async {
     final sodium = await SodiumSumoInit.init();
     final salt = sodium.randombytes.buf(sodium.crypto.pwhash.saltBytes);
