@@ -2,7 +2,7 @@
 
 KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-04 · **Şu anki faz:** Faz 0
+**Son güncelleme:** 2026-11-04 · **Şu anki faz:** Faz 1
 
 > [!IMPORTANT]
 > **Gerçek parolalarını Faz 8 bitene kadar KeyKey'e koyma.** Kasa biçimi o zamana kadar değişebilir ve güvenlik denetimi henüz yapılmadı.
@@ -13,7 +13,7 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 
 | Faz | Konu | Büyüklük | Önce bitmeli | Branch | Durum |
 |---|---|---|---|---|---|
-| 0 | Repo ve GitHub altyapısı | S | — | `faz/0-repo-altyapisi` | Sürüyor |
+| 0 | Repo ve GitHub altyapısı | S | — | `faz/0-repo-altyapisi` | Tamamlandı |
 | 1 | Flutter iskeleti ve CI | M | 0 | `faz/1-flutter-iskeleti` | Sırada |
 | 2 | Kripto çekirdeği | L | 1 | `faz/2-kripto-cekirdegi` | Bekliyor |
 | 3 | Kasa, kilit ve biyometri | L | 2 | `faz/3-kasa-ve-kilit` | Bekliyor |
@@ -227,7 +227,7 @@ Biçim: `<tür>(<alan>): <kısa açıklama>`. Alan isteğe bağlıdır.
 | `KeyKey_API_36` | 16 | Ana geliştirme cihazı. |
 | `Medium_Phone_API_37.0` | 17 | En yeni sürüm; yaklaşan değişiklikleri erken görmek için. |
 
-`KeyKey_API_*` emülatörlerinde ekran kilidi (PIN) var. Bu yüzden soğuk açılıştan sonra PIN girilene kadar uygulama başlatılamıyor ve `adb` `Activity class does not exist` hatası veriyor. Ekran kilidi parmak izi testleri için zaten gerekli.
+Emülatörlerde ekran kilidi yok. Parmak izi testleri için Faz 3'te kilit gerekecek. Kilit varken soğuk açılıştan sonra PIN girilene kadar uygulama başlatılamaz ve `adb` `Activity class does not exist` hatası verir; bu bir uygulama hatası değildir.
 
 Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bir ARM telefonda da test zorunlu.
 
@@ -244,7 +244,7 @@ Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bi
 - [x] `resources/` klasörü ve bu yol haritası
 - [x] Issue ve PR şablonları, güvenlik politikası, katkı rehberi
 - [x] Etiketler, milestone'lar, issue'lar ve birleştirme ayarları
-- [ ] Repoyu herkese açmak; `main` ve `faz/**` kuralları; güvenlik taramaları
+- [x] Repoyu herkese açmak; `main` ve `faz/**` kuralları; güvenlik taramaları
 
 **Bitti sayılması için:** Repo herkese açık; geçmişte gizli bilgi ve kişisel e-posta yok; `main`'e doğrudan push engelli.
 
