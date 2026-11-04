@@ -1,0 +1,30 @@
+name: Özellik önerisi
+description: KeyKey için yeni bir özellik veya iyileştirme öner.
+labels: ["özellik"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Önce [yol haritasına](https://github.com/aaudraa/KeyKey/blob/main/resources/yol-haritasi.md) bak, önerin zaten planlanmış olabilir.
+  - type: textarea
+    id: sorun
+    attributes:
+      label: Hangi sorunu çözüyor?
+      description: Bu özellik olmadan ne zor veya imkansız?
+    validations:
+      required: true
+  - type: textarea
+    id: oneri
+    attributes:
+      label: Önerdiğin çözüm
+    validations:
+      required: true
+  - type: textarea
+    id: guvenlik
+    attributes:
+      label: Güvenlik ve gizlilik etkisi
+      description: Örneğin internet izni, yeni bir bağımlılık veya kasa dışına çıkan veri gerektiriyor mu?
+  - type: textarea
+    id: alternatifler
+    attributes:
+      label: Düşündüğün alternatifler
