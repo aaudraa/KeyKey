@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:keykey/app/router.dart';
+import 'package:keykey/app/theme.dart';
 
-class KeyKeyApp extends StatelessWidget {
+class KeyKeyApp extends ConsumerWidget {
   const new({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
+  Widget build(BuildContext context, WidgetRef ref) {
+    return MaterialApp.router(
       title: 'KeyKey',
-      home: Scaffold(body: Center(child: Text('KeyKey'))),
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      routerConfig: ref.watch(routerProvider),
     );
   }
 }

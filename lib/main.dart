@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/app.dart';
 
 void main() {
-  runApp(const KeyKeyApp());
+  runApp(const ProviderScope(child: KeyKeyApp()));
 }
