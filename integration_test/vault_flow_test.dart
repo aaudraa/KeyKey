@@ -9,6 +9,8 @@ import 'package:keykey/core/storage/vault_database.dart';
 import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/vault/application/logins_controller.dart';
+import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sodium/sodium_sumo.dart';
 
@@ -19,7 +21,7 @@ void main() {
   const firstPassword = 'kırmızı-Bisiklet-47-Deniz';
   const secondPassword = 'mavi-Tren-58-Orman-Yolu';
   const thirdPassword = 'sarı-Kalem-69-Dağ-Evi';
-  const vaultText = 'Parolaların yakında burada olacak.';
+  const vaultText = "Henüz parola yok. İlkini kaydetmek için Ekle'ye dokun.";
   const lockedTitle = 'KeyKey kilitli';
 
   /// Argon2id ayrı isolate'te çalıştığı için `pumpAndSettle` beklemez.
@@ -87,6 +89,13 @@ void main() {
           key: UniqueKey(),
           overrides: [
             vaultServiceProvider.overrideWithValue(service),
+            loginRepositoryFactoryProvider.overrideWithValue(
+              (session) => LoginRepository(
+                store: VaultStore(database),
+                session: session,
+                sodium: sodium,
+              ),
+            ),
             initialVaultStatusProvider.overrideWithValue(
               header == null ? const VaultNotSetUp() : VaultLocked(header),
             ),

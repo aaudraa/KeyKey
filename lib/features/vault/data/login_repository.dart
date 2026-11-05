@@ -36,7 +36,7 @@ final class LoadedLogins {
 ///
 /// Kasa kilitlenince [VaultSession] kullanılamaz hale gelir, bu yüzden her
 /// işlem anahtarlara o anda ulaşır.
-final class LoginRepository {
+class LoginRepository {
   new({
     required this._store,
     required this._session,

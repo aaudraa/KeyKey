@@ -15,6 +15,8 @@ import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/vault/application/logins_controller.dart';
+import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sodium/sodium_sumo.dart';
 
@@ -27,7 +29,7 @@ void main() {
 
   const password = 'dogru-Ana-Parola-47';
   const texts = BiometricTexts(title: 'KeyKey testi', negativeButton: 'Vazgeç');
-  const vaultText = 'Parolaların yakında burada olacak.';
+  const vaultText = "Henüz parola yok. İlkini kaydetmek için Ekle'ye dokun.";
   const testTimeout = Timeout(Duration(minutes: 3));
 
   // Betik olmadan pencerede boşuna beklememek için yalnızca betikle çalışır.
@@ -161,6 +163,13 @@ void main() {
         ProviderScope(
           overrides: [
             vaultServiceProvider.overrideWithValue(service),
+            loginRepositoryFactoryProvider.overrideWithValue(
+              (session) => LoginRepository(
+                store: store,
+                session: session,
+                sodium: sodium,
+              ),
+            ),
             initialVaultStatusProvider.overrideWithValue(VaultOpen(session)),
           ],
           child: const KeyKeyApp(),

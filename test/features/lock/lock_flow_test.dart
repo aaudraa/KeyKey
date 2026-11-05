@@ -14,7 +14,7 @@ void main() {
   late FakeVaultService service;
 
   const lockedTitle = 'KeyKey kilitli';
-  const vaultText = 'Parolaların yakında burada olacak.';
+  const vaultText = "Henüz parola yok. İlkini kaydetmek için Ekle'ye dokun.";
 
   setUpAll(() async {
     sodium = await SodiumSumoInit.init();
@@ -217,8 +217,23 @@ void main() {
       service: service,
     );
 
-    void setLifecycle(WidgetTester tester, AppLifecycleState state) {
-      tester.binding.handleAppLifecycleStateChanged(state);
+    /// Telefondaki gibi aradaki durumlardan tek tek geçer, örneğin önden
+    /// gizliye giderken inactive'den de geçer.
+    void setLifecycle(WidgetTester tester, AppLifecycleState target) {
+      const order = [
+        AppLifecycleState.resumed,
+        AppLifecycleState.inactive,
+        AppLifecycleState.hidden,
+        AppLifecycleState.paused,
+      ];
+      var index = order.indexOf(
+        tester.binding.lifecycleState ?? AppLifecycleState.resumed,
+      );
+      final end = order.indexOf(target);
+      while (index != end) {
+        index += index < end ? 1 : -1;
+        tester.binding.handleAppLifecycleStateChanged(order[index]);
+      }
     }
 
     testWidgets('arka plana geçince kilitleniyor', (tester) async {

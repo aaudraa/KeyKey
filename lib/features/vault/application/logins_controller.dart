@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/core/vault/vault_session.dart';
@@ -136,6 +137,18 @@ class LoginsController extends Notifier<LoginsState> {
     );
   }
 
+  /// Geri al düğmesi için: kaydın en son halini kendi durumunda bulur.
+  Future<void> restoreById(Uint8List id) async {
+    final current = state;
+    if (current is! LoginsLoaded) return;
+    for (final item in current.items) {
+      if (_sameIds(item.id, id) && item.content.isTrashed) {
+        await restore(item);
+        return;
+      }
+    }
+  }
+
   Future<void> deletePermanently(LoginItem item) async {
     await _openRepository.deletePermanently(item);
     _replaceItems(
@@ -161,10 +174,12 @@ class LoginsController extends Notifier<LoginsState> {
     );
   }
 
-  static bool _sameId(LoginItem a, LoginItem b) {
-    if (a.id.length != b.id.length) return false;
-    for (var i = 0; i < a.id.length; i++) {
-      if (a.id[i] != b.id[i]) return false;
+  static bool _sameId(LoginItem a, LoginItem b) => _sameIds(a.id, b.id);
+
+  static bool _sameIds(Uint8List a, Uint8List b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
     }
     return true;
   }

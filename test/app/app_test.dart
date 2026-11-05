@@ -27,7 +27,10 @@ void main() {
   testWidgets('kasa açıkken uygulama kasa ekranıyla açılıyor', (tester) async {
     await pumpApp(tester, locale: const Locale('tr'));
 
-    expect(find.text('Parolaların yakında burada olacak.'), findsOneWidget);
+    expect(
+      find.text("Henüz parola yok. İlkini kaydetmek için Ekle'ye dokun."),
+      findsOneWidget,
+    );
   });
 
   testWidgets('alt menüden ekranlar arasında geçiliyor', (tester) async {

@@ -8,6 +8,8 @@ import 'package:keykey/core/storage/vault_database.dart';
 import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/vault/application/logins_controller.dart';
+import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sodium/sodium_sumo.dart';
 
@@ -28,13 +30,18 @@ Future<List<Override>> bootstrap() async {
     ];
   }
 
+  final store = VaultStore(database);
   final service = VaultService(
     sodium: sodium,
-    store: VaultStore(database),
+    store: store,
     biometric: PigeonBiometricBridge(),
   );
   return [
     vaultServiceProvider.overrideWithValue(service),
+    loginRepositoryFactoryProvider.overrideWithValue(
+      (session) =>
+          LoginRepository(store: store, session: session, sodium: sodium),
+    ),
     initialVaultStatusProvider.overrideWithValue(await _loadStatus(service)),
   ];
 }

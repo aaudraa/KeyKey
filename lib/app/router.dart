@@ -11,10 +11,15 @@ import 'package:keykey/features/lock/presentation/unavailable_screen.dart';
 import 'package:keykey/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:keykey/features/settings/presentation/change_password_screen.dart';
 import 'package:keykey/features/settings/presentation/settings_screen.dart';
+import 'package:keykey/features/vault/presentation/login_detail_screen.dart';
+import 'package:keykey/features/vault/presentation/login_edit_screen.dart';
+import 'package:keykey/features/vault/presentation/trash_screen.dart';
 import 'package:keykey/features/vault/presentation/vault_screen.dart';
 
 abstract final class AppRoutes {
   static const vault = '/kasa';
+  static const vaultNew = '/kasa/yeni';
+  static const vaultTrash = '/kasa/cop';
   static const authenticator = '/2fa';
   static const settings = '/ayarlar';
   static const changePassword = '/ayarlar/parola';
@@ -23,6 +28,10 @@ abstract final class AppRoutes {
   static const recovery = '/kilit/kurtarma';
   static const newPassword = '/yeni-parola';
   static const unavailable = '/kullanilamiyor';
+
+  static String vaultItem(String idHex) => '/kasa/kayit/$idHex';
+
+  static String vaultItemEdit(String idHex) => '/kasa/kayit/$idHex/duzenle';
 }
 
 /// Kasa durumuna göre gidilmesi gereken yer. `null` ise olduğu yerde kalır.
@@ -94,6 +103,28 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: AppRoutes.vault,
                 builder: (context, state) => const VaultScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'yeni',
+                    builder: (context, state) => const LoginEditScreen(),
+                  ),
+                  GoRoute(
+                    path: 'cop',
+                    builder: (context, state) => const TrashScreen(),
+                  ),
+                  GoRoute(
+                    path: 'kayit/:id',
+                    builder: (context, state) =>
+                        LoginDetailScreen(idHex: state.pathParameters['id']!),
+                    routes: [
+                      GoRoute(
+                        path: 'duzenle',
+                        builder: (context, state) =>
+                            LoginEditScreen(idHex: state.pathParameters['id']),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),

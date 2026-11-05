@@ -316,11 +316,11 @@ Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bi
 
 **Amaç:** Parolaların saklandığı, arandığı ve üretildiği ana ekran.
 
-- [ ] Kayıt modeli: ad, kullanıcı adı, parola, birden çok URL, not, özel alanlar
-- [ ] Kilitlenince çözülmüş kayıt tutan bütün durumların temizlendiğini test etmek (Faz 3'te henüz çözülmüş kayıt tutulmuyor)
-- [ ] Otomatik kilit süresini klavye kullanımında da yenilemek (Faz 3'te yalnızca dokunmayla yenileniyor)
-- [ ] Liste, arama, favoriler, klasörler ve sıralama (arama çözülmüş veri üzerinde bellekte yapılır)
-- [ ] Ekleme, düzenleme, çöp kutusu ve parola geçmişi
+- [x] Kayıt modeli: ad, kullanıcı adı, parola, birden çok URL, not, özel alanlar
+- [x] Kilitlenince çözülmüş kayıt tutan bütün durumların temizlendiğini test etmek (Faz 3'te henüz çözülmüş kayıt tutulmuyor)
+- [x] Otomatik kilit süresini klavye kullanımında da yenilemek (Faz 3'te yalnızca dokunmayla yenileniyor)
+- [x] Liste, arama, favoriler, klasörler ve sıralama (arama çözülmüş veri üzerinde bellekte yapılır)
+- [x] Ekleme, düzenleme, çöp kutusu ve parola geçmişi
 - [ ] Parola üretici: rastgele parola ve parola cümlesi, libsodium'un güvenli rastgele üreticisiyle
 - [ ] Kendi güç ölçerimiz: entropi, yaygın parola listesi ve desen kontrolü
 - [ ] Güvenli pano: hassas işareti (Android 13+) ve 30 saniye sonra otomatik temizleme
