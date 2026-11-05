@@ -62,6 +62,23 @@ Parmak izi ── Android Keystore ───────────────
 
 Parola, UTF-8 baytları olarak olduğu gibi kullanılır, Unicode normalleştirmesi yapılmaz. Android klavyeleri Türkçe harfleri tek karakter olarak üretir. iOS sürümü gündeme gelirse bu karar yeni bir KDF sürümüyle gözden geçirilmeli.
 
+#### Ölçülen süreler
+
+Taban parametrelerle (64 MiB, 3 geçiş) cihaz başına üç ölçüm yapıldı. Değerler `integration_test/crypto_test.dart` testinin `KKOLCUM` çıktısından alındı.
+
+| Cihaz | Android | Süre (ms) | Kalibrasyonun seçtiği geçiş |
+|---|---|---|---|
+| Samsung Galaxy S20 FE (SM-G780G, Snapdragon 865) | 13 | 233, 233, 235 | 12 |
+| Emülatör `KeyKey_API_30` | 11 | 117, 131, 152 | 12 |
+| Emülatör `KeyKey_API_34` | 14 | 104, 102, 106 | 12 |
+| Emülatör `KeyKey_API_36` | 16 | 102, 106, 114 | 12 |
+| Emülatör `Medium_Phone_API_37.0` | 17 | 97, 102, 98 | 12 |
+
+- S20 FE'de 12 geçişin yaklaşık 0,9 saniye sürmesi beklenir. Bu değer ölçülmedi, sürenin geçiş sayısıyla doğru orantılı olduğu varsayılarak 233 ms'den hesaplandı.
+- Emülatörler bilgisayarın `x86_64` işlemcisinde çalıştığı için telefon süresini göstermez.
+- Gerçek telefon ölçümü tek bir cihazdan geliyor. Bu cihaz 2020'nin üst seviye çipini taşıyor ve test debug derlemesiyle çalıştı. Düşük donanımlı telefonlar ölçülmedi. Kalibrasyon tabanın altına inmediği için çok yavaş cihazlarda kasa açmak hedef süreyi aşabilir.
+- Bu ölçüm yalnızca Argon2id süresini kapsar. Android Keystore ve biyometri davranışı için Faz 8'deki gerçek telefon testi yine gereklidir.
+
 ### Kurtarma anahtarı
 
 Rastgele 32 bayt. Kasa oluşturulurken bir kez gösterilir, uygulama saklamaz.
@@ -159,4 +176,4 @@ Hata mesajlarına hiçbir zaman parola, anahtar veya düz metin yazılmaz.
 - **Bağımsız vektörler:** Argon2id ve XChaCha20-Poly1305, libsodium'un kendi test vektörleriyle doğrulanır. HKDF sonuçları `package:crypto` ile ayrı hesaplanan HMAC-SHA256 ile karşılaştırılır.
 - **Olumsuz testler:** Yanlış parola, tek bit değişimi, yer değiştirilmiş kayıt, değiştirilmiş parametre.
 - **Biçim uyumluluğu:** `test/fixtures/crypto/` altındaki sabit dosyalar her sürümde açılabilmelidir. Bu dosyalar yalnızca deneme verisi ve deneme parolası içerir.
-- **Cihaz testleri:** Aynı işlemler emülatörlerde de çalıştırılır.
+- **Cihaz testleri:** Aynı işlemler dört emülatörde çalıştırılır. Faz 2'de bir gerçek telefonda da çalıştırıldı.
