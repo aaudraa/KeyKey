@@ -47,7 +47,7 @@ fingerprint_count() {
 
 # Ayarlardan bir parmak izi kaydeder.
 enroll() {
-  local finger="$1" step before after
+  local finger="$1" step before after screen
   before=$(fingerprint_count)
   # Önceki kayıttan kalan ekran başarı gibi görünmesin.
   device shell am force-stop com.android.settings
@@ -56,14 +56,21 @@ enroll() {
   device shell input text "$pin"
   device shell input keyevent 66
   sleep 3
-  for step in 1 2 3 4 5 6; do
-    if ui_dump | grep -qF 'AGREE'; then
+  # Android sürümüne göre ekranlar değişiyor: 14'te MORE ve AGREE, 11'de NEXT.
+  for step in 1 2 3 4 5 6 7 8; do
+    screen=$(ui_dump)
+    if grep -qE 'Touch the sensor|Put your finger|Lift, then touch' <<<"$screen"; then
+      break
+    elif grep -qF 'AGREE' <<<"$screen"; then
       ui_tap 'AGREE'
-      sleep 3
+    elif grep -qF 'NEXT' <<<"$screen"; then
+      ui_tap 'NEXT'
+    elif grep -qF 'MORE' <<<"$screen"; then
+      ui_tap 'MORE'
+    else
       break
     fi
-    ui_tap 'MORE' || break
-    sleep 1
+    sleep 2
   done
   for step in $(seq 1 14); do
     ui_dump | grep -qF 'Fingerprint added' && break

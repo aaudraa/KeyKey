@@ -230,8 +230,9 @@ void main() {
       print('KKPARMAK_EKLE');
       final deadline = DateTime.now().add(const Duration(seconds: 120));
       while (!signal.existsSync()) {
-        if (DateTime.now().isAfter(deadline))
+        if (DateTime.now().isAfter(deadline)) {
           fail('İkinci parmak izi eklenmedi');
+        }
         await Future<void>.delayed(const Duration(seconds: 1));
       }
 
