@@ -8,6 +8,9 @@ apk="${1:-build/app/outputs/flutter-apk/app-release.apk}"
 # Yeni bir izin gerekirse buraya bilinçli olarak eklenmeli.
 allowed_permissions=(
   "io.github.aaudraa.keykey.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+  # Parmak iziyle açma. androidx.biometric ikisini de ekliyor.
+  "android.permission.USE_BIOMETRIC"
+  "android.permission.USE_FINGERPRINT"
 )
 
 sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"

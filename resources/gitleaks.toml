@@ -10,3 +10,14 @@ paths = [
   '''^test/fixtures/crypto/vault-v1\.json$''',
   '''^integration_test/vault_v1_fixture\.dart$''',
 ]
+
+# Testlerdeki sabit deneme parolaları yanlış alarm veriyor. Dosyalara değil,
+# yalnızca bu değerlere tam eşleşmeyle izin verilir; aynı dosyalardaki başka
+# bir gizli bilgi yakalanmaya devam eder. Gerçek bir parola buraya eklenmez.
+[[allowlists]]
+description = "Testlerdeki sabit deneme parolaları"
+regexes = [
+  '''^dogru-Ana-Parola-47$''',
+  '''^ikinci-Ana-Parola-58$''',
+  '''^yepyeni-Ana-Parola-58$''',
+]

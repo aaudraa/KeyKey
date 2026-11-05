@@ -35,6 +35,7 @@ final class VaultCrypto {
   static const _recoveryKekContext = 'keykey/v1/kek/recovery';
   static const _passwordSlotName = 'password';
   static const _recoverySlotName = 'recovery';
+  static const _biometricSlotName = 'biometric';
 
   final SodiumSumo _sodium;
   final PasswordKdf _kdf;
@@ -215,6 +216,10 @@ final class VaultCrypto {
       plain.fillRange(0, plain.length, 0);
     }
   }
+
+  /// Parmak izi yuvasının ek doğrulama verisi. Sarmalamayı Keystore yapar.
+  static Uint8List biometricAssociatedData(Uint8List vaultId) =>
+      buildAssociatedData([_wrapLabel, vaultId, _biometricSlotName]);
 
   static Uint8List _passwordAd(Uint8List vaultId, KdfParams params) =>
       buildAssociatedData([

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/theme.dart';
+import 'package:keykey/features/lock/presentation/auto_lock_scope.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 class KeyKeyApp extends ConsumerWidget {
@@ -16,6 +17,8 @@ class KeyKeyApp extends ConsumerWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: ref.watch(routerProvider),
+      builder: (context, child) =>
+          AutoLockScope(child: child ?? const SizedBox.shrink()),
     );
   }
 }

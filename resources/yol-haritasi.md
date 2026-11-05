@@ -2,7 +2,7 @@
 
 KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-05 · **Şu anki faz:** Faz 3
+**Son güncelleme:** 2026-11-05 · **Şu anki faz:** Faz 4
 
 > [!IMPORTANT]
 > **Gerçek parolalarını Faz 8 bitene kadar KeyKey'e koyma.** Kasa biçimi o zamana kadar değişebilir ve güvenlik denetimi henüz yapılmadı.
@@ -16,8 +16,8 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 | 0 | Repo ve GitHub altyapısı | S | — | `faz/0-repo-altyapisi` | Tamamlandı |
 | 1 | Flutter iskeleti ve CI | M | 0 | `faz/1-flutter-iskeleti` | Tamamlandı |
 | 2 | Kripto çekirdeği | L | 1 | `faz/2-kripto-cekirdegi` | Tamamlandı |
-| 3 | Kasa, kilit ve biyometri | L | 2 | `faz/3-kasa-ve-kilit` | Sırada |
-| 4 | Parola kasası | L | 3 | `faz/4-parola-kasasi` | Bekliyor |
+| 3 | Kasa, kilit ve biyometri | L | 2 | `faz/3-kasa-ve-kilit` | Tamamlandı |
+| 4 | Parola kasası | L | 3 | `faz/4-parola-kasasi` | Sırada |
 | 5 | 2FA doğrulayıcı | M | 3 | `faz/5-2fa-dogrulayici` | Bekliyor |
 | 6 | Otomatik doldurma | XL | 4 | `faz/6-otomatik-doldurma` | Bekliyor |
 | 7 | Yedekleme, içe ve dışa aktarma | L | 4, 5 | `faz/7-yedekleme` | Bekliyor |
@@ -41,7 +41,7 @@ Büyüklük göreli iş miktarını gösterir, takvim sözü değildir. Faz 4 ve
 
 ## Teknoloji seçimleri
 
-Sürümler ve lisanslar 2026-11-04 tarihinde pub.dev'den kontrol edildi. Faz başlarken yeniden gözden geçirilir.
+Sürümler ve lisanslar 2026-11-05 tarihinde pub.dev'den kontrol edildi. Faz başlarken yeniden gözden geçirilir.
 
 | İhtiyaç | Seçim | Sürüm | Lisans | Neden |
 |---|---|---|---|---|
@@ -49,11 +49,14 @@ Sürümler ve lisanslar 2026-11-04 tarihinde pub.dev'den kontrol edildi. Faz ba�
 | Android'e özgü kod | Kotlin | — | — | Otomatik doldurma ve Keystore gibi işler Flutter'dan yapılamıyor. |
 | Durum yönetimi | `flutter_riverpod` | 3.4.3 | MIT | Yaygın ve test etmesi kolay. |
 | Yönlendirme | `go_router` | 18.1.3 | BSD-3 | Flutter ekibinin paketi. |
-| Veritabanı | `drift` ve `sqlite3` | 2.35.3 / 3.8.0 | MIT | Tür güvenli sorgular ve hazır veritabanı göçleri. |
+| Veritabanı | `drift` ve `sqlite3` | 2.35.3 / 3.9.0 | MIT | Tür güvenli sorgular ve hazır veritabanı göçleri. |
+| Uygulama klasörü | `path_provider` | 2.1.6 | BSD-3 | Flutter ekibinin paketi; veritabanının özel klasördeki yerini bulur. |
 | Kriptografi | `sodium` (libsodium 1.0.22) | 4.1.2+1 | BSD-3, ISC | Argon2id, XChaCha20-Poly1305, HKDF ve korumalı bellek tek pakette. [Doğrulandı](#libsodium-doğrulaması). |
 | 2FA hesaplama | Kendi kodumuz ve `crypto` | 3.0.8 | BSD-3 | Algoritma kısa ve RFC test vektörleriyle doğrulanabiliyor; ek bağımlılığa gerek yok. |
 | QR okuma | `flutter_zxing` | 3.1.0 | MIT | Açık kaynak, tamamen cihazda çalışıyor. |
 | Dart-Kotlin köprüsü | `pigeon` | 29.1.0 | BSD-3 | Elle yazılan kanallara göre tür güvenli. |
+| Parmak izi | `androidx.biometric` | 1.1.0 | Apache-2.0 | Google'ın kitaplığı. Son kararlı sürüm, daha yenileri beta. |
+| Köprü çalışma zamanı | `kotlinx-coroutines-android` | 1.11.0 | Apache-2.0 | `pigeon`'un ürettiği Kotlin kodu bunu gerektiriyor. |
 | Kod kalitesi | `very_good_analysis` | 11.0.0 | MIT | Sıkı lint kuralları. |
 | Test | `flutter_test`, `integration_test` | SDK | BSD-3 | Birim, widget ve emülatör testleri. Taklit nesneler gerektiğinde `mocktail` eklenecek. |
 
@@ -68,7 +71,7 @@ Sürümler ve lisanslar 2026-11-04 tarihinde pub.dev'den kontrol edildi. Faz ba�
 | `flutter_secure_storage` | Biyometrik modu ayarına göre cihaz PIN'ini kabul ediyor veya biyometri olmadan da çalışabiliyor. Bize yalnızca güçlü biyometriye bağlı ve yeni parmak izinde geçersiz olan bir anahtar gerekiyor, bunu kendi Keystore köprümüzle sağlıyoruz. |
 | `zxcvbn` | Dart 3 ile uyumlu değil (`sdk <3.0.0`). |
 | `sodium_libs` | Kullanımdan kalktı, yerini `sodium` aldı. |
-| `sqlite3_flutter_libs` | Kullanım ömrü bitti, `sqlite3` paketi artık kendi yerel derlemesini yapıyor. |
+| `sqlite3_flutter_libs` | Kullanım ömrü bitti, `sqlite3` paketi yerel kütüphaneyi artık kendisi sağlıyor. Derlemede GitHub'dan hazır dosya indiriyor ve paketin içindeki SHA-256 ile doğruluyor. Aynı yayıncının Dart kodu zaten uygulamanın içinde çalıştığı için bu, güvenmemiz gereken kişiyi değiştirmiyor. Kaynaktan derlemeye Faz 9'da geçilecek. |
 
 ### libsodium doğrulaması
 
@@ -109,6 +112,7 @@ KeyKey/
 │   ├── core/
 │   │   ├── crypto/         Anahtar hiyerarşisi ve şifreleme
 │   │   ├── storage/        Veritabanı ve göçler
+│   │   ├── vault/          Kasa servisi: oluşturma, açma, bekleme
 │   │   └── platform/       Kotlin köprüleri (Keystore, pano)
 │   ├── features/
 │   │   ├── onboarding/     Kasa oluşturma
@@ -133,7 +137,7 @@ KeyKey/
 
 Klasörler içine kod girdikçe açılır, boş klasör tutulmaz.
 
-**Dosya düzeni kuralı:** Proje kodu dışındaki her şey `resources/` altında durur. Kök dizinde yalnızca çalışması için orada olması gereken dosyalar kalır: `README.md`, `LICENSE`, `.gitignore`, `.gitattributes`, `pubspec.yaml`, `pubspec.lock`, `analysis_options.yaml`, `l10n.yaml` ve Flutter'ın `.metadata` dosyası. `.github/` da GitHub onu yalnızca orada aradığı için köktedir.
+**Dosya düzeni kuralı:** Proje kodu dışındaki her şey `resources/` altında durur. Kök dizinde yalnızca çalışması için orada olması gereken dosyalar kalır: `README.md`, `CLAUDE.md`, `LICENSE`, `.gitignore`, `.gitattributes`, `pubspec.yaml`, `pubspec.lock`, `analysis_options.yaml`, `l10n.yaml` ve Flutter'ın `.metadata` dosyası. `.github/` da GitHub onu yalnızca orada aradığı için köktedir.
 
 **Katman kuralları:**
 
@@ -143,7 +147,7 @@ Klasörler içine kod girdikçe açılır, boş klasör tutulmaz.
 
 ## Güvenlik tasarımı
 
-Bu bölüm tasarımın özeti. Ayrıntılı belge Faz 2'de `resources/docs/guvenlik-tasarimi.md` olarak yazılacak.
+Bu bölüm tasarımın özeti. Ayrıntılı belge: [`resources/docs/guvenlik-tasarimi.md`](docs/guvenlik-tasarimi.md).
 
 ### Tehdit modeli
 
@@ -233,7 +237,7 @@ Biçim: `<tür>(<alan>): <kısa açıklama>`. Alan isteğe bağlıdır.
 
 Emülatör testleri `flutter test integration_test -d <emülatör>` ile çalışır. `KeyKey_API_*` emülatörleri her zaman temiz açılacak şekilde ayarlı (`fastboot.forceColdBoot=yes`), çünkü bu bilgisayarda hızlı açılış kaydından açılırken takıldılar.
 
-Emülatörlerde ekran kilidi yok. Parmak izi testleri için Faz 3'te kilit gerekecek. Kilit varken soğuk açılıştan sonra PIN girilene kadar uygulama başlatılamaz ve `adb` `Activity class does not exist` hatası verir; bu bir uygulama hatası değildir.
+Emülatörlerde ekran kilidi yok. Parmak izi testi `resources/scripts/biometric-device-test.sh <emülatör>` ile çalışır: PIN ve parmak izi kaydeder, sanal parmağı dokundurur, ikinci parmak izini ekler ve sonunda PIN'i kaldırır. `flutter test integration_test` bu testi atlar. Kilit varken soğuk açılıştan sonra PIN girilene kadar uygulama başlatılamaz ve `adb` `Activity class does not exist` hatası verir; bu bir uygulama hatası değildir.
 
 Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bir ARM telefonda da test zorunlu.
 
@@ -296,15 +300,15 @@ Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bi
 
 **Amaç:** Kullanıcının kasa oluşturup açabildiği ve kilitleyebildiği ilk gerçek akış.
 
-- [ ] drift şeması, depo katmanı ve göç testleri
-- [ ] Kasa oluşturma ekranları: ana parola, güç göstergesi, parolanın geri alınamayacağı uyarısı
-- [ ] Kurtarma anahtarını gösterme ve geri yazdırarak doğrulama
-- [ ] Ana parolayla açma; hatalı denemelerde artan bekleme
-- [ ] Otomatik kilit: arka plana geçince ve süre dolunca; kilitte anahtarlar ve çözülmüş veri temizlenir
-- [ ] Kotlin köprüsü: Keystore anahtarı, `BiometricPrompt`, `CryptoObject`
-- [ ] Parmak iziyle açma; yeni parmak izi eklenince geçersiz olma
-- [ ] Ana parola değiştirme ve kurtarma anahtarıyla erişim
-- [ ] Metin kutularında otomatik düzeltme ve klavye öğrenmesini kapatma
+- [x] drift şeması, depo katmanı ve göç testleri
+- [x] Kasa oluşturma ekranları: ana parola, güç göstergesi, parolanın geri alınamayacağı uyarısı
+- [x] Kurtarma anahtarını gösterme ve geri yazdırarak doğrulama
+- [x] Ana parolayla açma; hatalı denemelerde artan bekleme
+- [x] Otomatik kilit: arka plana geçince ve süre dolunca; kilitte anahtarlar ve çözülmüş veri temizlenir
+- [x] Kotlin köprüsü: Keystore anahtarı, `BiometricPrompt`, `CryptoObject`
+- [x] Parmak iziyle açma; yeni parmak izi eklenince geçersiz olma
+- [x] Ana parola değiştirme ve kurtarma anahtarıyla erişim
+- [x] Metin kutularında otomatik düzeltme ve klavye öğrenmesini kapatma
 
 **Bitti sayılması için:** Uygulama kapatılınca kasa kilitli açılıyor; yanlış parola içeri almıyor; parmak izi `adb emu finger touch` ile emülatörde çalışıyor; yeni parmak izi eklenince ana parola isteniyor; parola değişince tüm kayıtlar okunabilir kalıyor.
 
@@ -313,6 +317,8 @@ Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bi
 **Amaç:** Parolaların saklandığı, arandığı ve üretildiği ana ekran.
 
 - [ ] Kayıt modeli: ad, kullanıcı adı, parola, birden çok URL, not, özel alanlar
+- [ ] Kilitlenince çözülmüş kayıt tutan bütün durumların temizlendiğini test etmek (Faz 3'te henüz çözülmüş kayıt tutulmuyor)
+- [ ] Otomatik kilit süresini klavye kullanımında da yenilemek (Faz 3'te yalnızca dokunmayla yenileniyor)
 - [ ] Liste, arama, favoriler, klasörler ve sıralama (arama çözülmüş veri üzerinde bellekte yapılır)
 - [ ] Ekleme, düzenleme, çöp kutusu ve parola geçmişi
 - [ ] Parola üretici: rastgele parola ve parola cümlesi, libsodium'un güvenli rastgele üreticisiyle
@@ -400,7 +406,7 @@ Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bi
 - [ ] Yayın anahtarı: repoya girmez, yedeği ayrı ve güvenli bir yerde tutulur, CI'da GitHub Secrets ile kullanılır
 - [ ] Yayın otomasyonu: etiket atılınca imzalı APK ve AAB, SHA-256 özetleri, GitHub Release
 - [ ] `CHANGELOG.md` ve sürüm numaralandırma
-- [ ] Yeniden üretilebilir derleme denemesi
+- [ ] Yeniden üretilebilir derleme denemesi; `sqlite3`'ü hazır dosya yerine kaynaktan derlemek (F-Droid de bunu gerektiriyor)
 - [ ] Dağıtım kararı: GitHub Releases ile başlamak; F-Droid ve Play Store'u değerlendirmek
 - [ ] Kullanım kılavuzu ve ekran görüntüleri (`resources/docs/kullanim.md`, `resources/design/`)
 - [ ] `v0.x` sürümünden 1.0'a yükseltme testi: veri kaybı olmamalı
