@@ -277,7 +277,19 @@ class VaultService {
       await _store.resetUnlockAttempts();
       return BiometricSuccess(session);
     } finally {
-      plain.fillRange(0, plain.length, 0);
+      _wipeIfPossible(plain);
+    }
+  }
+
+  /// Platform kanalından gelen tampon değiştirilemez, o yüzden silinemez.
+  /// Sınır güvenlik tasarımı belgesinin Biyometri bölümünde yazıyor.
+  static void _wipeIfPossible(Uint8List bytes) {
+    try {
+      bytes.fillRange(0, bytes.length, 0);
+      // Tek istisna bu: tamponun yazılamadığını başka türlü anlayamıyoruz.
+      // ignore: avoid_catching_errors
+    } on UnsupportedError {
+      // Bu tampon yalnızca okunabilir.
     }
   }
 

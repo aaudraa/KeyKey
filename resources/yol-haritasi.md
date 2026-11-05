@@ -237,7 +237,7 @@ Biçim: `<tür>(<alan>): <kısa açıklama>`. Alan isteğe bağlıdır.
 
 Emülatör testleri `flutter test integration_test -d <emülatör>` ile çalışır. `KeyKey_API_*` emülatörleri her zaman temiz açılacak şekilde ayarlı (`fastboot.forceColdBoot=yes`), çünkü bu bilgisayarda hızlı açılış kaydından açılırken takıldılar.
 
-Emülatörlerde ekran kilidi yok. Parmak izi testleri için Faz 3'te kilit gerekecek. Kilit varken soğuk açılıştan sonra PIN girilene kadar uygulama başlatılamaz ve `adb` `Activity class does not exist` hatası verir; bu bir uygulama hatası değildir.
+Emülatörlerde ekran kilidi yok. Parmak izi testi `resources/scripts/biometric-device-test.sh <emülatör>` ile çalışır: PIN ve parmak izi kaydeder, sanal parmağı dokundurur, ikinci parmak izini ekler ve sonunda PIN'i kaldırır. `flutter test integration_test` bu testi atlar. Kilit varken soğuk açılıştan sonra PIN girilene kadar uygulama başlatılamaz ve `adb` `Activity class does not exist` hatası verir; bu bir uygulama hatası değildir.
 
 Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bir ARM telefonda da test zorunlu.
 
@@ -305,8 +305,8 @@ Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bi
 - [x] Kurtarma anahtarını gösterme ve geri yazdırarak doğrulama
 - [x] Ana parolayla açma; hatalı denemelerde artan bekleme
 - [x] Otomatik kilit: arka plana geçince ve süre dolunca; kilitte anahtarlar ve çözülmüş veri temizlenir
-- [ ] Kotlin köprüsü: Keystore anahtarı, `BiometricPrompt`, `CryptoObject`
-- [ ] Parmak iziyle açma; yeni parmak izi eklenince geçersiz olma
+- [x] Kotlin köprüsü: Keystore anahtarı, `BiometricPrompt`, `CryptoObject`
+- [x] Parmak iziyle açma; yeni parmak izi eklenince geçersiz olma
 - [x] Ana parola değiştirme ve kurtarma anahtarıyla erişim
 - [x] Metin kutularında otomatik düzeltme ve klavye öğrenmesini kapatma
 

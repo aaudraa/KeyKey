@@ -62,6 +62,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       } else {
         await controller.disableBiometric();
       }
+    } on Exception {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.biometricEnableFailed)),
+      );
     } finally {
       await _loadBiometric();
       if (mounted) setState(() => _busy = false);

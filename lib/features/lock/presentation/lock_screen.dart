@@ -50,14 +50,20 @@ class _LockScreenState extends ConsumerState<LockScreen> {
     if (_busy) return;
     final l10n = AppLocalizations.of(context);
     setState(() => _error = null);
-    final outcome = await ref
-        .read(vaultControllerProvider.notifier)
-        .unlockWithBiometric(
-          BiometricTexts(
-            title: l10n.biometricUnlockTitle,
-            negativeButton: l10n.biometricUseMasterPassword,
-          ),
-        );
+    final BiometricOutcome<void> outcome;
+    try {
+      outcome = await ref
+          .read(vaultControllerProvider.notifier)
+          .unlockWithBiometric(
+            BiometricTexts(
+              title: l10n.biometricUnlockTitle,
+              negativeButton: l10n.biometricUseMasterPassword,
+            ),
+          );
+    } on Exception {
+      if (mounted) setState(() => _error = l10n.biometricFailed);
+      return;
+    }
     if (!mounted) return;
     switch (outcome) {
       case BiometricSuccess() || BiometricCancelled():

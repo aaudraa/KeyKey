@@ -178,6 +178,20 @@ void main() {
       expect(bridge.lastUnwrapped, everyElement(0));
     });
 
+    test('Android gibi salt okunur tamponla da açılıyor', () async {
+      final session = await createVault();
+      await service.enableBiometric(session, texts);
+      final key = session.vaultKey.extractBytes();
+      addTearDown(() => key.fillRange(0, key.length, 0));
+      bridge.next = BiometricSuccess<Uint8List>(key.asUnmodifiableView());
+
+      final outcome = await service.unlockWithBiometric(session.header, texts);
+
+      final opened = (outcome as BiometricSuccess<VaultSession>).value;
+      addTearDown(opened.dispose);
+      expect(opened.vaultKey.extractBytes(), key);
+    });
+
     test('başarılı açma hatalı deneme sayacını sıfırlıyor', () async {
       final session = await createVault();
       await service.enableBiometric(session, texts);
