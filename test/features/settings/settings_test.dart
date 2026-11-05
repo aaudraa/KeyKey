@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:sodium/sodium_sumo.dart';
 
@@ -48,6 +49,73 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Parolayı değiştir'));
     await tester.pumpAndSettle();
   }
+
+  group('parmak izi', () {
+    testWidgets('cihazda yoksa ayar görünmüyor', (tester) async {
+      service.biometricSupportValue = BiometricSupport.noHardware;
+      await pumpSettings(tester);
+
+      expect(find.text('Parmak iziyle aç'), findsNothing);
+    });
+
+    testWidgets('parmak izi kayıtlı değilse yönlendirme çıkıyor', (
+      tester,
+    ) async {
+      service.biometricSupportValue = BiometricSupport.notEnrolled;
+      await pumpSettings(tester);
+
+      expect(find.textContaining('parmak izi ekle'), findsOneWidget);
+      expect(find.byType(SwitchListTile), findsNothing);
+    });
+
+    testWidgets('açılıp kapatılabiliyor', (tester) async {
+      service
+        ..biometricSupportValue = BiometricSupport.available
+        ..nextBiometric = const BiometricSuccess(null);
+      await pumpSettings(tester);
+
+      await tester.tap(find.byType(SwitchListTile));
+      await tester.pumpAndSettle();
+      expect(service.biometricEnabled, isTrue);
+      expect(
+        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+        isTrue,
+      );
+
+      await tester.tap(find.byType(SwitchListTile));
+      await tester.pumpAndSettle();
+      expect(service.biometricEnabled, isFalse);
+    });
+
+    testWidgets('vazgeçilirse kapalı kalıyor', (tester) async {
+      service.biometricSupportValue = BiometricSupport.available;
+      await pumpSettings(tester);
+
+      await tester.tap(find.byType(SwitchListTile));
+      await tester.pumpAndSettle();
+
+      expect(service.biometricPrompts, 1);
+      expect(
+        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+        isFalse,
+      );
+    });
+
+    testWidgets('etkinleşmezse mesaj çıkıyor', (tester) async {
+      service
+        ..biometricSupportValue = BiometricSupport.available
+        ..nextBiometric = const BiometricFailed();
+      await pumpSettings(tester);
+
+      await tester.tap(find.byType(SwitchListTile));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Parmak iziyle açma etkinleştirilemedi.'),
+        findsOneWidget,
+      );
+    });
+  });
 
   testWidgets('şimdi kilitle kasayı kilitliyor', (tester) async {
     await pumpSettings(tester);

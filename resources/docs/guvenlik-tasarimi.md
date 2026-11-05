@@ -226,7 +226,7 @@ Parmak izi üçüncü kapıdır ve isteğe bağlıdır. Yuvası üst bilgide de�
 | Parmak izini kapatma | Önce yuva satırı, sonra Keystore anahtarı silinir. Arada kesilirse kalan anahtar sarılmış bir şey açamaz. |
 | Ana parola değişti | Yuva değişmez, çünkü kasa anahtarı aynıdır. |
 
-**Katman istisnası:** Kasa anahtarının ham bayta döndüğü tek yer bu köprüdür. Dart ile Kotlin arasında geçerken Dart ve JVM belleğinde kopyalar oluşur. Kotlin kendi dizisini kullandıktan sonra sıfırlar, Dart da gelen baytları `SecureKey`'e çevirince sıfırlar, ama platform kanalının ara tamponları silinemez. Bu kopyalar yalnızca kasa açılırken veya açıkken oluşur; o sırada anahtar zaten bellektedir ve root yetkili cihaz tehdit modelinin dışındadır.
+**Katman istisnası:** Kasa anahtarının ham bayta döndüğü tek yer bu köprüdür. Dart ile Kotlin arasında geçerken Dart ve JVM belleğinde kopyalar oluşur. Sarmalarken Kotlin aldığı diziyi, Dart da gönderdiği kopyayı sıfırlar. Açarken Dart gelen baytları `SecureKey`'e çevirince sıfırlar, ama Kotlin'in çözdüğü dizi sıfırlanamaz, çünkü köprü onu fonksiyon döndükten sonra kodlar. Platform kanalının ara tamponları da silinemez. Bu kopyalar çöp toplayıcı silene kadar JVM belleğinde kalabilir. Yalnızca kasa açılırken veya açıkken oluşurlar; o sırada anahtar zaten bellektedir ve root yetkili cihaz tehdit modelinin dışındadır.
 
 ## Hata davranışı
 
@@ -237,7 +237,8 @@ Parmak izi üçüncü kapıdır ve isteğe bağlıdır. Yuvası üst bilgide de�
 | Kurtarma metni geçersiz | `InvalidRecoveryKeyException` | Yanlış karakter, uzunluk veya sağlama. |
 | Üst bilgi okunamadı | `InvalidVaultHeaderException` | Bozuk dosya veya desteklenmeyen sürüm. |
 | Kayıt açılmadı | `CorruptedDataException` | Değiştirilmiş, bozulmuş veya yanlış bağlamdaki kayıt. |
-| Keystore anahtarı kullanılamıyor | `BiometricInvalidatedException` | Yeni parmak izi eklenmiş veya ekran kilidi kaldırılmış. Ana parola istenir. |
+| Keystore anahtarı kullanılamıyor | `BiometricInvalidated` sonucu | Yeni parmak izi eklenmiş veya ekran kilidi kaldırılmış. Yuva silinir, ana parola istenir. |
+| Parmak izi yuvası açılmadı | `BiometricFailed` sonucu | Yuva bozulmuş, değiştirilmiş veya başka bir kasaya ait. Ana parola çalışmaya devam eder. |
 
 Hata mesajlarına hiçbir zaman parola, anahtar veya düz metin yazılmaz.
 

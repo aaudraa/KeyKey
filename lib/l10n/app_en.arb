@@ -226,5 +226,57 @@
   "unavailableMessage": "The file is damaged or belongs to a newer version of KeyKey. Your data was not changed. Update KeyKey to try again.",
   "@unavailableMessage": {
     "description": "Message when the vault file cannot be read."
+  },
+  "settingsBiometric": "Unlock with fingerprint",
+  "@settingsBiometric": {
+    "description": "Settings entry for fingerprint unlock."
+  },
+  "settingsBiometricHint": "If a new fingerprint is added to this phone, this turns off and your master password is asked.",
+  "@settingsBiometricHint": {
+    "description": "Explains that enrolling a fingerprint disables the feature."
+  },
+  "settingsBiometricNotEnrolled": "Add a fingerprint in your phone settings first.",
+  "@settingsBiometricNotEnrolled": {
+    "description": "Shown when the phone has no fingerprint enrolled."
+  },
+  "biometricEnableTitle": "Turn on fingerprint unlock",
+  "@biometricEnableTitle": {
+    "description": "Title of the system prompt when enabling fingerprint unlock."
+  },
+  "biometricUnlockTitle": "Open KeyKey",
+  "@biometricUnlockTitle": {
+    "description": "Title of the system prompt when unlocking."
+  },
+  "biometricUseMasterPassword": "Use master password",
+  "@biometricUseMasterPassword": {
+    "description": "Negative button of the unlock prompt."
+  },
+  "biometricCancel": "Cancel",
+  "@biometricCancel": {
+    "description": "Negative button of the enable prompt."
+  },
+  "lockUseBiometric": "Use fingerprint",
+  "@lockUseBiometric": {
+    "description": "Button on the lock screen."
+  },
+  "biometricInvalidated": "The fingerprints on this phone changed. Enter your master password. You can turn fingerprint unlock on again in Settings.",
+  "@biometricInvalidated": {
+    "description": "Shown when the Keystore key was invalidated."
+  },
+  "biometricLockedOut": "Too many attempts. Use your master password.",
+  "@biometricLockedOut": {
+    "description": "Shown when Android locks out biometrics."
+  },
+  "biometricFailed": "Fingerprint unlock failed. Use your master password.",
+  "@biometricFailed": {
+    "description": "Shown when the biometric slot could not be opened."
+  },
+  "biometricEnableLockedOut": "Too many attempts. Please try again later.",
+  "@biometricEnableLockedOut": {
+    "description": "Shown when enabling while Android locks out biometrics."
+  },
+  "biometricEnableFailed": "Fingerprint unlock could not be turned on.",
+  "@biometricEnableFailed": {
+    "description": "Shown when enabling fingerprint unlock failed."
   }
 }

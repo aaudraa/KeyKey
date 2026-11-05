@@ -4,6 +4,7 @@ analyzer:
     - android/**
     - lib/l10n/generated/**
     - lib/**/*.g.dart
+    - pigeons/**
 include: package:very_good_analysis/analysis_options.yaml
 
 linter:

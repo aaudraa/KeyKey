@@ -1,15 +1,75 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
+import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
-class SettingsScreen extends ConsumerWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const new({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  BiometricSupport _support = BiometricSupport.unavailable;
+  bool _biometricEnabled = false;
+  bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_loadBiometric());
+  }
+
+  Future<void> _loadBiometric() async {
+    final controller = ref.read(vaultControllerProvider.notifier);
+    final support = await controller.biometricSupport();
+    final enabled = await controller.isBiometricUsable();
+    if (!mounted) return;
+    setState(() {
+      _support = support;
+      _biometricEnabled = enabled;
+    });
+  }
+
+  Future<void> _setBiometric({required bool enable}) async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final controller = ref.read(vaultControllerProvider.notifier);
+    setState(() => _busy = true);
+    try {
+      if (enable) {
+        final outcome = await controller.enableBiometric(
+          BiometricTexts(
+            title: l10n.biometricEnableTitle,
+            negativeButton: l10n.biometricCancel,
+          ),
+        );
+        final message = switch (outcome) {
+          BiometricSuccess() || BiometricCancelled() => null,
+          BiometricLockedOut() => l10n.biometricEnableLockedOut,
+          BiometricInvalidated() ||
+          BiometricFailed() => l10n.biometricEnableFailed,
+        };
+        if (message != null) {
+          messenger.showSnackBar(SnackBar(content: Text(message)));
+        }
+      } else {
+        await controller.disableBiometric();
+      }
+    } finally {
+      await _loadBiometric();
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(l10n.navSettings)),
@@ -20,6 +80,21 @@ class SettingsScreen extends ConsumerWidget {
             title: Text(l10n.changePasswordTitle),
             onTap: () => context.push(AppRoutes.changePassword),
           ),
+          if (_support == BiometricSupport.available)
+            SwitchListTile(
+              secondary: const Icon(Icons.fingerprint),
+              title: Text(l10n.settingsBiometric),
+              subtitle: Text(l10n.settingsBiometricHint),
+              value: _biometricEnabled,
+              onChanged: _busy ? null : (value) => _setBiometric(enable: value),
+            ),
+          if (_support == BiometricSupport.notEnrolled)
+            ListTile(
+              enabled: false,
+              leading: const Icon(Icons.fingerprint),
+              title: Text(l10n.settingsBiometric),
+              subtitle: Text(l10n.settingsBiometricNotEnrolled),
+            ),
           ListTile(
             leading: const Icon(Icons.lock_outline),
             title: Text(l10n.settingsLockNow),

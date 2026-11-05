@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
+import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/lock_screen.dart';
 import 'package:sodium/sodium_sumo.dart';
@@ -326,6 +327,90 @@ void main() {
 
       expect(session.isDisposed, isTrue);
       setLifecycle(tester, AppLifecycleState.resumed);
+    });
+  });
+
+  group('parmak izi', () {
+    void enableFake() {
+      service
+        ..biometricSupportValue = BiometricSupport.available
+        ..biometricEnabled = true;
+    }
+
+    testWidgets('kapalıysa düğme yok ve pencere açılmıyor', (tester) async {
+      await pumpLocked(tester);
+
+      expect(find.byIcon(Icons.fingerprint), findsNothing);
+      expect(service.biometricPrompts, 0);
+    });
+
+    testWidgets('açıksa pencere bir kez kendiliğinden açılıyor', (
+      tester,
+    ) async {
+      enableFake();
+      await pumpLocked(tester);
+
+      expect(find.byIcon(Icons.fingerprint), findsOneWidget);
+      expect(service.biometricPrompts, 1);
+      expect(find.text(lockedTitle), findsOneWidget);
+    });
+
+    testWidgets('başarılı olunca kasa açılıyor', (tester) async {
+      enableFake();
+      service.nextBiometric = const BiometricSuccess(null);
+      await pumpLocked(tester);
+
+      expect(find.text(vaultText), findsOneWidget);
+    });
+
+    testWidgets('vazgeçince ana parolayla devam ediliyor', (tester) async {
+      enableFake();
+      await pumpLocked(tester);
+
+      expect(find.text(lockedTitle), findsOneWidget);
+      await enterPassword(tester, FakeVaultService.correctPassword);
+      expect(find.text(vaultText), findsOneWidget);
+    });
+
+    testWidgets('düğme pencereyi yeniden açıyor', (tester) async {
+      enableFake();
+      await pumpLocked(tester);
+
+      service.nextBiometric = const BiometricSuccess(null);
+      await tester.tap(find.byIcon(Icons.fingerprint));
+      await tester.pumpAndSettle();
+
+      expect(service.biometricPrompts, 2);
+      expect(find.text(vaultText), findsOneWidget);
+    });
+
+    testWidgets('anahtar geçersizse düğme gidiyor ve açıklama çıkıyor', (
+      tester,
+    ) async {
+      enableFake();
+      service.nextBiometric = const BiometricInvalidated();
+      await pumpLocked(tester);
+
+      expect(find.textContaining('parmak izleri değişti'), findsOneWidget);
+      expect(find.byIcon(Icons.fingerprint), findsNothing);
+      expect(find.text(vaultText), findsNothing);
+    });
+
+    testWidgets('Android kilitlediyse açıklama çıkıyor', (tester) async {
+      enableFake();
+      service.nextBiometric = const BiometricLockedOut();
+      await pumpLocked(tester);
+
+      expect(find.textContaining('Çok fazla deneme'), findsOneWidget);
+    });
+
+    testWidgets('açılmazsa ana parola öneriliyor', (tester) async {
+      enableFake();
+      service.nextBiometric = const BiometricFailed();
+      await pumpLocked(tester);
+
+      expect(find.textContaining('Parmak iziyle açılamadı'), findsOneWidget);
+      expect(find.text(vaultText), findsNothing);
     });
   });
 

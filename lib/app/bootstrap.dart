@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/misc.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
+import 'package:keykey/core/platform/pigeon_biometric_bridge.dart';
 import 'package:keykey/core/storage/storage_exceptions.dart';
 import 'package:keykey/core/storage/vault_database.dart';
 import 'package:keykey/core/storage/vault_store.dart';
@@ -27,7 +28,11 @@ Future<List<Override>> bootstrap() async {
     ];
   }
 
-  final service = VaultService(sodium: sodium, store: VaultStore(database));
+  final service = VaultService(
+    sodium: sodium,
+    store: VaultStore(database),
+    biometric: PigeonBiometricBridge(),
+  );
   return [
     vaultServiceProvider.overrideWithValue(service),
     initialVaultStatusProvider.overrideWithValue(await _loadStatus(service)),

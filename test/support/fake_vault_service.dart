@@ -6,6 +6,7 @@ import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/crypto/record_cipher.dart';
 import 'package:keykey/core/crypto/vault_crypto.dart';
 import 'package:keykey/core/crypto/vault_header.dart';
+import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
@@ -116,6 +117,53 @@ class FakeVaultService implements VaultService {
   @override
   Future<void> setNewPassword(VaultSession session, String newPassword) async {
     changedPassword = newPassword;
+  }
+
+  BiometricSupport biometricSupportValue = BiometricSupport.unavailable;
+  bool biometricEnabled = false;
+
+  /// Sonraki parmak izi denemesinin sonucu.
+  BiometricOutcome<void> nextBiometric = const BiometricCancelled();
+  int biometricPrompts = 0;
+
+  @override
+  Future<BiometricSupport> biometricSupport() async => biometricSupportValue;
+
+  @override
+  Future<bool> isBiometricEnabled() async => biometricEnabled;
+
+  @override
+  Future<bool> isBiometricUsable() async =>
+      biometricEnabled && biometricSupportValue == BiometricSupport.available;
+
+  @override
+  Future<BiometricOutcome<void>> enableBiometric(
+    VaultSession session,
+    BiometricTexts texts,
+  ) async {
+    biometricPrompts++;
+    if (nextBiometric is BiometricSuccess) biometricEnabled = true;
+    return nextBiometric;
+  }
+
+  @override
+  Future<void> disableBiometric() async {
+    biometricEnabled = false;
+  }
+
+  @override
+  Future<BiometricOutcome<VaultSession>> unlockWithBiometric(
+    VaultHeader header,
+    BiometricTexts texts,
+  ) async {
+    biometricPrompts++;
+    return switch (nextBiometric) {
+      BiometricSuccess() => BiometricSuccess(newSession()),
+      BiometricCancelled() => const BiometricCancelled(),
+      BiometricLockedOut() => const BiometricLockedOut(),
+      BiometricInvalidated() => const BiometricInvalidated(),
+      BiometricFailed() => const BiometricFailed(),
+    };
   }
 }
 

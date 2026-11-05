@@ -52,5 +52,18 @@
   "changePasswordWait": "Çok fazla hatalı deneme. {seconds} saniye sonra yeniden dene.",
   "settingsLockNow": "Şimdi kilitle",
   "unavailableTitle": "Kasa okunamadı",
-  "unavailableMessage": "Dosya bozuk veya KeyKey'in daha yeni bir sürümüne ait. Verilerine dokunulmadı. Yeniden denemek için KeyKey'i güncelle."
+  "unavailableMessage": "Dosya bozuk veya KeyKey'in daha yeni bir sürümüne ait. Verilerine dokunulmadı. Yeniden denemek için KeyKey'i güncelle.",
+  "settingsBiometric": "Parmak iziyle aç",
+  "settingsBiometricHint": "Telefona yeni parmak izi eklenirse bu kapanır ve ana parola istenir.",
+  "settingsBiometricNotEnrolled": "Önce telefonunun ayarlarından parmak izi ekle.",
+  "biometricEnableTitle": "Parmak iziyle açmayı etkinleştir",
+  "biometricUnlockTitle": "KeyKey'i aç",
+  "biometricUseMasterPassword": "Ana parolayı kullan",
+  "biometricCancel": "Vazgeç",
+  "lockUseBiometric": "Parmak izi kullan",
+  "biometricInvalidated": "Bu telefondaki parmak izleri değişti. Ana parolanı gir. Parmak iziyle açmayı Ayarlar'dan yeniden açabilirsin.",
+  "biometricLockedOut": "Çok fazla deneme yapıldı. Ana parolanı kullan.",
+  "biometricFailed": "Parmak iziyle açılamadı. Ana parolanı kullan.",
+  "biometricEnableLockedOut": "Çok fazla deneme yapıldı. Lütfen sonra yeniden dene.",
+  "biometricEnableFailed": "Parmak iziyle açma etkinleştirilemedi."
 }

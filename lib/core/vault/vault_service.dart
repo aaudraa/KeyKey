@@ -1,9 +1,12 @@
+import 'dart:typed_data';
+
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/crypto/password_kdf.dart';
 import 'package:keykey/core/crypto/record_cipher.dart';
 import 'package:keykey/core/crypto/vault_crypto.dart';
 import 'package:keykey/core/crypto/vault_header.dart';
 import 'package:keykey/core/storage/vault_store.dart';
+import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/core/vault/password_policy.dart';
 import 'package:keykey/core/vault/unlock_backoff.dart';
 import 'package:keykey/core/vault/vault_session.dart';
@@ -53,14 +56,18 @@ class VaultService {
   new({
     required SodiumSumo sodium,
     required this._store,
+    this._biometric,
     DateTime Function()? clock,
   }) : _sodium = sodium,
        _crypto = VaultCrypto(sodium),
        _kdf = PasswordKdf(sodium),
        _clock = clock ?? DateTime.now;
 
+  static const _vaultKeyLength = 32;
+
   final SodiumSumo _sodium;
   final VaultStore _store;
+  final BiometricBridge? _biometric;
   final VaultCrypto _crypto;
   final PasswordKdf _kdf;
   final DateTime Function() _clock;
@@ -167,6 +174,110 @@ class VaultService {
       await _store.resetUnlockAttempts();
     } finally {
       vaultKey.dispose();
+    }
+  }
+
+  Future<BiometricSupport> biometricSupport() async {
+    return await _biometric?.support() ?? BiometricSupport.unavailable;
+  }
+
+  Future<bool> isBiometricEnabled() async {
+    return await _store.readBiometricSlot() != null;
+  }
+
+  /// Parmak iziyle açılabiliyorsa `true` döner.
+  ///
+  /// Tüm parmak izleri silindiyse anahtar zaten geçersizdir, yuva da silinir.
+  Future<bool> isBiometricUsable() async {
+    if (!await isBiometricEnabled()) return false;
+    final support = await biometricSupport();
+    if (support == BiometricSupport.notEnrolled) {
+      await disableBiometric();
+      return false;
+    }
+    return support == BiometricSupport.available;
+  }
+
+  /// Parmak iziyle açmayı etkinleştirir. Sarmalama da doğrulama gerektirir.
+  Future<BiometricOutcome<void>> enableBiometric(
+    VaultSession session,
+    BiometricTexts texts,
+  ) async {
+    final bridge = _biometric;
+    if (bridge == null) return const BiometricFailed();
+
+    // Kasa anahtarının ham bayta döndüğü tek yer, bkz. tasarım belgesi.
+    final plain = session.vaultKey.extractBytes();
+    try {
+      final outcome = await bridge.wrap(
+        plain,
+        VaultCrypto.biometricAssociatedData(session.header.vaultId),
+        texts,
+      );
+      switch (outcome) {
+        case BiometricSuccess(:final value):
+          await _store.writeBiometricSlot(value);
+          return const BiometricSuccess(null);
+        case BiometricCancelled():
+          return const BiometricCancelled();
+        case BiometricLockedOut():
+          return const BiometricLockedOut();
+        case BiometricInvalidated():
+          return const BiometricInvalidated();
+        case BiometricFailed():
+          return const BiometricFailed();
+      }
+    } finally {
+      plain.fillRange(0, plain.length, 0);
+    }
+  }
+
+  /// Önce yuva silinir. Arada kesilirse kalan anahtar sarılmış bir şey açamaz.
+  Future<void> disableBiometric() async {
+    await _store.deleteBiometricSlot();
+    await _biometric?.deleteKey();
+  }
+
+  /// Parmak iziyle açar. Anahtar geçersizse yuva silinir, ana parola gerekir.
+  Future<BiometricOutcome<VaultSession>> unlockWithBiometric(
+    VaultHeader header,
+    BiometricTexts texts,
+  ) async {
+    final bridge = _biometric;
+    final slot = await _store.readBiometricSlot();
+    if (bridge == null || slot == null) return const BiometricFailed();
+
+    final outcome = await bridge.unwrap(
+      slot,
+      VaultCrypto.biometricAssociatedData(header.vaultId),
+      texts,
+    );
+    switch (outcome) {
+      case BiometricSuccess(:final value):
+        return await _sessionFromRawKey(header, value);
+      case BiometricInvalidated():
+        await disableBiometric();
+        return const BiometricInvalidated();
+      case BiometricCancelled():
+        return const BiometricCancelled();
+      case BiometricLockedOut():
+        return const BiometricLockedOut();
+      case BiometricFailed():
+        return const BiometricFailed();
+    }
+  }
+
+  Future<BiometricOutcome<VaultSession>> _sessionFromRawKey(
+    VaultHeader header,
+    Uint8List plain,
+  ) async {
+    try {
+      if (plain.length != _vaultKeyLength) return const BiometricFailed();
+      final session = _openSession(header, _sodium.secureCopy(plain));
+      await _store.resetUnlockAttempts();
+      return BiometricSuccess(session);
+    } finally {
+      plain.fillRange(0, plain.length, 0);
     }
   }
 

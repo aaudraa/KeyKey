@@ -40,6 +40,13 @@ kotlin {
     }
 }
 
+dependencies {
+    // Kararlı son sürüm; daha yenileri henüz beta.
+    implementation("androidx.biometric:biometric:1.1.0")
+    // pigeon'un ürettiği köprü coroutine kullanıyor.
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
+}
+
 flutter {
     source = "../.."
 }

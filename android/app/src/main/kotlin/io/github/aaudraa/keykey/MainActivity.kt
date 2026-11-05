@@ -4,6 +4,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import io.flutter.embedding.android.FlutterFragmentActivity
+import io.flutter.embedding.engine.FlutterEngine
 
 // BiometricPrompt, FragmentActivity gerektirdiği için FlutterActivity kullanılmıyor.
 class MainActivity : FlutterFragmentActivity() {
@@ -17,5 +18,10 @@ class MainActivity : FlutterFragmentActivity() {
             setRecentsScreenshotEnabled(false)
         }
         super.onCreate(savedInstanceState)
+    }
+
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+        BiometricApi.setUp(flutterEngine.dartExecutor.binaryMessenger, BiometricVault(this))
     }
 }

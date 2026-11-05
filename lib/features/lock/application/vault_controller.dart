@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/core/crypto/vault_header.dart';
+import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 
@@ -186,6 +187,48 @@ class VaultController extends Notifier<VaultStatus> {
       return const PasswordInterrupted();
     } finally {
       if (generation != _lockGeneration) _syncLockedHeader(status.session);
+    }
+  }
+
+  Future<BiometricSupport> biometricSupport() => _service.biometricSupport();
+
+  Future<bool> isBiometricEnabled() => _service.isBiometricEnabled();
+
+  Future<bool> isBiometricUsable() => _service.isBiometricUsable();
+
+  Future<void> disableBiometric() => _service.disableBiometric();
+
+  Future<BiometricOutcome<void>> enableBiometric(BiometricTexts texts) {
+    final status = state;
+    if (status is! VaultOpen) throw StateError('Kasa açık değil.');
+    return _service.enableBiometric(status.session, texts);
+  }
+
+  Future<BiometricOutcome<void>> unlockWithBiometric(
+    BiometricTexts texts,
+  ) async {
+    final status = state;
+    if (status is! VaultLocked) throw StateError('Kasa kilitli değil.');
+
+    final generation = _lockGeneration;
+    final outcome = await _service.unlockWithBiometric(status.header, texts);
+    switch (outcome) {
+      case BiometricSuccess(value: final session):
+        if (generation == _lockGeneration) {
+          _session = session;
+          state = VaultOpen(session);
+        } else {
+          session.dispose();
+        }
+        return const BiometricSuccess(null);
+      case BiometricCancelled():
+        return const BiometricCancelled();
+      case BiometricLockedOut():
+        return const BiometricLockedOut();
+      case BiometricInvalidated():
+        return const BiometricInvalidated();
+      case BiometricFailed():
+        return const BiometricFailed();
     }
   }
 
