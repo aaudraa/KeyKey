@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "name": "Örnek",
+  "username": "kullanici@example.com",
+  "password": "deneme-degeri",
+  "urls": ["https://example.com"],
+  "notes": "Not",
+  "customFields": [{ "name": "PIN", "value": "deneme", "hidden": true }],
+  "favorite": true,
+  "folder": "İş",
+  "trashedAt": null,
+  "passwordHistory": [{ "password": "eski-deger", "changedAt": 1730000000000 }]
+}

@@ -109,6 +109,13 @@ final class VaultStore {
     return rows.map(_toRecord).toList();
   }
 
+  Future<List<StoredRecord>> recordsOfType(String type) async {
+    final query = _database.select(_database.records)
+      ..where((row) => row.type.equals(type));
+    final rows = await query.get();
+    return rows.map(_toRecord).toList();
+  }
+
   Future<void> deleteRecord(Uint8List id) async {
     final query = _database.delete(_database.records)
       ..where((row) => row.id.equals(id));

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/core/storage/vault_database.dart';
 import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/vault_service.dart';
+import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:sodium/sodium_sumo.dart';
 
@@ -98,8 +99,8 @@ void main() {
         session.header.toJsonString(),
       );
       expect(session.isDisposed, isTrue);
-      expect(() => session.vaultKey, throwsStateError);
-      expect(() => session.records, throwsStateError);
+      expect(() => session.vaultKey, throwsA(isA<VaultLockedException>()));
+      expect(() => session.records, throwsA(isA<VaultLockedException>()));
     });
 
     test('kilitliyken yeniden kilitlemek zararsız', () async {
