@@ -41,7 +41,7 @@ Büyüklük göreli iş miktarını gösterir, takvim sözü değildir. Faz 4 ve
 
 ## Teknoloji seçimleri
 
-Sürümler ve lisanslar 2026-11-04 tarihinde pub.dev'den kontrol edildi. Faz başlarken yeniden gözden geçirilir.
+Sürümler ve lisanslar 2026-11-05 tarihinde pub.dev'den kontrol edildi. Faz başlarken yeniden gözden geçirilir.
 
 | İhtiyaç | Seçim | Sürüm | Lisans | Neden |
 |---|---|---|---|---|
@@ -49,7 +49,7 @@ Sürümler ve lisanslar 2026-11-04 tarihinde pub.dev'den kontrol edildi. Faz ba�
 | Android'e özgü kod | Kotlin | — | — | Otomatik doldurma ve Keystore gibi işler Flutter'dan yapılamıyor. |
 | Durum yönetimi | `flutter_riverpod` | 3.4.3 | MIT | Yaygın ve test etmesi kolay. |
 | Yönlendirme | `go_router` | 18.1.3 | BSD-3 | Flutter ekibinin paketi. |
-| Veritabanı | `drift` ve `sqlite3` | 2.35.3 / 3.8.0 | MIT | Tür güvenli sorgular ve hazır veritabanı göçleri. |
+| Veritabanı | `drift` ve `sqlite3` | 2.35.3 / 3.9.0 | MIT | Tür güvenli sorgular ve hazır veritabanı göçleri. |
 | Kriptografi | `sodium` (libsodium 1.0.22) | 4.1.2+1 | BSD-3, ISC | Argon2id, XChaCha20-Poly1305, HKDF ve korumalı bellek tek pakette. [Doğrulandı](#libsodium-doğrulaması). |
 | 2FA hesaplama | Kendi kodumuz ve `crypto` | 3.0.8 | BSD-3 | Algoritma kısa ve RFC test vektörleriyle doğrulanabiliyor; ek bağımlılığa gerek yok. |
 | QR okuma | `flutter_zxing` | 3.1.0 | MIT | Açık kaynak, tamamen cihazda çalışıyor. |
@@ -133,7 +133,7 @@ KeyKey/
 
 Klasörler içine kod girdikçe açılır, boş klasör tutulmaz.
 
-**Dosya düzeni kuralı:** Proje kodu dışındaki her şey `resources/` altında durur. Kök dizinde yalnızca çalışması için orada olması gereken dosyalar kalır: `README.md`, `LICENSE`, `.gitignore`, `.gitattributes`, `pubspec.yaml`, `pubspec.lock`, `analysis_options.yaml`, `l10n.yaml` ve Flutter'ın `.metadata` dosyası. `.github/` da GitHub onu yalnızca orada aradığı için köktedir.
+**Dosya düzeni kuralı:** Proje kodu dışındaki her şey `resources/` altında durur. Kök dizinde yalnızca çalışması için orada olması gereken dosyalar kalır: `README.md`, `CLAUDE.md`, `LICENSE`, `.gitignore`, `.gitattributes`, `pubspec.yaml`, `pubspec.lock`, `analysis_options.yaml`, `l10n.yaml` ve Flutter'ın `.metadata` dosyası. `.github/` da GitHub onu yalnızca orada aradığı için köktedir.
 
 **Katman kuralları:**
 
@@ -143,7 +143,7 @@ Klasörler içine kod girdikçe açılır, boş klasör tutulmaz.
 
 ## Güvenlik tasarımı
 
-Bu bölüm tasarımın özeti. Ayrıntılı belge Faz 2'de `resources/docs/guvenlik-tasarimi.md` olarak yazılacak.
+Bu bölüm tasarımın özeti. Ayrıntılı belge: [`resources/docs/guvenlik-tasarimi.md`](docs/guvenlik-tasarimi.md).
 
 ### Tehdit modeli
 
