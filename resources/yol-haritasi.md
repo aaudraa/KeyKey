@@ -50,6 +50,7 @@ Sürümler ve lisanslar 2026-11-05 tarihinde pub.dev'den kontrol edildi. Faz ba�
 | Durum yönetimi | `flutter_riverpod` | 3.4.3 | MIT | Yaygın ve test etmesi kolay. |
 | Yönlendirme | `go_router` | 18.1.3 | BSD-3 | Flutter ekibinin paketi. |
 | Veritabanı | `drift` ve `sqlite3` | 2.35.3 / 3.9.0 | MIT | Tür güvenli sorgular ve hazır veritabanı göçleri. |
+| Uygulama klasörü | `path_provider` | 2.1.6 | BSD-3 | Flutter ekibinin paketi; veritabanının özel klasördeki yerini bulur. |
 | Kriptografi | `sodium` (libsodium 1.0.22) | 4.1.2+1 | BSD-3, ISC | Argon2id, XChaCha20-Poly1305, HKDF ve korumalı bellek tek pakette. [Doğrulandı](#libsodium-doğrulaması). |
 | 2FA hesaplama | Kendi kodumuz ve `crypto` | 3.0.8 | BSD-3 | Algoritma kısa ve RFC test vektörleriyle doğrulanabiliyor; ek bağımlılığa gerek yok. |
 | QR okuma | `flutter_zxing` | 3.1.0 | MIT | Açık kaynak, tamamen cihazda çalışıyor. |
@@ -68,7 +69,7 @@ Sürümler ve lisanslar 2026-11-05 tarihinde pub.dev'den kontrol edildi. Faz ba�
 | `flutter_secure_storage` | Biyometrik modu ayarına göre cihaz PIN'ini kabul ediyor veya biyometri olmadan da çalışabiliyor. Bize yalnızca güçlü biyometriye bağlı ve yeni parmak izinde geçersiz olan bir anahtar gerekiyor, bunu kendi Keystore köprümüzle sağlıyoruz. |
 | `zxcvbn` | Dart 3 ile uyumlu değil (`sdk <3.0.0`). |
 | `sodium_libs` | Kullanımdan kalktı, yerini `sodium` aldı. |
-| `sqlite3_flutter_libs` | Kullanım ömrü bitti, `sqlite3` paketi artık kendi yerel derlemesini yapıyor. |
+| `sqlite3_flutter_libs` | Kullanım ömrü bitti, `sqlite3` paketi yerel kütüphaneyi artık kendisi sağlıyor. Derlemede GitHub'dan hazır dosya indiriyor ve paketin içindeki SHA-256 ile doğruluyor. Aynı yayıncının Dart kodu zaten uygulamanın içinde çalıştığı için bu, güvenmemiz gereken kişiyi değiştirmiyor. Kaynaktan derlemeye Faz 9'da geçilecek. |
 
 ### libsodium doğrulaması
 
@@ -296,7 +297,7 @@ Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bi
 
 **Amaç:** Kullanıcının kasa oluşturup açabildiği ve kilitleyebildiği ilk gerçek akış.
 
-- [ ] drift şeması, depo katmanı ve göç testleri
+- [x] drift şeması, depo katmanı ve göç testleri
 - [ ] Kasa oluşturma ekranları: ana parola, güç göstergesi, parolanın geri alınamayacağı uyarısı
 - [ ] Kurtarma anahtarını gösterme ve geri yazdırarak doğrulama
 - [ ] Ana parolayla açma; hatalı denemelerde artan bekleme
@@ -400,7 +401,7 @@ Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bi
 - [ ] Yayın anahtarı: repoya girmez, yedeği ayrı ve güvenli bir yerde tutulur, CI'da GitHub Secrets ile kullanılır
 - [ ] Yayın otomasyonu: etiket atılınca imzalı APK ve AAB, SHA-256 özetleri, GitHub Release
 - [ ] `CHANGELOG.md` ve sürüm numaralandırma
-- [ ] Yeniden üretilebilir derleme denemesi
+- [ ] Yeniden üretilebilir derleme denemesi; `sqlite3`'ü hazır dosya yerine kaynaktan derlemek (F-Droid de bunu gerektiriyor)
 - [ ] Dağıtım kararı: GitHub Releases ile başlamak; F-Droid ve Play Store'u değerlendirmek
 - [ ] Kullanım kılavuzu ve ekran görüntüleri (`resources/docs/kullanim.md`, `resources/design/`)
 - [ ] `v0.x` sürümünden 1.0'a yükseltme testi: veri kaybı olmamalı
