@@ -46,7 +46,9 @@ class _SecretFieldState extends State<SecretField> {
     return TextField(
       controller: widget.controller,
       autofocus: widget.autofocus,
-      enabled: widget.enabled,
+      // Kapatmak yerine salt okunur: odak ve klavye korunur, kullanıcı yanlış
+      // paroladan sonra kutuya yeniden dokunmak zorunda kalmaz.
+      readOnly: !widget.enabled,
       obscureText: widget.obscure && !_visible,
       keyboardType: TextInputType.visiblePassword,
       textInputAction: widget.textInputAction,

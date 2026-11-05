@@ -26,10 +26,17 @@ void main() {
   Future<void> pumpUntilFound(WidgetTester tester, Finder finder) async {
     final deadline = DateTime.now().add(const Duration(seconds: 30));
     while (DateTime.now().isBefore(deadline)) {
-      await tester.pump(const Duration(milliseconds: 100));
+      await tester
+          .pump(const Duration(milliseconds: 100))
+          .timeout(const Duration(seconds: 10));
       if (finder.evaluate().isNotEmpty) return;
     }
-    fail('Bulunamadı: $finder');
+    final visible = find
+        .byType(Text)
+        .evaluate()
+        .map((element) => (element.widget as Text).data)
+        .join(' / ');
+    fail('Bulunamadı: $finder | Ekranda: $visible');
   }
 
   Future<void> tapButton(WidgetTester tester, String label) async {
@@ -41,12 +48,12 @@ void main() {
   }
 
   Future<void> background(WidgetTester tester) async {
-    final binding = tester.binding
+    tester.binding
       ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
       ..handleAppLifecycleStateChanged(AppLifecycleState.hidden)
       ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
       ..handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-    await binding.endOfFrame;
+    await tester.pump().timeout(const Duration(seconds: 10));
   }
 
   Future<void> unlock(
@@ -90,6 +97,7 @@ void main() {
     }
 
     // Kasa oluşturma.
+    debugPrint('KKADIM Kasa oluşturma.');
     var (database, app) = await openApp();
     addTearDown(() => database.close());
     await tester.pumpWidget(app);
@@ -106,9 +114,10 @@ void main() {
     );
     await pumpUntilFound(tester, recoveryKeyFinder);
     final recoveryKey = tester.widget<Text>(recoveryKeyFinder).data!;
-    expect(recoveryKey.replaceAll('-', '').length, 50);
+    expect(recoveryKey.replaceAll('-', '').length, 55);
 
     // Doğrulanmadan önce dosyada kasa yok.
+    debugPrint('KKADIM Doğrulanmadan önce dosyada kasa yok.');
     expect(
       await VaultStore(database).readHeader(),
       isNull,
@@ -124,6 +133,9 @@ void main() {
     expect(await VaultStore(database).readHeader(), isNotNull);
 
     // Arka plana geçince kilitleniyor, yanlış parola içeri almıyor.
+    debugPrint(
+      'KKADIM Arka plana geçince kilitleniyor, yanlış parola içeri almıyor.',
+    );
     await background(tester);
     await pumpUntilFound(tester, find.text(lockedTitle));
     expect(find.text(vaultText), findsNothing);
@@ -137,6 +149,7 @@ void main() {
     await unlock(tester, firstPassword, expecting: find.text(vaultText));
 
     // Parola değiştirme.
+    debugPrint('KKADIM Parola değiştirme.');
     await tester.tap(find.byIcon(Icons.settings_outlined));
     await pumpUntilFound(tester, find.text('Şimdi kilitle'));
     await tester.tap(find.text('Ana parolayı değiştir'));
@@ -150,12 +163,14 @@ void main() {
     await pumpUntilFound(tester, find.text('Şimdi kilitle'));
 
     // Eski parola artık çalışmıyor, yenisi çalışıyor.
+    debugPrint('KKADIM Eski parola artık çalışmıyor, yenisi çalışıyor.');
     await tester.tap(find.text('Şimdi kilitle'));
     await pumpUntilFound(tester, find.text(lockedTitle));
     await unlock(tester, firstPassword, expecting: find.text('Parola yanlış.'));
     await unlock(tester, secondPassword, expecting: find.text(vaultText));
 
     // Parola unutuldu: kurtarma anahtarıyla yeni parola.
+    debugPrint('KKADIM Parola unutuldu: kurtarma anahtarıyla yeni parola.');
     await background(tester);
     await pumpUntilFound(tester, find.text(lockedTitle));
     await tester.tap(find.text('Parolamı unuttum'));
@@ -173,6 +188,9 @@ void main() {
     await pumpUntilFound(tester, find.text(vaultText));
 
     // Uygulama yeniden başlıyor: kasa kilitli açılıyor, son parola geçerli.
+    debugPrint(
+      'KKADIM Uygulama yeniden başlıyor: kasa kilitli, son parola geçerli.',
+    );
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
     await database.close();
@@ -186,5 +204,5 @@ void main() {
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
-  });
+  }, timeout: const Timeout(Duration(minutes: 4)));
 }

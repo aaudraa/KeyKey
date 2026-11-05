@@ -236,6 +236,29 @@ void main() {
       expect(find.text(vaultText), findsNothing);
     });
 
+    testWidgets('kilitten sonra yanlış ve doğru parolayla yeniden açılıyor', (
+      tester,
+    ) async {
+      await pumpOpen(tester);
+      setLifecycle(tester, AppLifecycleState.hidden);
+      setLifecycle(tester, AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(find.text(lockedTitle), findsOneWidget);
+
+      await enterPassword(tester, 'yanlis-parola-99');
+      expect(find.text('Parola yanlış.'), findsOneWidget);
+
+      await enterPassword(tester, FakeVaultService.correctPassword);
+      expect(find.text(vaultText), findsOneWidget);
+
+      // İkinci tur da aynı çalışmalı.
+      setLifecycle(tester, AppLifecycleState.hidden);
+      setLifecycle(tester, AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      await enterPassword(tester, FakeVaultService.correctPassword);
+      expect(find.text(vaultText), findsOneWidget);
+    });
+
     testWidgets('sistem penceresi kilitlemiyor', (tester) async {
       await pumpOpen(tester);
 
