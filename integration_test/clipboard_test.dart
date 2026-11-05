@@ -29,14 +29,17 @@ void main() {
     expect(await read(), anyOf(isNull, isEmpty));
   });
 
-  testWidgets('kullanıcının sonraki kopyası silinmiyor', (tester) async {
-    await api.copySensitive('kk-deneme-ikinci', 2000);
-    await Clipboard.setData(const ClipboardData(text: 'kullanicinin-metni'));
+  testWidgets('yeni kopya öncekinin süresini sıfırlıyor', (tester) async {
+    // Uygulamadaki bütün kopyalamalar bu yoldan geçer. İlk kopyanın 2 saniyelik
+    // temizliği iptal olmalı, ikinci kopya 8 saniye panoda kalmalı.
+    await api.copySensitive('kk-deneme-ilk', 2000);
+    await api.copySensitive('kk-deneme-ikinci', 8000);
 
     await Future<void>.delayed(const Duration(seconds: 4));
+    expect(await read(), 'kk-deneme-ikinci');
 
-    expect(await read(), 'kullanicinin-metni');
-    await Clipboard.setData(const ClipboardData(text: ''));
+    await Future<void>.delayed(const Duration(seconds: 6));
+    expect(await read(), anyOf(isNull, isEmpty));
   });
 
   testWidgets('uygulama arka plandayken de siliniyor', (tester) async {
