@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/core/vault/vault_session.dart';
+import 'package:keykey/features/generator/presentation/generator_sheet.dart';
+import 'package:keykey/features/generator/presentation/password_strength_meter.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
@@ -231,6 +233,25 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
               label: l10n.loginPassword,
               textInputAction: TextInputAction.next,
               onChanged: _changed,
+              trailing: IconButton(
+                tooltip: l10n.generatorOpen,
+                icon: const Icon(Icons.casino_outlined),
+                onPressed: () async {
+                  final generated = await showGeneratorSheet(context);
+                  if (generated == null) return;
+                  _password.text = generated;
+                  _changed(generated);
+                },
+              ),
+            ),
+            ListenableBuilder(
+              listenable: _password,
+              builder: (context, _) => _password.text.isEmpty
+                  ? const SizedBox.shrink()
+                  : Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: PasswordStrengthMeter(password: _password.text),
+                    ),
             ),
             const SizedBox(height: 12),
             for (final (index, url) in _urls.indexed) ...[

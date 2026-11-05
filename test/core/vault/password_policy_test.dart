@@ -45,6 +45,64 @@ void main() {
       expect(strength('bisikletdeniz'), PasswordStrength.fair);
     });
 
+    test('desenler gücü düşürüyor', () {
+      for (final password in [
+        'qwertyuiop123',
+        'asdfghjklzxcv',
+        'abcdefghijkl',
+        '0987654321ab',
+        'Ahmet1990Ahmet',
+        '01.01.1990abcd',
+        'aaaaaaaaaaaaaaaaBBBB',
+      ]) {
+        expect(
+          PasswordPolicy.strengthOf(password),
+          PasswordStrength.weak,
+          reason: password,
+        );
+      }
+    });
+
+    test('yaygın listede olanlar ve türevleri zayıf', () {
+      const common = {'dragonball', 'sunflower'};
+      for (final password in [
+        'dragonball',
+        'DragonBall',
+        'dragonball123!',
+        'dr4g0nb4ll',
+        'sunfl0wer2024',
+      ]) {
+        expect(
+          PasswordPolicy.strengthOf(password, common: common),
+          PasswordStrength.weak,
+          reason: password,
+        );
+      }
+    });
+
+    test('listeye girince başka türlü orta olan parola zayıf oluyor', () {
+      const password = 'MountainBicycle';
+      expect(PasswordPolicy.strengthOf(password), isNot(PasswordStrength.weak));
+      expect(
+        PasswordPolicy.strengthOf(password, common: const {'mountainbicycle'}),
+        PasswordStrength.weak,
+      );
+    });
+
+    test('rastgele ve uzun parolalar güçlü kalıyor', () {
+      for (final password in [
+        'kırmızı-Bisiklet-47-Deniz',
+        'Tq8#mZ2!vR9pL@4w',
+        'correct-horse-battery-staple',
+      ]) {
+        expect(
+          PasswordPolicy.strengthOf(password),
+          PasswordStrength.strong,
+          reason: password,
+        );
+      }
+    });
+
     test('kurala uyan zayıf parola yine de kabul ediliyor', () {
       expect(PasswordPolicy.isAcceptable('1234567890'), isTrue);
     });

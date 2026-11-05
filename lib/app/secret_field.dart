@@ -20,8 +20,12 @@ class SecretField extends StatefulWidget {
     this.onChanged,
     this.maxLines = 1,
     this.multiline = false,
+    this.trailing,
     super.key,
   });
+
+  /// Göster düğmesinin yanına konan ek düğme, örneğin parola üretici.
+  final Widget? trailing;
 
   /// Gizli olmayan kutularda birden fazla satıra izin verir.
   final int maxLines;
@@ -84,15 +88,22 @@ class _SecretFieldState extends State<SecretField> {
         helperMaxLines: 3,
         errorMaxLines: 3,
         border: const OutlineInputBorder(),
-        suffixIcon: widget.obscure
-            ? IconButton(
-                tooltip: _visible ? l10n.secretHide : l10n.secretShow,
-                icon: Icon(
-                  _visible
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined,
-                ),
-                onPressed: () => setState(() => _visible = !_visible),
+        suffixIcon: widget.obscure || widget.trailing != null
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ?widget.trailing,
+                  if (widget.obscure)
+                    IconButton(
+                      tooltip: _visible ? l10n.secretHide : l10n.secretShow,
+                      icon: Icon(
+                        _visible
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                      ),
+                      onPressed: () => setState(() => _visible = !_visible),
+                    ),
+                ],
               )
             : null,
       ),

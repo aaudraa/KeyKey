@@ -474,5 +474,80 @@
         "type": "String"
       }
     }
+  },
+  "generatorPassword": "Password",
+  "@generatorPassword": {
+    "description": "Generator mode."
+  },
+  "generatorPassphrase": "Passphrase",
+  "@generatorPassphrase": {
+    "description": "Generator mode."
+  },
+  "generatorBits": "About {bits} bits of randomness",
+  "@generatorBits": {
+    "description": "Entropy of the generated value.",
+    "placeholders": {
+      "bits": {
+        "type": "int"
+      }
+    }
+  },
+  "generatorRegenerate": "Generate again",
+  "@generatorRegenerate": {
+    "description": "Tooltip."
+  },
+  "generatorUse": "Use this",
+  "@generatorUse": {
+    "description": "Button that returns the generated value."
+  },
+  "generatorLength": "Length: {length}",
+  "@generatorLength": {
+    "description": "Slider label.",
+    "placeholders": {
+      "length": {
+        "type": "int"
+      }
+    }
+  },
+  "generatorLowercase": "Lowercase letters",
+  "@generatorLowercase": {
+    "description": "Switch."
+  },
+  "generatorUppercase": "Uppercase letters",
+  "@generatorUppercase": {
+    "description": "Switch."
+  },
+  "generatorDigits": "Digits",
+  "@generatorDigits": {
+    "description": "Switch."
+  },
+  "generatorSymbols": "Symbols",
+  "@generatorSymbols": {
+    "description": "Switch."
+  },
+  "generatorNeedClass": "Choose at least one character type.",
+  "@generatorNeedClass": {
+    "description": "Shown when every switch is off."
+  },
+  "generatorWords": "Words: {count}",
+  "@generatorWords": {
+    "description": "Slider label.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "generatorPassphraseNote": "Words come from the EFF English word list.",
+  "@generatorPassphraseNote": {
+    "description": "Explains the word list."
+  },
+  "generatorOpen": "Generate password",
+  "@generatorOpen": {
+    "description": "Tooltip on the password field."
+  },
+  "settingsLicenses": "Licenses",
+  "@settingsLicenses": {
+    "description": "Settings entry that opens the license page."
   }
 }

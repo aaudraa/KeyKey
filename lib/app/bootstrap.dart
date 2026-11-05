@@ -7,6 +7,7 @@ import 'package:keykey/core/storage/storage_exceptions.dart';
 import 'package:keykey/core/storage/vault_database.dart';
 import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/vault_service.dart';
+import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
@@ -37,6 +38,7 @@ Future<List<Override>> bootstrap() async {
     biometric: PigeonBiometricBridge(),
   );
   return [
+    randomSourceProvider.overrideWithValue(SodiumRandomSource(sodium)),
     vaultServiceProvider.overrideWithValue(service),
     loginRepositoryFactoryProvider.overrideWithValue(
       (session) =>

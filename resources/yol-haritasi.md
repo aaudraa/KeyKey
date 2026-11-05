@@ -57,6 +57,7 @@ Sürümler ve lisanslar 2026-11-05 tarihinde pub.dev'den kontrol edildi. Faz ba�
 | Dart-Kotlin köprüsü | `pigeon` | 29.1.0 | BSD-3 | Elle yazılan kanallara göre tür güvenli. |
 | Parmak izi | `androidx.biometric` | 1.1.0 | Apache-2.0 | Google'ın kitaplığı. Son kararlı sürüm, daha yenileri beta. |
 | Köprü çalışma zamanı | `kotlinx-coroutines-android` | 1.11.0 | Apache-2.0 | `pigeon`'un ürettiği Kotlin kodu bunu gerektiriyor. |
+| Sözcük listeleri | EFF büyük liste, SecLists 10k | — | CC BY 3.0, MIT | Veri olarak; kaynak ve özet değerleri `resources/assets/wordlists/KAYNAKLAR.md` içinde. |
 | Kod kalitesi | `very_good_analysis` | 11.0.0 | MIT | Sıkı lint kuralları. |
 | Test | `flutter_test`, `integration_test` | SDK | BSD-3 | Birim, widget ve emülatör testleri. Taklit nesneler gerektiğinde `mocktail` eklenecek. |
 
@@ -321,8 +322,8 @@ Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bi
 - [x] Otomatik kilit süresini klavye kullanımında da yenilemek (Faz 3'te yalnızca dokunmayla yenileniyor)
 - [x] Liste, arama, favoriler, klasörler ve sıralama (arama çözülmüş veri üzerinde bellekte yapılır)
 - [x] Ekleme, düzenleme, çöp kutusu ve parola geçmişi
-- [ ] Parola üretici: rastgele parola ve parola cümlesi, libsodium'un güvenli rastgele üreticisiyle
-- [ ] Kendi güç ölçerimiz: entropi, yaygın parola listesi ve desen kontrolü
+- [x] Parola üretici: rastgele parola ve parola cümlesi, libsodium'un güvenli rastgele üreticisiyle
+- [x] Kendi güç ölçerimiz: entropi, yaygın parola listesi ve desen kontrolü
 - [ ] Güvenli pano: hassas işareti (Android 13+) ve 30 saniye sonra otomatik temizleme
 - [ ] Parolayı göster/gizle ve kilit durumuyla uyumlu ekran davranışı
 

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +12,7 @@ import 'package:keykey/core/crypto/vault_header.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/core/vault/vault_session.dart';
+import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
@@ -242,11 +245,20 @@ class FakeLoginRepository implements LoginRepository {
   }
 }
 
+// Büyük varlık dosyalarını Flutter ayrı isolate'te okur, sahte saatli
+// testlerde bu tamamlanmaz. Testler listeleri doğrudan dosyadan alır.
+final List<String> _effWords = Wordlists.parseEff(
+  File(Wordlists.effPath).readAsStringSync(),
+);
+final Set<String> _commonPasswords = Wordlists.parseCommon(
+  File(Wordlists.commonPath).readAsStringSync(),
+);
+
 /// Uygulamayı verilen kasa durumuyla açar.
 Future<void> pumpKeyKey(
   WidgetTester tester, {
   required VaultStatus status,
-  required VaultService service,
+  required FakeVaultService service,
   FakeLoginRepository? logins,
   Locale locale = const Locale('tr'),
 }) async {
@@ -259,6 +271,11 @@ Future<void> pumpKeyKey(
         vaultServiceProvider.overrideWithValue(service),
         initialVaultStatusProvider.overrideWithValue(status),
         loginRepositoryFactoryProvider.overrideWithValue((_) => repository),
+        randomSourceProvider.overrideWithValue(
+          SodiumRandomSource(service.sodium),
+        ),
+        effWordlistProvider.overrideWith((ref) async => _effWords),
+        commonPasswordsProvider.overrideWith((ref) async => _commonPasswords),
       ],
       child: const KeyKeyApp(),
     ),

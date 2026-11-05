@@ -109,5 +109,20 @@
   "trashRestore": "Geri al",
   "trashDelete": "Kalıcı olarak sil",
   "trashDeleteTitle": "Kalıcı olarak silinsin mi?",
-  "trashDeleteMessage": "\"{name}\" silinecek ve geri getirilemeyecek."
+  "trashDeleteMessage": "\"{name}\" silinecek ve geri getirilemeyecek.",
+  "generatorPassword": "Parola",
+  "generatorPassphrase": "Parola cümlesi",
+  "generatorBits": "Yaklaşık {bits} bit rastgelelik",
+  "generatorRegenerate": "Yeniden üret",
+  "generatorUse": "Bunu kullan",
+  "generatorLength": "Uzunluk: {length}",
+  "generatorLowercase": "Küçük harfler",
+  "generatorUppercase": "Büyük harfler",
+  "generatorDigits": "Rakamlar",
+  "generatorSymbols": "İşaretler",
+  "generatorNeedClass": "En az bir karakter türü seç.",
+  "generatorWords": "Sözcük sayısı: {count}",
+  "generatorPassphraseNote": "Sözcükler EFF'nin İngilizce listesinden seçilir.",
+  "generatorOpen": "Parola üret",
+  "settingsLicenses": "Lisanslar"
 }
