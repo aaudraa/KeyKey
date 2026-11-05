@@ -17,6 +17,7 @@ dependencies:
   sodium: ^4.1.2+1
 
 dev_dependencies:
+  crypto: ^3.0.8
   flutter_test:
     sdk: flutter
   integration_test:
