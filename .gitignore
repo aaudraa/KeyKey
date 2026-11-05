@@ -26,6 +26,7 @@ local.properties
 build/
 coverage/
 doc/api/
+lib/l10n/generated/
 
 # ---------------------------------------------------------------------------
 # Düzenleyiciler

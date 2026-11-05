@@ -40,6 +40,25 @@ Bir güvenlik açığı bulursan lütfen [güvenlik politikasındaki](.github/SE
 
 Proje fazlar halinde ilerliyor ve her fazın kendi branch'i var. Çalışma düzeni için [yol haritasına](resources/yol-haritasi.md#çalışma-düzeni), katkı kuralları için [katkı rehberine](.github/CONTRIBUTING.md) bakabilirsin.
 
+### Windows'ta kurulum
+
+1. [Flutter](https://docs.flutter.dev/get-started) ve Android Studio'yu kur.
+2. [Git for Windows](https://git-scm.com/install/windows) kurup `C:\Program Files\Git\bin` klasörünü PATH'e ekle.
+3. GNU Make kur: `winget install ezwinports.make`
+4. Visual Studio'yu "Desktop development with C++" iş yüküyle kur.
+5. Düzenleyiciyi yeniden başlat, sonra çalıştır:
+
+```powershell
+flutter pub get
+flutter test
+flutter run
+
+# Emülatör testleri, çalışan bir emülatör gerekir
+flutter test integration_test -d <emülatör>
+```
+
+Repoyu `C:\KeyKey` gibi kısa bir yola klonla. Uzun yollarda libsodium derlemesi hata verebiliyor. Ayrıntılar yol haritasının [Geliştirme ortamı](resources/yol-haritasi.md#geliştirme-ortamı) bölümünde.
+
 ## Lisans
 
 KeyKey, [GNU GPL v3.0](LICENSE) lisansıyla dağıtılır.

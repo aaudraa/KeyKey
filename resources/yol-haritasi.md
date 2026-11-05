@@ -2,7 +2,7 @@
 
 KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-04 · **Şu anki faz:** Faz 1
+**Son güncelleme:** 2026-11-04 · **Şu anki faz:** Faz 2
 
 > [!IMPORTANT]
 > **Gerçek parolalarını Faz 8 bitene kadar KeyKey'e koyma.** Kasa biçimi o zamana kadar değişebilir ve güvenlik denetimi henüz yapılmadı.
@@ -14,8 +14,8 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 | Faz | Konu | Büyüklük | Önce bitmeli | Branch | Durum |
 |---|---|---|---|---|---|
 | 0 | Repo ve GitHub altyapısı | S | — | `faz/0-repo-altyapisi` | Tamamlandı |
-| 1 | Flutter iskeleti ve CI | M | 0 | `faz/1-flutter-iskeleti` | Sırada |
-| 2 | Kripto çekirdeği | L | 1 | `faz/2-kripto-cekirdegi` | Bekliyor |
+| 1 | Flutter iskeleti ve CI | M | 0 | `faz/1-flutter-iskeleti` | Tamamlandı |
+| 2 | Kripto çekirdeği | L | 1 | `faz/2-kripto-cekirdegi` | Sırada |
 | 3 | Kasa, kilit ve biyometri | L | 2 | `faz/3-kasa-ve-kilit` | Bekliyor |
 | 4 | Parola kasası | L | 3 | `faz/4-parola-kasasi` | Bekliyor |
 | 5 | 2FA doğrulayıcı | M | 3 | `faz/5-2fa-dogrulayici` | Bekliyor |
@@ -48,14 +48,14 @@ Sürümler ve lisanslar 2026-11-04 tarihinde pub.dev'den kontrol edildi. Faz ba�
 | Uygulama çatısı | Flutter ve Dart | 3.47.9 / 3.13.7 | BSD-3 | CI aynı sürüme sabitlenir. |
 | Android'e özgü kod | Kotlin | — | — | Otomatik doldurma ve Keystore gibi işler Flutter'dan yapılamıyor. |
 | Durum yönetimi | `flutter_riverpod` | 3.4.3 | MIT | Yaygın ve test etmesi kolay. |
-| Yönlendirme | `go_router` | 18.1.2 | BSD-3 | Flutter ekibinin paketi. |
+| Yönlendirme | `go_router` | 18.1.3 | BSD-3 | Flutter ekibinin paketi. |
 | Veritabanı | `drift` ve `sqlite3` | 2.35.3 / 3.8.0 | MIT | Tür güvenli sorgular ve hazır veritabanı göçleri. |
 | Kriptografi | `sodium` (libsodium 1.0.22) | 4.1.2+1 | BSD-3, ISC | Argon2id, XChaCha20-Poly1305, HKDF ve korumalı bellek tek pakette. [Doğrulandı](#libsodium-doğrulaması). |
 | 2FA hesaplama | Kendi kodumuz ve `crypto` | 3.0.8 | BSD-3 | Algoritma kısa ve RFC test vektörleriyle doğrulanabiliyor; ek bağımlılığa gerek yok. |
 | QR okuma | `flutter_zxing` | 3.1.0 | MIT | Açık kaynak, tamamen cihazda çalışıyor. |
 | Dart-Kotlin köprüsü | `pigeon` | 29.1.0 | BSD-3 | Elle yazılan kanallara göre tür güvenli. |
 | Kod kalitesi | `very_good_analysis` | 11.0.0 | MIT | Sıkı lint kuralları. |
-| Test | `flutter_test`, `integration_test`, `mocktail` | SDK / 1.0.5 | BSD-3, MIT | Birim, widget ve emülatör testleri. |
+| Test | `flutter_test`, `integration_test` | SDK | BSD-3 | Birim, widget ve emülatör testleri. Taklit nesneler gerektiğinde `mocktail` eklenecek. |
 
 ### Bilerek kullanmadığımız paketler
 
@@ -78,7 +78,7 @@ Sürümler ve lisanslar 2026-11-04 tarihinde pub.dev'den kontrol edildi. Faz ba�
 |---|---|
 | Windows'tan Android derlemesi (`arm64-v8a`, `x86_64`) | Çalışıyor. Temiz derleme yaklaşık 6 dakika, kod değişince sonraki derleme 13 saniye. |
 | Bilgisayarda `flutter test` ile kripto testi | Çalışıyor, 3-4 saniye sürüyor. |
-| Android 11, 16 ve 17 emülatörlerinde çalıştırma | Argon2id, XChaCha20-Poly1305 ve HKDF çalışıyor; yanlış bağlam verisiyle şifre çözme reddediliyor. Android 14 Faz 1'de denenecek. |
+| Android 11, 14, 16 ve 17 emülatörlerinde çalıştırma | Argon2id ve XChaCha20-Poly1305 hepsinde çalışıyor. Yanlış bağlam verisiyle şifre çözmenin reddedilmesi ve HKDF, Android 14 dışındakilerde ayrıca denendi. |
 | Uygulamaya eklenen boyut | `arm64-v8a` için 336 KB, `x86_64` için 454 KB. |
 
 Argon2id (64 MiB, 3 geçiş) emülatörlerde 0,8-1,3 saniye sürdü. Bunlar bilgisayardaki `x86_64` emülatör değerleri; gerçek telefon süreleri Faz 2'de ölçülecek.
@@ -130,6 +130,8 @@ KeyKey/
 │   └── scripts/            Yardımcı betikler
 └── .github/                Issue ve PR şablonları, CI
 ```
+
+Klasörler içine kod girdikçe açılır, boş klasör tutulmaz.
 
 **Dosya düzeni kuralı:** Proje kodu dışındaki her şey `resources/` altında durur. Kök dizinde yalnızca çalışması için orada olması gereken dosyalar kalır: `README.md`, `LICENSE`, `.gitignore`, `.gitattributes`, `pubspec.yaml`, `pubspec.lock`, `analysis_options.yaml`, `l10n.yaml` ve Flutter'ın `.metadata` dosyası. `.github/` da GitHub onu yalnızca orada aradığı için köktedir.
 
@@ -227,6 +229,8 @@ Biçim: `<tür>(<alan>): <kısa açıklama>`. Alan isteğe bağlıdır.
 | `KeyKey_API_36` | 16 | Ana geliştirme cihazı. |
 | `Medium_Phone_API_37.0` | 17 | En yeni sürüm; yaklaşan değişiklikleri erken görmek için. |
 
+Emülatör testleri `flutter test integration_test -d <emülatör>` ile çalışır. `KeyKey_API_*` emülatörleri her zaman temiz açılacak şekilde ayarlı (`fastboot.forceColdBoot=yes`), çünkü bu bilgisayarda hızlı açılış kaydından açılırken takıldılar.
+
 Emülatörlerde ekran kilidi yok. Parmak izi testleri için Faz 3'te kilit gerekecek. Kilit varken soğuk açılıştan sonra PIN girilene kadar uygulama başlatılamaz ve `adb` `Activity class does not exist` hatası verir; bu bir uygulama hatası değildir.
 
 Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bir ARM telefonda da test zorunlu.
@@ -252,17 +256,17 @@ Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bi
 
 **Amaç:** Henüz özelliği olmayan ama çalışan bir uygulama ve kaliteyi koruyan otomatik kontroller.
 
-- [ ] Projeyi yalnızca Android için oluşturmak; paket kimliği ve `minSdk 30`
-- [ ] `MainActivity`'yi `FlutterFragmentActivity` yapmak (`BiometricPrompt` bunu gerektiriyor)
-- [ ] [Geliştirme ortamı](#geliştirme-ortamı) adımlarını README'nin geliştirme bölümüne eklemek
-- [ ] `very_good_analysis` ve mimarideki klasör yapısı
-- [ ] Riverpod, go_router ve açık/koyu Material 3 teması
-- [ ] Türkçe ve İngilizce yerelleştirme altyapısı
-- [ ] `FLAG_SECURE`, son uygulamalar ekranında içerik gizleme ve kapalı Android yedeklemesi
-- [ ] GitHub Actions: biçim, analiz, test, Android derlemesi, gizli bilgi taraması
-- [ ] CI'da birleşik manifest kontrolü: yayın sürümünde `INTERNET` izni olmamalı
-- [ ] Action'ları commit SHA'sına sabitlemek ve workflow izinlerini salt okunur yapmak
-- [ ] Dependabot ve `main` için zorunlu CI kontrolü
+- [x] Projeyi yalnızca Android için oluşturmak; paket kimliği ve `minSdk 30`
+- [x] `MainActivity`'yi `FlutterFragmentActivity` yapmak (`BiometricPrompt` bunu gerektiriyor)
+- [x] [Geliştirme ortamı](#geliştirme-ortamı) adımlarını README'nin geliştirme bölümüne eklemek
+- [x] `very_good_analysis` ve mimarideki klasör yapısı
+- [x] Riverpod, go_router ve açık/koyu Material 3 teması
+- [x] Türkçe ve İngilizce yerelleştirme altyapısı
+- [x] `FLAG_SECURE`, son uygulamalar ekranında içerik gizleme ve kapalı Android yedeklemesi
+- [x] GitHub Actions: biçim, analiz, test, Android derlemesi, gizli bilgi taraması
+- [x] CI'da birleşik manifest kontrolü: yayın sürümünde `INTERNET` izni olmamalı
+- [x] Action'ları commit SHA'sına sabitlemek ve workflow izinlerini salt okunur yapmak
+- [x] Dependabot ve `main` için zorunlu CI kontrolü
 
 **Bitti sayılması için:** Uygulama dört emülatörde açılıyor; tema ve dil değişiyor; ekran görüntüsü alınamıyor; CI yeşil ve kontrolü geçmeyen PR birleştirilemiyor.
 
