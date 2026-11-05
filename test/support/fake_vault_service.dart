@@ -9,6 +9,7 @@ import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/crypto/record_cipher.dart';
 import 'package:keykey/core/crypto/vault_crypto.dart';
 import 'package:keykey/core/crypto/vault_header.dart';
+import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/core/vault/vault_session.dart';
@@ -174,6 +175,14 @@ class FakeVaultService implements VaultService {
   }
 }
 
+/// Kopyalananları kaydeder. Gerçek panoyu cihaz testi sınar.
+class RecordingClipboard implements SensitiveClipboard {
+  final List<String> copied = [];
+
+  @override
+  Future<void> copy(String text) async => copied.add(text);
+}
+
 /// Bellekte çalışan kayıt deposu. Şifrelemeyi depo testleri sınar.
 class FakeLoginRepository implements LoginRepository {
   new({List<LoginItem>? items, this.unreadableCount = 0}) : items = items ?? [];
@@ -260,6 +269,7 @@ Future<void> pumpKeyKey(
   required VaultStatus status,
   required FakeVaultService service,
   FakeLoginRepository? logins,
+  RecordingClipboard? clipboard,
   Locale locale = const Locale('tr'),
 }) async {
   tester.platformDispatcher.localesTestValue = [locale];
@@ -273,6 +283,9 @@ Future<void> pumpKeyKey(
         loginRepositoryFactoryProvider.overrideWithValue((_) => repository),
         randomSourceProvider.overrideWithValue(
           SodiumRandomSource(service.sodium),
+        ),
+        sensitiveClipboardProvider.overrideWithValue(
+          clipboard ?? RecordingClipboard(),
         ),
         effWordlistProvider.overrideWith((ref) async => _effWords),
         commonPasswordsProvider.overrideWith((ref) async => _commonPasswords),

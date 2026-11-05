@@ -160,6 +160,37 @@ void main() {
       expect(find.text('KeyKey kilitli'), findsOneWidget);
     });
 
+    testWidgets('gizli değer kopyalanabiliyor, süre bildiriliyor', (
+      tester,
+    ) async {
+      final clipboard = RecordingClipboard();
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        logins: logins,
+        clipboard: clipboard,
+      );
+      await tester.tap(find.text('Posta'));
+      await tester.pumpAndSettle();
+
+      final passwordTile = find.ancestor(
+        of: find.text('Parola'),
+        matching: find.byType(ListTile),
+      );
+      await tester.tap(
+        find.descendant(of: passwordTile, matching: find.byTooltip('Kopyala')),
+      );
+      await tester.pump();
+
+      expect(clipboard.copied, ['posta-parolasi']);
+      expect(find.text('posta-parolasi'), findsNothing);
+      expect(
+        find.textContaining('30 saniye sonra temizlenecek'),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('favori düğmesi kaydı değiştiriyor', (tester) async {
       await openPosta(tester);
 

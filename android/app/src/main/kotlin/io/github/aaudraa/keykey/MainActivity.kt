@@ -22,6 +22,8 @@ class MainActivity : FlutterFragmentActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        BiometricApi.setUp(flutterEngine.dartExecutor.binaryMessenger, BiometricVault(this))
+        val messenger = flutterEngine.dartExecutor.binaryMessenger
+        BiometricApi.setUp(messenger, BiometricVault(this))
+        ClipboardApi.setUp(messenger, SecureClipboard(this))
     }
 }

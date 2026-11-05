@@ -549,5 +549,18 @@
   "settingsLicenses": "Licenses",
   "@settingsLicenses": {
     "description": "Settings entry that opens the license page."
+  },
+  "copy": "Copy",
+  "@copy": {
+    "description": "Tooltip of the copy button."
+  },
+  "copiedWillClear": "Copied. The clipboard will be cleared in {seconds} seconds.",
+  "@copiedWillClear": {
+    "description": "Snack bar after copying a value.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
   }
 }

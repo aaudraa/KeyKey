@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
+import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
@@ -117,7 +118,9 @@ class LoginDetailScreen extends ConsumerWidget {
 }
 
 /// Etiketli bir değer. [hidden] ise göster düğmesine basılana kadar gizlidir.
-class _Field extends StatefulWidget {
+///
+/// Kilitlenince ekran kapandığı için açılan değer de yeniden gizlenir.
+class _Field extends ConsumerStatefulWidget {
   const new({required this.label, required this.value, this.hidden = false});
 
   final String label;
@@ -125,11 +128,26 @@ class _Field extends StatefulWidget {
   final bool hidden;
 
   @override
-  State<_Field> createState() => _FieldState();
+  ConsumerState<_Field> createState() => _FieldState();
 }
 
-class _FieldState extends State<_Field> {
+class _FieldState extends ConsumerState<_Field> {
   bool _revealed = false;
+
+  Future<void> _copy() async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    await ref.read(sensitiveClipboardProvider).copy(widget.value);
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.copiedWillClear(SensitiveClipboard.clearAfter.inSeconds),
+          ),
+        ),
+      );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -141,8 +159,11 @@ class _FieldState extends State<_Field> {
         concealed ? '••••••••' : widget.value,
         style: widget.hidden ? const TextStyle(fontFamily: 'monospace') : null,
       ),
-      trailing: widget.hidden
-          ? IconButton(
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (widget.hidden)
+            IconButton(
               tooltip: concealed ? l10n.secretShow : l10n.secretHide,
               icon: Icon(
                 concealed
@@ -150,8 +171,14 @@ class _FieldState extends State<_Field> {
                     : Icons.visibility_off_outlined,
               ),
               onPressed: () => setState(() => _revealed = !_revealed),
-            )
-          : null,
+            ),
+          IconButton(
+            tooltip: l10n.copy,
+            icon: const Icon(Icons.copy_outlined),
+            onPressed: _copy,
+          ),
+        ],
+      ),
     );
   }
 }

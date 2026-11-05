@@ -124,5 +124,7 @@
   "generatorWords": "Sözcük sayısı: {count}",
   "generatorPassphraseNote": "Sözcükler EFF'nin İngilizce listesinden seçilir.",
   "generatorOpen": "Parola üret",
-  "settingsLicenses": "Lisanslar"
+  "settingsLicenses": "Lisanslar",
+  "copy": "Kopyala",
+  "copiedWillClear": "Kopyalandı. Pano {seconds} saniye sonra temizlenecek."
 }

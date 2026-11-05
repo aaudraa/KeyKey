@@ -240,6 +240,8 @@ Emülatör testleri `flutter test integration_test -d <emülatör>` ile çalış
 
 Emülatörlerde ekran kilidi yok. Parmak izi testi `resources/scripts/biometric-device-test.sh <emülatör>` ile çalışır: PIN ve parmak izi kaydeder, sanal parmağı dokundurur, ikinci parmak izini ekler ve sonunda PIN'i kaldırır. `flutter test integration_test` bu testi atlar. Kilit varken soğuk açılıştan sonra PIN girilene kadar uygulama başlatılamaz ve `adb` `Activity class does not exist` hatası verir; bu bir uygulama hatası değildir.
 
+Panonun arka planda temizlendiğini `resources/scripts/clipboard-device-test.sh <emülatör>` sınar: uygulamayı arka plana alıp geri getirir.
+
 Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bir ARM telefonda da test zorunlu.
 
 **Her fazın ortak bitiş koşulları:** `dart format`, `flutter analyze` ve `flutter test` temiz; CI yeşil; dört emülatörde elle denendi; bu belge güncel; kayıtlarda gizli bilgi yok.
@@ -324,8 +326,8 @@ Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bi
 - [x] Ekleme, düzenleme, çöp kutusu ve parola geçmişi
 - [x] Parola üretici: rastgele parola ve parola cümlesi, libsodium'un güvenli rastgele üreticisiyle
 - [x] Kendi güç ölçerimiz: entropi, yaygın parola listesi ve desen kontrolü
-- [ ] Güvenli pano: hassas işareti (Android 13+) ve 30 saniye sonra otomatik temizleme
-- [ ] Parolayı göster/gizle ve kilit durumuyla uyumlu ekran davranışı
+- [x] Güvenli pano: hassas işareti (Android 13+) ve 30 saniye sonra otomatik temizleme
+- [x] Parolayı göster/gizle ve kilit durumuyla uyumlu ekran davranışı
 
 **Bitti sayılması için:** 1000 kayıtla liste ve arama akıcı; pano uygulama arka plandayken de temizleniyor; düzenleme sonrası eski parola geçmişte; hiçbir kayıt düz metin olarak diske yazılmıyor (veritabanı dosyası incelenerek doğrulanır).
 
