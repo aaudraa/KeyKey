@@ -258,7 +258,7 @@ Parmak izi üçüncü kapıdır ve isteğe bağlıdır. Yuvası üst bilgide de�
 ## Pano
 
 - Kopyalanan parola hassas olarak işaretlenir (`EXTRA_IS_SENSITIVE`, Android 13+), böylece sistem önizlemede göstermez. Android 11 ve 12'de bu işaret yoktur.
-- Pano 30 saniye sonra temizlenir. Uygulama öndeyken bunu zamanlayıcı yapar, arka plandayken `AlarmManager` yapar.
+- Pano 30 saniye sonra temizlenir. Bunu önce zamanlayıcı yapar. Süreç durdurulduysa veya dondurulduysa, 10 saniye paylı kurulan bir `AlarmManager` alarmı yapar. Pay olmadan Android 11'de alarm zamanlayıcıdan önce çalıştı ve kullanıcının yeni kopyasını sildi.
 - Uygulama öndeyken pano yalnızca hâlâ bizim kopyamızı taşıyorsa silinir. Bunu anlamak için kopyalanan metnin kendisi değil, SHA-256 özeti tutulur. Panonun zaman damgası bu iş için güvenilir çıkmadı, cihaz testinde eşleşmedi.
 - Kasa kilitlenince pano temizlenmez. Parolayı kopyalayıp tarayıcıya geçmek uygulamayı arka plana alır ve kasayı kilitler, temizlemek kopyalamayı işe yaramaz hale getirirdi.
 
