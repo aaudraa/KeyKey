@@ -2,7 +2,7 @@
 
 KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-04 · **Şu anki faz:** Faz 2
+**Son güncelleme:** 2026-11-05 · **Şu anki faz:** Faz 3
 
 > [!IMPORTANT]
 > **Gerçek parolalarını Faz 8 bitene kadar KeyKey'e koyma.** Kasa biçimi o zamana kadar değişebilir ve güvenlik denetimi henüz yapılmadı.
@@ -15,8 +15,8 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 |---|---|---|---|---|---|
 | 0 | Repo ve GitHub altyapısı | S | — | `faz/0-repo-altyapisi` | Tamamlandı |
 | 1 | Flutter iskeleti ve CI | M | 0 | `faz/1-flutter-iskeleti` | Tamamlandı |
-| 2 | Kripto çekirdeği | L | 1 | `faz/2-kripto-cekirdegi` | Sırada |
-| 3 | Kasa, kilit ve biyometri | L | 2 | `faz/3-kasa-ve-kilit` | Bekliyor |
+| 2 | Kripto çekirdeği | L | 1 | `faz/2-kripto-cekirdegi` | Tamamlandı |
+| 3 | Kasa, kilit ve biyometri | L | 2 | `faz/3-kasa-ve-kilit` | Sırada |
 | 4 | Parola kasası | L | 3 | `faz/4-parola-kasasi` | Bekliyor |
 | 5 | 2FA doğrulayıcı | M | 3 | `faz/5-2fa-dogrulayici` | Bekliyor |
 | 6 | Otomatik doldurma | XL | 4 | `faz/6-otomatik-doldurma` | Bekliyor |
@@ -81,7 +81,7 @@ Sürümler ve lisanslar 2026-11-04 tarihinde pub.dev'den kontrol edildi. Faz ba�
 | Android 11, 14, 16 ve 17 emülatörlerinde çalıştırma | Argon2id ve XChaCha20-Poly1305 hepsinde çalışıyor. Yanlış bağlam verisiyle şifre çözmenin reddedilmesi ve HKDF, Android 14 dışındakilerde ayrıca denendi. |
 | Uygulamaya eklenen boyut | `arm64-v8a` için 336 KB, `x86_64` için 454 KB. |
 
-Argon2id (64 MiB, 3 geçiş) emülatörlerde 0,8-1,3 saniye sürdü. Bunlar bilgisayardaki `x86_64` emülatör değerleri; gerçek telefon süreleri Faz 2'de ölçülecek.
+Argon2id (64 MiB, 3 geçiş), Faz 2 ölçümlerinde emülatörlerde 97-152 ms, gerçek telefonda (Samsung Galaxy S20 FE) 233-235 ms sürdü. Ayrıntılar [güvenlik tasarımında](docs/guvenlik-tasarimi.md#ölçülen-süreler). Bu bölümün ilk halindeki 0,8-1,3 saniyelik emülatör değeri Faz 2 ölçümlerinde tekrarlanmadı, nedeni araştırılmadı.
 
 **Dikkat:** Proje klasörünün yolu kısa olmalı. Yol uzun olduğunda libsodium yedek bir derleme yöntemine geçiyor ve ikinci derlemede `PathExistsException` hatası veriyor. `C:\KeyKey` bu sorunu yaşamıyor.
 
@@ -198,6 +198,8 @@ Parmak izi ── Android Keystore anahtarı ────┘                    
 
 Biten bir fazda sonradan düzeltme gerekirse önce `main` o fazın branch'ine birleştirilir, düzeltme orada yapılır ve yeni bir PR açılır.
 
+Kök dizindeki `CLAUDE.md`, Claude Code'un her oturumda otomatik okuduğu kısa kural listesidir. Durum bilgisi içermez, plan ve durumun tek kaynağı bu belgedir.
+
 ### Commit mesajları
 
 Biçim: `<tür>(<alan>): <kısa açıklama>`. Alan isteğe bağlıdır.
@@ -274,16 +276,17 @@ Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bi
 
 **Amaç:** Her şeyin üzerine kurulacağı şifreleme katmanını arayüz olmadan, testlerle kanıtlanmış şekilde bitirmek.
 
-- [ ] libsodium'u başlatmak; Argon2id'yi arka planda çalıştırıp arayüzün donmasını önlemek
-- [ ] Argon2id parametre kalibrasyonu ve alt sınırı
-- [ ] Kasa anahtarı üretme; ana parola ve kurtarma anahtarıyla sarma
-- [ ] HKDF ile kayıt ve 2FA alt anahtarları
-- [ ] Ek doğrulama verisiyle kayıt şifreleme
-- [ ] Kasa üst bilgisi biçimi v1 (sürüm, tuz, parametreler, sarılmış anahtarlar)
-- [ ] Testler: yanlış parola, bozulmuş veri, yer değiştirilmiş kayıt, nonce tekrarı olmaması
-- [ ] Biçim uyumluluğu testi: bugün yazılan örnek dosya gelecekte de açılmalı
-- [ ] Tüm emülatörlerde ve mümkünse gerçek ARM telefonda süre ölçümü
-- [ ] `resources/docs/guvenlik-tasarimi.md`
+- [x] libsodium'u başlatmak; Argon2id'yi arka planda çalıştırıp arayüzün donmasını önlemek
+- [x] Argon2id parametre kalibrasyonu ve alt sınırı
+- [x] Kasa anahtarı üretme; ana parola ve kurtarma anahtarıyla sarma
+- [x] HKDF ile kayıt ve 2FA alt anahtarları
+- [x] Ek doğrulama verisiyle kayıt şifreleme
+- [x] Kasa üst bilgisi biçimi v1 (sürüm, tuz, parametreler, sarılmış anahtarlar)
+- [x] Testler: yanlış parola, bozulmuş veri, yer değiştirilmiş kayıt, nonce tekrarı olmaması
+- [x] Biçim uyumluluğu testi: bugün yazılan örnek dosya gelecekte de açılmalı
+- [x] Tüm emülatörlerde ve gerçek ARM telefonda (Samsung Galaxy S20 FE) süre ölçümü
+- [x] `resources/docs/guvenlik-tasarimi.md`
+- [x] Gizli bilgi taraması için `resources/gitleaks.toml`: izin yalnızca iki deneme dosyasını kapsıyor
 
 **Bitti sayılması için:** Tüm kripto testleri emülatörde geçiyor; tek bir bit değişen veri açılmıyor; yanlış parola temiz bir hata veriyor; tasarım belgesi kodla aynı.
 
