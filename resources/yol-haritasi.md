@@ -110,6 +110,7 @@ KeyKey/
 │   ├── core/
 │   │   ├── crypto/         Anahtar hiyerarşisi ve şifreleme
 │   │   ├── storage/        Veritabanı ve göçler
+│   │   ├── vault/          Kasa servisi: oluşturma, açma, bekleme
 │   │   └── platform/       Kotlin köprüleri (Keystore, pano)
 │   ├── features/
 │   │   ├── onboarding/     Kasa oluşturma

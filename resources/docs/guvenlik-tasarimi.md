@@ -164,7 +164,7 @@ Kasa, uygulamanın özel klasöründe tek bir SQLite dosyasında (`keykey.db`) d
 1. Ana parola iki kez girilir. En az 10 karakter (Unicode kod noktası) olmalıdır, geri alınamayacağı ayrıca söylenir.
 2. Güç göstergesi yalnızca kaba bir tahmindir: uzunluk, karakter çeşitliliği ve kısa bir sık kullanılan parola listesi. `zxcvbn` Dart 3 ile uyumlu olmadığı için kullanılmıyor.
 3. Kalibrasyondan sonra kasa anahtarı ve yuvalar üretilir. Bu sonuç **yalnızca bellekte** tutulur.
-4. Kurtarma anahtarı bir kez gösterilir ve kullanıcıya geri yazdırılır. Karşılaştırma, metin biçimi çözüldükten sonra baytlar üzerinde yapılır.
+4. Kurtarma anahtarı bir kez gösterilir ve kullanıcıya geri yazdırılır. Doğrulama metin karşılaştırmasıyla değil, yazılan anahtarla kurtarma yuvası gerçekten açılarak yapılır.
 5. Doğrulama geçince `vault_meta` satırı yazılır ve kasa açık hale gelir.
 
 **Yarım kasa olmaz:** Akış herhangi bir yerde yarıda kalırsa diskte hiçbir şey kalmaz, kullanıcı baştan başlar. `vault_meta` satırının varlığı, kasanın kurulu olduğunu gösteren tek işarettir.
