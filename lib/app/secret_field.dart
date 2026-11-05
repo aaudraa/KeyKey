@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:keykey/features/lock/presentation/auto_lock_scope.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Ana parola ve kurtarma anahtarı için metin kutusu.
@@ -17,8 +18,20 @@ class SecretField extends StatefulWidget {
     this.textInputAction = TextInputAction.done,
     this.onSubmitted,
     this.onChanged,
+    this.maxLines = 1,
+    this.multiline = false,
+    this.trailing,
     super.key,
   });
+
+  /// Göster düğmesinin yanına konan ek düğme, örneğin parola üretici.
+  final Widget? trailing;
+
+  /// Gizli olmayan kutularda birden fazla satıra izin verir.
+  final int maxLines;
+
+  /// `true` ise Enter yeni satır açar, notlar için.
+  final bool multiline;
 
   final TextEditingController controller;
   final String label;
@@ -50,7 +63,12 @@ class _SecretFieldState extends State<SecretField> {
       // paroladan sonra kutuya yeniden dokunmak zorunda kalmaz.
       readOnly: !widget.enabled,
       obscureText: widget.obscure && !_visible,
-      keyboardType: TextInputType.visiblePassword,
+      // visiblePassword, çoğu klavyede öneri ve öğrenmeyi de kapatır.
+      keyboardType: widget.multiline
+          ? TextInputType.multiline
+          : TextInputType.visiblePassword,
+      maxLines: widget.obscure ? 1 : widget.maxLines,
+      minLines: 1,
       textInputAction: widget.textInputAction,
       autocorrect: false,
       enableSuggestions: false,
@@ -58,7 +76,11 @@ class _SecretFieldState extends State<SecretField> {
       smartDashesType: SmartDashesType.disabled,
       smartQuotesType: SmartQuotesType.disabled,
       onSubmitted: widget.onSubmitted,
-      onChanged: widget.onChanged,
+      onChanged: (value) {
+        // Yazmak da kullanım sayılır, otomatik kilit süresi yenilenir.
+        AutoLockScope.reportActivity(context);
+        widget.onChanged?.call(value);
+      },
       decoration: InputDecoration(
         labelText: widget.label,
         errorText: widget.errorText,
@@ -66,15 +88,22 @@ class _SecretFieldState extends State<SecretField> {
         helperMaxLines: 3,
         errorMaxLines: 3,
         border: const OutlineInputBorder(),
-        suffixIcon: widget.obscure
-            ? IconButton(
-                tooltip: _visible ? l10n.secretHide : l10n.secretShow,
-                icon: Icon(
-                  _visible
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined,
-                ),
-                onPressed: () => setState(() => _visible = !_visible),
+        suffixIcon: widget.obscure || widget.trailing != null
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ?widget.trailing,
+                  if (widget.obscure)
+                    IconButton(
+                      tooltip: _visible ? l10n.secretHide : l10n.secretShow,
+                      icon: Icon(
+                        _visible
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                      ),
+                      onPressed: () => setState(() => _visible = !_visible),
+                    ),
+                ],
               )
             : null,
       ),

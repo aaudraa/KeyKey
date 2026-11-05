@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-private object BiometricApiPigeonUtils {
+private object PlatformApiPigeonUtils {
 
   fun wrapResult(result: Any?): List<Any?> {
     return listOf(result)
@@ -254,13 +254,13 @@ data class BiometricPromptTexts (
       return true
     }
     val other = other as BiometricPromptTexts
-    return BiometricApiPigeonUtils.deepEquals(this.title, other.title) && BiometricApiPigeonUtils.deepEquals(this.negativeButton, other.negativeButton)
+    return PlatformApiPigeonUtils.deepEquals(this.title, other.title) && PlatformApiPigeonUtils.deepEquals(this.negativeButton, other.negativeButton)
   }
 
   override fun hashCode(): Int {
     var result = javaClass.hashCode()
-    result = 31 * result + BiometricApiPigeonUtils.deepHash(this.title)
-    result = 31 * result + BiometricApiPigeonUtils.deepHash(this.negativeButton)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.title)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.negativeButton)
     return result
   }
   override fun toString(): String {
@@ -298,14 +298,14 @@ data class BiometricWrapResult (
       return true
     }
     val other = other as BiometricWrapResult
-    return BiometricApiPigeonUtils.deepEquals(this.status, other.status) && BiometricApiPigeonUtils.deepEquals(this.iv, other.iv) && BiometricApiPigeonUtils.deepEquals(this.cipherText, other.cipherText)
+    return PlatformApiPigeonUtils.deepEquals(this.status, other.status) && PlatformApiPigeonUtils.deepEquals(this.iv, other.iv) && PlatformApiPigeonUtils.deepEquals(this.cipherText, other.cipherText)
   }
 
   override fun hashCode(): Int {
     var result = javaClass.hashCode()
-    result = 31 * result + BiometricApiPigeonUtils.deepHash(this.status)
-    result = 31 * result + BiometricApiPigeonUtils.deepHash(this.iv)
-    result = 31 * result + BiometricApiPigeonUtils.deepHash(this.cipherText)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.status)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.iv)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.cipherText)
     return result
   }
   override fun toString(): String {
@@ -340,20 +340,20 @@ data class BiometricUnwrapResult (
       return true
     }
     val other = other as BiometricUnwrapResult
-    return BiometricApiPigeonUtils.deepEquals(this.status, other.status) && BiometricApiPigeonUtils.deepEquals(this.plainText, other.plainText)
+    return PlatformApiPigeonUtils.deepEquals(this.status, other.status) && PlatformApiPigeonUtils.deepEquals(this.plainText, other.plainText)
   }
 
   override fun hashCode(): Int {
     var result = javaClass.hashCode()
-    result = 31 * result + BiometricApiPigeonUtils.deepHash(this.status)
-    result = 31 * result + BiometricApiPigeonUtils.deepHash(this.plainText)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.status)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.plainText)
     return result
   }
   override fun toString(): String {
     return "BiometricUnwrapResult(status=$status, plainText=${plainText?.contentToString()})"
   }
 }
-private open class BiometricApiPigeonCodec : StandardMessageCodec() {
+private open class PlatformApiPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
       129.toByte() -> {
@@ -429,7 +429,7 @@ interface BiometricApi {
   companion object {
     /** The codec used by BiometricApi. */
     val codec: MessageCodec<Any?> by lazy {
-      BiometricApiPigeonCodec()
+      PlatformApiPigeonCodec()
     }
     /** Sets up an instance of `BiometricApi` to handle messages through the `binaryMessenger`. */
     @JvmOverloads
@@ -442,7 +442,7 @@ interface BiometricApi {
             val wrapped: List<Any?> = try {
               listOf(api.availability())
             } catch (exception: Throwable) {
-              BiometricApiPigeonUtils.wrapError(exception)
+              PlatformApiPigeonUtils.wrapError(exception)
             }
             reply.reply(wrapped)
           }
@@ -462,7 +462,7 @@ interface BiometricApi {
               val wrapped: List<Any?> = try {
                 listOf(api.wrap(plainTextArg, associatedDataArg, textsArg))
               } catch (exception: Throwable) {
-                BiometricApiPigeonUtils.wrapError(exception)
+                PlatformApiPigeonUtils.wrapError(exception)
               }
               reply.reply(wrapped)
             }
@@ -484,7 +484,7 @@ interface BiometricApi {
               val wrapped: List<Any?> = try {
                 listOf(api.unwrap(ivArg, cipherTextArg, associatedDataArg, textsArg))
               } catch (exception: Throwable) {
-                BiometricApiPigeonUtils.wrapError(exception)
+                PlatformApiPigeonUtils.wrapError(exception)
               }
               reply.reply(wrapped)
             }
@@ -501,7 +501,48 @@ interface BiometricApi {
               api.deleteKey()
               listOf(null)
             } catch (exception: Throwable) {
-              BiometricApiPigeonUtils.wrapError(exception)
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}
+/**
+ * Hassas metni panoya kopyalar ve süre dolunca temizler.
+ *
+ * Kurallar ve sınırlar güvenlik tasarımı belgesinin Pano bölümündedir.
+ *
+ * Generated interface from Pigeon that represents a handler of messages from Flutter.
+ */
+interface ClipboardApi {
+  fun copySensitive(text: String, clearAfterMillis: Long)
+
+  companion object {
+    /** The codec used by ClipboardApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      PlatformApiPigeonCodec()
+    }
+    /** Sets up an instance of `ClipboardApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: ClipboardApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.ClipboardApi.copySensitive$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val textArg = args[0] as String
+            val clearAfterMillisArg = args[1] as Long
+            val wrapped: List<Any?> = try {
+              api.copySensitive(textArg, clearAfterMillisArg)
+              listOf(null)
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
             }
             reply.reply(wrapped)
           }

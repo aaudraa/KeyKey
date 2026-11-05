@@ -12,10 +12,6 @@
   "@navSettings": {
     "description": "Bottom navigation label and title of the settings screen."
   },
-  "vaultPlaceholder": "Your passwords will be here soon.",
-  "@vaultPlaceholder": {
-    "description": "Temporary message on the vault screen until the feature exists."
-  },
   "authenticatorPlaceholder": "Your verification codes will be here soon.",
   "@authenticatorPlaceholder": {
     "description": "Temporary message on the two-factor screen until the feature exists."
@@ -278,5 +274,293 @@
   "biometricEnableFailed": "Fingerprint unlock could not be turned on.",
   "@biometricEnableFailed": {
     "description": "Shown when enabling fingerprint unlock failed."
+  },
+  "vaultSearch": "Search",
+  "@vaultSearch": {
+    "description": "Search field on the vault list."
+  },
+  "vaultSort": "Sort",
+  "@vaultSort": {
+    "description": "Tooltip of the sort menu."
+  },
+  "vaultSortName": "By name",
+  "@vaultSortName": {
+    "description": "Sort option."
+  },
+  "vaultSortRecent": "Recently changed",
+  "@vaultSortRecent": {
+    "description": "Sort option."
+  },
+  "vaultAdd": "Add",
+  "@vaultAdd": {
+    "description": "Button to add a password."
+  },
+  "vaultFavorites": "Favorites",
+  "@vaultFavorites": {
+    "description": "Filter chip."
+  },
+  "vaultEmpty": "No passwords yet. Tap Add to save your first one.",
+  "@vaultEmpty": {
+    "description": "Empty vault message."
+  },
+  "vaultNoResults": "Nothing matches.",
+  "@vaultNoResults": {
+    "description": "No search results."
+  },
+  "vaultUnreadable": "{count, plural, =1{1 entry could not be read. It was left untouched.} other{{count} entries could not be read. They were left untouched.}}",
+  "@vaultUnreadable": {
+    "description": "Warning about entries that could not be decrypted.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "loginNotFound": "This entry no longer exists.",
+  "@loginNotFound": {
+    "description": "Shown when an entry was deleted."
+  },
+  "loginFavorite": "Add to favorites",
+  "@loginFavorite": {
+    "description": "Tooltip."
+  },
+  "loginUnfavorite": "Remove from favorites",
+  "@loginUnfavorite": {
+    "description": "Tooltip."
+  },
+  "loginEdit": "Edit",
+  "@loginEdit": {
+    "description": "Tooltip."
+  },
+  "loginMoveToTrash": "Move to trash",
+  "@loginMoveToTrash": {
+    "description": "Tooltip."
+  },
+  "loginMovedToTrash": "Moved to trash.",
+  "@loginMovedToTrash": {
+    "description": "Snack bar after moving to trash."
+  },
+  "loginUndo": "Undo",
+  "@loginUndo": {
+    "description": "Snack bar action."
+  },
+  "loginName": "Name",
+  "@loginName": {
+    "description": "Field label."
+  },
+  "loginUsername": "Username",
+  "@loginUsername": {
+    "description": "Field label."
+  },
+  "loginPassword": "Password",
+  "@loginPassword": {
+    "description": "Field label."
+  },
+  "loginUrl": "Website",
+  "@loginUrl": {
+    "description": "Field label."
+  },
+  "loginFolder": "Folder",
+  "@loginFolder": {
+    "description": "Field label."
+  },
+  "loginNotes": "Notes",
+  "@loginNotes": {
+    "description": "Field label."
+  },
+  "loginHistory": "{count, plural, =1{Password history (1)} other{Password history ({count})}}",
+  "@loginHistory": {
+    "description": "Expandable section with old passwords.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "loginNewTitle": "New password",
+  "@loginNewTitle": {
+    "description": "Title of the add screen."
+  },
+  "loginEditTitle": "Edit",
+  "@loginEditTitle": {
+    "description": "Title of the edit screen."
+  },
+  "loginSave": "Save",
+  "@loginSave": {
+    "description": "Save button."
+  },
+  "loginSaveFailed": "The entry could not be saved.",
+  "@loginSaveFailed": {
+    "description": "Error message."
+  },
+  "loginDiscardTitle": "Discard your changes?",
+  "@loginDiscardTitle": {
+    "description": "Dialog when leaving with unsaved changes."
+  },
+  "loginKeepEditing": "Keep editing",
+  "@loginKeepEditing": {
+    "description": "Dialog button."
+  },
+  "loginDiscard": "Discard",
+  "@loginDiscard": {
+    "description": "Dialog button."
+  },
+  "loginAddUrl": "Add website",
+  "@loginAddUrl": {
+    "description": "Button."
+  },
+  "loginRemoveUrl": "Remove website",
+  "@loginRemoveUrl": {
+    "description": "Tooltip."
+  },
+  "loginFieldName": "Field name",
+  "@loginFieldName": {
+    "description": "Custom field label."
+  },
+  "loginFieldValue": "Value",
+  "@loginFieldValue": {
+    "description": "Custom field label."
+  },
+  "loginFieldHidden": "Hide value",
+  "@loginFieldHidden": {
+    "description": "Tooltip."
+  },
+  "loginFieldVisible": "Show value by default",
+  "@loginFieldVisible": {
+    "description": "Tooltip."
+  },
+  "loginRemoveField": "Remove field",
+  "@loginRemoveField": {
+    "description": "Tooltip."
+  },
+  "loginAddField": "Add field",
+  "@loginAddField": {
+    "description": "Button."
+  },
+  "trashTitle": "Trash",
+  "@trashTitle": {
+    "description": "Title of the trash screen."
+  },
+  "trashInfo": "Entries in the trash are deleted permanently after {days} days.",
+  "@trashInfo": {
+    "description": "Explains the retention.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "trashEmpty": "The trash is empty.",
+  "@trashEmpty": {
+    "description": "Empty trash message."
+  },
+  "trashRestore": "Restore",
+  "@trashRestore": {
+    "description": "Tooltip."
+  },
+  "trashDelete": "Delete permanently",
+  "@trashDelete": {
+    "description": "Tooltip and dialog button."
+  },
+  "trashDeleteTitle": "Delete permanently?",
+  "@trashDeleteTitle": {
+    "description": "Dialog title."
+  },
+  "trashDeleteMessage": "\"{name}\" will be deleted and cannot be recovered.",
+  "@trashDeleteMessage": {
+    "description": "Dialog text.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "generatorPassword": "Password",
+  "@generatorPassword": {
+    "description": "Generator mode."
+  },
+  "generatorPassphrase": "Passphrase",
+  "@generatorPassphrase": {
+    "description": "Generator mode."
+  },
+  "generatorBits": "About {bits} bits of randomness",
+  "@generatorBits": {
+    "description": "Entropy of the generated value.",
+    "placeholders": {
+      "bits": {
+        "type": "int"
+      }
+    }
+  },
+  "generatorRegenerate": "Generate again",
+  "@generatorRegenerate": {
+    "description": "Tooltip."
+  },
+  "generatorUse": "Use this",
+  "@generatorUse": {
+    "description": "Button that returns the generated value."
+  },
+  "generatorLength": "Length: {length}",
+  "@generatorLength": {
+    "description": "Slider label.",
+    "placeholders": {
+      "length": {
+        "type": "int"
+      }
+    }
+  },
+  "generatorLowercase": "Lowercase letters",
+  "@generatorLowercase": {
+    "description": "Switch."
+  },
+  "generatorUppercase": "Uppercase letters",
+  "@generatorUppercase": {
+    "description": "Switch."
+  },
+  "generatorDigits": "Digits",
+  "@generatorDigits": {
+    "description": "Switch."
+  },
+  "generatorSymbols": "Symbols",
+  "@generatorSymbols": {
+    "description": "Switch."
+  },
+  "generatorNeedClass": "Choose at least one character type.",
+  "@generatorNeedClass": {
+    "description": "Shown when every switch is off."
+  },
+  "generatorWords": "Words: {count}",
+  "@generatorWords": {
+    "description": "Slider label.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "generatorPassphraseNote": "Words come from the EFF English word list.",
+  "@generatorPassphraseNote": {
+    "description": "Explains the word list."
+  },
+  "generatorOpen": "Generate password",
+  "@generatorOpen": {
+    "description": "Tooltip on the password field."
+  },
+  "settingsLicenses": "Licenses",
+  "@settingsLicenses": {
+    "description": "Settings entry that opens the license page."
+  },
+  "copy": "Copy",
+  "@copy": {
+    "description": "Tooltip of the copy button."
+  },
+  "copiedWillClear": "Copied. The clipboard will be cleared in {seconds} seconds.",
+  "@copiedWillClear": {
+    "description": "Snack bar after copying a value.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
   }
 }

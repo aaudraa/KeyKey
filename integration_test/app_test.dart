@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:keykey/app/app.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../test/support/fake_vault_service.dart';
@@ -27,6 +28,9 @@ void main() {
       key: UniqueKey(),
       overrides: [
         vaultServiceProvider.overrideWithValue(service),
+        loginRepositoryFactoryProvider.overrideWithValue(
+          (_) => FakeLoginRepository(),
+        ),
         initialVaultStatusProvider.overrideWithValue(
           VaultOpen(service.newSession()),
         ),

@@ -2,9 +2,10 @@ import 'package:pigeon/pigeon.dart';
 
 @ConfigurePigeon(
   PigeonOptions(
-    dartOut: 'lib/core/platform/biometric_api.g.dart',
+    dartOut: 'lib/core/platform/platform_api.g.dart',
     dartPackageName: 'keykey',
-    kotlinOut: 'android/app/src/main/kotlin/io/github/aaudraa/keykey/BiometricApi.g.kt',
+    kotlinOut:
+        'android/app/src/main/kotlin/io/github/aaudraa/keykey/PlatformApi.g.kt',
     kotlinOptions: KotlinOptions(package: 'io.github.aaudraa.keykey'),
   ),
 )
@@ -60,4 +61,12 @@ abstract class BiometricApi {
   );
 
   void deleteKey();
+}
+
+/// Hassas metni panoya kopyalar ve süre dolunca temizler.
+///
+/// Kurallar ve sınırlar güvenlik tasarımı belgesinin Pano bölümündedir.
+@HostApi()
+abstract class ClipboardApi {
+  void copySensitive(String text, int clearAfterMillis);
 }

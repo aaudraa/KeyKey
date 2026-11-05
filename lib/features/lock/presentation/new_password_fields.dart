@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/core/vault/password_policy.dart';
+import 'package:keykey/features/generator/presentation/password_strength_meter.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Yeni ana parola: iki kutu ve güç göstergesi.
@@ -53,7 +54,7 @@ class _NewPasswordFieldsState extends State<NewPasswordFields> {
           onChanged: _changed,
         ),
         const SizedBox(height: 8),
-        _StrengthMeter(strength: PasswordPolicy.strengthOf(password)),
+        PasswordStrengthMeter(password: password),
         const SizedBox(height: 16),
         SecretField(
           controller: widget.confirmation,
@@ -62,37 +63,6 @@ class _NewPasswordFieldsState extends State<NewPasswordFields> {
           enabled: widget.enabled,
           onChanged: _changed,
           onSubmitted: (_) => widget.onSubmitted?.call(),
-        ),
-      ],
-    );
-  }
-}
-
-class _StrengthMeter extends StatelessWidget {
-  const new({required this.strength});
-
-  final PasswordStrength strength;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final colors = Theme.of(context).colorScheme;
-    final (value, color, label) = switch (strength) {
-      PasswordStrength.tooShort => (0.1, colors.error, l10n.strengthTooShort),
-      PasswordStrength.weak => (0.35, colors.error, l10n.strengthWeak),
-      PasswordStrength.fair => (0.65, colors.tertiary, l10n.strengthFair),
-      PasswordStrength.strong => (1.0, colors.primary, l10n.strengthStrong),
-    };
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ExcludeSemantics(
-          child: LinearProgressIndicator(value: value, color: color),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          '${l10n.strengthTitle}: $label',
-          style: Theme.of(context).textTheme.bodySmall,
         ),
       ],
     );

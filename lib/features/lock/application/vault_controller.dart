@@ -65,7 +65,20 @@ class VaultController extends Notifier<VaultStatus> {
   /// Açık oturum. `onDispose` içinde `state` okunamadığı için ayrıca tutulur.
   VaultSession? _session;
 
+  final Set<void Function()> _lockListeners = {};
+
   VaultService get _service => ref.read(vaultServiceProvider);
+
+  /// Kilitlenirken eşzamanlı çağrılır.
+  ///
+  /// Çözülmüş veri tutanlar bunu kullanmalıdır: Riverpod bağımlıları sonraki
+  /// karede yeniler, uygulama arka plandayken ise kare çizilmez. Yalnızca
+  /// `ref.watch` kullanan bir durum kilitten sonra da bellekte kalırdı.
+  void addLockListener(void Function() listener) =>
+      _lockListeners.add(listener);
+
+  void removeLockListener(void Function() listener) =>
+      _lockListeners.remove(listener);
 
   @override
   VaultStatus build() {
@@ -236,6 +249,9 @@ class VaultController extends Notifier<VaultStatus> {
   /// açma işleminin sonucunu geçersiz kılar.
   void lock() {
     _lockGeneration++;
+    for (final listener in _lockListeners.toList()) {
+      listener();
+    }
     final session = _session;
     if (session == null) return;
     _session = null;

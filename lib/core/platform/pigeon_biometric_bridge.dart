@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:keykey/core/platform/biometric_api.g.dart';
+import 'package:keykey/core/platform/platform_api.g.dart';
 import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 

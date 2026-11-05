@@ -19,6 +19,14 @@ class AutoLockScope extends ConsumerStatefulWidget {
   final Widget child;
   final Duration idleTimeout;
 
+  /// Dokunma dışındaki kullanımı bildirir, örneğin klavyeyle yazmayı.
+  ///
+  /// Klavyeden gelen tuşlar uygulamaya dokunma olarak ulaşmaz, bu yüzden
+  /// metin kutuları bunu çağırır.
+  static void reportActivity(BuildContext context) {
+    context.findAncestorStateOfType<_AutoLockScopeState>()?._restart();
+  }
+
   @override
   ConsumerState<AutoLockScope> createState() => _AutoLockScopeState();
 }
@@ -53,6 +61,8 @@ class _AutoLockScopeState extends ConsumerState<AutoLockScope>
     }
   }
 
+  void _restart() => _syncTimer(ref.read(vaultControllerProvider));
+
   void _syncTimer(VaultStatus status) {
     _idleTimer?.cancel();
     _idleTimer = switch (status) {
@@ -69,7 +79,7 @@ class _AutoLockScopeState extends ConsumerState<AutoLockScope>
     ref.listen(vaultControllerProvider, (_, status) => _syncTimer(status));
     return Listener(
       behavior: HitTestBehavior.translucent,
-      onPointerDown: (_) => _syncTimer(ref.read(vaultControllerProvider)),
+      onPointerDown: (_) => _restart(),
       child: widget.child,
     );
   }

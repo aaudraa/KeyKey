@@ -144,6 +144,33 @@ kayıt = sürüm (1 bayt, 0x01) || nonce (24 bayt) || şifreli metin ve etiket
 - **Anahtar:** Tür `otp` ise 2FA anahtarı, diğerlerinde kayıt anahtarı.
 - **AD alanları:** `keykey/v1/record`, `vaultId`, kayıt kimliği (16 bayt), tür.
 
+### Parola kaydının içeriği
+
+Tür `login` olan kayıtların düz metni, şifrelemeden önce şu JSON'dur:
+
+```json
+{
+  "version": 1,
+  "name": "Örnek",
+  "username": "kullanici@example.com",
+  "password": "...",
+  "urls": ["https://example.com"],
+  "notes": "",
+  "customFields": [{ "name": "PIN", "value": "...", "hidden": true }],
+  "favorite": false,
+  "folder": null,
+  "trashedAt": null,
+  "passwordHistory": [{ "password": "...", "changedAt": 1730000000000 }]
+}
+```
+
+- Favori, klasör, çöp kutusu ve geçmiş de şifreli içeriktedir. Dosyayı ele geçiren biri kayıtların nasıl düzenlendiğini göremez. Klasörlerin ayrı bir tablosu yoktur, klasör listesi kayıtlardan çıkarılır.
+- Zaman değerleri 1970'ten beri geçen milisaniyedir.
+- Okurken doğrulama katıdır: bilinmeyen `version`, eksik alan, fazla alan veya yanlış tür reddedilir.
+- **Parola geçmişi:** Parola değişince eskisi başa eklenir, en fazla 10 tane tutulur.
+- **Çöp kutusu:** Silinen kayıt önce çöp kutusuna gider ve 30 gün sonra kasa açıkken kalıcı olarak silinir. Kalıcı silme de `secure_delete` ile yapılır.
+- **Okunamayan kayıt:** Bir kayıt açılamazsa liste düşmez. Kayda dokunulmaz, kullanıcıya kaç kaydın okunamadığı söylenir.
+
 ## Depolama
 
 Kasa, uygulamanın özel klasöründe tek bir SQLite dosyasında (`keykey.db`) durur. Android yedeklemesi ve cihaz aktarımı kapalıdır. Dosyanın tamamı şifrelenmez, koruma kayıt düzeyindeki şifrelemeden gelir. Bu yüzden SQLCipher gerekmiyor ve şifresiz kalan alanlar yukarıdaki listeyle sınırlı kalıyor.
@@ -228,6 +255,27 @@ Parmak izi üçüncü kapıdır ve isteğe bağlıdır. Yuvası üst bilgide de�
 
 **Katman istisnası:** Kasa anahtarının ham bayta döndüğü tek yer bu köprüdür. Dart ile Kotlin arasında geçerken Dart ve JVM belleğinde kopyalar oluşur. Sarmalarken Kotlin aldığı diziyi, Dart da gönderdiği kopyayı sıfırlar. Açarken ise kopyalar sıfırlanamaz: Kotlin'in çözdüğü diziyi köprü fonksiyon döndükten sonra kodlar, Dart'a gelen kanal tamponu da salt okunurdur. Bu kopyalar çöp toplayıcı silene kadar JVM ve Dart belleğinde kalabilir. Yalnızca kasa açılırken veya açıkken oluşurlar; o sırada anahtar zaten bellektedir ve root yetkili cihaz tehdit modelinin dışındadır.
 
+## Pano
+
+- Kopyalanan parola hassas olarak işaretlenir (`EXTRA_IS_SENSITIVE`, Android 13+), böylece sistem önizlemede göstermez. Android 11 ve 12'de bu işaret yoktur.
+- Pano 30 saniye sonra temizlenir. Bunu önce zamanlayıcı yapar. Süreç durdurulduysa veya dondurulduysa, 10 saniye paylı kurulan bir `AlarmManager` alarmı yapar. Pay olmadan Android 11'de alarm zamanlayıcıdan önce çalıştı ve kullanıcının yeni kopyasını sildi.
+- Pano okunabiliyorsa yalnızca hâlâ bizim kopyamızı taşıyorsa silinir. Bunu anlamak için kopyalanan metnin kendisi değil, SHA-256 özeti tutulur. Panonun zaman damgası bu iş için güvenilir çıkmadı, cihaz testinde eşleşmedi. Okunamıyorsa, örneğin uygulama arka plandaysa veya Android o an izin vermiyorsa, silinir. Android 14 emülatöründe uygulama öndeyken de zaman zaman okunamadı.
+- Yeni bir kopyalama öncekinin süresini sıfırlar.
+- Kasa kilitlenince pano temizlenmez. Parolayı kopyalayıp tarayıcıya geçmek uygulamayı arka plana alır ve kasayı kilitler, temizlemek kopyalamayı işe yaramaz hale getirirdi.
+
+**Sınırlar:**
+
+1. Android arka plandaki uygulamaya panoyu okutmaz. Kullanıcı bu sürede başka bir şey kopyaladıysa onu da silebiliriz.
+2. Alarm tam zamanında çalışmayabilir. Android, kesin alarm izni olmadan onu geciktirebilir. Cihaz testi, süreç ayaktayken arka planda temizlendiğini doğruluyor; sürecin kapatıldığı durum yalnızca alarma dayanıyor ve otomatik test edilmedi. Bu izni almıyoruz, çünkü parolanın panoda birkaç dakika daha kalması, izin listesini büyütmeye değmez.
+3. O sürede panoyu okuyan etkin klavye veya kötü amaçlı uygulama parolayı görebilir. Bu, [tehdit modelinde](../yol-haritasi.md#tehdit-modeli) "kısmen" olarak yazıyor.
+
+## Parola üretici ve güç tahmini
+
+- Bütün rastgelelik `randombytes_uniform` ile üretilir, modülo eğilimi yoktur.
+- **Rastgele parola:** Seçilen her karakter sınıfından en az bir karakter bulunur. Bu, sonucu çok az daraltır, gösterilen entropi hesabı bunu göz ardı eder.
+- **Parola cümlesi:** [EFF büyük sözcük listesi](https://www.eff.org/dice) (7776 İngilizce sözcük, CC BY 3.0), sözcük başına yaklaşık 12,9 bit. Varsayılan 6 sözcük, yaklaşık 77 bit. Denetlenmiş bir Türkçe liste bulamadığımız için Türkçe seçenek yok.
+- **Güç tahmini:** Uzunluk ve karakter çeşitliliğinden kaba bir entropi hesaplanır. Yaygın parola listesi, klavye dizileri, ardışık karakterler, tekrarlar ve tarihler bunu düşürür. Yaygın parola listesi [SecLists](https://github.com/danielmiessler/SecLists) (MIT) kaynaklıdır. Bu yine bir tahmindir, gerçek gücü ölçmez.
+
 ## Hata davranışı
 
 | Durum | Hata | Anlamı |
@@ -246,6 +294,8 @@ Hata mesajlarına hiçbir zaman parola, anahtar veya düz metin yazılmaz.
 
 - Anahtarlar libsodium'un korumalı belleğinde (`SecureKey`) tutulur, kullanım sonrası `dispose` ile silinir.
 - Parola baytları kullanıldıktan sonra sıfırlanır.
+
+Kasa açıkken arama yapılabilsin diye kayıtların tamamı çözülüp bellekte tutulur. Kilitlenince bunlara ait bütün durumlar bırakılır.
 
 **Sınır:** Düz metne çözülen kayıtlar ve metin kutusundan gelen ana parola Dart `String` olarak bellekte kalır. Dart `String`'leri değiştirilemez ve çöp toplayıcı ne zaman sileceğini garanti etmez. Ömürlerini kısa tutarız, ama silindiklerini garanti edemeyiz.
 

@@ -3,11 +3,19 @@ import 'package:keykey/core/crypto/vault_crypto.dart';
 import 'package:keykey/core/crypto/vault_header.dart';
 import 'package:sodium/sodium_sumo.dart';
 
+/// Kasa kilitliyken anahtar gerektiren bir işlem istendi.
+final class VaultLockedException implements Exception {
+  const new();
+
+  @override
+  String toString() => 'VaultLockedException: Kasa kilitli.';
+}
+
 /// Açık bir kasa. Anahtarlar korumalı bellektedir ve kilitlenince silinir.
 ///
 /// Silinmiş bir `SecureKey`'e dokunmak Dart hatası vermez, serbest bırakılmış
 /// belleğe eriştiği için süreci düşürür. Bu yüzden anahtarlara kontrolden
-/// geçerek ulaşılır, kilitten sonra erişim [StateError] fırlatır.
+/// geçerek ulaşılır, kilitten sonra erişim [VaultLockedException] fırlatır.
 final class VaultSession {
   new({required this.header, required this._vaultKey, required this._records});
 
@@ -39,7 +47,7 @@ final class VaultSession {
   }
 
   void _ensureOpen() {
-    if (_disposed) throw StateError('Kasa kilitli.');
+    if (_disposed) throw const VaultLockedException();
   }
 }
 

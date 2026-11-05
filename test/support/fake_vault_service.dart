@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,10 +9,15 @@ import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/crypto/record_cipher.dart';
 import 'package:keykey/core/crypto/vault_crypto.dart';
 import 'package:keykey/core/crypto/vault_header.dart';
+import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/core/vault/vault_session.dart';
+import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/vault/application/logins_controller.dart';
+import 'package:keykey/features/vault/data/login_content.dart';
+import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../core/storage/test_data.dart';
@@ -167,20 +175,120 @@ class FakeVaultService implements VaultService {
   }
 }
 
+/// Kopyalananları kaydeder. Gerçek panoyu cihaz testi sınar.
+class RecordingClipboard implements SensitiveClipboard {
+  final List<String> copied = [];
+
+  @override
+  Future<void> copy(String text) async => copied.add(text);
+}
+
+/// Bellekte çalışan kayıt deposu. Şifrelemeyi depo testleri sınar.
+class FakeLoginRepository implements LoginRepository {
+  new({List<LoginItem>? items, this.unreadableCount = 0}) : items = items ?? [];
+
+  final List<LoginItem> items;
+  final int unreadableCount;
+  DateTime now = DateTime.utc(2026, 11, 5, 12);
+  var _nextId = 1;
+
+  static LoginItem item(
+    LoginContent content, {
+    int id = 0,
+    DateTime? updatedAt,
+  }) {
+    final bytes = Uint8List(16)..[15] = id;
+    return LoginItem(
+      id: bytes,
+      content: content,
+      createdAt: DateTime.utc(2026),
+      updatedAt: updatedAt ?? DateTime.utc(2026),
+    );
+  }
+
+  @override
+  Future<LoadedLogins> loadAll() async =>
+      LoadedLogins(items: [...items], unreadableCount: unreadableCount);
+
+  @override
+  Future<LoginItem> add(LoginContent content) async {
+    final created = LoginItem(
+      id: Uint8List(16)
+        ..[0] = 200
+        ..[15] = _nextId++,
+      content: content,
+      createdAt: now,
+      updatedAt: now,
+    );
+    items.add(created);
+    return created;
+  }
+
+  @override
+  Future<LoginItem> update(LoginItem item, LoginContent edited) =>
+      _replace(item, item.content.applyEdit(edited, now));
+
+  @override
+  Future<LoginItem> updateMetadata(LoginItem item, LoginContent content) =>
+      _replace(item, content);
+
+  @override
+  Future<void> deletePermanently(LoginItem item) async {
+    items.removeWhere((other) => listEquals(other.id, item.id));
+  }
+
+  @override
+  Future<List<LoginItem>> purgeExpiredTrash(List<LoginItem> items) async =>
+      items;
+
+  Future<LoginItem> _replace(LoginItem item, LoginContent content) async {
+    final updated = LoginItem(
+      id: item.id,
+      content: content,
+      createdAt: item.createdAt,
+      updatedAt: now,
+    );
+    final index = items.indexWhere((other) => listEquals(other.id, item.id));
+    items[index] = updated;
+    return updated;
+  }
+}
+
+// Büyük varlık dosyalarını Flutter ayrı isolate'te okur, sahte saatli
+// testlerde bu tamamlanmaz. Testler listeleri doğrudan dosyadan alır.
+final List<String> _effWords = Wordlists.parseEff(
+  File(Wordlists.effPath).readAsStringSync(),
+);
+final Set<String> _commonPasswords = Wordlists.parseCommon(
+  File(Wordlists.commonPath).readAsStringSync(),
+);
+
 /// Uygulamayı verilen kasa durumuyla açar.
 Future<void> pumpKeyKey(
   WidgetTester tester, {
   required VaultStatus status,
-  required VaultService service,
+  required FakeVaultService service,
+  FakeLoginRepository? logins,
+  RecordingClipboard? clipboard,
   Locale locale = const Locale('tr'),
 }) async {
   tester.platformDispatcher.localesTestValue = [locale];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+  final repository = logins ?? FakeLoginRepository();
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         vaultServiceProvider.overrideWithValue(service),
         initialVaultStatusProvider.overrideWithValue(status),
+        loginRepositoryFactoryProvider.overrideWithValue((_) => repository),
+        randomSourceProvider.overrideWithValue(
+          SodiumRandomSource(service.sodium),
+        ),
+        sensitiveClipboardProvider.overrideWithValue(
+          clipboard ?? RecordingClipboard(),
+        ),
+        effWordlistProvider.overrideWith((ref) async => _effWords),
+        commonPasswordsProvider.overrideWith((ref) async => _commonPasswords),
       ],
       child: const KeyKeyApp(),
     ),

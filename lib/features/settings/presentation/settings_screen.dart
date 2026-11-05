@@ -104,6 +104,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: Text(l10n.settingsLockNow),
             onTap: () => ref.read(vaultControllerProvider.notifier).lock(),
           ),
+          ListTile(
+            leading: const Icon(Icons.description_outlined),
+            title: Text(l10n.settingsLicenses),
+            onTap: () =>
+                showLicensePage(context: context, applicationName: 'KeyKey'),
+          ),
         ],
       ),
     );

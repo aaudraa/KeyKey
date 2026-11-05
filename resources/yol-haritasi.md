@@ -2,7 +2,7 @@
 
 KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-05 · **Şu anki faz:** Faz 4
+**Son güncelleme:** 2026-11-05 · **Şu anki faz:** Faz 5
 
 > [!IMPORTANT]
 > **Gerçek parolalarını Faz 8 bitene kadar KeyKey'e koyma.** Kasa biçimi o zamana kadar değişebilir ve güvenlik denetimi henüz yapılmadı.
@@ -17,8 +17,8 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 | 1 | Flutter iskeleti ve CI | M | 0 | `faz/1-flutter-iskeleti` | Tamamlandı |
 | 2 | Kripto çekirdeği | L | 1 | `faz/2-kripto-cekirdegi` | Tamamlandı |
 | 3 | Kasa, kilit ve biyometri | L | 2 | `faz/3-kasa-ve-kilit` | Tamamlandı |
-| 4 | Parola kasası | L | 3 | `faz/4-parola-kasasi` | Sırada |
-| 5 | 2FA doğrulayıcı | M | 3 | `faz/5-2fa-dogrulayici` | Bekliyor |
+| 4 | Parola kasası | L | 3 | `faz/4-parola-kasasi` | Tamamlandı |
+| 5 | 2FA doğrulayıcı | M | 3 | `faz/5-2fa-dogrulayici` | Sırada |
 | 6 | Otomatik doldurma | XL | 4 | `faz/6-otomatik-doldurma` | Bekliyor |
 | 7 | Yedekleme, içe ve dışa aktarma | L | 4, 5 | `faz/7-yedekleme` | Bekliyor |
 | 8 | Güvenlik sertleştirme ve denetim | L | 6, 7 | `faz/8-guvenlik-denetimi` | Bekliyor |
@@ -57,6 +57,7 @@ Sürümler ve lisanslar 2026-11-05 tarihinde pub.dev'den kontrol edildi. Faz ba�
 | Dart-Kotlin köprüsü | `pigeon` | 29.1.0 | BSD-3 | Elle yazılan kanallara göre tür güvenli. |
 | Parmak izi | `androidx.biometric` | 1.1.0 | Apache-2.0 | Google'ın kitaplığı. Son kararlı sürüm, daha yenileri beta. |
 | Köprü çalışma zamanı | `kotlinx-coroutines-android` | 1.11.0 | Apache-2.0 | `pigeon`'un ürettiği Kotlin kodu bunu gerektiriyor. |
+| Sözcük listeleri | EFF büyük liste, SecLists 10k | — | CC BY 3.0, MIT | Veri olarak; kaynak ve özet değerleri `resources/assets/wordlists/KAYNAKLAR.md` içinde. |
 | Kod kalitesi | `very_good_analysis` | 11.0.0 | MIT | Sıkı lint kuralları. |
 | Test | `flutter_test`, `integration_test` | SDK | BSD-3 | Birim, widget ve emülatör testleri. Taklit nesneler gerektiğinde `mocktail` eklenecek. |
 
@@ -239,6 +240,8 @@ Emülatör testleri `flutter test integration_test -d <emülatör>` ile çalış
 
 Emülatörlerde ekran kilidi yok. Parmak izi testi `resources/scripts/biometric-device-test.sh <emülatör>` ile çalışır: PIN ve parmak izi kaydeder, sanal parmağı dokundurur, ikinci parmak izini ekler ve sonunda PIN'i kaldırır. `flutter test integration_test` bu testi atlar. Kilit varken soğuk açılıştan sonra PIN girilene kadar uygulama başlatılamaz ve `adb` `Activity class does not exist` hatası verir; bu bir uygulama hatası değildir.
 
+Panonun arka planda temizlendiğini `resources/scripts/clipboard-device-test.sh <emülatör>` sınar: uygulamayı arka plana alıp geri getirir.
+
 Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bir ARM telefonda da test zorunlu.
 
 **Her fazın ortak bitiş koşulları:** `dart format`, `flutter analyze` ve `flutter test` temiz; CI yeşil; dört emülatörde elle denendi; bu belge güncel; kayıtlarda gizli bilgi yok.
@@ -316,15 +319,15 @@ Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bi
 
 **Amaç:** Parolaların saklandığı, arandığı ve üretildiği ana ekran.
 
-- [ ] Kayıt modeli: ad, kullanıcı adı, parola, birden çok URL, not, özel alanlar
-- [ ] Kilitlenince çözülmüş kayıt tutan bütün durumların temizlendiğini test etmek (Faz 3'te henüz çözülmüş kayıt tutulmuyor)
-- [ ] Otomatik kilit süresini klavye kullanımında da yenilemek (Faz 3'te yalnızca dokunmayla yenileniyor)
-- [ ] Liste, arama, favoriler, klasörler ve sıralama (arama çözülmüş veri üzerinde bellekte yapılır)
-- [ ] Ekleme, düzenleme, çöp kutusu ve parola geçmişi
-- [ ] Parola üretici: rastgele parola ve parola cümlesi, libsodium'un güvenli rastgele üreticisiyle
-- [ ] Kendi güç ölçerimiz: entropi, yaygın parola listesi ve desen kontrolü
-- [ ] Güvenli pano: hassas işareti (Android 13+) ve 30 saniye sonra otomatik temizleme
-- [ ] Parolayı göster/gizle ve kilit durumuyla uyumlu ekran davranışı
+- [x] Kayıt modeli: ad, kullanıcı adı, parola, birden çok URL, not, özel alanlar
+- [x] Kilitlenince çözülmüş kayıt tutan bütün durumların temizlendiğini test etmek (Faz 3'te henüz çözülmüş kayıt tutulmuyor)
+- [x] Otomatik kilit süresini klavye kullanımında da yenilemek (Faz 3'te yalnızca dokunmayla yenileniyor)
+- [x] Liste, arama, favoriler, klasörler ve sıralama (arama çözülmüş veri üzerinde bellekte yapılır)
+- [x] Ekleme, düzenleme, çöp kutusu ve parola geçmişi
+- [x] Parola üretici: rastgele parola ve parola cümlesi, libsodium'un güvenli rastgele üreticisiyle
+- [x] Kendi güç ölçerimiz: entropi, yaygın parola listesi ve desen kontrolü
+- [x] Güvenli pano: hassas işareti (Android 13+) ve 30 saniye sonra otomatik temizleme
+- [x] Parolayı göster/gizle ve kilit durumuyla uyumlu ekran davranışı
 
 **Bitti sayılması için:** 1000 kayıtla liste ve arama akıcı; pano uygulama arka plandayken de temizleniyor; düzenleme sonrası eski parola geçmişte; hiçbir kayıt düz metin olarak diske yazılmıyor (veritabanı dosyası incelenerek doğrulanır).
 
