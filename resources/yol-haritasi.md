@@ -2,7 +2,7 @@
 
 KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-05 · **Şu anki faz:** Faz 3
+**Son güncelleme:** 2026-11-05 · **Şu anki faz:** Faz 4
 
 > [!IMPORTANT]
 > **Gerçek parolalarını Faz 8 bitene kadar KeyKey'e koyma.** Kasa biçimi o zamana kadar değişebilir ve güvenlik denetimi henüz yapılmadı.
@@ -16,8 +16,8 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 | 0 | Repo ve GitHub altyapısı | S | — | `faz/0-repo-altyapisi` | Tamamlandı |
 | 1 | Flutter iskeleti ve CI | M | 0 | `faz/1-flutter-iskeleti` | Tamamlandı |
 | 2 | Kripto çekirdeği | L | 1 | `faz/2-kripto-cekirdegi` | Tamamlandı |
-| 3 | Kasa, kilit ve biyometri | L | 2 | `faz/3-kasa-ve-kilit` | Sırada |
-| 4 | Parola kasası | L | 3 | `faz/4-parola-kasasi` | Bekliyor |
+| 3 | Kasa, kilit ve biyometri | L | 2 | `faz/3-kasa-ve-kilit` | Tamamlandı |
+| 4 | Parola kasası | L | 3 | `faz/4-parola-kasasi` | Sırada |
 | 5 | 2FA doğrulayıcı | M | 3 | `faz/5-2fa-dogrulayici` | Bekliyor |
 | 6 | Otomatik doldurma | XL | 4 | `faz/6-otomatik-doldurma` | Bekliyor |
 | 7 | Yedekleme, içe ve dışa aktarma | L | 4, 5 | `faz/7-yedekleme` | Bekliyor |
@@ -318,6 +318,7 @@ Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bi
 
 - [ ] Kayıt modeli: ad, kullanıcı adı, parola, birden çok URL, not, özel alanlar
 - [ ] Kilitlenince çözülmüş kayıt tutan bütün durumların temizlendiğini test etmek (Faz 3'te henüz çözülmüş kayıt tutulmuyor)
+- [ ] Otomatik kilit süresini klavye kullanımında da yenilemek (Faz 3'te yalnızca dokunmayla yenileniyor)
 - [ ] Liste, arama, favoriler, klasörler ve sıralama (arama çözülmüş veri üzerinde bellekte yapılır)
 - [ ] Ekleme, düzenleme, çöp kutusu ve parola geçmişi
 - [ ] Parola üretici: rastgele parola ve parola cümlesi, libsodium'un güvenli rastgele üreticisiyle
