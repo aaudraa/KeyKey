@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/app.dart';
+import 'package:keykey/app/bootstrap.dart';
 
-void main() {
-  runApp(const ProviderScope(child: KeyKeyApp()));
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final overrides = await bootstrap();
+  runApp(ProviderScope(overrides: overrides, child: const KeyKeyApp()));
 }

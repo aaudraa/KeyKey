@@ -6,15 +6,39 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:keykey/app/app.dart';
+import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:sodium/sodium_sumo.dart';
+
+import '../test/support/fake_vault_service.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  late SodiumSumo sharedSodium;
+
+  setUpAll(() async {
+    sharedSodium = await SodiumSumoInit.init();
+  });
+
+  /// Kasası açık uygulama. Kasa akışı `vault_flow_test.dart` içinde.
+  Widget openApp() {
+    final service = FakeVaultService(sharedSodium);
+    return ProviderScope(
+      key: UniqueKey(),
+      overrides: [
+        vaultServiceProvider.overrideWithValue(service),
+        initialVaultStatusProvider.overrideWithValue(
+          VaultOpen(service.newSession()),
+        ),
+      ],
+      child: const KeyKeyApp(),
+    );
+  }
+
   testWidgets('uygulama açılıyor ve ekranlar arasında geçiliyor', (
     tester,
   ) async {
-    await tester.pumpWidget(const ProviderScope(child: KeyKeyApp()));
+    await tester.pumpWidget(openApp());
     await tester.pumpAndSettle();
     expect(find.byIcon(Icons.lock), findsOneWidget);
 
@@ -32,7 +56,7 @@ void main() {
 
     for (final brightness in Brightness.values) {
       tester.platformDispatcher.platformBrightnessTestValue = brightness;
-      await tester.pumpWidget(const ProviderScope(child: KeyKeyApp()));
+      await tester.pumpWidget(openApp());
       await tester.pumpAndSettle();
 
       final context = tester.element(find.byType(NavigationBar));
@@ -50,7 +74,7 @@ void main() {
     ];
     for (final (locale, label) in cases) {
       tester.platformDispatcher.localesTestValue = [locale];
-      await tester.pumpWidget(const ProviderScope(child: KeyKeyApp()));
+      await tester.pumpWidget(openApp());
       await tester.pumpAndSettle();
 
       expect(find.text(label), findsOneWidget);

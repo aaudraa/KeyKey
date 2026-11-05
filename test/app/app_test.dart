@@ -1,19 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:keykey/app/app.dart';
+import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:sodium/sodium_sumo.dart';
+
+import '../support/fake_vault_service.dart';
 
 void main() {
-  Future<void> pumpApp(WidgetTester tester, {Locale? locale}) async {
-    if (locale != null) {
-      tester.platformDispatcher.localesTestValue = [locale];
-      addTearDown(tester.platformDispatcher.clearLocalesTestValue);
-    }
-    await tester.pumpWidget(const ProviderScope(child: KeyKeyApp()));
-    await tester.pumpAndSettle();
-  }
+  late SodiumSumo sodium;
+  late FakeVaultService service;
 
-  testWidgets('uygulama kasa ekranıyla açılıyor', (tester) async {
+  setUpAll(() async {
+    sodium = await SodiumSumoInit.init();
+  });
+
+  setUp(() {
+    service = FakeVaultService(sodium);
+  });
+
+  Future<void> pumpApp(WidgetTester tester, {Locale? locale}) => pumpKeyKey(
+    tester,
+    status: VaultOpen(service.newSession()),
+    service: service,
+    locale: locale ?? const Locale('tr'),
+  );
+
+  testWidgets('kasa açıkken uygulama kasa ekranıyla açılıyor', (tester) async {
     await pumpApp(tester, locale: const Locale('tr'));
 
     expect(find.text('Parolaların yakında burada olacak.'), findsOneWidget);
@@ -31,11 +42,10 @@ void main() {
 
     await tester.tap(find.byIcon(Icons.settings_outlined));
     await tester.pumpAndSettle();
-    expect(find.text('Ayarlar yakında burada olacak.'), findsOneWidget);
+    expect(find.text('Şimdi kilitle'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.lock_outline));
+    await tester.tap(find.byIcon(Icons.lock_outline).last);
     await tester.pumpAndSettle();
-    expect(find.text('Parolaların yakında burada olacak.'), findsOneWidget);
   });
 
   group('tema sistem ayarını izliyor', () {
@@ -68,20 +78,18 @@ void main() {
       await pumpApp(tester, locale: const Locale('tr', 'TR'));
 
       expect(find.text('Kasa'), findsWidgets);
-      expect(find.text('Parolaların yakında burada olacak.'), findsOneWidget);
     });
 
     testWidgets('İngilizce', (tester) async {
       await pumpApp(tester, locale: const Locale('en', 'US'));
 
       expect(find.text('Vault'), findsWidgets);
-      expect(find.text('Your passwords will be here soon.'), findsOneWidget);
     });
 
     testWidgets('desteklenmeyen dilde İngilizceye düşüyor', (tester) async {
       await pumpApp(tester, locale: const Locale('de', 'DE'));
 
-      expect(find.text('Your passwords will be here soon.'), findsOneWidget);
+      expect(find.text('Vault'), findsWidgets);
     });
   });
 }

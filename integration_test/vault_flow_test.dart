@@ -1,0 +1,190 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
+import 'package:keykey/app/app.dart';
+import 'package:keykey/core/storage/vault_database.dart';
+import 'package:keykey/core/storage/vault_store.dart';
+import 'package:keykey/core/vault/vault_service.dart';
+import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:sodium/sodium_sumo.dart';
+
+/// Gerçek şifreleme ve gerçek dosyayla, kullanıcının yaptığı gibi uçtan uca.
+void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  const firstPassword = 'kırmızı-Bisiklet-47-Deniz';
+  const secondPassword = 'mavi-Tren-58-Orman-Yolu';
+  const thirdPassword = 'sarı-Kalem-69-Dağ-Evi';
+  const vaultText = 'Parolaların yakında burada olacak.';
+  const lockedTitle = 'KeyKey kilitli';
+
+  /// Argon2id ayrı isolate'te çalıştığı için `pumpAndSettle` beklemez.
+  Future<void> pumpUntilFound(WidgetTester tester, Finder finder) async {
+    final deadline = DateTime.now().add(const Duration(seconds: 30));
+    while (DateTime.now().isBefore(deadline)) {
+      await tester.pump(const Duration(milliseconds: 100));
+      if (finder.evaluate().isNotEmpty) return;
+    }
+    fail('Bulunamadı: $finder');
+  }
+
+  Future<void> tapButton(WidgetTester tester, String label) async {
+    final button = find.widgetWithText(FilledButton, label);
+    await tester.ensureVisible(button);
+    await tester.pump();
+    await tester.tap(button);
+    await tester.pump();
+  }
+
+  Future<void> background(WidgetTester tester) async {
+    final binding = tester.binding
+      ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
+      ..handleAppLifecycleStateChanged(AppLifecycleState.hidden)
+      ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
+      ..handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await binding.endOfFrame;
+  }
+
+  Future<void> unlock(
+    WidgetTester tester,
+    String password, {
+    required Finder expecting,
+  }) async {
+    await tester.enterText(find.byType(TextField), password);
+    await tester.pump();
+    await tapButton(tester, 'Aç');
+    await pumpUntilFound(tester, expecting);
+  }
+
+  testWidgets('kasanın tüm yaşam döngüsü', (tester) async {
+    tester.platformDispatcher.localesTestValue = [const Locale('tr')];
+    addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+
+    final support = await getApplicationSupportDirectory();
+    final directory = support.createTempSync('kasa_akisi_');
+    addTearDown(() => directory.deleteSync(recursive: true));
+    final file = File('${directory.path}/keykey.db');
+    final sodium = await SodiumSumoInit.init();
+
+    Future<(VaultDatabase, ProviderScope)> openApp() async {
+      final database = VaultDatabase.openFile(file);
+      final service = VaultService(sodium: sodium, store: VaultStore(database));
+      final header = await service.readHeader();
+      return (
+        database,
+        ProviderScope(
+          key: UniqueKey(),
+          overrides: [
+            vaultServiceProvider.overrideWithValue(service),
+            initialVaultStatusProvider.overrideWithValue(
+              header == null ? const VaultNotSetUp() : VaultLocked(header),
+            ),
+          ],
+          child: const KeyKeyApp(),
+        ),
+      );
+    }
+
+    // Kasa oluşturma.
+    var (database, app) = await openApp();
+    addTearDown(() => database.close());
+    await tester.pumpWidget(app);
+    await pumpUntilFound(tester, find.text('Kasa oluştur'));
+
+    final fields = find.byType(TextField);
+    await tester.enterText(fields.at(0), firstPassword);
+    await tester.enterText(fields.at(1), firstPassword);
+    await tester.pump();
+    await tapButton(tester, 'Kasayı oluştur');
+
+    final recoveryKeyFinder = find.byWidgetPredicate(
+      (widget) => widget is Text && widget.style?.fontFamily == 'monospace',
+    );
+    await pumpUntilFound(tester, recoveryKeyFinder);
+    final recoveryKey = tester.widget<Text>(recoveryKeyFinder).data!;
+    expect(recoveryKey.replaceAll('-', '').length, 50);
+
+    // Doğrulanmadan önce dosyada kasa yok.
+    expect(
+      await VaultStore(database).readHeader(),
+      isNull,
+      reason: 'Kurtarma anahtarı doğrulanmadan kasa diske yazılmamalı',
+    );
+
+    await tapButton(tester, 'Yazdım');
+    await pumpUntilFound(tester, find.text('Doğrula ve kasayı aç'));
+    await tester.enterText(find.byType(TextField), recoveryKey);
+    await tester.pump();
+    await tapButton(tester, 'Doğrula ve kasayı aç');
+    await pumpUntilFound(tester, find.text(vaultText));
+    expect(await VaultStore(database).readHeader(), isNotNull);
+
+    // Arka plana geçince kilitleniyor, yanlış parola içeri almıyor.
+    await background(tester);
+    await pumpUntilFound(tester, find.text(lockedTitle));
+    expect(find.text(vaultText), findsNothing);
+
+    await unlock(
+      tester,
+      'bu-yanlis-bir-parola-99',
+      expecting: find.text('Parola yanlış.'),
+    );
+    expect(find.text(vaultText), findsNothing);
+    await unlock(tester, firstPassword, expecting: find.text(vaultText));
+
+    // Parola değiştirme.
+    await tester.tap(find.byIcon(Icons.settings_outlined));
+    await pumpUntilFound(tester, find.text('Şimdi kilitle'));
+    await tester.tap(find.text('Ana parolayı değiştir'));
+    await pumpUntilFound(tester, find.text('Mevcut ana parola'));
+    final changeFields = find.byType(TextField);
+    await tester.enterText(changeFields.at(0), firstPassword);
+    await tester.enterText(changeFields.at(1), secondPassword);
+    await tester.enterText(changeFields.at(2), secondPassword);
+    await tester.pump();
+    await tapButton(tester, 'Parolayı değiştir');
+    await pumpUntilFound(tester, find.text('Şimdi kilitle'));
+
+    // Eski parola artık çalışmıyor, yenisi çalışıyor.
+    await tester.tap(find.text('Şimdi kilitle'));
+    await pumpUntilFound(tester, find.text(lockedTitle));
+    await unlock(tester, firstPassword, expecting: find.text('Parola yanlış.'));
+    await unlock(tester, secondPassword, expecting: find.text(vaultText));
+
+    // Parola unutuldu: kurtarma anahtarıyla yeni parola.
+    await background(tester);
+    await pumpUntilFound(tester, find.text(lockedTitle));
+    await tester.tap(find.text('Parolamı unuttum'));
+    await pumpUntilFound(tester, find.text('Devam et'));
+    await tester.enterText(find.byType(TextField), recoveryKey);
+    await tester.pump();
+    await tapButton(tester, 'Devam et');
+    await pumpUntilFound(tester, find.text('Kaydet ve kasayı aç'));
+    expect(find.text(vaultText), findsNothing);
+    final newFields = find.byType(TextField);
+    await tester.enterText(newFields.at(0), thirdPassword);
+    await tester.enterText(newFields.at(1), thirdPassword);
+    await tester.pump();
+    await tapButton(tester, 'Kaydet ve kasayı aç');
+    await pumpUntilFound(tester, find.text(vaultText));
+
+    // Uygulama yeniden başlıyor: kasa kilitli açılıyor, son parola geçerli.
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+    await database.close();
+
+    (database, app) = await openApp();
+    addTearDown(() => database.close());
+    await tester.pumpWidget(app);
+    await pumpUntilFound(tester, find.text(lockedTitle));
+    expect(find.text(vaultText), findsNothing);
+    await unlock(tester, thirdPassword, expecting: find.text(vaultText));
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+  });
+}

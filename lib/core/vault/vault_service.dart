@@ -33,6 +33,11 @@ final class PasswordMustWait extends PasswordAttempt {
   final Duration wait;
 }
 
+/// İşlem sürerken kasa kilitlendi, sonuç önemsiz.
+final class PasswordInterrupted extends PasswordAttempt {
+  const new();
+}
+
 /// Parolayla açmanın sonucu.
 final class UnlockOutcome {
   const new(this.attempt, [this.session]);
@@ -135,22 +140,34 @@ class VaultService {
     required String newPassword,
   }) async {
     _requireAcceptable(newPassword);
-    final (attempt, key) = await _checkPassword(
-      session.header,
-      currentPassword,
-    );
-    key?.dispose();
-    if (attempt is PasswordAccepted) {
-      await _rewrap(session, newPassword);
+    // Argon2id sürerken kasa kilitlenip oturumun anahtarı silinebilir. İşlem
+    // kendi kopyasıyla çalışır, böylece yarım kalmadan tamamlanır.
+    final vaultKey = session.vaultKey.copy();
+    try {
+      final (attempt, key) = await _checkPassword(
+        session.header,
+        currentPassword,
+      );
+      key?.dispose();
+      if (attempt is PasswordAccepted) {
+        await _rewrap(session, vaultKey, newPassword);
+      }
+      return attempt;
+    } finally {
+      vaultKey.dispose();
     }
-    return attempt;
   }
 
   /// Kurtarma anahtarıyla girildikten sonra yeni parolayı yazar.
   Future<void> setNewPassword(VaultSession session, String newPassword) async {
     _requireAcceptable(newPassword);
-    await _rewrap(session, newPassword);
-    await _store.resetUnlockAttempts();
+    final vaultKey = session.vaultKey.copy();
+    try {
+      await _rewrap(session, vaultKey, newPassword);
+      await _store.resetUnlockAttempts();
+    } finally {
+      vaultKey.dispose();
+    }
   }
 
   Future<(PasswordAttempt, SecureKey?)> _checkPassword(
@@ -173,11 +190,15 @@ class VaultService {
     }
   }
 
-  Future<void> _rewrap(VaultSession session, String newPassword) async {
+  Future<void> _rewrap(
+    VaultSession session,
+    SecureKey vaultKey,
+    String newPassword,
+  ) async {
     final opsLimit = await _kdf.calibrateOpsLimit();
     final header = await _crypto.changePassword(
       session.header,
-      session.vaultKey,
+      vaultKey,
       newPassword,
       opsLimit: opsLimit,
     );

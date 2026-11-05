@@ -299,14 +299,14 @@ Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bi
 **Amaç:** Kullanıcının kasa oluşturup açabildiği ve kilitleyebildiği ilk gerçek akış.
 
 - [x] drift şeması, depo katmanı ve göç testleri
-- [ ] Kasa oluşturma ekranları: ana parola, güç göstergesi, parolanın geri alınamayacağı uyarısı
-- [ ] Kurtarma anahtarını gösterme ve geri yazdırarak doğrulama
-- [ ] Ana parolayla açma; hatalı denemelerde artan bekleme
-- [ ] Otomatik kilit: arka plana geçince ve süre dolunca; kilitte anahtarlar ve çözülmüş veri temizlenir
+- [x] Kasa oluşturma ekranları: ana parola, güç göstergesi, parolanın geri alınamayacağı uyarısı
+- [x] Kurtarma anahtarını gösterme ve geri yazdırarak doğrulama
+- [x] Ana parolayla açma; hatalı denemelerde artan bekleme
+- [x] Otomatik kilit: arka plana geçince ve süre dolunca; kilitte anahtarlar ve çözülmüş veri temizlenir
 - [ ] Kotlin köprüsü: Keystore anahtarı, `BiometricPrompt`, `CryptoObject`
 - [ ] Parmak iziyle açma; yeni parmak izi eklenince geçersiz olma
-- [ ] Ana parola değiştirme ve kurtarma anahtarıyla erişim
-- [ ] Metin kutularında otomatik düzeltme ve klavye öğrenmesini kapatma
+- [x] Ana parola değiştirme ve kurtarma anahtarıyla erişim
+- [x] Metin kutularında otomatik düzeltme ve klavye öğrenmesini kapatma
 
 **Bitti sayılması için:** Uygulama kapatılınca kasa kilitli açılıyor; yanlış parola içeri almıyor; parmak izi `adb emu finger touch` ile emülatörde çalışıyor; yeni parmak izi eklenince ana parola isteniyor; parola değişince tüm kayıtlar okunabilir kalıyor.
 

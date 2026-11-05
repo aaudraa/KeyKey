@@ -1,17 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:keykey/app/placeholder_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:keykey/app/router.dart';
+import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends ConsumerWidget {
   const new({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    return PlaceholderScreen(
-      title: l10n.navSettings,
-      message: l10n.settingsPlaceholder,
-      icon: Icons.settings_outlined,
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.navSettings)),
+      body: ListView(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.password_outlined),
+            title: Text(l10n.changePasswordTitle),
+            onTap: () => context.push(AppRoutes.changePassword),
+          ),
+          ListTile(
+            leading: const Icon(Icons.lock_outline),
+            title: Text(l10n.settingsLockNow),
+            onTap: () => ref.read(vaultControllerProvider.notifier).lock(),
+          ),
+        ],
+      ),
     );
   }
 }

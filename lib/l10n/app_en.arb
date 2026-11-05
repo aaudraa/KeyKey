@@ -20,8 +20,211 @@
   "@authenticatorPlaceholder": {
     "description": "Temporary message on the two-factor screen until the feature exists."
   },
-  "settingsPlaceholder": "Settings will be here soon.",
-  "@settingsPlaceholder": {
-    "description": "Temporary message on the settings screen until the feature exists."
+  "secretShow": "Show",
+  "@secretShow": {
+    "description": "Tooltip: reveal a hidden secret field."
+  },
+  "secretHide": "Hide",
+  "@secretHide": {
+    "description": "Tooltip: hide a revealed secret field."
+  },
+  "setupTitle": "Create vault",
+  "@setupTitle": {
+    "description": "Title of the vault creation flow."
+  },
+  "setupIntro": "Your vault is protected by one master password. It stays only on this phone.",
+  "@setupIntro": {
+    "description": "Intro text on the first step of vault creation."
+  },
+  "setupPasswordWarning": "If you forget this password and lose your recovery key, your data cannot be recovered. There is no back door.",
+  "@setupPasswordWarning": {
+    "description": "Warning that the master password cannot be reset."
+  },
+  "setupCreate": "Create vault",
+  "@setupCreate": {
+    "description": "Button: create the vault."
+  },
+  "setupCreating": "Creating…",
+  "@setupCreating": {
+    "description": "Button label while the vault is being created."
+  },
+  "setupFailed": "Something went wrong. Please try again.",
+  "@setupFailed": {
+    "description": "Generic error while creating a vault or changing a password."
+  },
+  "newPasswordLabel": "Master password",
+  "@newPasswordLabel": {
+    "description": "Label of the new master password field."
+  },
+  "newPasswordHelper": "At least {count} characters. Several unrelated words work well.",
+  "@newPasswordHelper": {
+    "description": "Helper text of the new master password field.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "confirmPasswordLabel": "Repeat master password",
+  "@confirmPasswordLabel": {
+    "description": "Label of the password confirmation field."
+  },
+  "confirmPasswordMismatch": "The passwords do not match.",
+  "@confirmPasswordMismatch": {
+    "description": "Error when the confirmation differs."
+  },
+  "strengthTitle": "Password strength",
+  "@strengthTitle": {
+    "description": "Screen reader label of the strength meter."
+  },
+  "strengthTooShort": "Too short",
+  "@strengthTooShort": {
+    "description": "Strength meter value."
+  },
+  "strengthWeak": "Weak: easy to guess",
+  "@strengthWeak": {
+    "description": "Strength meter value."
+  },
+  "strengthFair": "Fair: longer is better",
+  "@strengthFair": {
+    "description": "Strength meter value."
+  },
+  "strengthStrong": "Strong (rough estimate)",
+  "@strengthStrong": {
+    "description": "Strength meter value. The estimate is only rough."
+  },
+  "recoveryShowIntro": "This is your recovery key. It opens your vault if you forget your master password.",
+  "@recoveryShowIntro": {
+    "description": "Intro on the screen that shows the recovery key."
+  },
+  "recoveryShowWarning": "Write it on paper and keep it somewhere safe. It is shown only now, KeyKey does not store it.",
+  "@recoveryShowWarning": {
+    "description": "Warning that the recovery key is shown once."
+  },
+  "recoveryShowContinue": "I wrote it down",
+  "@recoveryShowContinue": {
+    "description": "Button: go to the verification step."
+  },
+  "recoveryVerifyIntro": "Type the key from your paper. This proves it was written correctly.",
+  "@recoveryVerifyIntro": {
+    "description": "Intro on the recovery key verification step."
+  },
+  "recoveryKeyLabel": "Recovery key",
+  "@recoveryKeyLabel": {
+    "description": "Label of the recovery key field."
+  },
+  "recoveryVerifyConfirm": "Confirm and open the vault",
+  "@recoveryVerifyConfirm": {
+    "description": "Button: verify the typed recovery key."
+  },
+  "recoveryVerifyBack": "Show the key again",
+  "@recoveryVerifyBack": {
+    "description": "Button: go back to the recovery key."
+  },
+  "recoveryKeyInvalid": "This key has a typo. Check each character.",
+  "@recoveryKeyInvalid": {
+    "description": "Error: the recovery key checksum or format failed."
+  },
+  "recoveryKeyWrong": "This is not the key of this vault.",
+  "@recoveryKeyWrong": {
+    "description": "Error: a valid key that does not open this vault."
+  },
+  "lockTitle": "KeyKey is locked",
+  "@lockTitle": {
+    "description": "Title of the lock screen."
+  },
+  "lockPasswordLabel": "Master password",
+  "@lockPasswordLabel": {
+    "description": "Label of the password field on the lock screen."
+  },
+  "lockOpen": "Open",
+  "@lockOpen": {
+    "description": "Button: unlock the vault."
+  },
+  "lockOpening": "Opening…",
+  "@lockOpening": {
+    "description": "Button label while the vault is unlocking."
+  },
+  "lockWrongPassword": "Wrong password.",
+  "@lockWrongPassword": {
+    "description": "Error after a wrong password."
+  },
+  "lockWait": "Too many wrong attempts. Try again in {time}.",
+  "@lockWait": {
+    "description": "Countdown after several wrong passwords, time is m:ss.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "lockFailed": "The vault could not be opened. Please try again.",
+  "@lockFailed": {
+    "description": "Unexpected error while unlocking."
+  },
+  "lockForgot": "I forgot my password",
+  "@lockForgot": {
+    "description": "Button: open the recovery key screen."
+  },
+  "recoveryTitle": "Use recovery key",
+  "@recoveryTitle": {
+    "description": "Title of the recovery screen."
+  },
+  "recoveryIntro": "Type the recovery key you wrote down when you created your vault. You will then set a new master password.",
+  "@recoveryIntro": {
+    "description": "Intro on the recovery screen."
+  },
+  "recoverySubmit": "Continue",
+  "@recoverySubmit": {
+    "description": "Button: submit the recovery key."
+  },
+  "newPasswordTitle": "New master password",
+  "@newPasswordTitle": {
+    "description": "Title of the screen shown after recovery."
+  },
+  "newPasswordIntro": "Your recovery key worked. Set a new master password to continue.",
+  "@newPasswordIntro": {
+    "description": "Intro after a successful recovery."
+  },
+  "newPasswordSave": "Save and open the vault",
+  "@newPasswordSave": {
+    "description": "Button: save the new master password after recovery."
+  },
+  "changePasswordTitle": "Change master password",
+  "@changePasswordTitle": {
+    "description": "Title and settings entry for changing the password."
+  },
+  "changePasswordCurrent": "Current master password",
+  "@changePasswordCurrent": {
+    "description": "Label of the current password field."
+  },
+  "changePasswordSave": "Change password",
+  "@changePasswordSave": {
+    "description": "Button: change the master password."
+  },
+  "changePasswordDone": "Master password changed.",
+  "@changePasswordDone": {
+    "description": "Message after the password was changed."
+  },
+  "changePasswordWait": "Too many wrong attempts. Try again in {seconds} seconds.",
+  "@changePasswordWait": {
+    "description": "Error while waiting after wrong passwords.",
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsLockNow": "Lock now",
+  "@settingsLockNow": {
+    "description": "Settings entry: lock the vault immediately."
+  },
+  "unavailableTitle": "The vault could not be read",
+  "@unavailableTitle": {
+    "description": "Title when the vault file cannot be read."
+  },
+  "unavailableMessage": "The file is damaged or belongs to a newer version of KeyKey. Your data was not changed. Update KeyKey to try again.",
+  "@unavailableMessage": {
+    "description": "Message when the vault file cannot be read."
   }
 }
