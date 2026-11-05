@@ -1,0 +1,12 @@
+# CI'daki gitleaks taramasının ayarları. Varsayılan kuralların hepsi geçerlidir.
+[extend]
+useDefault = true
+
+# Biçim uyumluluğu testleri bilerek sabit deneme anahtarları içeriyor. Bunlar
+# gerçek bir kasaya ait değil. Liste yalnızca bu iki dosyayla sınırlı kalmalı.
+[[allowlists]]
+description = "Yalnızca deneme verisi içeren biçim uyumluluğu dosyaları"
+paths = [
+  '''^test/fixtures/crypto/vault-v1\.json$''',
+  '''^integration_test/vault_v1_fixture\.dart$''',
+]
