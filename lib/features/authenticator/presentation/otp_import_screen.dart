@@ -55,8 +55,11 @@ class _OtpImportScreenState extends ConsumerState<OtpImportScreen> {
     });
     try {
       final batch = await source.decrypt(_password.text);
+      // Türetme sürerken ekran kapanmış olabilir, örneğin kasa kilitlendi;
+      // denetleyici o zaman atılmıştır.
+      if (!mounted) return;
       _password.clear();
-      if (mounted) setState(() => _batch = batch);
+      setState(() => _batch = batch);
     } on WrongImportPasswordException {
       if (mounted) setState(() => _passwordError = l10n.otpImportWrongPassword);
     } on InvalidImportException {

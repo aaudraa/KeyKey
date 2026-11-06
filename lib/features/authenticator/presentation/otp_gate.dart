@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/features/authenticator/application/otp_visibility.dart';
 import 'package:keykey/features/authenticator/presentation/confirm_identity.dart';
+import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Ek onay açıkken kodların yerine gösterilir.
@@ -42,7 +43,10 @@ class OtpGate extends ConsumerWidget {
 
 /// Kimliği doğrular ve doğrulanırsa kodları bu oturum için açar.
 Future<void> revealOtpCodes(BuildContext context, WidgetRef ref) async {
-  if (await confirmIdentity(context, ref)) {
-    ref.read(otpRevealProvider.notifier).reveal();
-  }
+  final confirmed = await confirmIdentity(context, ref);
+  // Onay sürerken ekran kapandıysa veya kasa kilitlendiyse kodlar açılmaz;
+  // yoksa bir sonraki açılışta onaysız görünürlerdi.
+  if (!confirmed || !context.mounted) return;
+  if (ref.read(vaultControllerProvider) is! VaultOpen) return;
+  ref.read(otpRevealProvider.notifier).reveal();
 }
