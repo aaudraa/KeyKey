@@ -173,5 +173,19 @@
   "otpLinkChoose": "Parola kaydıyla eşleştir",
   "otpLinkRemove": "Eşleştirmeyi kaldır",
   "otpLinkHint": "Kod, parola kaydının ayrıntısında da görünür.",
-  "loginOtpCode": "2FA kodu"
+  "loginOtpCode": "2FA kodu",
+  "otpAddImport": "Başka uygulamadan aktar",
+  "otpImportTitle": "İçe aktar",
+  "otpImportUnknownFile": "Bu dosya bir Aegis veya 2FAS dışa aktarması değil.",
+  "otpImportFailed": "Dışa aktarma okunamadı. Dosya bozuk olabilir.",
+  "otpImportPassword": "Dışa aktarma parolası",
+  "otpImportPasswordHint": "Dosya şifreli. Dışa aktarırken belirlediğin parolayı gir.",
+  "otpImportOpen": "Aç",
+  "otpImportWrongPassword": "Parola yanlış.",
+  "otpImportUnsupported": "{count, plural, other{{count} hesap KeyKey desteklemediği için atlandı, örneğin Steam.}}",
+  "otpImportDuplicate": "Zaten ekli",
+  "otpImportAdd": "{count, plural, =0{Ekle} other{{count} hesabı ekle}}",
+  "otpImportDone": "{count, plural, other{{count} hesap eklendi.}}",
+  "otpImportEmpty": "Aktarılacak hesap yok.",
+  "otpImportBatch": "Google Authenticator büyük dışa aktarmaları birkaç QR koduna böler. Her birini ayrı tara."
 }

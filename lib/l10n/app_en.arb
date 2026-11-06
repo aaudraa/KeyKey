@@ -775,5 +775,76 @@
   "loginOtpCode": "2FA code",
   "@loginOtpCode": {
     "description": "Label of the linked 2FA code in a password entry's details."
+  },
+  "otpAddImport": "Import from another app",
+  "@otpAddImport": {
+    "description": "Option that picks an Aegis or 2FAS export file."
+  },
+  "otpImportTitle": "Import",
+  "@otpImportTitle": {
+    "description": "Title of the import screen."
+  },
+  "otpImportUnknownFile": "This file is not an Aegis or 2FAS export.",
+  "@otpImportUnknownFile": {
+    "description": "Shown when the picked file has an unknown format."
+  },
+  "otpImportFailed": "The export could not be read. The file may be damaged.",
+  "@otpImportFailed": {
+    "description": "Shown when an export cannot be parsed."
+  },
+  "otpImportPassword": "Export password",
+  "@otpImportPassword": {
+    "description": "Field for the password of an encrypted export."
+  },
+  "otpImportPasswordHint": "The file is encrypted. Enter the password you chose when exporting it.",
+  "@otpImportPasswordHint": {
+    "description": "Explains why a password is needed."
+  },
+  "otpImportOpen": "Open",
+  "@otpImportOpen": {
+    "description": "Button that decrypts an export."
+  },
+  "otpImportWrongPassword": "Wrong password.",
+  "@otpImportWrongPassword": {
+    "description": "Error for a wrong export password."
+  },
+  "otpImportUnsupported": "{count, plural, =1{1 account was skipped because KeyKey does not support it, for example Steam.} other{{count} accounts were skipped because KeyKey does not support them, for example Steam.}}",
+  "@otpImportUnsupported": {
+    "description": "Info about skipped accounts.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "otpImportDuplicate": "Already added",
+  "@otpImportDuplicate": {
+    "description": "Marks an account whose key is already in KeyKey."
+  },
+  "otpImportAdd": "{count, plural, =0{Add} =1{Add 1 account} other{Add {count} accounts}}",
+  "@otpImportAdd": {
+    "description": "Button that saves the selected accounts.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "otpImportDone": "{count, plural, =1{1 account added.} other{{count} accounts added.}}",
+  "@otpImportDone": {
+    "description": "Snack bar after importing.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "otpImportEmpty": "There are no accounts to import.",
+  "@otpImportEmpty": {
+    "description": "Shown when the export has no usable accounts."
+  },
+  "otpImportBatch": "Google Authenticator splits large exports into several QR codes. Scan each of them.",
+  "@otpImportBatch": {
+    "description": "Hint shown for Google Authenticator exports that span several QR codes."
   }
 }

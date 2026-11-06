@@ -129,6 +129,21 @@ class OtpsController extends Notifier<OtpsState> {
     return item;
   });
 
+  /// İçe aktarılan hesapları sırayla ekler. Yarıda kilitlenirse o ana kadar
+  /// yazılanlar kalır.
+  Future<int> addAll(List<OtpContent> contents) => _serial(() async {
+    final repository = _openRepository;
+    final added = <OtpItem>[];
+    try {
+      for (final content in contents) {
+        added.add(await repository.add(content));
+      }
+    } finally {
+      _replaceItems((items) => [...items, ...added]);
+    }
+    return added.length;
+  });
+
   /// [content], [item]'dan türetilmiş yeni içeriktir.
   ///
   /// [item] eskimiş olabilir. Kullanıcı HOTP sayacını değiştirmediyse sayaç

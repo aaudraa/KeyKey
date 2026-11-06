@@ -2,9 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/app_shell.dart';
+import 'package:keykey/features/authenticator/application/otp_import.dart';
 import 'package:keykey/features/authenticator/data/otpauth_uri.dart';
 import 'package:keykey/features/authenticator/presentation/authenticator_screen.dart';
 import 'package:keykey/features/authenticator/presentation/otp_edit_screen.dart';
+import 'package:keykey/features/authenticator/presentation/otp_import_screen.dart';
 import 'package:keykey/features/authenticator/presentation/otp_trash_screen.dart';
 import 'package:keykey/features/authenticator/presentation/qr_scan_screen.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
@@ -28,6 +30,7 @@ abstract final class AppRoutes {
   static const authenticatorNew = '/2fa/yeni';
   static const authenticatorTrash = '/2fa/cop';
   static const authenticatorScan = '/2fa/tara';
+  static const authenticatorImport = '/2fa/ice-aktar';
   static const settings = '/ayarlar';
   static const changePassword = '/ayarlar/parola';
   static const setup = '/kurulum';
@@ -157,6 +160,17 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'tara',
                     builder: (context, state) => const QrScanScreen(),
+                  ),
+                  GoRoute(
+                    path: 'ice-aktar',
+                    // Okunan hesaplar yalnızca bellekte, ekrana doğrudan
+                    // verilir. Kaynak yoksa, örneğin uygulama yeniden
+                    // açıldıysa, listeye dönülür.
+                    redirect: (context, state) => state.extra is ImportSource
+                        ? null
+                        : AppRoutes.authenticator,
+                    builder: (context, state) =>
+                        OtpImportScreen(source: state.extra! as ImportSource),
                   ),
                   GoRoute(
                     path: 'cop',

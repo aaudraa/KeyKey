@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/misc.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
+import 'package:keykey/core/platform/export_file_picker.dart';
 import 'package:keykey/core/platform/pigeon_biometric_bridge.dart';
 import 'package:keykey/core/platform/qr_image_reader.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
@@ -10,6 +11,7 @@ import 'package:keykey/core/storage/vault_database.dart';
 import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
+import 'package:keykey/features/authenticator/data/import/platform_aes_gcm.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
@@ -45,6 +47,8 @@ Future<List<Override>> bootstrap() async {
     randomSourceProvider.overrideWithValue(SodiumRandomSource(sodium)),
     sensitiveClipboardProvider.overrideWithValue(PigeonSensitiveClipboard()),
     qrImageReaderProvider.overrideWithValue(ZxingQrImageReader()),
+    exportFilePickerProvider.overrideWithValue(FileSelectorExportPicker()),
+    aesGcmProvider.overrideWithValue(PlatformAesGcm()),
     vaultServiceProvider.overrideWithValue(service),
     loginRepositoryFactoryProvider.overrideWithValue(
       (session) =>

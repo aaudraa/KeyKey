@@ -97,13 +97,17 @@ class _QrScanScreenState extends ConsumerState<QrScanScreen> {
 
   Future<void> _onText(String text) async {
     if (_handled || text == _lastRejected) return;
-    final scanned = ScannedCode.classify(text);
-    if (scanned is OtpauthCode) {
-      _handled = true;
-    } else {
+    // Kamera her saniye okumaya devam ediyor; işlenirken yenisi beklesin.
+    _handled = true;
+    final opened = await handleScannedCode(
+      context,
+      ScannedCode.classify(text),
+      replace: true,
+    );
+    if (!opened) {
+      _handled = false;
       _lastRejected = text;
     }
-    await handleScannedCode(context, scanned, replace: true);
   }
 
   Future<void> _readImageInstead() async {

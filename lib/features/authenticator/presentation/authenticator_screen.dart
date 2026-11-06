@@ -19,7 +19,7 @@ import 'package:keykey/features/authenticator/presentation/otp_display.dart';
 import 'package:keykey/features/authenticator/presentation/scanned_code_handler.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
-enum _AddOption { scan, image, manual }
+enum _AddOption { scan, image, manual, import }
 
 /// 2FA kodlarının listesi.
 ///
@@ -104,33 +104,42 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
     final option = await showModalBottomSheet<_AddOption>(
       context: context,
       showDragHandle: true,
+      // Küçük ekranlarda seçenekler sığmazsa kaydırılır.
+      isScrollControlled: true,
       builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: Text(
-                l10n.otpAddTitle,
-                style: Theme.of(context).textTheme.titleMedium,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: Text(
+                  l10n.otpAddTitle,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
               ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.qr_code_scanner),
-              title: Text(l10n.otpAddScan),
-              onTap: () => Navigator.pop(context, _AddOption.scan),
-            ),
-            ListTile(
-              leading: const Icon(Icons.image_outlined),
-              title: Text(l10n.otpAddImage),
-              onTap: () => Navigator.pop(context, _AddOption.image),
-            ),
-            ListTile(
-              leading: const Icon(Icons.keyboard_outlined),
-              title: Text(l10n.otpAddManual),
-              onTap: () => Navigator.pop(context, _AddOption.manual),
-            ),
-          ],
+              ListTile(
+                leading: const Icon(Icons.qr_code_scanner),
+                title: Text(l10n.otpAddScan),
+                onTap: () => Navigator.pop(context, _AddOption.scan),
+              ),
+              ListTile(
+                leading: const Icon(Icons.image_outlined),
+                title: Text(l10n.otpAddImage),
+                onTap: () => Navigator.pop(context, _AddOption.image),
+              ),
+              ListTile(
+                leading: const Icon(Icons.keyboard_outlined),
+                title: Text(l10n.otpAddManual),
+                onTap: () => Navigator.pop(context, _AddOption.manual),
+              ),
+              ListTile(
+                leading: const Icon(Icons.download_outlined),
+                title: Text(l10n.otpAddImport),
+                onTap: () => Navigator.pop(context, _AddOption.import),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -142,6 +151,8 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
         await readQrFromImage(context, ref, replace: false);
       case _AddOption.manual:
         await context.push(AppRoutes.authenticatorNew);
+      case _AddOption.import:
+        await importFromFile(context, ref);
       case null:
         return;
     }

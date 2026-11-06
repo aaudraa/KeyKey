@@ -70,3 +70,18 @@ abstract class BiometricApi {
 abstract class ClipboardApi {
   void copySensitive(String text, int clearAfterMillis);
 }
+
+/// Başka uygulamaların şifreli dışa aktarma dosyalarını açmak için AES-GCM.
+///
+/// Kasanın şifrelemesinde kullanılmaz. Kurallar güvenlik tasarımı belgesinin
+/// İçe aktarma bölümündedir.
+@HostApi()
+abstract class ImportCryptoApi {
+  /// AES-256-GCM, 128 bitlik etiket şifreli metnin sonundadır. Etiket
+  /// doğrulanmazsa `null` döner.
+  Uint8List? aesGcmDecrypt(
+    Uint8List key,
+    Uint8List nonce,
+    Uint8List cipherTextWithTag,
+  );
+}

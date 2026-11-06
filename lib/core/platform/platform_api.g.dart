@@ -443,3 +443,52 @@ class ClipboardApi {
     );
   }
 }
+
+/// Başka uygulamaların şifreli dışa aktarma dosyalarını açmak için AES-GCM.
+///
+/// Kasanın şifrelemesinde kullanılmaz. Kurallar güvenlik tasarımı belgesinin
+/// İçe aktarma bölümündedir.
+class ImportCryptoApi {
+  /// Constructor for [ImportCryptoApi]. The [binaryMessenger] named argument is
+  /// available for dependency injection. If it is left null, the default
+  /// BinaryMessenger will be used which routes to the host platform.
+  ImportCryptoApi({
+    BinaryMessenger? binaryMessenger,
+    String messageChannelSuffix = '',
+  }) : pigeonVar_binaryMessenger = binaryMessenger,
+       pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty
+           ? '.$messageChannelSuffix'
+           : '';
+
+  final BinaryMessenger? pigeonVar_binaryMessenger;
+  static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
+
+  final String pigeonVar_messageChannelSuffix;
+
+  /// AES-256-GCM, 128 bitlik etiket şifreli metnin sonundadır. Etiket
+  /// doğrulanmazsa `null` döner.
+  Future<Uint8List?> aesGcmDecrypt(
+    Uint8List key,
+    Uint8List nonce,
+    Uint8List cipherTextWithTag,
+  ) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.ImportCryptoApi.aesGcmDecrypt$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[key, nonce, cipherTextWithTag],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
+    return pigeonVar_replyValue as Uint8List?;
+  }
+}

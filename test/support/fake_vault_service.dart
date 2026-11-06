@@ -9,6 +9,7 @@ import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/crypto/record_cipher.dart';
 import 'package:keykey/core/crypto/vault_crypto.dart';
 import 'package:keykey/core/crypto/vault_header.dart';
+import 'package:keykey/core/platform/export_file_picker.dart';
 import 'package:keykey/core/platform/qr_image_reader.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
@@ -16,6 +17,7 @@ import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otp_clock.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
+import 'package:keykey/features/authenticator/data/import/platform_aes_gcm.dart';
 import 'package:keykey/features/authenticator/data/otp_content.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/authenticator/presentation/qr_scan_screen.dart';
@@ -27,6 +29,7 @@ import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../core/storage/test_data.dart';
+import 'vector_aes_gcm.dart';
 
 /// Ekran testleri için anında yanıt veren kasa servisi. Argon2id çalıştırmaz.
 class FakeVaultService implements VaultService {
@@ -272,6 +275,18 @@ class FakeQrImageReader implements QrImageReader {
   }
 }
 
+/// Seçilmiş gibi davranılan dışa aktarma dosyası.
+class FakeExportFilePicker implements ExportFilePicker {
+  ExportFileResult next = const ExportFileCancelled();
+  int calls = 0;
+
+  @override
+  Future<ExportFileResult> pickAndRead() async {
+    calls++;
+    return next;
+  }
+}
+
 /// Kamera yerine: test, [scan] ile okunmuş gibi metin verir.
 class FakeQrCamera {
   late ValueChanged<String> _onText;
@@ -372,6 +387,7 @@ Future<void> pumpKeyKey(
   DateTime Function()? clock,
   FakeQrImageReader? qrImages,
   FakeQrCamera? camera,
+  FakeExportFilePicker? files,
   RecordingClipboard? clipboard,
   Locale locale = const Locale('tr'),
 }) async {
@@ -391,6 +407,10 @@ Future<void> pumpKeyKey(
           qrImages ?? FakeQrImageReader(),
         ),
         qrCameraProvider.overrideWithValue((camera ?? FakeQrCamera()).build),
+        exportFilePickerProvider.overrideWithValue(
+          files ?? FakeExportFilePicker(),
+        ),
+        aesGcmProvider.overrideWithValue(VectorAesGcm()),
         randomSourceProvider.overrideWithValue(
           SodiumRandomSource(service.sodium),
         ),

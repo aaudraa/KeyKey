@@ -342,21 +342,25 @@ Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/googl
 
 - Kamera görüntüsü ve seçilen görsel `flutter_zxing` ile cihazda çözülür. Görüntü hiçbir yere kaydedilmez.
 - Kamera izni yalnızca kullanıcı taramayı başlattığında istenir. Reddedilirse elle giriş ve görselden okuma çalışmaya devam eder.
-- Görsel Android'in fotoğraf seçicisiyle seçilir, depolama izni gerekmez.
+- Görsel Android'in fotoğraf seçicisiyle seçilir, depolama izni gerekmez. `image_picker` görseli uygulamanın önbelleğine kopyalar; görselde gizli anahtar olduğu için kopya okunur okunmaz silinir.
 - Okunan hesap hemen kaydedilmez. Servis ve hesap adı gösterilir, kullanıcı onaylayınca kaydedilir.
+- **İzinler:** Yayın APK'sına yeni izin olarak yalnızca `CAMERA` girer. Kamera ve görsel seçici kütüphanelerinin eklediği `RECORD_AUDIO`, `WRITE_EXTERNAL_STORAGE`, `READ_EXTERNAL_STORAGE` ve `ACCESS_NETWORK_STATE` manifestte kaldırılır, `check-release-apk.sh` bunu denetler. Kamerası olmayan cihazlar da uygulamayı kurabilir.
 
 ### İçe aktarma
 
-| Kaynak | Biçim |
-|---|---|
-| Google Authenticator | Dışa aktarma QR'ı: `otpauth-migration://offline?data=...`, içinde Base64 ile kodlanmış protobuf. Birden çok QR varsa her biri ayrı okunur. |
-| Aegis | Dışa aktarılan JSON dosyası. |
-| 2FAS | Dışa aktarılan `.2fas` dosyası. |
+| Kaynak | Biçim | Şifreli dosya |
+|---|---|---|
+| Google Authenticator | Dışa aktarma QR'ı: `otpauth-migration://offline?data=...`, içinde Base64 ile kodlanmış protobuf. Büyük dışa aktarmalar birkaç QR'a bölünür, her biri ayrı okunur. | Yok. |
+| Aegis | Dışa aktarılan JSON dosyası. | Her parola yuvası scrypt (dosyadaki N, r, p ve tuzla) türetilen anahtarla ana anahtarı sarar; kasa ana anahtarla AES-256-GCM ile şifrelidir. |
+| 2FAS | Dışa aktarılan `.2fas` dosyası. | PBKDF2-HMAC-SHA256 (10 000 tur, dosyadaki tuz) ve AES-256-GCM. |
 
-- Dosyalar güvenilmeyen veri sayılır. Boyut sınırı vardır, okuma katıdır ve bozuk dosya uygulamayı düşürmez.
-- Desteklenmeyen hesaplar, örneğin Steam veya 5 haneli kodlar, atlanır ve kullanıcıya sayısı söylenir. Aynı gizli anahtar ve hesapla zaten kayıtlı olanlar tekrar eklenmez.
-- Hesaplar kaydedilmeden önce liste halinde gösterilir.
-- Şifreli dışa aktarma dosyalarının açılma yöntemi içe aktarma görevinde bu belgeye eklenecek.
+- **Şifre çözme:** AES-256-GCM için Android'in `javax.crypto` kitaplığı kullanılır. scrypt ve PBKDF2 kendi Dart kodumuzdur: `sodium` paketi scrypt'i sunmuyor, libsodium'da PBKDF2 hiç yok. İkisi RFC 7914'teki test vektörleriyle doğrulanır, ayrıca Aegis'in örnek dosyaları Node'un (OpenSSL) kriptosuyla açılıp aynı anahtarların üretildiği karşılaştırılır. Bu kod yalnızca kullanıcının verdiği dosyayı açmak için çalışır, kasanın şifrelemesinde kullanılmaz; bir hata dosyanın açılmamasına yol açar, kasayı zayıflatmaz.
+- **Sınırlar:** Kötü niyetli bir dosya cihazı belleksiz bırakmasın diye scrypt en fazla 128 MiB bellek ve p ≤ 16 ile çalışır, dosya en fazla 10 MB olabilir. Türetme ayrı isolate'te yapılır, ekran donmaz.
+- Dosya Android'in belge seçicisiyle seçilir, depolama izni gerekmez. `file_selector` dosyayı önbelleğe kopyalar; kopya okunur okunmaz silinir.
+- Dosyalar güvenilmeyen veri sayılır. Başka uygulamaların biçimi oldukları için bilinmeyen alanlar yok sayılır, ama bozuk bir hesap atlanır ve bozuk dosya uygulamayı düşürmez. Bozuk girdi testleri rastgele değiştirilmiş dosyalarla da çalıştırılır.
+- Desteklenmeyen hesaplar, örneğin Steam veya 5 haneli kodlar, atlanır ve kullanıcıya sayısı söylenir. Gizli anahtarı zaten kayıtlı olan hesap, çöp kutusunda bile olsa, işaretlenir ve tekrar eklenmez.
+- Hesaplar kaydedilmeden önce liste halinde gösterilir, kullanıcı hangilerinin ekleneceğini seçer.
+- Aegis'in 2019'dan eski, `repaired` işareti olmayan parola yuvaları farklı bir parola kodlamasıyla türetilmişti. Bu yuvalar desteklenmez; parola yanlış görünür.
 
 ### Kodları görmek için ek onay
 
