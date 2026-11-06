@@ -7,7 +7,8 @@
 # flutter test uygulamayı her çalıştırmada kurar ve sonunda kaldırır. Bu
 # yüzden izin, test "KKKAMERA_IZIN" yazınca, uygulama kuruluyken ayarlanır.
 # Reddetmek için "user-fixed" bayrağı konur: Android izin penceresini
-# göstermeden reddeder, test pencerede takılmaz.
+# göstermeden reddeder, test pencerede takılmaz. Bu komut Android 11'de yok;
+# orada betik izin penceresindeki reddet düğmesine dokunur.
 set -u
 export MSYS_NO_PATHCONV=1
 
@@ -20,15 +21,27 @@ trap 'rm -f "$log"' EXIT
 
 device() { adb -s "$serial" "$@"; }
 
+# Ekranda izin penceresinin reddet düğmesi varsa ona dokunur.
+tap_deny() {
+  local line
+  device shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1 || return 1
+  line=$(device exec-out cat /sdcard/ui.xml | tr '>' '\n' \
+    | grep -E 'text="(Deny|DENY|Don.t allow|Reddet)"' | head -1)
+  [[ -z "$line" ]] && return 1
+  # shellcheck disable=SC2046
+  set -- $(echo "$line" | sed -E 's/.*bounds="\[([0-9]+),([0-9]+)\]\[([0-9]+),([0-9]+)\]".*/\1 \2 \3 \4/')
+  device shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
+}
+
 # Testi süre sınırıyla çalıştırır. [mode] boş değilse izni ayarlar.
 run() {
   local name="$1" mode="$2"
   shift 2
   echo "== $name"
   flutter test integration_test/qr_test.dart -d "$serial" --reporter expanded "$@" >"$log" 2>&1 &
-  local test_pid=$! elapsed=0 sent=0
+  local test_pid=$! started=$SECONDS sent=0 deny_dialog=0
   while kill -0 "$test_pid" 2>/dev/null; do
-    if [[ "$elapsed" -ge "$limit" ]]; then
+    if (( SECONDS - started >= limit )); then
       echo "ZAMAN AŞIMI: $name $limit saniyede bitmedi." >&2
       kill "$test_pid" 2>/dev/null
       break
@@ -38,13 +51,18 @@ run() {
       if [[ "$mode" == granted ]]; then
         device shell pm grant "$package" "$permission"
       else
-        device shell pm set-permission-flags "$package" "$permission" user-fixed
+        # Komut yoksa hata metni basar; çıkış kodu her sürümde güvenilir değil.
+        if [[ -n "$(device shell pm set-permission-flags "$package" "$permission" user-fixed 2>&1)" ]]; then
+          deny_dialog=1
+        fi
       fi
       device shell run-as "$package" touch files/kk_kamera_hazir
       echo "İzin ayarlandı: $mode"
+    elif [[ "$deny_dialog" == 1 ]] && tap_deny; then
+      deny_dialog=0
+      echo "İzin penceresinde reddedildi."
     fi
     sleep 1
-    elapsed=$((elapsed + 1))
   done
   wait "$test_pid"
   local status=$?
