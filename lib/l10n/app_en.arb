@@ -1011,5 +1011,105 @@
         "type": "String"
       }
     }
+  },
+  "autofillWarnTitle": "Before filling",
+  "@autofillWarnTitle": {
+    "description": "Title of the warning shown before filling an unmatched or risky login."
+  },
+  "autofillWarnSignatureTitle": "This app may be fake",
+  "@autofillWarnSignatureTitle": {
+    "description": "Warning title when the app's signing key does not match the linked app."
+  },
+  "autofillWarnSignature": "This login is linked to {package}, but the app on this phone is signed with a different key. Do not fill unless you installed the app from a trusted source.",
+  "@autofillWarnSignature": {
+    "description": "The package name matches but the signature does not.",
+    "placeholders": {
+      "package": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillWarnNoMatchApp": "This login is not linked to {app}. Make sure you picked the right one.",
+  "@autofillWarnNoMatchApp": {
+    "description": "The user picked a login that does not match the app.",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillWarnNoMatchWeb": "This login was not saved for {site}. Fake sites use names that look like the real one; check the address bar.",
+  "@autofillWarnNoMatchWeb": {
+    "description": "The user picked a login that does not match the website.",
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillWarnWebView": "This app shows a web page inside it and says it is {site}. KeyKey cannot verify that, and the app can read the password that is filled.",
+  "@autofillWarnWebView": {
+    "description": "A non-browser app reports a website domain (WebView).",
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillWarnInsecure": "The connection is not encrypted (http). The password travels in the clear.",
+  "@autofillWarnInsecure": {
+    "description": "The page was opened over http."
+  },
+  "autofillWarnLogin": "Selected login: {name}",
+  "@autofillWarnLogin": {
+    "description": "Names the login about to be filled.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillAppName": "App: {name}",
+  "@autofillAppName": {
+    "description": "App details in the fill warning.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillAppPackage": "Package: {package}",
+  "@autofillAppPackage": {
+    "description": "App details in the fill warning.",
+    "placeholders": {
+      "package": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillAppSignature": "Signature (SHA-256): {fingerprint}",
+  "@autofillAppSignature": {
+    "description": "App details in the fill warning; the full certificate fingerprint.",
+    "placeholders": {
+      "fingerprint": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillBindApp": "Link this app to the login",
+  "@autofillBindApp": {
+    "description": "Checkbox to remember the app for this login."
+  },
+  "autofillBindAppHint": "It will match automatically next time.",
+  "@autofillBindAppHint": {
+    "description": "Explains linking the app."
+  },
+  "autofillFillAnyway": "Fill anyway",
+  "@autofillFillAnyway": {
+    "description": "Confirms filling despite the warning."
+  },
+  "autofillCancel": "Cancel",
+  "@autofillCancel": {
+    "description": "Closes the fill warning without filling."
   }
 }

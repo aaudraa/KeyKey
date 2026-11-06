@@ -5,11 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/features/autofill/application/autofill_bridge.dart';
 import 'package:keykey/features/autofill/application/autofill_matches.dart';
+import 'package:keykey/features/autofill/domain/fill_warnings.dart';
 import 'package:keykey/features/autofill/domain/login_matcher.dart';
 import 'package:keykey/features/autofill/presentation/autofill_app.dart';
+import 'package:keykey/features/autofill/presentation/fill_confirm_dialog.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/application/login_search.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
+import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
@@ -27,11 +30,60 @@ class AutofillPickScreen extends ConsumerStatefulWidget {
 
 class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
   final _query = TextEditingController();
+  bool _busy = false;
 
   @override
   void dispose() {
     _query.dispose();
     super.dispose();
+  }
+
+  /// Şüpheli bir durum varsa önce uyarır ve onay ister, istenirse uygulamayı
+  /// kayda bağlar, sonra doldurur.
+  Future<void> _pick(LoginItem item, LoginMatches matches) async {
+    if (_busy) return;
+    _busy = true;
+    try {
+      final target = widget.target;
+      final warnings = fillWarnings(
+        target: target,
+        item: item,
+        matches: matches,
+      );
+      var chosen = item;
+      if (warnings.isNotEmpty) {
+        final answer = await confirmFill(
+          context,
+          target: target,
+          item: item,
+          warnings: warnings,
+        );
+        if (answer == null || !mounted) return;
+        if (answer.bind && canBindApp(target: target, warnings: warnings)) {
+          chosen = await _bindApp(item);
+        }
+      }
+      await _fill(chosen);
+    } finally {
+      _busy = false;
+    }
+  }
+
+  /// Uygulamayı paket adı ve imza özetleriyle kayda ekler.
+  Future<LoginItem> _bindApp(LoginItem item) {
+    final target = widget.target;
+    final app = LoginApp(
+      packageName: target.packageName,
+      certsSha256: target.certsSha256,
+    );
+    final apps = [
+      for (final existing in item.content.apps)
+        if (existing.packageName != app.packageName) existing,
+      app,
+    ];
+    return ref
+        .read(loginsControllerProvider.notifier)
+        .update(item, item.content.copyWith(apps: apps));
   }
 
   /// Değerleri alır, kasayı kilitler ve forma verir. Kilit önce gelir:
@@ -140,14 +192,14 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
             _note(l10n.autofillNoMatch(targetName)),
           if (top.isNotEmpty) ...[
             _header(context, l10n.autofillMatching),
-            for (final item in top) _tile(item),
+            for (final item in top) _tile(item, matches),
           ],
           if (rest.isNotEmpty) ...[
             _header(
               context,
               top.isEmpty ? l10n.autofillAllLogins : l10n.autofillOtherLogins,
             ),
-            for (final item in rest) _tile(item),
+            for (final item in rest) _tile(item, matches),
           ],
         ],
       ],
@@ -170,12 +222,12 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
     ),
   );
 
-  Widget _tile(LoginItem item) => ListTile(
+  Widget _tile(LoginItem item, LoginMatches matches) => ListTile(
     leading: const Icon(Icons.key),
     title: Text(item.content.name.isEmpty ? '—' : item.content.name),
     subtitle: item.content.username.isEmpty
         ? null
         : Text(item.content.username),
-    onTap: () => unawaited(_fill(item)),
+    onTap: () => unawaited(_pick(item, matches)),
   );
 }

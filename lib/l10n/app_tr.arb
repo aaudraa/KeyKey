@@ -216,5 +216,20 @@
   "autofillMatching": "Eşleşen kayıtlar",
   "autofillOtherLogins": "Diğer kayıtlar",
   "autofillAllLogins": "Bütün kayıtlar",
-  "autofillNoMatch": "{target} için kayıtlı giriş yok. Listeden kendin seçebilirsin."
+  "autofillNoMatch": "{target} için kayıtlı giriş yok. Listeden kendin seçebilirsin.",
+  "autofillWarnTitle": "Doldurmadan önce",
+  "autofillWarnSignatureTitle": "Bu uygulama sahte olabilir",
+  "autofillWarnSignature": "Bu kayıt {package} uygulamasına bağlı, ama telefondaki uygulama başka bir anahtarla imzalanmış. Uygulamayı güvenilir bir yerden yüklemediysen doldurma.",
+  "autofillWarnNoMatchApp": "Bu kayıt {app} uygulamasına bağlı değil. Doğru kaydı seçtiğinden emin ol.",
+  "autofillWarnNoMatchWeb": "Bu kayıt {site} için kaydedilmemiş. Sahte siteler gerçeğine benzeyen adlar kullanır; adres çubuğuna bak.",
+  "autofillWarnWebView": "Bu uygulama içinde bir web sayfası gösteriyor ve kendini {site} olarak tanıtıyor. KeyKey bunu doğrulayamaz; doldurulan parolayı uygulama okuyabilir.",
+  "autofillWarnInsecure": "Bağlantı şifresiz (http). Parola ağda açık gider.",
+  "autofillWarnLogin": "Seçilen kayıt: {name}",
+  "autofillAppName": "Uygulama: {name}",
+  "autofillAppPackage": "Paket: {package}",
+  "autofillAppSignature": "İmza (SHA-256): {fingerprint}",
+  "autofillBindApp": "Uygulamayı bu kayda bağla",
+  "autofillBindAppHint": "Sonraki seferde kendiliğinden eşleşir.",
+  "autofillFillAnyway": "Yine de doldur",
+  "autofillCancel": "Vazgeç"
 }

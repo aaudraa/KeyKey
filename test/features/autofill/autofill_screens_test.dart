@@ -176,7 +176,7 @@ void main() {
     expect(find.text('Posta'), findsOneWidget);
   });
 
-  testWidgets('seçilen kayıt dolduruluyor ve kasa kilitleniyor', (
+  testWidgets('eşleşen kayıt sormadan dolduruluyor ve kasa kilitleniyor', (
     tester,
   ) async {
     final bridge = await pumpAutofill(
@@ -184,20 +184,18 @@ void main() {
       status: VaultOpen(service.newSession()),
     );
 
-    await tester.tap(find.text('Banka'));
+    await tester.tap(find.text('Örnek hesap'));
     await tester.pumpAndSettle();
 
-    expect(bridge.filled, (
-      username: 'ali@example.com',
-      password: 'banka-parolasi',
-    ));
+    expect(find.text('Doldurmadan önce'), findsNothing);
+    expect(bridge.filled, (username: 'veli', password: 'ornek-parolasi'));
     final container = ProviderScope.containerOf(
       tester.element(find.byType(AutofillHome)),
     );
     expect(container.read(vaultControllerProvider), isA<VaultLocked>());
     // Ekran kapanırken kilit ekranı ve parmak izi penceresi yeniden açılmaz.
     expect(find.text('KeyKey kilitli'), findsNothing);
-    expect(find.text('Banka'), findsNothing);
+    expect(find.text('Örnek hesap'), findsNothing);
   });
 
   testWidgets('arama süzüyor', (tester) async {
@@ -278,6 +276,8 @@ void main() {
 
     await tester.tap(find.text('Banka'));
     await tester.pumpAndSettle();
+    // Eşleşen ve https: uyarı yok.
+    expect(find.text('Doldurmadan önce'), findsNothing);
     expect(bridge.filled?.password, 'banka-parolasi');
   });
 
@@ -290,5 +290,133 @@ void main() {
     expect(find.text('Banka'), findsOneWidget);
     expect(find.text('Örnek hesap'), findsNothing);
     expect(find.text('Eşleşen kayıtlar'), findsNothing);
+  });
+
+  group('uyarılar', () {
+    testWidgets('eşleşmeyen kayıtta uyarı; vazgeçince doldurulmuyor', (
+      tester,
+    ) async {
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+      );
+
+      await tester.tap(find.text('Banka'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Doldurmadan önce'), findsOneWidget);
+      expect(
+        find.textContaining('Örnek Giriş uygulamasına bağlı değil'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Paket: io.github.aaudraa.ornekgiris'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('İmza (SHA-256): CC:CC:CC'), findsOneWidget);
+
+      await tester.tap(find.text('Vazgeç'));
+      await tester.pumpAndSettle();
+      expect(bridge.filled, isNull);
+      expect(find.text('Banka'), findsOneWidget);
+    });
+
+    testWidgets('onaylanınca dolduruluyor, bağlanmadan', (tester) async {
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+      );
+
+      await tester.tap(find.text('Banka'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Yine de doldur'));
+      await tester.pumpAndSettle();
+
+      expect(bridge.filled?.password, 'banka-parolasi');
+      final banka = logins.items.firstWhere((i) => i.content.name == 'Banka');
+      expect(banka.content.apps, isEmpty);
+    });
+
+    testWidgets('istenirse uygulama kayda bağlanıyor', (tester) async {
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+      );
+
+      await tester.tap(find.text('Banka'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Uygulamayı bu kayda bağla'));
+      await tester.pump();
+      await tester.tap(find.text('Yine de doldur'));
+      await tester.pumpAndSettle();
+
+      expect(bridge.filled?.password, 'banka-parolasi');
+      final banka = logins.items.firstWhere((i) => i.content.name == 'Banka');
+      expect(banka.content.apps.single.packageName, app.packageName);
+      expect(banka.content.apps.single.certsSha256, [cert]);
+    });
+
+    testWidgets('imzası tutmayan uygulamada sahte uyarısı, bağlama yok', (
+      tester,
+    ) async {
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: const AutofillTarget(
+          packageName: 'io.github.aaudraa.ornekgiris',
+          appLabel: 'Örnek Giriş',
+          certsSha256: [
+            'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
+          ],
+        ),
+      );
+
+      await tester.tap(find.text('Örnek hesap'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bu uygulama sahte olabilir'), findsOneWidget);
+      expect(find.text('Uygulamayı bu kayda bağla'), findsNothing);
+      await tester.tap(find.text('Vazgeç'));
+      await tester.pumpAndSettle();
+      expect(bridge.filled, isNull);
+    });
+
+    testWidgets('WebView ve şifresiz bağlantı uyarıları', (tester) async {
+      await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: const AutofillTarget(
+          packageName: 'io.github.aaudraa.ornekgiris',
+          appLabel: 'Örnek Giriş',
+          certsSha256: [cert],
+          untrustedWebDomain: 'banka.example.com',
+        ),
+      );
+
+      await tester.tap(find.text('Banka'));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('kendini banka.example.com olarak tanıtıyor'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('http sayfasında eşleşen kayıt da uyarılıyor', (tester) async {
+      await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: const AutofillTarget(
+          packageName: 'com.android.chrome',
+          webDomain: 'banka.example.com',
+          webScheme: 'http',
+        ),
+      );
+
+      await tester.tap(find.text('Banka'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Bağlantı şifresiz (http)'), findsOneWidget);
+      expect(find.textContaining('kaydedilmemiş'), findsNothing);
+      expect(find.textContaining('Paket:'), findsNothing);
+    });
   });
 }
