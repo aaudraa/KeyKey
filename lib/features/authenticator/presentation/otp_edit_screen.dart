@@ -142,6 +142,28 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
     }
   }
 
+  /// Anahtarı panodan alır. Uzun anahtarı elle yazmak hataya açık; servis
+  /// telefondaysa veya pano bilgisayarla paylaşılıyorsa kopyalayıp yapıştırmak
+  /// daha güvenli.
+  Future<void> _pasteSecret() async {
+    final l10n = AppLocalizations.of(context);
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    if (!mounted) return;
+    final text = data?.text?.trim() ?? '';
+    if (text.isEmpty) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(l10n.otpSecretPasteEmpty)));
+      return;
+    }
+    final formatted = SecretKeyFormatter.group(text);
+    _secret.value = TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+    _onSecretChanged(formatted);
+  }
+
   void _changed(String _) {
     if (!_dirty) setState(() => _dirty = true);
   }
@@ -384,6 +406,11 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
               // Eş genişlikli yazı tipinde 0 ile O, 1 ile I daha kolay
               // ayrılır.
               style: const TextStyle(fontFamily: 'monospace'),
+              trailing: IconButton(
+                tooltip: l10n.otpSecretPaste,
+                icon: const Icon(Icons.content_paste),
+                onPressed: _pasteSecret,
+              ),
               textInputAction: TextInputAction.next,
               onChanged: _onSecretChanged,
             ),

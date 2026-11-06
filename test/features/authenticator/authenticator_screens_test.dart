@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/features/authenticator/data/base32.dart';
 import 'package:keykey/features/authenticator/data/otp_content.dart';
@@ -387,6 +388,68 @@ void main() {
       await settle(tester);
 
       expect(find.text('JBSW Y3DP EHPK 3PXP'), findsOneWidget);
+    });
+
+    group('yapıştır düğmesi', () {
+      void mockClipboard(WidgetTester tester, String? text) {
+        tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          (call) async => call.method == 'Clipboard.getData'
+              ? (text == null ? null : <String, Object?>{'text': text})
+              : null,
+        );
+        addTearDown(
+          () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+            SystemChannels.platform,
+            null,
+          ),
+        );
+      }
+
+      testWidgets('panodaki anahtar gruplanarak geliyor', (tester) async {
+        mockClipboard(tester, '  jbsw y3dp ehpk 3pxp\n');
+        await openForm(tester);
+
+        await tester.tap(find.byTooltip('Yapıştır'));
+        await settle(tester);
+        expect(find.text('JBSW Y3DP EHPK 3PXP'), findsOneWidget);
+
+        await tester.enterText(
+          find.widgetWithText(TextField, 'Servis'),
+          'Yapışık',
+        );
+        await tester.tap(find.text('Kaydet'));
+        await settle(tester);
+        expect(
+          otps.items.last.content.parameters.secret,
+          Base32.decodeCanonical('JBSWY3DPEHPK3PXP'),
+        );
+      });
+
+      testWidgets('panodaki bağlantı formu dolduruyor', (tester) async {
+        mockClipboard(
+          tester,
+          'otpauth://totp/Banka:veli?secret=JBSWY3DPEHPK3PXP',
+        );
+        await openForm(tester);
+
+        await tester.tap(find.byTooltip('Yapıştır'));
+        await settle(tester);
+
+        expect(find.text('Bilgiler bağlantıdan dolduruldu.'), findsOneWidget);
+        expect(find.widgetWithText(TextField, 'Banka'), findsOneWidget);
+        expect(find.text('JBSW Y3DP EHPK 3PXP'), findsOneWidget);
+      });
+
+      testWidgets('pano boşsa söyleniyor', (tester) async {
+        mockClipboard(tester, null);
+        await openForm(tester);
+
+        await tester.tap(find.byTooltip('Yapıştır'));
+        await settle(tester);
+
+        expect(find.text('Panoda metin yok.'), findsOneWidget);
+      });
     });
 
     testWidgets('yanlış karakter yazarken hemen söyleniyor', (tester) async {

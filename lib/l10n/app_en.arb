@@ -675,6 +675,14 @@
       }
     }
   },
+  "otpSecretPaste": "Paste",
+  "@otpSecretPaste": {
+    "description": "Button next to the secret key field that pastes from the clipboard."
+  },
+  "otpSecretPasteEmpty": "The clipboard has no text.",
+  "@otpSecretPasteEmpty": {
+    "description": "Shown when the paste button finds no text on the clipboard."
+  },
   "otpSecretOneLooksLike": "“1” can't appear in a key. It may be the capital letter I or L.",
   "@otpSecretOneLooksLike": {
     "description": "Shown while typing a secret key that contains the digit 1."
