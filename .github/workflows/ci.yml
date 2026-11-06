@@ -72,7 +72,7 @@ jobs:
       # flutter build adımı hazırlar.
       - name: Kotlin birim testleri
         working-directory: android
-        run: ./gradlew :app:testReleaseUnitTest --console=plain
+        run: ./gradlew :app:testDebugUnitTest --console=plain
 
   gizli-bilgi:
     name: Gizli bilgi taraması
