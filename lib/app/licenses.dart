@@ -4,9 +4,10 @@ import 'package:flutter/services.dart';
 /// Paketlerle gelmeyen, uygulamaya veri olarak giren kaynakların lisansları.
 ///
 /// Flutter paket lisanslarını kendisi ekler. Sözcük listeleri paket olmadığı
-/// için burada elle eklenir, EFF listesi atıf istiyor. flutter_zxing'in
-/// içine gömülü C++ kitaplıkları da paketin lisansında yazmadığı için
-/// buradadır.
+/// için burada elle eklenir, EFF listesi atıf istiyor. Public Suffix List
+/// otomatik doldurmada alan adlarını karşılaştırmak için gömülüdür.
+/// flutter_zxing'in içine gömülü C++ kitaplıkları da paketin lisansında
+/// yazmadığı için buradadır.
 void registerDataLicenses() {
   LicenseRegistry.addLicense(() async* {
     yield const LicenseEntryWithLineBreaks(
@@ -18,6 +19,16 @@ void registerDataLicenses() {
       'Used unchanged as the word list for passphrases.',
     );
     yield const LicenseEntryWithLineBreaks(['SecLists'], _secListsMit);
+    yield const LicenseEntryWithLineBreaks(
+      ['Public Suffix List'],
+      'Public Suffix List, https://publicsuffix.org/\n\n'
+      'This Source Code Form is subject to the terms of the Mozilla Public '
+      'License, v. 2.0. If a copy of the MPL was not distributed with this '
+      'file, You can obtain one at https://mozilla.org/MPL/2.0/.\n\n'
+      'Embedded unchanged; used by autofill to compare website domains. '
+      'The source is resources/assets/autofill/public_suffix_list.dat in '
+      'the KeyKey repository.',
+    );
     for (final (name, path) in _embeddedNative) {
       yield LicenseEntryWithLineBreaks([
         'flutter_zxing',

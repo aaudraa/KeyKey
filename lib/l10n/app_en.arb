@@ -990,5 +990,26 @@
   "autofillClose": "Close",
   "@autofillClose": {
     "description": "Closes the autofill screen without filling."
+  },
+  "autofillMatching": "Matching logins",
+  "@autofillMatching": {
+    "description": "Header above logins that match the app or website being filled."
+  },
+  "autofillOtherLogins": "Other logins",
+  "@autofillOtherLogins": {
+    "description": "Header above the logins that do not match."
+  },
+  "autofillAllLogins": "All logins",
+  "@autofillAllLogins": {
+    "description": "Header above the list when nothing matches."
+  },
+  "autofillNoMatch": "No saved login for {target}. You can pick one from the list.",
+  "@autofillNoMatch": {
+    "description": "Shown when no login matches the app or website being filled.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
   }
 }

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/features/autofill/application/autofill_bridge.dart';
+import 'package:keykey/features/autofill/application/autofill_matches.dart';
+import 'package:keykey/features/autofill/domain/login_matcher.dart';
 import 'package:keykey/features/autofill/presentation/autofill_app.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/application/login_search.dart';
@@ -12,6 +14,8 @@ import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Kasa açıldıktan sonra doldurulacak kaydın seçildiği ekran.
+///
+/// Eşleşen kayıtlar üstte, diğerleri altta. Arama bütün kayıtlarda yapılır.
 class AutofillPickScreen extends ConsumerStatefulWidget {
   const new({required this.target, super.key});
 
@@ -46,6 +50,7 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final state = ref.watch(loginsControllerProvider);
+    final matches = ref.watch(autofillMatchesProvider);
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.autofillTitle),
@@ -55,9 +60,21 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
           onPressed: () => unawaited(ref.read(autofillBridgeProvider).cancel()),
         ),
       ),
-      body: switch (state) {
-        LoginsLoading() => const Center(child: CircularProgressIndicator()),
-        LoginsLoaded() => _list(context, l10n, state),
+      body: switch ((state, matches)) {
+        (LoginsLoaded(), AsyncData(:final value)) => _list(
+          context,
+          l10n,
+          state as LoginsLoaded,
+          value,
+        ),
+        // Eşleştirme başarısız olursa bütün kayıtlar eşleşmesiz gösterilir.
+        (LoginsLoaded(), AsyncError()) => _list(
+          context,
+          l10n,
+          state as LoginsLoaded,
+          LoginMatches.empty,
+        ),
+        _ => const Center(child: CircularProgressIndicator()),
       },
     );
   }
@@ -66,14 +83,42 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
     BuildContext context,
     AppLocalizations l10n,
     LoginsLoaded state,
+    LoginMatches matches,
   ) {
-    final items = filterLogins(state.indexed, LoginFilter(query: _query.text));
+    final searching = _query.text.trim().isNotEmpty;
+    final filtered = filterLogins(
+      state.indexed,
+      LoginFilter(query: _query.text),
+    );
+    final matched = [for (final m in matches.matches) m.item];
+    final matchedIds = {for (final item in matched) _key(item)};
+    final List<LoginItem> top;
+    final List<LoginItem> rest;
+    if (searching) {
+      // Aramada eşleşenler yine önce gelir, ama yalnızca aramaya uyanlar.
+      final hits = {for (final item in filtered) _key(item)};
+      top = [
+        for (final item in matched)
+          if (hits.contains(_key(item))) item,
+      ];
+      rest = [
+        for (final item in filtered)
+          if (!matchedIds.contains(_key(item))) item,
+      ];
+    } else {
+      top = matched;
+      rest = [
+        for (final item in filtered)
+          if (!matchedIds.contains(_key(item))) item,
+      ];
+    }
+    final targetName = autofillTargetName(widget.target);
     return ListView(
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
           child: Text(
-            l10n.autofillFor(autofillTargetName(widget.target)),
+            l10n.autofillFor(targetName),
             style: Theme.of(context).textTheme.titleMedium,
           ),
         ),
@@ -86,24 +131,51 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
             onChanged: (_) => setState(() {}),
           ),
         ),
-        if (items.isEmpty)
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text(
-              state.items.isEmpty ? l10n.autofillEmpty : l10n.vaultNoResults,
-              textAlign: TextAlign.center,
+        if (state.items.isEmpty)
+          _note(l10n.autofillEmpty)
+        else if (top.isEmpty && rest.isEmpty)
+          _note(l10n.vaultNoResults)
+        else ...[
+          if (!searching && top.isEmpty)
+            _note(l10n.autofillNoMatch(targetName)),
+          if (top.isNotEmpty) ...[
+            _header(context, l10n.autofillMatching),
+            for (final item in top) _tile(item),
+          ],
+          if (rest.isNotEmpty) ...[
+            _header(
+              context,
+              top.isEmpty ? l10n.autofillAllLogins : l10n.autofillOtherLogins,
             ),
-          ),
-        for (final item in items)
-          ListTile(
-            leading: const Icon(Icons.key),
-            title: Text(item.content.name.isEmpty ? '—' : item.content.name),
-            subtitle: item.content.username.isEmpty
-                ? null
-                : Text(item.content.username),
-            onTap: () => unawaited(_fill(item)),
-          ),
+            for (final item in rest) _tile(item),
+          ],
+        ],
       ],
     );
   }
+
+  static String _key(LoginItem item) => item.id.join(',');
+
+  Widget _note(String text) => Padding(
+    padding: const EdgeInsets.all(24),
+    child: Text(text, textAlign: TextAlign.center),
+  );
+
+  Widget _header(BuildContext context, String text) => Padding(
+    padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+    child: Text(
+      text,
+      style: Theme.of(context).textTheme.labelLarge
+          ?.copyWith(color: Theme.of(context).colorScheme.primary),
+    ),
+  );
+
+  Widget _tile(LoginItem item) => ListTile(
+    leading: const Icon(Icons.key),
+    title: Text(item.content.name.isEmpty ? '—' : item.content.name),
+    subtitle: item.content.username.isEmpty
+        ? null
+        : Text(item.content.username),
+    onTap: () => unawaited(_fill(item)),
+  );
 }

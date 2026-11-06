@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/features/autofill/application/autofill_bridge.dart';
+import 'package:keykey/features/autofill/application/autofill_matches.dart';
+import 'package:keykey/features/autofill/domain/public_suffix_list.dart';
 import 'package:keykey/features/autofill/presentation/autofill_app.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
@@ -44,14 +48,20 @@ void main() {
   late SodiumSumo sodium;
   late FakeVaultService service;
   late FakeLoginRepository logins;
+  late PublicSuffixList psl;
 
+  const cert =
+      'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc';
   const app = AutofillTarget(
     packageName: 'io.github.aaudraa.ornekgiris',
     appLabel: 'Örnek Giriş',
+    certsSha256: [cert],
   );
 
   setUpAll(() async {
     sodium = await SodiumSumoInit.init();
+    // rootBundle büyük dosyayı izolede okuyor, sahte zamanlı testte bitmiyor.
+    psl = PublicSuffixList.parse(File(publicSuffixListPath).readAsStringSync());
   });
 
   setUp(() {
@@ -75,6 +85,20 @@ void main() {
           ),
           id: 2,
         ),
+        FakeLoginRepository.item(
+          LoginContent(
+            name: 'Örnek hesap',
+            username: 'veli',
+            password: 'ornek-parolasi',
+            apps: [
+              LoginApp(
+                packageName: 'io.github.aaudraa.ornekgiris',
+                certsSha256: const [cert],
+              ),
+            ],
+          ),
+          id: 3,
+        ),
       ],
     );
   });
@@ -97,6 +121,7 @@ void main() {
             (_) => FakeSettingsRepository(),
           ),
           autofillBridgeProvider.overrideWithValue(bridge),
+          publicSuffixListProvider.overrideWith((ref) => psl),
         ],
         child: const AutofillApp(),
       ),
@@ -196,5 +221,74 @@ void main() {
 
     expect(bridge.cancelled, isTrue);
     expect(bridge.filled, isNull);
+  });
+
+  testWidgets('uygulamaya bağlı kayıt üstte, diğerleri altta', (tester) async {
+    await pumpAutofill(tester, status: VaultOpen(service.newSession()));
+
+    expect(find.text('Eşleşen kayıtlar'), findsOneWidget);
+    expect(find.text('Diğer kayıtlar'), findsOneWidget);
+    final matched = tester.getTopLeft(find.text('Örnek hesap')).dy;
+    final header = tester.getTopLeft(find.text('Diğer kayıtlar')).dy;
+    expect(matched, lessThan(header));
+    expect(tester.getTopLeft(find.text('Banka')).dy, greaterThan(header));
+  });
+
+  testWidgets('imzası tutmayan uygulama eşleşmiyor', (tester) async {
+    await pumpAutofill(
+      tester,
+      status: VaultOpen(service.newSession()),
+      target: const AutofillTarget(
+        packageName: 'io.github.aaudraa.ornekgiris',
+        appLabel: 'Örnek Giriş',
+        certsSha256: [
+          'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
+        ],
+      ),
+    );
+
+    expect(find.text('Eşleşen kayıtlar'), findsNothing);
+    expect(
+      find.text(
+        'Örnek Giriş için kayıtlı giriş yok. Listeden kendin seçebilirsin.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Bütün kayıtlar'), findsOneWidget);
+    expect(find.text('Örnek hesap'), findsOneWidget);
+  });
+
+  testWidgets('tarayıcıda aynı sitenin kaydı eşleşiyor', (tester) async {
+    final bridge = await pumpAutofill(
+      tester,
+      status: VaultOpen(service.newSession()),
+      target: const AutofillTarget(
+        packageName: 'com.android.chrome',
+        appLabel: 'Chrome',
+        webDomain: 'giris.banka.example.com',
+        webScheme: 'https',
+      ),
+    );
+
+    expect(find.text('giris.banka.example.com için'), findsOneWidget);
+    expect(find.text('Eşleşen kayıtlar'), findsOneWidget);
+    final header = tester.getTopLeft(find.text('Diğer kayıtlar')).dy;
+    expect(tester.getTopLeft(find.text('Banka')).dy, lessThan(header));
+    expect(tester.getTopLeft(find.text('Örnek hesap')).dy, greaterThan(header));
+
+    await tester.tap(find.text('Banka'));
+    await tester.pumpAndSettle();
+    expect(bridge.filled?.password, 'banka-parolasi');
+  });
+
+  testWidgets('arama eşleşmeyenleri de buluyor', (tester) async {
+    await pumpAutofill(tester, status: VaultOpen(service.newSession()));
+
+    await tester.enterText(find.widgetWithText(TextField, 'Ara'), 'banka');
+    await tester.pump();
+
+    expect(find.text('Banka'), findsOneWidget);
+    expect(find.text('Örnek hesap'), findsNothing);
+    expect(find.text('Eşleşen kayıtlar'), findsNothing);
   });
 }

@@ -41,4 +41,5 @@ flutter:
     - resources/assets/wordlists/common_passwords_10k.txt
     - resources/assets/licenses/zxing-cpp.txt
     - resources/assets/licenses/zint.txt
+    - resources/assets/autofill/public_suffix_list.dat
   generate: true

@@ -212,5 +212,9 @@
   "autofillNoVault": "Önce KeyKey'de bir kasa oluştur.",
   "autofillVaultUnavailable": "Kasa burada açılamıyor. Durumu görmek için KeyKey'i aç.",
   "autofillEmpty": "Kasada henüz parola yok.",
-  "autofillClose": "Kapat"
+  "autofillClose": "Kapat",
+  "autofillMatching": "Eşleşen kayıtlar",
+  "autofillOtherLogins": "Diğer kayıtlar",
+  "autofillAllLogins": "Bütün kayıtlar",
+  "autofillNoMatch": "{target} için kayıtlı giriş yok. Listeden kendin seçebilirsin."
 }

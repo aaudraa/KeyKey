@@ -3,18 +3,19 @@ package io.github.aaudraa.keykey.autofill
 import android.content.pm.PackageManager
 
 /**
- * Bildirdiği `webDomain`'e güvenilen tarayıcılar: paket adı ve imza özeti.
+ * Bildirdiği `webDomain`'e güvenilen tarayıcılar.
  *
- * Bir uygulama ancak bu listede ve imzası tutuyorsa web sitesi kayıtlarıyla
- * eşleşir. Kaynak ve kurallar güvenlik tasarımı belgesinin Eşleştirme
+ * Bir uygulama ancak paket adı [TRUSTED_BROWSERS] listesindeyse ve o
+ * listedeki imzalardan biriyle imzalanmışsa web sitesi kayıtlarıyla eşleşir.
+ * Aynı paket adını taşıyan, başka anahtarla imzalanmış bir uygulama
+ * güvenilmez. Kaynak ve kurallar güvenlik tasarımı belgesinin Eşleştirme
  * bölümünde.
  */
 object TrustedBrowsers {
-    /** Paket adı -> izin verilen imza özetleri. */
-    private val browsers: Map<String, Set<String>> = emptyMap()
+    /** [packageName] için kabul edilen imza özetleri; listede yoksa boş. */
+    fun allowedDigests(packageName: String): Set<String> =
+        TRUSTED_BROWSERS[packageName].orEmpty()
 
-    fun isTrusted(pm: PackageManager, packageName: String): Boolean {
-        val allowed = browsers[packageName] ?: return false
-        return allowed.any { SigningCerts.hasAll(pm, packageName, listOf(it)) }
-    }
+    fun isTrusted(pm: PackageManager, packageName: String): Boolean =
+        allowedDigests(packageName).any { SigningCerts.hasAll(pm, packageName, listOf(it)) }
 }

@@ -18,5 +18,6 @@ void main() {
     expect(textOf('zxing-cpp'), contains('Apache License'));
     expect(textOf('zint'), contains('Robin Stuart'));
     expect(textOf('EFF Large Wordlist'), contains('CC BY 3.0'));
+    expect(textOf('Public Suffix List'), contains('Mozilla Public License'));
   });
 }
