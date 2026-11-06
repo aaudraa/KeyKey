@@ -150,11 +150,12 @@ Tür `login` olan kayıtların düz metni, şifrelemeden önce şu JSON'dur:
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "name": "Örnek",
   "username": "kullanici@example.com",
   "password": "...",
   "urls": ["https://example.com"],
+  "apps": [{ "package": "com.example.app", "certsSha256": ["<64 onaltılık hane>"] }],
   "notes": "",
   "customFields": [{ "name": "PIN", "value": "...", "hidden": true }],
   "favorite": false,
@@ -167,6 +168,7 @@ Tür `login` olan kayıtların düz metni, şifrelemeden önce şu JSON'dur:
 - Favori, klasör, çöp kutusu ve geçmiş de şifreli içeriktedir. Dosyayı ele geçiren biri kayıtların nasıl düzenlendiğini göremez. Klasörlerin ayrı bir tablosu yoktur, klasör listesi kayıtlardan çıkarılır.
 - Zaman değerleri 1970'ten beri geçen milisaniyedir.
 - Okurken doğrulama katıdır: bilinmeyen `version`, eksik alan, fazla alan veya yanlış tür reddedilir.
+- **Sürüm 2** (Faz 6) `apps` alanını ekledi: kaydın doldurulabileceği Android uygulamaları. Her uygulama paket adı ve imza sertifikalarının SHA-256 özetleriyle (küçük harf onaltılık, birden fazla imzacı varsa hepsi) tutulur; eşleşme için hepsi tutmalıdır. Ayrıntılar [Otomatik doldurma](#otomatik-doldurma) bölümünde. Sürüm 1 kayıtlar okunmaya devam eder ve `apps` boş sayılır; kayıt bir sonraki yazılışta sürüm 2 olur. Sürüm 1 okuyan eski bir uygulama sürüm 2 kaydı açamaz.
 - **Parola geçmişi:** Parola değişince eskisi başa eklenir, en fazla 10 tane tutulur.
 - **Çöp kutusu:** Silinen kayıt önce çöp kutusuna gider ve 30 gün sonra kasa açıkken kalıcı olarak silinir. Kalıcı silme de `secure_delete` ile yapılır.
 - **Okunamayan kayıt:** Bir kayıt açılamazsa liste düşmez. Kayda dokunulmaz, kullanıcıya kaç kaydın okunamadığı söylenir.
@@ -379,6 +381,64 @@ Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/googl
 - Kayıt yoksa ek onay kapalıdır. Kayıt var ama okunamıyorsa, biçime uymuyorsa veya türü farklıysa ek onay **açık** sayılır: dosyayı değiştiren biri ayarı böyle kapatamasın. Kullanıcı doğrulayıp kapatabilir. Kaydın tamamen silinmesi ise [kayıt silme sınırına](#bilinen-sınırlar) girer.
 
 **Sınır:** Bu, kasa anahtarını değiştirmez. 2FA anahtarı yine kasa anahtarından türetilir, çünkü ana parola ve kurtarma anahtarı da 2FA kayıtlarını açabilmelidir. Ayar, kilidi açık telefonu eline alan birine karşı koruma sağlar, cihazdaki zararlı yazılıma karşı korumaz.
+
+## Otomatik doldurma
+
+Android'in otomatik doldurma çerçevesiyle (`AutofillService`) çalışır. Temel kural: **kullanıcı KeyKey ekranında onaylamadan hiçbir veri hedef uygulamaya veya sisteme verilmez.**
+
+### Akış
+
+1. Sistem bir giriş formu için `onFillRequest` çağırır. Kotlin'deki servis formu çözümler: kullanıcı adı, parola, yeni parola ve tek kullanımlık kod alanlarını bulur. Doldurulacak alan yoksa yanıt vermez.
+2. Servis **kasaya hiç dokunmaz**: kasa açık olsa bile kayıt adlarını bilmez. Yanıtta tek bir öneri vardır, "KeyKey ile doldur". Bu, yanıt düzeyinde kimlik doğrulamadır (`FillResponse.setAuthentication`): öneriye dokunulunca KeyKey'in doldurma ekranı açılır. Kilitliyken de açıkken de kayıt adı görünmez.
+3. Doldurma ekranı (`AutofillActivity`), ana uygulamadan ayrı bir Flutter giriş noktasıyla (`autofillMain`) çalışır. Kendi kasa oturumunu açar: parmak izi veya ana parola. Hatalı parola beklemesi ana uygulamayla aynı sayacı kullanır.
+4. Ekran eşleşen kayıtları gösterir. Kullanıcı birini seçer. Şüpheli bir durum varsa önce açık bir uyarı ve ek onay gelir.
+5. Seçilen kaydın kullanıcı adı ve parolası Kotlin'e verilir. Kotlin bunlardan bir `Dataset` kurup sisteme döndürür. Ekran kapanınca kasa oturumu kapatılır, anahtarlar silinir.
+
+Ekran son uygulamalar listesinde görünmez ve ekran görüntüsü alınamaz (`FLAG_SECURE`).
+
+### Eşleştirme
+
+**Uygulamalar:** Paket adı tek başına güvenilmez. Aynı paket adını taşıyan başka bir uygulama farklı bir anahtarla imzalanmış olabilir. Kayıtta paket adıyla birlikte imza sertifikasının SHA-256 özeti tutulur. Eşleşme `PackageManager.hasSigningCertificate` ile denetlenir; bu, imza anahtarı döndürülmüş uygulamaların sertifika geçmişini de kabul eder.
+
+**Web siteleri:** Formun `webDomain` değeri yalnızca **güvenilen bir tarayıcıdan** geliyorsa kullanılır. Güvenilen tarayıcı, paket adı ve imza özeti gömülü listede olan uygulamadır. Liste, Google'ın Credential Manager için yayımladığı [ayrıcalıklı uygulamalar listesinden](https://www.gstatic.com/gpm-passkeys-privileged-apps/apps.json) alınır. Yalnızca yayın sürümlerinin imzaları alınır, test sürümlerinin (`userdebug`) imzaları ve tarayıcı olmayan Google Play Hizmetleri alınmaz. Liste uygulamaya gömülüdür, internetten güncellenmez; yeni sürümlerle elle güncellenir. Alan adı, gömülü [Public Suffix List](https://publicsuffix.org/) ile kayıt edilebilir alan adına indirgenir: `giris.banka.com.tr` ile `banka.com.tr` eşleşir, `banka.com.tr` ile `sahte-banka.com.tr` eşleşmez. Tam alan adı eşleşmesi önce gösterilir.
+
+**WebView içeren uygulamalar:** Tarayıcı olmayan bir uygulamanın formunda `webDomain` olsa da bu değer eşleştirmede kullanılmaz. Uygulama içindeki bir web sayfasına doldurulan parolayı, sayfayı barındıran uygulama da okuyabilir (2023'te yayımlanan AutoSpill). Böyle bir formda yalnızca o uygulamaya bağlı kayıtlar eşleşir.
+
+### Şüpheli durumlar
+
+Şu durumlarda kayıt doldurulmadan önce ne olduğunu anlatan bir uyarı gösterilir ve ayrıca onay istenir:
+
+- **Eşleşme yok:** Kullanıcı kaydı listeden kendisi seçer. Uygulamanın adı, paket adı ve imza özeti gösterilir. Kullanıcı isterse uygulama kayda bağlanır. Böylece sonraki doldurmada eşleşme kendiliğinden olur.
+- **WebView:** Tarayıcı olmayan bir uygulama web sitesi kaydı istiyor.
+- **Şifresiz bağlantı:** Sayfa `http` ile açılmış.
+- **İmza tutmuyor:** Kayıtta bağlı uygulamanın paket adı aynı ama imzası farklı. Bu durumda kayıt eşleşmiş sayılmaz. Kullanıcı yine de seçerse uyarı özellikle "bu uygulama sahte olabilir" der.
+
+### Yeni parola kaydetme
+
+Yanıtta bir `SaveInfo` bulunur. Kullanıcı formu gönderince sistem kaydetmeyi önerir ve `onSaveRequest` çağrılır. Servis yine kasaya dokunmaz; formdaki değerleri kendi kaydetme ekranına verir (`FillCallback.onSuccess(IntentSender)` ile). Kullanıcı kasayı açar, kaydı görür, gerekirse düzenler ve kaydeder. Uygulama veya alan adı kayda kendiliğinden bağlanır. Kaydetme ekranı da dışarıya açık değildir ve verileri başka bir yere yazmaz.
+
+### Satır içi öneriler
+
+Android 11+ klavyelerde öneri şerit halinde gösterilebilir. KeyKey'in şeridinde de yalnızca "KeyKey" yazar. Şerit, açılır listeyle aynı kimlik doğrulama akışını başlatır.
+
+### 2FA kodu
+
+Doldurulan kayıtla eşleşmiş bir 2FA hesabı varsa, ayar açıksa, güncel kod doldurmadan sonra [güvenli panoya](#pano) kopyalanır.
+
+### Chrome
+
+Chrome 135'ten beri parolaları başka bir doldurma servisine bırakması için kullanıcının Chrome ayarlarında "Autofill using another service" seçeneğini açması gerekir. KeyKey'in kurulum ekranı bu ayara doğrudan götürür (`ACTION_APPLICATION_PREFERENCES`, `CATEGORY_APP_BROWSER`, `CATEGORY_PREFERENCE`). Ayarın açık olup olmadığını okumak `READ_USER_DICTIONARY` izni ve paket sorgusu istediği için okunmaz. Eski uyumluluk modu (`compatibilityPackages`) kullanılmaz; Chrome onu 2025'te kaldırdı.
+
+### Eşzamanlılık
+
+Ana uygulama ve doldurma ekranı aynı süreçte, aynı veritabanı dosyasına iki ayrı bağlantıyla erişebilir. SQLite dosya kilidini kullanır. Aynı anda yazma olursa bağlantı hemen hata vermesin diye `busy_timeout` beş saniyedir. Ana uygulamanın bellekteki listesi, doldurma ekranının yaptığı değişikliği kasa yeniden açılınca görür; ana uygulama arka plana geçince zaten kilitlenir.
+
+### Sınırlar
+
+1. Doldurulan değer hedef uygulamaya verildikten sonra onu korumak bizim elimizde değildir.
+2. Kötü amaçlı bir erişilebilirlik servisi veya klavye, doldurulan alanı okuyabilir. Bu, [tehdit modelinin](../yol-haritasi.md#tehdit-modeli) dışındadır.
+3. Güvenilen tarayıcıların kendileri doğru alan adını bildirmek zorundadır; bir tarayıcı açığı burada da açık olur.
+4. İlk bağlamada kullanıcı onay verir: sahte bir uygulamayı gerçek uygulama sanıp kayda bağlarsa, sonraki doldurmalar o sahte uygulamaya da eşleşir. Uyarı bunu önlemeye çalışır, garanti edemez.
 
 ## Hata davranışı
 
