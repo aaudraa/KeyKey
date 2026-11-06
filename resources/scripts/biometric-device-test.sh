@@ -104,6 +104,11 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# Yeni açılmış emülatörde ekran uykuda veya kilit ekranında olabilir; o
+# zaman ayarların kayıt ekranı açılmaz. PIN konmadan önce kilit kaldırılır.
+device shell input keyevent KEYCODE_WAKEUP
+device shell wm dismiss-keyguard
+sleep 2
 device shell locksettings set-pin "$pin" >/dev/null
 enroll 1 || exit 2
 echo "Hazır: PIN ve birinci parmak izi kayıtlı."
