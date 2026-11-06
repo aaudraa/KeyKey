@@ -330,7 +330,9 @@ Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/googl
 
 - Şema ve tür büyük küçük harf ayırmaz. `totp` ve `hotp` dışındaki türler, örneğin `steam`, desteklenmiyor diye reddedilir.
 - `secret` zorunludur. Kullanıcıların elle yazdığı veya kopyaladığı metinlere uymak için Base32 okunurken küçük harf, boşluk, tire ve dolgu kabul edilir. Artan bitler atılır.
-- `issuer` parametresi varsa etiketteki `Servis:` önekinden önce gelir. Etiketteki iki noktadan sonraki boşluklar atılır.
+- `issuer` parametresi varsa etiketteki `Servis:` önekinden önce gelir. Etiketteki iki noktadan sonraki boşluklar atılır. Servis adında da iki nokta olabileceği için, `issuer` etiketin başında geçiyorsa etiket tam oradan bölünür.
+- Servis ve hesap adlarından denetim karakterleri ve metnin yönünü değiştiren karakterler (örneğin U+202E) atılır. Bunlar bir adı ekranda başka bir servisin adı gibi gösterebilir.
+- Yüzde kodlaması kendi çözücümüzle açılır. Sorgu kısmında `+` boşluktur, etikette değildir.
 - `algorithm`, `digits` ve `period` verilmezse SHA1, 6 ve 30 kullanılır. `hotp` için `counter` zorunludur.
 - Bilinen bir parametre iki kez geçerse veya değeri kurallara uymazsa bağlantı reddedilir. Bilinmeyen parametreler, örneğin `image`, yok sayılır. `image` adresine bağlanılmaz.
 - 4096 karakterden uzun metin okunmaz.
