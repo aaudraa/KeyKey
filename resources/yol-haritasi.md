@@ -361,18 +361,20 @@ Telefon denemesi üç sorun buldu ve [#60](https://github.com/aaudraa/KeyKey/pul
 
 **Tasarım:** Kasa kilitliyken sistem yalnızca "KeyKey ile doldur" seçeneğini görür. Kullanıcı seçince KeyKey açılır, kilit çözülür ve eşleşen kayıt onaylanır. Kullanıcı onayı olmadan hiçbir veri servise veya hedef uygulamaya verilmez.
 
-- [ ] Kotlin `AutofillService` ve manifest kaydı
-- [ ] Alan tespiti: autofill ipuçları, giriş türü, HTML nitelikleri, Türkçe ve İngilizce alan adları (test edilebilir saf Kotlin işlevleri olarak)
-- [ ] Kilit akışı: yanıt düzeyinde kimlik doğrulama ile KeyKey ekranını açmak
-- [ ] Hızlı açılan, ayrı bir Flutter giriş noktası (`autofillMain`)
-- [ ] Uygulama eşleştirme: paket adı ve imza sertifikası özeti birlikte
-- [ ] Web eşleştirme: gömülü Public Suffix List ile alan adı; `webDomain` yalnızca güvenilen tarayıcılardan kabul edilir
-- [ ] Şüpheli eşleşmede açık uyarı ve ek onay
-- [ ] Satır içi öneriler (Android 11+)
+- [x] Kotlin `AutofillService` ve manifest kaydı
+- [x] Alan tespiti: autofill ipuçları, giriş türü, HTML nitelikleri, Türkçe ve İngilizce alan adları (test edilebilir saf Kotlin işlevleri olarak)
+- [x] Kilit akışı: öneri düzeyinde kimlik doğrulama (`Dataset.setAuthentication`) ile KeyKey ekranını açmak
+- [x] Hızlı açılan, ayrı bir Flutter giriş noktası (`autofillMain`)
+- [x] Uygulama eşleştirme: paket adı ve imza sertifikası özeti birlikte
+- [x] Web eşleştirme: gömülü Public Suffix List ile alan adı; `webDomain` yalnızca güvenilen tarayıcılardan kabul edilir
+- [x] Şüpheli eşleşmede açık uyarı ve ek onay
+- [x] Satır içi öneriler (Android 11+)
 - [ ] Yeni parola kaydetme akışı
 - [ ] Doldurma sonrası 2FA kodunu panoya kopyalama seçeneği
 - [ ] Kurulum yönlendirmesi: sistem ayarına doğrudan geçiş ve Chrome 135+ için [gereken "Autofill using another service" ayarına](https://android-developers.googleblog.com/2025/02/chrome-3p-autofill-services-update.html) doğrudan bağlantı
 - [ ] Saldırı testleri: aynı paket adıyla farklı imzalı uygulama, sahte `webDomain`, WebView içeren uygulama (2023'te yayımlanan AutoSpill senaryosu)
+
+**Durum (2026-11-06):** #61-#66 bitti. Kalanlar: #67 kaydetme, #68 2FA kodu, #69 kurulum yönlendirmesi, #70 son denemeler. Android 16 ve 17 emülatörlerinde örnek uygulama, WebView ve aynı paket adlı sahte uygulama denendi; Chrome 145'le (Android 17) gerçek bir site dolduruldu. Açık sorun: Android 16 emülatöründeki Chrome 133, başka doldurma servisini desteklemiyor (135+ gerekiyor) ve Google hesabı olmadığı için güncellenemiyor. Android 11 ve 14'te de durum aynı olabilir. Chrome denemesi o emülatörlerde yapılamazsa bu ölçüt tartışılacak.
 
 **Bitti sayılması için:** Dört emülatörde Chrome'daki bir giriş formu ve örnek bir uygulama dolduruluyor; yeni parola kaydediliyor; kilitliyken hiçbir kayıt adı görünmüyor; saldırı testlerinin hepsinde parola sahte hedefe verilmiyor.
 
