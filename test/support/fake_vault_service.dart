@@ -9,6 +9,7 @@ import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/crypto/record_cipher.dart';
 import 'package:keykey/core/crypto/vault_crypto.dart';
 import 'package:keykey/core/crypto/vault_header.dart';
+import 'package:keykey/core/platform/qr_image_reader.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/core/vault/vault_service.dart';
@@ -17,6 +18,7 @@ import 'package:keykey/features/authenticator/application/otp_clock.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/data/otp_content.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
+import 'package:keykey/features/authenticator/presentation/qr_scan_screen.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
@@ -258,6 +260,41 @@ class FakeLoginRepository implements LoginRepository {
   }
 }
 
+/// Seçilen görselin sonucunu testin belirlediği gibi döndürür.
+class FakeQrImageReader implements QrImageReader {
+  QrImageResult next = const QrImageCancelled();
+  int calls = 0;
+
+  @override
+  Future<QrImageResult> pickAndRead() async {
+    calls++;
+    return next;
+  }
+}
+
+/// Kamera yerine: test, [scan] ile okunmuş gibi metin verir.
+class FakeQrCamera {
+  late ValueChanged<String> _onText;
+  late VoidCallback _onUnavailable;
+
+  /// Kamera ekrana geldi mi.
+  bool isShown = false;
+
+  void scan(String text) => _onText(text);
+
+  void fail() => _onUnavailable();
+
+  Widget build({
+    required ValueChanged<String> onText,
+    required VoidCallback onUnavailable,
+  }) {
+    _onText = onText;
+    _onUnavailable = onUnavailable;
+    isShown = true;
+    return const ColoredBox(color: Colors.black);
+  }
+}
+
 /// Bellekte çalışan 2FA deposu. Şifrelemeyi depo testleri sınar.
 class FakeOtpRepository implements OtpRepository {
   new({List<OtpItem>? items, this.unreadableCount = 0}) : items = items ?? [];
@@ -333,6 +370,8 @@ Future<void> pumpKeyKey(
   FakeLoginRepository? logins,
   FakeOtpRepository? otps,
   DateTime Function()? clock,
+  FakeQrImageReader? qrImages,
+  FakeQrCamera? camera,
   RecordingClipboard? clipboard,
   Locale locale = const Locale('tr'),
 }) async {
@@ -348,6 +387,10 @@ Future<void> pumpKeyKey(
         loginRepositoryFactoryProvider.overrideWithValue((_) => repository),
         otpRepositoryFactoryProvider.overrideWithValue((_) => otpRepository),
         if (clock != null) otpClockProvider.overrideWithValue(clock),
+        qrImageReaderProvider.overrideWithValue(
+          qrImages ?? FakeQrImageReader(),
+        ),
+        qrCameraProvider.overrideWithValue((camera ?? FakeQrCamera()).build),
         randomSourceProvider.overrideWithValue(
           SodiumRandomSource(service.sodium),
         ),

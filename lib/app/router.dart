@@ -2,9 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/app_shell.dart';
+import 'package:keykey/features/authenticator/data/otpauth_uri.dart';
 import 'package:keykey/features/authenticator/presentation/authenticator_screen.dart';
 import 'package:keykey/features/authenticator/presentation/otp_edit_screen.dart';
 import 'package:keykey/features/authenticator/presentation/otp_trash_screen.dart';
+import 'package:keykey/features/authenticator/presentation/qr_scan_screen.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/lock_screen.dart';
 import 'package:keykey/features/lock/presentation/new_password_screen.dart';
@@ -25,6 +27,7 @@ abstract final class AppRoutes {
   static const authenticator = '/2fa';
   static const authenticatorNew = '/2fa/yeni';
   static const authenticatorTrash = '/2fa/cop';
+  static const authenticatorScan = '/2fa/tara';
   static const settings = '/ayarlar';
   static const changePassword = '/ayarlar/parola';
   static const setup = '/kurulum';
@@ -143,7 +146,17 @@ final routerProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: 'yeni',
-                    builder: (context, state) => const OtpEditScreen(),
+                    // QR'dan okunan hesap onay için forma dolu gelir.
+                    builder: (context, state) => OtpEditScreen(
+                      initial: switch (state.extra) {
+                        final OtpauthAccount account => account,
+                        _ => null,
+                      },
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'tara',
+                    builder: (context, state) => const QrScanScreen(),
                   ),
                   GoRoute(
                     path: 'cop',

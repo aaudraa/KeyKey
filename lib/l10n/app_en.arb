@@ -727,5 +727,29 @@
         "type": "String"
       }
     }
+  },
+  "otpAddScan": "Scan QR code",
+  "@otpAddScan": {
+    "description": "Option that opens the camera scanner, and its title."
+  },
+  "otpAddImage": "Read QR code from an image",
+  "@otpAddImage": {
+    "description": "Option that picks an image and reads the QR code in it."
+  },
+  "otpScanHint": "Point the camera at the QR code the service shows.",
+  "@otpScanHint": {
+    "description": "Hint under the camera view."
+  },
+  "otpScanNotOtp": "This QR code is not a 2FA account.",
+  "@otpScanNotOtp": {
+    "description": "Shown when a scanned QR code holds something else, such as a web address."
+  },
+  "otpImageNoQr": "No QR code was found in the image.",
+  "@otpImageNoQr": {
+    "description": "Shown when the picked image has no readable QR code."
+  },
+  "otpCameraUnavailable": "The camera cannot be used. If you denied the permission, you can allow it in the Android settings, or read the QR code from an image instead.",
+  "@otpCameraUnavailable": {
+    "description": "Shown when the camera could not be opened."
   }
 }

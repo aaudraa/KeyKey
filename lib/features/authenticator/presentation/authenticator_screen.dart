@@ -16,7 +16,10 @@ import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/authenticator/presentation/otp_code_tile.dart';
 import 'package:keykey/features/authenticator/presentation/otp_display.dart';
+import 'package:keykey/features/authenticator/presentation/scanned_code_handler.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
+
+enum _AddOption { scan, image, manual }
 
 /// 2FA kodlarının listesi.
 ///
@@ -119,7 +122,7 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen>
 
   Future<void> _showAddOptions() async {
     final l10n = AppLocalizations.of(context);
-    final route = await showModalBottomSheet<String>(
+    final option = await showModalBottomSheet<_AddOption>(
       context: context,
       showDragHandle: true,
       builder: (context) => SafeArea(
@@ -134,15 +137,35 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen>
               ),
             ),
             ListTile(
+              leading: const Icon(Icons.qr_code_scanner),
+              title: Text(l10n.otpAddScan),
+              onTap: () => Navigator.pop(context, _AddOption.scan),
+            ),
+            ListTile(
+              leading: const Icon(Icons.image_outlined),
+              title: Text(l10n.otpAddImage),
+              onTap: () => Navigator.pop(context, _AddOption.image),
+            ),
+            ListTile(
               leading: const Icon(Icons.keyboard_outlined),
               title: Text(l10n.otpAddManual),
-              onTap: () => Navigator.pop(context, AppRoutes.authenticatorNew),
+              onTap: () => Navigator.pop(context, _AddOption.manual),
             ),
           ],
         ),
       ),
     );
-    if (route != null && mounted) await context.push(route);
+    if (!mounted) return;
+    switch (option) {
+      case _AddOption.scan:
+        await context.push(AppRoutes.authenticatorScan);
+      case _AddOption.image:
+        await readQrFromImage(context, ref, replace: false);
+      case _AddOption.manual:
+        await context.push(AppRoutes.authenticatorNew);
+      case null:
+        return;
+    }
   }
 
   @override

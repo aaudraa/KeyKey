@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/platform/pigeon_biometric_bridge.dart';
+import 'package:keykey/core/platform/qr_image_reader.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/core/storage/storage_exceptions.dart';
 import 'package:keykey/core/storage/vault_database.dart';
@@ -43,6 +44,7 @@ Future<List<Override>> bootstrap() async {
   return [
     randomSourceProvider.overrideWithValue(SodiumRandomSource(sodium)),
     sensitiveClipboardProvider.overrideWithValue(PigeonSensitiveClipboard()),
+    qrImageReaderProvider.overrideWithValue(ZxingQrImageReader()),
     vaultServiceProvider.overrideWithValue(service),
     loginRepositoryFactoryProvider.overrideWithValue(
       (session) =>

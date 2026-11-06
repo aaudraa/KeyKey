@@ -161,5 +161,11 @@
   "otpCounter": "Sayaç",
   "otpPeriodInvalid": "1 ile {max} arasında bir tam sayı gir.",
   "otpCounterInvalid": "0 veya daha büyük bir tam sayı gir.",
-  "otpTrashDeleteMessage": "\"{name}\" silinecek ve geri getirilemeyecek. Bu anahtar olmadan servise giriş yapamayabilirsin."
+  "otpTrashDeleteMessage": "\"{name}\" silinecek ve geri getirilemeyecek. Bu anahtar olmadan servise giriş yapamayabilirsin.",
+  "otpAddScan": "QR kodu tara",
+  "otpAddImage": "Görseldeki QR kodunu oku",
+  "otpScanHint": "Kamerayı servisin gösterdiği QR koduna tut.",
+  "otpScanNotOtp": "Bu QR kodu bir 2FA hesabı değil.",
+  "otpImageNoQr": "Görselde QR kodu bulunamadı.",
+  "otpCameraUnavailable": "Kamera kullanılamıyor. İzni reddettiysen Android ayarlarından verebilir ya da QR kodunu bir görselden okuyabilirsin."
 }
