@@ -14,10 +14,17 @@ class AppShell extends StatelessWidget {
       body: navigationShell,
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
-        onDestinationSelected: (index) => navigationShell.goBranch(
-          index,
-          initialLocation: index == navigationShell.currentIndex,
-        ),
+        onDestinationSelected: (index) {
+          if (index != navigationShell.currentIndex) {
+            navigationShell.goBranch(index);
+            return;
+          }
+          // Etkin sekmeye dokunmak bir üst ekrana döner. goBranch'in
+          // initialLocation'ı PopScope'u atlıyor ve formdaki kaydedilmemiş
+          // değişiklikler sorulmadan gidiyordu; maybePop soruyor.
+          final branch = navigationShell.route.branches[index];
+          branch.navigatorKey.currentState?.maybePop();
+        },
         destinations: [
           NavigationDestination(
             icon: const Icon(Icons.lock_outline),

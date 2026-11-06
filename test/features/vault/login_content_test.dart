@@ -129,6 +129,14 @@ void main() {
       }
     });
 
+    test('DateTime aralığı dışındaki zaman', () {
+      // RangeError değil, içerik hatası olmalı; yoksa liste düşerdi.
+      for (final value in [8640000000000001, -8640000000000001]) {
+        final map = json(full)..['trashedAt'] = value;
+        expect(() => LoginContent.fromJsonBytes(bytes(map)), rejected());
+      }
+    });
+
     test('hata mesajında değer yok', () {
       final map = json(full)..['password'] = 12345;
       try {

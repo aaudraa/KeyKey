@@ -5,7 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
+import 'package:keykey/core/vault/vault_session.dart';
+import 'package:keykey/features/authenticator/presentation/confirm_identity.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -72,9 +75,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  /// Açmak serbesttir. Kapatmak kimlik doğrulaması ister, yoksa kilidi açık
+  /// telefonu eline alan biri ayarı kapatıp kodları görebilirdi.
+  Future<void> _setOtpRequireAuth({required bool value}) async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    if (!value && !await confirmIdentity(context, ref)) return;
+    try {
+      await ref
+          .read(settingsControllerProvider.notifier)
+          .setOtpRequireAuth(value: value);
+    } on VaultLockedException {
+      // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.
+    } on Exception {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.loginSaveFailed)));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final settings = ref.watch(settingsControllerProvider);
     return Scaffold(
       appBar: AppBar(title: Text(l10n.navSettings)),
       body: ListView(
@@ -99,6 +120,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               title: Text(l10n.settingsBiometric),
               subtitle: Text(l10n.settingsBiometricNotEnrolled),
             ),
+          SwitchListTile(
+            secondary: const Icon(Icons.shield_outlined),
+            title: Text(l10n.settingsOtpRequireAuth),
+            subtitle: Text(l10n.settingsOtpRequireAuthHelp),
+            value: settings?.otpRequireAuth ?? false,
+            onChanged: settings == null
+                ? null
+                : (value) => _setOtpRequireAuth(value: value),
+          ),
           ListTile(
             leading: const Icon(Icons.lock_outline),
             title: Text(l10n.settingsLockNow),

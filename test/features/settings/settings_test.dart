@@ -50,6 +50,12 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  // Ayarlarda birden çok anahtar var, parmak izi anahtarı adıyla bulunur.
+  final biometricSwitch = find.widgetWithText(
+    SwitchListTile,
+    'Parmak iziyle aç',
+  );
+
   group('parmak izi', () {
     testWidgets('cihazda yoksa ayar görünmüyor', (tester) async {
       service.biometricSupportValue = BiometricSupport.noHardware;
@@ -65,7 +71,7 @@ void main() {
       await pumpSettings(tester);
 
       expect(find.textContaining('parmak izi ekle'), findsOneWidget);
-      expect(find.byType(SwitchListTile), findsNothing);
+      expect(biometricSwitch, findsNothing);
     });
 
     testWidgets('açılıp kapatılabiliyor', (tester) async {
@@ -74,15 +80,12 @@ void main() {
         ..nextBiometric = const BiometricSuccess(null);
       await pumpSettings(tester);
 
-      await tester.tap(find.byType(SwitchListTile));
+      await tester.tap(biometricSwitch);
       await tester.pumpAndSettle();
       expect(service.biometricEnabled, isTrue);
-      expect(
-        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
-        isTrue,
-      );
+      expect(tester.widget<SwitchListTile>(biometricSwitch).value, isTrue);
 
-      await tester.tap(find.byType(SwitchListTile));
+      await tester.tap(biometricSwitch);
       await tester.pumpAndSettle();
       expect(service.biometricEnabled, isFalse);
     });
@@ -91,14 +94,11 @@ void main() {
       service.biometricSupportValue = BiometricSupport.available;
       await pumpSettings(tester);
 
-      await tester.tap(find.byType(SwitchListTile));
+      await tester.tap(biometricSwitch);
       await tester.pumpAndSettle();
 
       expect(service.biometricPrompts, 1);
-      expect(
-        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
-        isFalse,
-      );
+      expect(tester.widget<SwitchListTile>(biometricSwitch).value, isFalse);
     });
 
     testWidgets('etkinleşmezse mesaj çıkıyor', (tester) async {
@@ -107,7 +107,7 @@ void main() {
         ..nextBiometric = const BiometricFailed();
       await pumpSettings(tester);
 
-      await tester.tap(find.byType(SwitchListTile));
+      await tester.tap(biometricSwitch);
       await tester.pumpAndSettle();
 
       expect(

@@ -12,10 +12,6 @@
   "@navSettings": {
     "description": "Bottom navigation label and title of the settings screen."
   },
-  "authenticatorPlaceholder": "Your verification codes will be here soon.",
-  "@authenticatorPlaceholder": {
-    "description": "Temporary message on the two-factor screen until the feature exists."
-  },
   "secretShow": "Show",
   "@secretShow": {
     "description": "Tooltip: reveal a hidden secret field."
@@ -562,5 +558,321 @@
         "type": "int"
       }
     }
+  },
+  "otpEmpty": "No 2FA accounts yet. Tap Add to set up the first one.",
+  "@otpEmpty": {
+    "description": "Empty state of the 2FA list."
+  },
+  "otpNoResults": "No matching accounts.",
+  "@otpNoResults": {
+    "description": "Search found nothing in the 2FA list."
+  },
+  "otpUnnamed": "Unnamed",
+  "@otpUnnamed": {
+    "description": "Shown when a 2FA account has neither a service nor an account name."
+  },
+  "otpNext": "Next: {code}",
+  "@otpNext": {
+    "description": "The code of the next period, shown when the current one is about to expire.",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "otpGenerate": "Generate code",
+  "@otpGenerate": {
+    "description": "Button that produces the next counter-based (HOTP) code."
+  },
+  "otpSecondsLeft": "{seconds, plural, =1{1 second left} other{{seconds} seconds left}}",
+  "@otpSecondsLeft": {
+    "description": "Screen reader text of the countdown.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "otpCopyCode": "Copy code",
+  "@otpCopyCode": {
+    "description": "Screen reader hint of a 2FA list entry."
+  },
+  "otpClockHelp": "Codes not working?",
+  "@otpClockHelp": {
+    "description": "Tooltip of the clock help button."
+  },
+  "otpClockHelpTitle": "Check the device clock",
+  "@otpClockHelpTitle": {
+    "description": "Title of the clock help dialog."
+  },
+  "otpClockHelpBody": "Codes are calculated from this device's clock. KeyKey works without the internet, so it cannot check the time itself. If services reject your codes, turn on automatic date and time in the Android settings.",
+  "@otpClockHelpBody": {
+    "description": "Body of the clock help dialog."
+  },
+  "otpClockNow": "Device time: {time}",
+  "@otpClockNow": {
+    "description": "Current device time in the clock help dialog.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "otpClose": "Close",
+  "@otpClose": {
+    "description": "Closes a dialog."
+  },
+  "otpAddTitle": "Add a 2FA account",
+  "@otpAddTitle": {
+    "description": "Title of the sheet that lists the ways to add an account."
+  },
+  "otpAddManual": "Enter key manually",
+  "@otpAddManual": {
+    "description": "Option that opens the manual entry form."
+  },
+  "otpNewTitle": "New 2FA account",
+  "@otpNewTitle": {
+    "description": "Title of the form for a new account."
+  },
+  "otpIssuer": "Service",
+  "@otpIssuer": {
+    "description": "Field for the service name, such as GitHub."
+  },
+  "otpAccount": "Account",
+  "@otpAccount": {
+    "description": "Field for the account name, such as an email address."
+  },
+  "otpSecret": "Secret key",
+  "@otpSecret": {
+    "description": "Field for the 2FA secret key."
+  },
+  "otpSecretHelper": "The key the service shows, or an otpauth:// link.",
+  "@otpSecretHelper": {
+    "description": "Helper text under the secret key field."
+  },
+  "otpSecretInvalid": "Not a valid key. Keys contain only the letters A to Z and the digits 2 to 7.",
+  "@otpSecretInvalid": {
+    "description": "Error for a secret key that is not Base32."
+  },
+  "otpLinkInvalid": "This otpauth link could not be read.",
+  "@otpLinkInvalid": {
+    "description": "Error for a malformed otpauth link."
+  },
+  "otpLinkUnsupported": "This code type is not supported. KeyKey supports TOTP and HOTP.",
+  "@otpLinkUnsupported": {
+    "description": "Error for an otpauth link of another type, such as Steam."
+  },
+  "otpLinkFilled": "Filled in from the link.",
+  "@otpLinkFilled": {
+    "description": "Shown after an otpauth link was pasted into the secret field."
+  },
+  "otpNameRequired": "Enter a service or account name.",
+  "@otpNameRequired": {
+    "description": "Error when both names are empty."
+  },
+  "otpAdvanced": "Advanced",
+  "@otpAdvanced": {
+    "description": "Section with algorithm, digits and period."
+  },
+  "otpAdvancedHint": "Change these only if the service gives different values.",
+  "@otpAdvancedHint": {
+    "description": "Hint in the advanced section."
+  },
+  "otpType": "Type",
+  "@otpType": {
+    "description": "Label of the code type choice."
+  },
+  "otpTypeTotp": "Time-based (TOTP)",
+  "@otpTypeTotp": {
+    "description": "TOTP choice."
+  },
+  "otpTypeHotp": "Counter-based (HOTP)",
+  "@otpTypeHotp": {
+    "description": "HOTP choice."
+  },
+  "otpAlgorithm": "Algorithm",
+  "@otpAlgorithm": {
+    "description": "Label of the hash algorithm choice."
+  },
+  "otpDigits": "Digits",
+  "@otpDigits": {
+    "description": "Label of the code length choice."
+  },
+  "otpPeriod": "Period (seconds)",
+  "@otpPeriod": {
+    "description": "Field for the TOTP period."
+  },
+  "otpCounter": "Counter",
+  "@otpCounter": {
+    "description": "Field for the HOTP counter."
+  },
+  "otpPeriodInvalid": "Enter a whole number from 1 to {max}.",
+  "@otpPeriodInvalid": {
+    "description": "Error for an invalid period.",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "otpCounterInvalid": "Enter 0 or a larger whole number.",
+  "@otpCounterInvalid": {
+    "description": "Error for an invalid counter."
+  },
+  "otpTrashDeleteMessage": "\"{name}\" will be deleted and cannot be recovered. Without this key you may not be able to sign in to the service.",
+  "@otpTrashDeleteMessage": {
+    "description": "Dialog text before a 2FA account is deleted permanently.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "otpAddScan": "Scan QR code",
+  "@otpAddScan": {
+    "description": "Option that opens the camera scanner, and its title."
+  },
+  "otpAddImage": "Read QR code from an image",
+  "@otpAddImage": {
+    "description": "Option that picks an image and reads the QR code in it."
+  },
+  "otpScanHint": "Point the camera at the QR code the service shows.",
+  "@otpScanHint": {
+    "description": "Hint under the camera view."
+  },
+  "otpScanNotOtp": "This QR code is not a 2FA account.",
+  "@otpScanNotOtp": {
+    "description": "Shown when a scanned QR code holds something else, such as a web address."
+  },
+  "otpImageNoQr": "No QR code was found in the image.",
+  "@otpImageNoQr": {
+    "description": "Shown when the picked image has no readable QR code."
+  },
+  "otpCameraUnavailable": "The camera cannot be used. If you denied the permission, you can allow it in the Android settings, or read the QR code from an image instead.",
+  "@otpCameraUnavailable": {
+    "description": "Shown when the camera could not be opened."
+  },
+  "otpLinkedLogin": "Password entry",
+  "@otpLinkedLogin": {
+    "description": "Field in the 2FA form that shows the linked password entry."
+  },
+  "otpLinkNone": "Not linked",
+  "@otpLinkNone": {
+    "description": "Shown when a 2FA account is not linked to a password entry."
+  },
+  "otpLinkChoose": "Link to a password entry",
+  "@otpLinkChoose": {
+    "description": "Title of the dialog that picks a password entry."
+  },
+  "otpLinkRemove": "Remove link",
+  "@otpLinkRemove": {
+    "description": "Button that removes the link to a password entry."
+  },
+  "otpLinkHint": "The code is also shown in the password entry's details.",
+  "@otpLinkHint": {
+    "description": "Helper text under the password entry field in the 2FA form."
+  },
+  "loginOtpCode": "2FA code",
+  "@loginOtpCode": {
+    "description": "Label of the linked 2FA code in a password entry's details."
+  },
+  "otpAddImport": "Import from another app",
+  "@otpAddImport": {
+    "description": "Option that picks an Aegis or 2FAS export file."
+  },
+  "otpImportTitle": "Import",
+  "@otpImportTitle": {
+    "description": "Title of the import screen."
+  },
+  "otpImportUnknownFile": "This file is not an Aegis or 2FAS export.",
+  "@otpImportUnknownFile": {
+    "description": "Shown when the picked file has an unknown format."
+  },
+  "otpImportFailed": "The export could not be read. The file may be damaged.",
+  "@otpImportFailed": {
+    "description": "Shown when an export cannot be parsed."
+  },
+  "otpImportPassword": "Export password",
+  "@otpImportPassword": {
+    "description": "Field for the password of an encrypted export."
+  },
+  "otpImportPasswordHint": "The file is encrypted. Enter the password you chose when exporting it.",
+  "@otpImportPasswordHint": {
+    "description": "Explains why a password is needed."
+  },
+  "otpImportOpen": "Open",
+  "@otpImportOpen": {
+    "description": "Button that decrypts an export."
+  },
+  "otpImportWrongPassword": "Wrong password.",
+  "@otpImportWrongPassword": {
+    "description": "Error for a wrong export password."
+  },
+  "otpImportUnsupported": "{count, plural, =1{1 account was skipped because KeyKey does not support it, for example Steam.} other{{count} accounts were skipped because KeyKey does not support them, for example Steam.}}",
+  "@otpImportUnsupported": {
+    "description": "Info about skipped accounts.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "otpImportDuplicate": "Already added",
+  "@otpImportDuplicate": {
+    "description": "Marks an account whose key is already in KeyKey."
+  },
+  "otpImportAdd": "{count, plural, =0{Add} =1{Add 1 account} other{Add {count} accounts}}",
+  "@otpImportAdd": {
+    "description": "Button that saves the selected accounts.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "otpImportDone": "{count, plural, =1{1 account added.} other{{count} accounts added.}}",
+  "@otpImportDone": {
+    "description": "Snack bar after importing.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "otpImportEmpty": "There are no accounts to import.",
+  "@otpImportEmpty": {
+    "description": "Shown when the export has no usable accounts."
+  },
+  "otpImportBatch": "Google Authenticator splits large exports into several QR codes. Scan each of them.",
+  "@otpImportBatch": {
+    "description": "Hint shown for Google Authenticator exports that span several QR codes."
+  },
+  "otpHiddenTitle": "Codes are hidden",
+  "@otpHiddenTitle": {
+    "description": "Title shown instead of 2FA codes when extra confirmation is required."
+  },
+  "otpHiddenBody": "Confirm it is you to see your 2FA codes.",
+  "@otpHiddenBody": {
+    "description": "Text shown instead of 2FA codes when extra confirmation is required."
+  },
+  "otpReveal": "Show codes",
+  "@otpReveal": {
+    "description": "Button that asks for fingerprint or master password to show 2FA codes."
+  },
+  "otpConfirmTitle": "Show 2FA codes",
+  "@otpConfirmTitle": {
+    "description": "Title of the fingerprint prompt and the password dialog."
+  },
+  "otpConfirmButton": "Confirm",
+  "@otpConfirmButton": {
+    "description": "Button in the master password dialog."
+  },
+  "settingsOtpRequireAuth": "Confirm before showing 2FA codes",
+  "@settingsOtpRequireAuth": {
+    "description": "Setting that requires fingerprint or master password before codes are shown."
+  },
+  "settingsOtpRequireAuthHelp": "Protects the codes if someone picks up your unlocked phone. It does not protect against malware on the device.",
+  "@settingsOtpRequireAuthHelp": {
+    "description": "Explains what the setting protects against."
   }
 }

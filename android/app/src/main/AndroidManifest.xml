@@ -1,4 +1,18 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- QR okuma için kamera. İzin yalnızca tarama ekranı açılınca istenir. Kamerası
+         olmayan cihazlar da uygulamayı kurabilsin diye kamera zorunlu değil. -->
+    <uses-feature
+        android:name="android.hardware.camera.any"
+        android:required="false"
+        tools:replace="android:required" />
+    <!-- Kütüphanelerin eklediği ama bize gerekmeyen izinler. camera_android_camerax video
+         kaydı için ilk ikisini ister, üçüncüsü ondan türetilir. ACCESS_NETWORK_STATE,
+         image_picker'ın video için çektiği media3'ten gelir. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" tools:node="remove" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove" />
     <application
         android:label="KeyKey"
         android:allowBackup="false"

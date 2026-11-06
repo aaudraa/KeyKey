@@ -5,6 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
+import 'package:keykey/features/authenticator/application/otps_controller.dart';
+import 'package:keykey/features/authenticator/presentation/linked_otp_tile.dart';
+import 'package:keykey/features/authenticator/presentation/otp_display.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
@@ -33,6 +36,7 @@ class LoginDetailScreen extends ConsumerWidget {
     }
     final content = item.content;
     final controller = ref.read(loginsControllerProvider.notifier);
+    final linkedOtps = otpsLinkedTo(ref.watch(otpsControllerProvider), item.id);
 
     return Scaffold(
       appBar: AppBar(
@@ -69,6 +73,8 @@ class LoginDetailScreen extends ConsumerWidget {
               value: content.password,
               hidden: true,
             ),
+          for (final otp in linkedOtps)
+            LinkedOtpTile(key: ValueKey(otpIdHex(otp)), item: otp),
           for (final url in content.urls)
             _Field(label: l10n.loginUrl, value: url),
           if (content.folder != null)

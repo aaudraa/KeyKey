@@ -250,11 +250,14 @@ final class LoginContent {
   }
 
   static DateTime _time(Object? value, String field) {
-    if (value is int) {
+    // DateTime bu aralığın dışında RangeError fırlatır.
+    if (value is int && value.abs() <= _maxMilliseconds) {
       return DateTime.fromMillisecondsSinceEpoch(value, isUtc: true);
     }
     throw InvalidLoginContentException('Geçersiz alan: $field');
   }
+
+  static const _maxMilliseconds = 8640000000000000;
 
   static DateTime? _nullableTime(Object? value, String field) =>
       value == null ? null : _time(value, field);

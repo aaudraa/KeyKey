@@ -245,6 +245,47 @@ class VaultController extends Notifier<VaultStatus> {
     }
   }
 
+  /// Kasa açıkken kullanıcının ana parolayı bildiğini doğrular, kasanın
+  /// durumunu değiştirmez. Örneğin 2FA kodlarını göstermeden önce.
+  ///
+  /// Kilit ekranındaki yolun aynısıdır: hatalı denemeler aynı sayaca eklenir
+  /// ve aynı bekleme uygulanır, yani bu pencere parola denemek için
+  /// kullanılamaz.
+  Future<PasswordAttempt> confirmPassword(String password) async {
+    final status = state;
+    if (status is! VaultOpen) throw const VaultLockedException();
+    final outcome = await _service.unlockWithPassword(
+      status.session.header,
+      password,
+    );
+    outcome.session?.dispose();
+    return outcome.attempt;
+  }
+
+  /// Kasa açıkken parmak iziyle doğrular. Keystore anahtarı kasa anahtarını
+  /// gerçekten açmalıdır; yalnızca "doğrulandı" cevabına güvenilmez.
+  Future<BiometricOutcome<void>> confirmBiometric(BiometricTexts texts) async {
+    final status = state;
+    if (status is! VaultOpen) throw const VaultLockedException();
+    final outcome = await _service.unlockWithBiometric(
+      status.session.header,
+      texts,
+    );
+    switch (outcome) {
+      case BiometricSuccess(value: final session):
+        session.dispose();
+        return const BiometricSuccess(null);
+      case BiometricCancelled():
+        return const BiometricCancelled();
+      case BiometricLockedOut():
+        return const BiometricLockedOut();
+      case BiometricInvalidated():
+        return const BiometricInvalidated();
+      case BiometricFailed():
+        return const BiometricFailed();
+    }
+  }
+
   /// Anahtarları bellekten siler. Kasa zaten kilitliyse de sürmekte olan bir
   /// açma işleminin sonucunu geçersiz kılar.
   void lock() {

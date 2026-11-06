@@ -60,6 +60,8 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        // Sekmeler aynı anda ağaçta durur, varsayılan Hero etiketi çakışır.
+        heroTag: 'vault-add',
         onPressed: state is LoginsLoaded
             ? () => context.push(AppRoutes.vaultNew)
             : null,

@@ -32,6 +32,16 @@ ui_tap() {
   device shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
 }
 
+# Sistemin parmak izi penceresi ekranda mı. Pencere, testlerin ve uygulamanın
+# verdiği vazgeç düğmesi metniyle tanınır. `uiautomator dump` ekranın boşta
+# kalmasını beklediği için görülen pencerenin açılış animasyonu bitmiştir.
+prompt_visible() {
+  device shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1 || return 1
+  device exec-out cat /sdcard/ui.xml | tr '>' '\n' \
+    | grep -F 'package="com.android.systemui"' \
+    | grep -qE 'text="(Vazgeç|Ana parolayı kullan|Cancel|Use master password)"'
+}
+
 touch_finger() {
   device emu finger touch "$1" >/dev/null
   sleep 1
@@ -94,6 +104,11 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# Yeni açılmış emülatörde ekran uykuda veya kilit ekranında olabilir; o
+# zaman ayarların kayıt ekranı açılmaz. PIN konmadan önce kilit kaldırılır.
+device shell input keyevent KEYCODE_WAKEUP
+device shell wm dismiss-keyguard
+sleep 2
 device shell locksettings set-pin "$pin" >/dev/null
 enroll 1 || exit 2
 echo "Hazır: PIN ve birinci parmak izi kayıtlı."
@@ -102,9 +117,9 @@ flutter test integration_test/biometric_test.dart -d "$serial" --dart-define=KK_
 test_pid=$!
 
 added=0
-elapsed=0
+started=$SECONDS
 while kill -0 "$test_pid" 2>/dev/null; do
-  if [[ "$elapsed" -ge "$limit" ]]; then
+  if (( SECONDS - started >= limit )); then
     echo "ZAMAN AŞIMI: test $limit saniyede bitmedi." >&2
     kill "$test_pid" 2>/dev/null
     break
@@ -116,11 +131,13 @@ while kill -0 "$test_pid" 2>/dev/null; do
     device shell monkey -p "$package" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
     sleep 2
     device shell run-as "$package" touch files/kk_parmak_eklendi
-  else
+  elif prompt_visible; then
+    # Parmak yalnızca pencere yerleşince dokunur. Android 11'in sistem
+    # arayüzü, açılış animasyonu sürerken gelen doğrulamada pencereyi hiç
+    # kapatmıyor ve sonuç uygulamaya ulaşmıyor.
     touch_finger 1
   fi
   sleep 1
-  elapsed=$((elapsed + 3))
 done
 
 wait "$test_pid"

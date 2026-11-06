@@ -2,14 +2,21 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/misc.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
+import 'package:keykey/core/platform/export_file_picker.dart';
 import 'package:keykey/core/platform/pigeon_biometric_bridge.dart';
+import 'package:keykey/core/platform/qr_image_reader.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/core/storage/storage_exceptions.dart';
 import 'package:keykey/core/storage/vault_database.dart';
 import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/vault_service.dart';
+import 'package:keykey/features/authenticator/application/otps_controller.dart';
+import 'package:keykey/features/authenticator/data/import/platform_aes_gcm.dart';
+import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/settings/application/settings_controller.dart';
+import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:path_provider/path_provider.dart';
@@ -41,10 +48,20 @@ Future<List<Override>> bootstrap() async {
   return [
     randomSourceProvider.overrideWithValue(SodiumRandomSource(sodium)),
     sensitiveClipboardProvider.overrideWithValue(PigeonSensitiveClipboard()),
+    qrImageReaderProvider.overrideWithValue(ZxingQrImageReader()),
+    exportFilePickerProvider.overrideWithValue(FileSelectorExportPicker()),
+    aesGcmProvider.overrideWithValue(PlatformAesGcm()),
     vaultServiceProvider.overrideWithValue(service),
     loginRepositoryFactoryProvider.overrideWithValue(
       (session) =>
           LoginRepository(store: store, session: session, sodium: sodium),
+    ),
+    settingsRepositoryFactoryProvider.overrideWithValue(
+      (session) => SettingsRepository(store: store, session: session),
+    ),
+    otpRepositoryFactoryProvider.overrideWithValue(
+      (session) =>
+          OtpRepository(store: store, session: session, sodium: sodium),
     ),
     initialVaultStatusProvider.overrideWithValue(await _loadStatus(service)),
   ];

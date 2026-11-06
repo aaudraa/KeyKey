@@ -2,7 +2,7 @@
 
 KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-05 · **Şu anki faz:** Faz 5
+**Son güncelleme:** 2026-11-06 · **Şu anki faz:** Faz 6
 
 > [!IMPORTANT]
 > **Gerçek parolalarını Faz 8 bitene kadar KeyKey'e koyma.** Kasa biçimi o zamana kadar değişebilir ve güvenlik denetimi henüz yapılmadı.
@@ -18,8 +18,8 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 | 2 | Kripto çekirdeği | L | 1 | `faz/2-kripto-cekirdegi` | Tamamlandı |
 | 3 | Kasa, kilit ve biyometri | L | 2 | `faz/3-kasa-ve-kilit` | Tamamlandı |
 | 4 | Parola kasası | L | 3 | `faz/4-parola-kasasi` | Tamamlandı |
-| 5 | 2FA doğrulayıcı | M | 3 | `faz/5-2fa-dogrulayici` | Sırada |
-| 6 | Otomatik doldurma | XL | 4 | `faz/6-otomatik-doldurma` | Bekliyor |
+| 5 | 2FA doğrulayıcı | M | 3 | `faz/5-2fa-dogrulayici` | Tamamlandı |
+| 6 | Otomatik doldurma | XL | 4 | `faz/6-otomatik-doldurma` | Sırada |
 | 7 | Yedekleme, içe ve dışa aktarma | L | 4, 5 | `faz/7-yedekleme` | Bekliyor |
 | 8 | Güvenlik sertleştirme ve denetim | L | 6, 7 | `faz/8-guvenlik-denetimi` | Bekliyor |
 | 9 | 1.0 yayını | M | 8 | `faz/9-yayin` | Bekliyor |
@@ -53,7 +53,9 @@ Sürümler ve lisanslar 2026-11-05 tarihinde pub.dev'den kontrol edildi. Faz ba�
 | Uygulama klasörü | `path_provider` | 2.1.6 | BSD-3 | Flutter ekibinin paketi; veritabanının özel klasördeki yerini bulur. |
 | Kriptografi | `sodium` (libsodium 1.0.22) | 4.1.2+1 | BSD-3, ISC | Argon2id, XChaCha20-Poly1305, HKDF ve korumalı bellek tek pakette. [Doğrulandı](#libsodium-doğrulaması). |
 | 2FA hesaplama | Kendi kodumuz ve `crypto` | 3.0.8 | BSD-3 | Algoritma kısa ve RFC test vektörleriyle doğrulanabiliyor; ek bağımlılığa gerek yok. |
-| QR okuma | `flutter_zxing` | 3.1.0 | MIT | Açık kaynak, tamamen cihazda çalışıyor. |
+| QR okuma | `flutter_zxing` | 3.1.0 | MIT; içindeki zxing-cpp Apache-2.0, zint BSD-3 | Açık kaynak, tamamen cihazda çalışıyor. Gömülü C++ kitaplıklarının lisansları uygulamanın lisans sayfasına elle eklenir. |
+| Kamera | `camera` | 0.12.2 | BSD-3 | Flutter ekibinin paketi, `flutter_zxing` tarama için kullanıyor. Eklediği mikrofon ve depolama izinleri manifestte kaldırılır. |
+| Görsel ve dosya seçme | `image_picker`, `file_selector` | 1.2.4 / 1.1.0 | BSD-3 | Flutter ekibinin paketleri. Android'in seçicilerini açar, depolama izni gerekmez. |
 | Dart-Kotlin köprüsü | `pigeon` | 29.1.0 | BSD-3 | Elle yazılan kanallara göre tür güvenli. |
 | Parmak izi | `androidx.biometric` | 1.1.0 | Apache-2.0 | Google'ın kitaplığı. Son kararlı sürüm, daha yenileri beta. |
 | Köprü çalışma zamanı | `kotlinx-coroutines-android` | 1.11.0 | Apache-2.0 | `pigeon`'un ürettiği Kotlin kodu bunu gerektiriyor. |
@@ -72,6 +74,7 @@ Sürümler ve lisanslar 2026-11-05 tarihinde pub.dev'den kontrol edildi. Faz ba�
 | `flutter_secure_storage` | Biyometrik modu ayarına göre cihaz PIN'ini kabul ediyor veya biyometri olmadan da çalışabiliyor. Bize yalnızca güçlü biyometriye bağlı ve yeni parmak izinde geçersiz olan bir anahtar gerekiyor, bunu kendi Keystore köprümüzle sağlıyoruz. |
 | `zxcvbn` | Dart 3 ile uyumlu değil (`sdk <3.0.0`). |
 | `sodium_libs` | Kullanımdan kalktı, yerini `sodium` aldı. |
+| `pointycastle` | Şifreli Aegis ve 2FAS dosyalarını açmak için yalnızca scrypt, PBKDF2 ve AES-GCM gerekiyor. Büyük bir saf Dart kripto kütüphanesi yerine AES-GCM için Android'in kitaplığını, scrypt ve PBKDF2 için RFC 7914 vektörleriyle doğrulanan kısa kendi kodumuzu kullanıyoruz. |
 | `sqlite3_flutter_libs` | Kullanım ömrü bitti, `sqlite3` paketi yerel kütüphaneyi artık kendisi sağlıyor. Derlemede GitHub'dan hazır dosya indiriyor ve paketin içindeki SHA-256 ile doğruluyor. Aynı yayıncının Dart kodu zaten uygulamanın içinde çalıştığı için bu, güvenmemiz gereken kişiyi değiştirmiyor. Kaynaktan derlemeye Faz 9'da geçilecek. |
 
 ### libsodium doğrulaması
@@ -335,18 +338,20 @@ Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bi
 
 **Amaç:** Uygulamanın doğrulama kodu üreten yarısı.
 
-- [ ] TOTP (RFC 6238) ve HOTP (RFC 4226); SHA-1, SHA-256, SHA-512; 6-8 hane; özel süre
-- [ ] RFC test vektörleriyle doğrulama
-- [ ] `otpauth://` ayrıştırıcı ve hatalı girdi testleri
-- [ ] Kamera ve görselden QR okuma (`flutter_zxing`); kamera izni yalnızca tarama sırasında istenir
-- [ ] Elle anahtar girişi
-- [ ] Kod listesi: geri sayım, dokununca kopyalama, sıradaki kodu gösterme, arama
-- [ ] Parola kaydıyla 2FA hesabını eşleştirme
-- [ ] Google Authenticator (`otpauth-migration://`), Aegis ve 2FAS'tan içe aktarma
-- [ ] İsteğe bağlı ek onay: kodları görmek için parmak izi
-- [ ] Cihaz saati yanlışsa kodların tutmayacağına dair yardım metni
+- [x] TOTP (RFC 6238) ve HOTP (RFC 4226); SHA-1, SHA-256, SHA-512; 6-8 hane; özel süre
+- [x] RFC test vektörleriyle doğrulama
+- [x] `otpauth://` ayrıştırıcı ve hatalı girdi testleri
+- [x] Kamera ve görselden QR okuma (`flutter_zxing`); kamera izni yalnızca tarama sırasında istenir
+- [x] Elle anahtar girişi
+- [x] Kod listesi: geri sayım, dokununca kopyalama, sıradaki kodu gösterme, arama
+- [x] Parola kaydıyla 2FA hesabını eşleştirme
+- [x] Google Authenticator (`otpauth-migration://`), Aegis ve 2FAS'tan içe aktarma (şifreli dosyalar dahil)
+- [x] İsteğe bağlı ek onay: kodları görmek için parmak izi veya ana parola
+- [x] Cihaz saati yanlışsa kodların tutmayacağına dair yardım metni
 
 **Bitti sayılması için:** RFC vektörleri geçiyor; üretilen kod gerçek bir servisteki test hesabında kabul ediliyor; bozuk QR uygulamayı düşürmüyor.
+
+**Sonuç:** RFC vektörleri geçiyor, bozuk QR ve bozuk dosyalar uygulamayı düşürmüyor (rastgele girdi testleriyle). Üretilen kodun gerçek bir serviste kabul edilmesi henüz denenmedi: kullanıcının bir test hesabıyla yapılacak.
 
 ### Faz 6 — Otomatik doldurma
 

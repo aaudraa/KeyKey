@@ -25,5 +25,6 @@ class MainActivity : FlutterFragmentActivity() {
         val messenger = flutterEngine.dartExecutor.binaryMessenger
         BiometricApi.setUp(messenger, BiometricVault(this))
         ClipboardApi.setUp(messenger, SecureClipboard(this))
+        ImportCryptoApi.setUp(messenger, ImportCrypto())
     }
 }

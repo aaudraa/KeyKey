@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -14,7 +13,13 @@ import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/core/vault/vault_session.dart';
+import 'package:keykey/features/authenticator/application/otps_controller.dart';
+import 'package:keykey/features/authenticator/data/otp_content.dart';
+import 'package:keykey/features/authenticator/data/otp_parameters.dart';
+import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/settings/application/settings_controller.dart';
+import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:path_provider/path_provider.dart';
@@ -170,6 +175,13 @@ void main() {
                 sodium: sodium,
               ),
             ),
+            settingsRepositoryFactoryProvider.overrideWithValue(
+              (session) => SettingsRepository(store: store, session: session),
+            ),
+            otpRepositoryFactoryProvider.overrideWithValue(
+              (session) =>
+                  OtpRepository(store: store, session: session, sodium: sodium),
+            ),
             initialVaultStatusProvider.overrideWithValue(VaultOpen(session)),
           ],
           child: const KeyKeyApp(),
@@ -182,12 +194,17 @@ void main() {
       );
 
       await tester.tap(find.byIcon(Icons.settings_outlined));
+      // Ayarlarda birden çok anahtar var, parmak izi anahtarı adıyla bulunur.
+      final biometricSwitch = find.widgetWithText(
+        SwitchListTile,
+        'Parmak iziyle aç',
+      );
       await pumpUntil(
         tester,
-        () => find.byType(SwitchListTile).evaluate().isNotEmpty,
+        () => biometricSwitch.evaluate().isNotEmpty,
         'parmak izi ayarı',
       );
-      await tester.tap(find.byType(SwitchListTile));
+      await tester.tap(biometricSwitch);
       await tester.pump();
 
       final deadline = DateTime.now().add(const Duration(seconds: 45));
@@ -202,6 +219,36 @@ void main() {
         isFalse,
         reason: 'Pencere kasayı kilitlememeli',
       );
+      await tester.pump(const Duration(seconds: 1));
+
+      // Ek onay açıkken 2FA kodları parmak iziyle açılıyor. Doğrulama
+      // Keystore anahtarının kasa anahtarını açmasıyla yapılır.
+      await OtpRepository(store: store, session: session, sodium: sodium).add(
+        OtpContent(
+          parameters: OtpParameters.totp(
+            secret: utf8.encode('parmak-anahtari'),
+          ),
+          issuer: 'Parmak hesabı',
+        ),
+      );
+      await tester.tap(find.text('2FA kodlarını göstermeden önce doğrula'));
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.tap(_otpTab());
+      await pumpUntil(
+        tester,
+        () => find.text('Kodlar gizli').evaluate().isNotEmpty,
+        'gizli kodlar',
+      );
+      await tester.tap(find.text('Kodları göster'));
+      await tester.pump();
+      // Betik parmağı dokundurur.
+      await pumpUntil(
+        tester,
+        () => find.text('Parmak hesabı').evaluate().isNotEmpty,
+        'parmak iziyle açılan kodlar',
+      );
+      expect(session.isDisposed, isFalse, reason: 'Kasa açık kalmalı');
+      await tester.tap(find.byIcon(Icons.settings_outlined));
       await tester.pump(const Duration(seconds: 1));
 
       await tester.tap(find.text('Şimdi kilitle'));
@@ -268,3 +315,10 @@ void main() {
     skip: skip,
   );
 }
+
+/// Alt çubuktaki 2FA sekmesi. Ayarlardaki ek onay satırı da aynı simgeyi
+/// kullandığı için yalnızca simgeyle aramak iki sonuç verir.
+Finder _otpTab() => find.descendant(
+  of: find.byType(NavigationBar),
+  matching: find.byIcon(Icons.shield_outlined),
+);

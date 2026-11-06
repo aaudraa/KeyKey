@@ -553,3 +553,49 @@ interface ClipboardApi {
     }
   }
 }
+/**
+ * Başka uygulamaların şifreli dışa aktarma dosyalarını açmak için AES-GCM.
+ *
+ * Kasanın şifrelemesinde kullanılmaz. Kurallar güvenlik tasarımı belgesinin
+ * İçe aktarma bölümündedir.
+ *
+ * Generated interface from Pigeon that represents a handler of messages from Flutter.
+ */
+interface ImportCryptoApi {
+  /**
+   * AES-256-GCM, 128 bitlik etiket şifreli metnin sonundadır. Etiket
+   * doğrulanmazsa `null` döner.
+   */
+  fun aesGcmDecrypt(key: ByteArray, nonce: ByteArray, cipherTextWithTag: ByteArray): ByteArray?
+
+  companion object {
+    /** The codec used by ImportCryptoApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      PlatformApiPigeonCodec()
+    }
+    /** Sets up an instance of `ImportCryptoApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: ImportCryptoApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.ImportCryptoApi.aesGcmDecrypt$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val keyArg = args[0] as ByteArray
+            val nonceArg = args[1] as ByteArray
+            val cipherTextWithTagArg = args[2] as ByteArray
+            val wrapped: List<Any?> = try {
+              listOf(api.aesGcmDecrypt(keyArg, nonceArg, cipherTextWithTagArg))
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}

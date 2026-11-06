@@ -11,6 +11,9 @@ allowed_permissions=(
   # Parmak iziyle açma. androidx.biometric ikisini de ekliyor.
   "android.permission.USE_BIOMETRIC"
   "android.permission.USE_FINGERPRINT"
+  # QR okuma. Yalnızca tarama ekranında istenir. Kamera ve görsel seçici
+  # kütüphanelerinin eklediği öbür izinler manifest'te bilerek kaldırıldı.
+  "android.permission.CAMERA"
 )
 
 sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
