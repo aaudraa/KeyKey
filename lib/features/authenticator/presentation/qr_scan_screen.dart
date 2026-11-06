@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_zxing/flutter_zxing.dart';
@@ -13,25 +16,65 @@ typedef QrCameraBuilder = Widget Function({
 });
 
 /// `flutter_zxing` kamerası. Testler kendi kamerasını verir.
-final qrCameraProvider = Provider<QrCameraBuilder>((ref) => _zxingCamera);
+final qrCameraProvider = Provider<QrCameraBuilder>(
+  (ref) =>
+      ({required onText, required onUnavailable}) =>
+          _ZxingCamera(onText: onText, onUnavailable: onUnavailable),
+);
 
-Widget _zxingCamera({
-  required ValueChanged<String> onText,
-  required VoidCallback onUnavailable,
-}) {
-  return ReaderWidget(
-    codeFormat: Format.qrCode,
-    tryInverted: true,
-    showGallery: false,
-    showToggleCamera: false,
-    onScan: (code) {
-      final text = code.text;
-      if (code.isValid && text != null) onText(text);
-    },
-    onControllerCreated: (controller, error) {
-      if (error != null) onUnavailable();
-    },
-  );
+/// Önce cihazdaki kameraları sorar. `ReaderWidget` kamera bulamayınca hata
+/// bildirmiyor, ekran sonsuza dek yükleniyor gibi kalıyor.
+class _ZxingCamera extends StatefulWidget {
+  const new({required this.onText, required this.onUnavailable});
+
+  final ValueChanged<String> onText;
+  final VoidCallback onUnavailable;
+
+  @override
+  State<_ZxingCamera> createState() => _ZxingCameraState();
+}
+
+class _ZxingCameraState extends State<_ZxingCamera> {
+  bool _hasCamera = false;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_checkCameras());
+  }
+
+  Future<void> _checkCameras() async {
+    List<CameraDescription> cameras;
+    try {
+      cameras = await availableCameras();
+    } on CameraException {
+      cameras = const [];
+    }
+    if (!mounted) return;
+    if (cameras.isEmpty) {
+      widget.onUnavailable();
+    } else {
+      setState(() => _hasCamera = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_hasCamera) return const Center(child: CircularProgressIndicator());
+    return ReaderWidget(
+      codeFormat: Format.qrCode,
+      tryInverted: true,
+      showGallery: false,
+      showToggleCamera: false,
+      onScan: (code) {
+        final text = code.text;
+        if (code.isValid && text != null) widget.onText(text);
+      },
+      onControllerCreated: (controller, error) {
+        if (error != null) widget.onUnavailable();
+      },
+    );
+  }
 }
 
 /// Kamerayla QR okur. Kamera izni bu ekran açılınca istenir.
