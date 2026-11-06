@@ -15,9 +15,24 @@ trap 'rm -f "$log"' EXIT
 
 results=()
 
+# Yazılımsal grafikle çalışan emülatörde sistem arayüzü bazen "isn't
+# responding" penceresi açar. Pencere odağı uygulamadan alır ve Android
+# panoyu okutmaz; pano testleri bu yüzden düşer. Varsa "Wait" ile kapatılır.
+dismiss_anr() {
+  local line
+  adb -s "$serial" shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1 || return 0
+  line=$(adb -s "$serial" exec-out cat /sdcard/ui.xml | tr '>' '\n' | grep -E 'text="(Wait|WAIT)"' | head -1)
+  [[ -z "$line" ]] && return 0
+  # shellcheck disable=SC2046
+  set -- $(echo "$line" | sed -E 's/.*bounds="\[([0-9]+),([0-9]+)\]\[([0-9]+),([0-9]+)\]".*/\1 \2 \3 \4/')
+  adb -s "$serial" shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
+  echo "Yanıt vermeyen sistem penceresi kapatıldı."
+}
+
 step() {
   local name="$1"
   shift
+  dismiss_anr
   echo "=== $name ($(date +%H:%M:%S))"
   "$@"
   local status=$?
