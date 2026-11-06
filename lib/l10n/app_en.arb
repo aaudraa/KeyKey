@@ -101,6 +101,39 @@
   "@recoveryVerifyIntro": {
     "description": "Intro on the recovery key verification step."
   },
+  "recoveryKeyProgress": "{count}/{total} characters",
+  "@recoveryKeyProgress": {
+    "description": "Helper under the recovery key field showing how many characters were typed, dashes excluded.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "recoveryKeyLength": "The key has {total} characters, you typed {count}.",
+  "@recoveryKeyLength": {
+    "description": "Error when the typed recovery key is too short or too long.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "recoveryKeyGroupWrong": "Group {group} has a typo. Compare it with the key on screen and on your paper.",
+  "@recoveryKeyGroupWrong": {
+    "description": "Error during setup naming the first group of five characters that differs from the shown recovery key.",
+    "placeholders": {
+      "group": {
+        "type": "int"
+      }
+    }
+  },
   "recoveryKeyLabel": "Recovery key",
   "@recoveryKeyLabel": {
     "description": "Label of the recovery key field."

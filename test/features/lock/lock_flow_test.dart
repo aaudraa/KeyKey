@@ -201,12 +201,31 @@ void main() {
     testWidgets('başka anahtar içeri almıyor', (tester) async {
       await openRecovery(tester);
 
-      await tester.enterText(find.byType(TextField), 'ZZZZZ-ZZZZZ-ZZZZZ');
+      await tester.enterText(
+        find.byType(TextField),
+        FakeVaultService.otherRecoveryKey,
+      );
       await tester.tap(find.widgetWithText(FilledButton, 'Devam et'));
       await tester.pumpAndSettle();
 
       expect(find.text('Bu, bu kasanın anahtarı değil.'), findsOneWidget);
       expect(find.text('Yeni ana parola'), findsNothing);
+    });
+
+    testWidgets('eksik anahtar uzunluğuyla söyleniyor', (tester) async {
+      await openRecovery(tester);
+
+      await tester.enterText(find.byType(TextField), 'aaaaabbbbbccccc');
+      await tester.pump();
+      expect(find.text('AAAAA-BBBBB-CCCCC'), findsOneWidget);
+      expect(find.text('15/55 karakter'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Devam et'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Anahtar 55 karakter, sen 15 karakter yazdın.'),
+        findsOneWidget,
+      );
     });
   });
 

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
+import 'package:keykey/core/crypto/recovery_key.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/new_password_fields.dart';
+import 'package:keykey/features/lock/presentation/recovery_key_formatter.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 enum _Step { password, showKey, verifyKey }
@@ -78,14 +80,40 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     try {
       await _controller.confirmSetup(_typedKey.text);
     } on InvalidRecoveryKeyException {
-      if (mounted) setState(() => _error = l10n.recoveryKeyInvalid);
+      if (mounted) {
+        setState(() => _error = _mismatchHint(l10n, l10n.recoveryKeyInvalid));
+      }
     } on WrongSecretException {
-      if (mounted) setState(() => _error = l10n.recoveryKeyWrong);
+      if (mounted) {
+        setState(() => _error = _mismatchHint(l10n, l10n.recoveryKeyWrong));
+      }
     } on Exception {
       if (mounted) setState(() => _error = l10n.setupFailed);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  /// Yazılan anahtarın neresinin yanlış olduğunu söyler: eksik veya fazla
+  /// karakter, yoksa farklı olan ilk grup. Anahtar zaten ekranda gösterildi;
+  /// karşılaştırma yalnızca yol gösterir, asıl doğrulama kurtarma yuvası
+  /// açılarak yapılır.
+  String _mismatchHint(AppLocalizations l10n, String fallback) {
+    final shown = _recoveryKeyText;
+    if (shown == null) return fallback;
+    final typed = RecoveryKeyCodec.symbolsOf(_typedKey.text);
+    final expected = RecoveryKeyCodec.symbolsOf(shown);
+    if (typed.length != expected.length) {
+      return l10n.recoveryKeyLength(typed.length, expected.length);
+    }
+    const size = RecoveryKeyCodec.groupLength;
+    for (var start = 0; start < expected.length; start += size) {
+      final end = (start + size).clamp(0, expected.length);
+      if (typed.substring(start, end) != expected.substring(start, end)) {
+        return l10n.recoveryKeyGroupWrong(start ~/ size + 1);
+      }
+    }
+    return fallback;
   }
 
   @override
@@ -173,6 +201,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         autofocus: true,
         enabled: !_busy,
         errorText: _error,
+        helperText: l10n.recoveryKeyProgress(
+          RecoveryKeyCodec.symbolsOf(_typedKey.text).length,
+          RecoveryKeyCodec.textLength,
+        ),
+        // Tireler kendiliğinden gelir; uzun anahtar satıra sığmazsa alta geçer.
+        inputFormatters: [RecoveryKeyFormatter()],
+        style: const TextStyle(fontFamily: 'monospace'),
+        maxLines: 3,
+        onChanged: (_) => setState(() {}),
         onSubmitted: (_) => _verify(),
       ),
       const SizedBox(height: 16),

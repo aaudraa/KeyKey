@@ -146,12 +146,48 @@ void main() {
       expect(find.text(vaultText), findsOneWidget);
     });
 
+    testWidgets('tiresiz ve küçük harfle yazılan anahtar düzenleniyor', (
+      tester,
+    ) async {
+      await goToVerify(tester);
+      final plain = FakeVaultService.recoveryKey.replaceAll('-', '');
+
+      await tester.enterText(find.byType(TextField), plain.toLowerCase());
+      await tester.pump();
+      expect(find.text(FakeVaultService.recoveryKey), findsOneWidget);
+      expect(find.text('55/55 karakter'), findsOneWidget);
+
+      await tester.tap(
+        find.widgetWithText(FilledButton, 'Doğrula ve kasayı aç'),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text(vaultText), findsOneWidget);
+    });
+
+    testWidgets('eksik anahtar uzunluğuyla söyleniyor', (tester) async {
+      await goToVerify(tester);
+
+      await submitKey(tester, 'AAAAA-BBBBB-CCCCC');
+
+      expect(
+        find.text('Anahtar 55 karakter, sen 15 karakter yazdın.'),
+        findsOneWidget,
+      );
+      expect(find.text(vaultText), findsNothing);
+    });
+
     testWidgets('yazım hatası içeri almıyor', (tester) async {
       await goToVerify(tester);
 
       await submitKey(tester, FakeVaultService.invalidRecoveryKey);
 
-      expect(find.textContaining('yazım hatası'), findsOneWidget);
+      expect(
+        find.text(
+          '11. grupta yazım hatası var. Ekrandaki ve kağıdındaki anahtarla '
+          'karşılaştır.',
+        ),
+        findsOneWidget,
+      );
       expect(find.text(vaultText), findsNothing);
     });
 
@@ -160,8 +196,8 @@ void main() {
     ) async {
       await goToVerify(tester);
 
-      await submitKey(tester, 'ZZZZZ-ZZZZZ-ZZZZZ');
-      expect(find.text('Bu, bu kasanın anahtarı değil.'), findsOneWidget);
+      await submitKey(tester, FakeVaultService.otherRecoveryKey);
+      expect(find.textContaining('1. grupta yazım hatası'), findsOneWidget);
 
       await tester.tap(find.text('Anahtarı yeniden göster'));
       await tester.pumpAndSettle();
