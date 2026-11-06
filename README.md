@@ -17,17 +17,18 @@ Android için çevrimdışı, açık kaynak parola yöneticisi ve 2FA doğrulama
 | Alan | Özellikler |
 |---|---|
 | **Parola kasası** | Kayıt ekleme ve düzenleme, arama, klasörler, parola üretici, güç ölçer |
-| **2FA doğrulama** | TOTP ve HOTP kodları, QR ile ekleme, Google Authenticator ve Aegis'ten aktarım |
+| **2FA doğrulama** | TOTP ve HOTP kodları, QR ile ekleme, Google Authenticator, Aegis ve 2FAS'tan aktarım |
 | **Otomatik doldurma** | Android uygulamalarında ve tarayıcılarda parola doldurma ve kaydetme |
 | **Kilit** | Ana parola, parmak izi ile açma, otomatik kilitlenme, kurtarma anahtarı |
 | **Yedekleme** | Şifreli yedek ve geri yükleme, Bitwarden ve Chrome'dan içe aktarma |
 
-Bunların hiçbiri henüz hazır değil. İlerlemeyi [yol haritasından](resources/yol-haritasi.md) ve [milestone'lardan](https://github.com/aaudraa/KeyKey/milestones) takip edebilirsin.
+Kilit, parola kasası ve 2FA bölümleri geliştirme sürümünde çalışıyor; otomatik doldurma ve yedekleme sırada. Hiçbiri henüz yayımlanmadı. İlerlemeyi [yol haritasından](resources/yol-haritasi.md) ve [milestone'lardan](https://github.com/aaudraa/KeyKey/milestones) takip edebilirsin.
 
 ## Güvenlik yaklaşımı
 
-- Kriptografi için kendi algoritmalarımızı yazmıyoruz; denenmiş [libsodium](https://libsodium.org) kütüphanesini kullanıyoruz.
-- Ana parolandan anahtar türetmek için **Argon2id**, verileri şifrelemek için **XChaCha20-Poly1305** kullanılacak.
+- Kasanın şifrelemesi için kendi kriptografimizi yazmıyoruz; denenmiş [libsodium](https://libsodium.org) kütüphanesini kullanıyoruz.
+- Ana parolandan anahtar türetmek için **Argon2id**, verileri şifrelemek için **XChaCha20-Poly1305** kullanılıyor.
+- 2FA kodları (TOTP, HOTP) ve başka uygulamaların şifreli dışa aktarmalarını açmak için gereken birkaç standart algoritmayı biz uyguluyoruz; hepsi RFC test vektörleriyle doğrulanıyor.
 - Ana parola hiçbir yerde saklanmaz. Onu ve kurtarma anahtarını birlikte kaybedersen verilerin geri getirilemez; bunu yapabilecek bir sunucu ya da arka kapı yok.
 
 Bir güvenlik açığı bulursan lütfen [güvenlik politikasındaki](.github/SECURITY.md) adımları izle, herkese açık issue açma.
@@ -55,6 +56,9 @@ flutter run
 
 # Emülatör testleri, çalışan bir emülatör gerekir
 flutter test integration_test -d <emülatör>
+
+# Parmak izi, pano ve kamera betikleri dahil bütün cihaz testleri
+bash resources/scripts/all-device-tests.sh <emülatör>
 ```
 
 Repoyu `C:\KeyKey` gibi kısa bir yola klonla. Uzun yollarda libsodium derlemesi hata verebiliyor. Ayrıntılar yol haritasının [Geliştirme ortamı](resources/yol-haritasi.md#geliştirme-ortamı) bölümünde.
