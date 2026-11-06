@@ -135,7 +135,7 @@ void main() {
     await pumpUntilFound(tester, find.byIcon(Icons.shield_outlined));
 
     debugPrint('KKADIM Hesap elle ekleniyor.');
-    await tester.tap(find.byIcon(Icons.shield_outlined));
+    await tester.tap(_otpTab());
     await pumpUntilFound(tester, find.textContaining('Henüz 2FA hesabı yok'));
     await tapText(tester, 'Ekle');
     await pumpUntilFound(tester, find.text('Anahtarı elle gir'));
@@ -159,7 +159,7 @@ void main() {
 
     debugPrint('KKADIM Kilitleyip açınca hesap duruyor.');
     await lockAndUnlock(tester);
-    await tester.tap(find.byIcon(Icons.shield_outlined));
+    await tester.tap(_otpTab());
     await pumpUntilFound(tester, find.text('Deneme'));
     await pumpUntilFound(tester, anyCurrentCode());
 
@@ -170,7 +170,7 @@ void main() {
       find.text('2FA kodlarını göstermeden önce doğrula'),
     );
     await tapText(tester, '2FA kodlarını göstermeden önce doğrula');
-    await tester.tap(find.byIcon(Icons.shield_outlined));
+    await tester.tap(_otpTab());
     await pumpUntilFound(tester, find.text('Kodlar gizli'));
     expect(anyCurrentCode(), findsNothing);
     await tapText(tester, 'Kodları göster');
@@ -188,7 +188,7 @@ void main() {
 
     debugPrint('KKADIM Kilitten sonra kodlar yeniden gizli.');
     await lockAndUnlock(tester);
-    await tester.tap(find.byIcon(Icons.shield_outlined));
+    await tester.tap(_otpTab());
     await pumpUntilFound(tester, find.text('Kodlar gizli'));
     expect(anyCurrentCode(), findsNothing);
 
@@ -196,3 +196,10 @@ void main() {
     await tester.pump();
   });
 }
+
+/// Alt çubuktaki 2FA sekmesi. Ayarlardaki ek onay satırı da aynı simgeyi
+/// kullandığı için yalnızca simgeyle aramak iki sonuç verir.
+Finder _otpTab() => find.descendant(
+  of: find.byType(NavigationBar),
+  matching: find.byIcon(Icons.shield_outlined),
+);

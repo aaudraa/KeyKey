@@ -233,7 +233,7 @@ void main() {
       );
       await tester.tap(find.text('2FA kodlarını göstermeden önce doğrula'));
       await tester.pump(const Duration(milliseconds: 500));
-      await tester.tap(find.byIcon(Icons.shield_outlined));
+      await tester.tap(_otpTab());
       await pumpUntil(
         tester,
         () => find.text('Kodlar gizli').evaluate().isNotEmpty,
@@ -315,3 +315,10 @@ void main() {
     skip: skip,
   );
 }
+
+/// Alt çubuktaki 2FA sekmesi. Ayarlardaki ek onay satırı da aynı simgeyi
+/// kullandığı için yalnızca simgeyle aramak iki sonuç verir.
+Finder _otpTab() => find.descendant(
+  of: find.byType(NavigationBar),
+  matching: find.byIcon(Icons.shield_outlined),
+);
