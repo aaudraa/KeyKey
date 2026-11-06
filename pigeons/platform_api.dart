@@ -85,3 +85,55 @@ abstract class ImportCryptoApi {
     Uint8List cipherTextWithTag,
   );
 }
+
+/// Doldurma ekranını açan isteğin, kasaya bakmadan bilinen özeti.
+///
+/// Kurallar güvenlik tasarımı belgesinin Otomatik doldurma bölümündedir.
+class AutofillRequestInfo {
+  AutofillRequestInfo({
+    required this.packageName,
+    required this.appLabel,
+    required this.certsSha256,
+    required this.webDomain,
+    required this.webScheme,
+    required this.untrustedWebDomain,
+    required this.hasUsernameField,
+    required this.hasPasswordField,
+  });
+
+  /// Formu gösteren uygulama. Tarayıcıysa tarayıcının kendisi.
+  String packageName;
+  String? appLabel;
+
+  /// Uygulamanın imza sertifikalarının SHA-256 özetleri, küçük harf
+  /// onaltılık. Okunamadıysa boştur.
+  List<String> certsSha256;
+
+  /// Sayfanın alan adı; yalnızca güvenilen bir tarayıcıdan geldiyse dolu.
+  String? webDomain;
+  String? webScheme;
+
+  /// Tarayıcı olmayan bir uygulamanın formu web alan adı bildiriyor
+  /// (WebView). Eşleştirmede kullanılmaz, yalnızca uyarıda gösterilir.
+  String? untrustedWebDomain;
+
+  bool hasUsernameField;
+  bool hasPasswordField;
+}
+
+/// Otomatik doldurma ekranının Kotlin tarafı.
+@HostApi()
+abstract class AutofillApi {
+  /// Ekranı açan istek. Ekran bir istekle açılmadıysa `null`.
+  AutofillRequestInfo? currentRequest();
+
+  /// Kayıtların uygulamaya bağlanabilmesi için verilen paketin imzası
+  /// kayıttaki özetlerin hepsiyle tutuyor mu. İmza geçmişi de kabul edilir.
+  bool hasSigningCertificates(String packageName, List<String> certsSha256);
+
+  /// Değerleri forma verir ve ekranı kapatır.
+  void fill(String username, String password);
+
+  /// Hiçbir şey doldurmadan ekranı kapatır.
+  void cancel();
+}

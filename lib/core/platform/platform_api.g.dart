@@ -245,6 +245,103 @@ class BiometricUnwrapResult {
   }
 }
 
+/// Doldurma ekranını açan isteğin, kasaya bakmadan bilinen özeti.
+///
+/// Kurallar güvenlik tasarımı belgesinin Otomatik doldurma bölümündedir.
+class AutofillRequestInfo {
+  AutofillRequestInfo({
+    required this.packageName,
+    this.appLabel,
+    required this.certsSha256,
+    this.webDomain,
+    this.webScheme,
+    this.untrustedWebDomain,
+    required this.hasUsernameField,
+    required this.hasPasswordField,
+  });
+
+  /// Formu gösteren uygulama. Tarayıcıysa tarayıcının kendisi.
+  String packageName;
+
+  String? appLabel;
+
+  /// Uygulamanın imza sertifikalarının SHA-256 özetleri, küçük harf
+  /// onaltılık. Okunamadıysa boştur.
+  List<String> certsSha256;
+
+  /// Sayfanın alan adı; yalnızca güvenilen bir tarayıcıdan geldiyse dolu.
+  String? webDomain;
+
+  String? webScheme;
+
+  /// Tarayıcı olmayan bir uygulamanın formu web alan adı bildiriyor
+  /// (WebView). Eşleştirmede kullanılmaz, yalnızca uyarıda gösterilir.
+  String? untrustedWebDomain;
+
+  bool hasUsernameField;
+
+  bool hasPasswordField;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      packageName,
+      appLabel,
+      certsSha256,
+      webDomain,
+      webScheme,
+      untrustedWebDomain,
+      hasUsernameField,
+      hasPasswordField,
+    ];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static AutofillRequestInfo decode(Object result) {
+    result as List<Object?>;
+    return AutofillRequestInfo(
+      packageName: result[0]! as String,
+      appLabel: result[1] as String?,
+      certsSha256: (result[2]! as List<Object?>).cast<String>(),
+      webDomain: result[3] as String?,
+      webScheme: result[4] as String?,
+      untrustedWebDomain: result[5] as String?,
+      hasUsernameField: result[6]! as bool,
+      hasPasswordField: result[7]! as bool,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! AutofillRequestInfo || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(packageName, other.packageName) &&
+        _deepEquals(appLabel, other.appLabel) &&
+        _deepEquals(certsSha256, other.certsSha256) &&
+        _deepEquals(webDomain, other.webDomain) &&
+        _deepEquals(webScheme, other.webScheme) &&
+        _deepEquals(untrustedWebDomain, other.untrustedWebDomain) &&
+        _deepEquals(hasUsernameField, other.hasUsernameField) &&
+        _deepEquals(hasPasswordField, other.hasPasswordField);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'AutofillRequestInfo(packageName: $packageName, appLabel: $appLabel, certsSha256: $certsSha256, webDomain: $webDomain, webScheme: $webScheme, untrustedWebDomain: $untrustedWebDomain, hasUsernameField: $hasUsernameField, hasPasswordField: $hasPasswordField)';
+  }
+}
+
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -267,6 +364,9 @@ class _PigeonCodec extends StandardMessageCodec {
     } else if (value is BiometricUnwrapResult) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
+    } else if (value is AutofillRequestInfo) {
+      buffer.putUint8(134);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -287,6 +387,8 @@ class _PigeonCodec extends StandardMessageCodec {
         return BiometricWrapResult.decode(readValue(buffer)!);
       case 133:
         return BiometricUnwrapResult.decode(readValue(buffer)!);
+      case 134:
+        return AutofillRequestInfo.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -490,5 +592,110 @@ class ImportCryptoApi {
       isNullValid: true,
     );
     return pigeonVar_replyValue as Uint8List?;
+  }
+}
+
+/// Otomatik doldurma ekranının Kotlin tarafı.
+class AutofillApi {
+  /// Constructor for [AutofillApi]. The [binaryMessenger] named argument is
+  /// available for dependency injection. If it is left null, the default
+  /// BinaryMessenger will be used which routes to the host platform.
+  AutofillApi({
+    BinaryMessenger? binaryMessenger,
+    String messageChannelSuffix = '',
+  }) : pigeonVar_binaryMessenger = binaryMessenger,
+       pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty
+           ? '.$messageChannelSuffix'
+           : '';
+
+  final BinaryMessenger? pigeonVar_binaryMessenger;
+  static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
+
+  final String pigeonVar_messageChannelSuffix;
+
+  /// Ekranı açan istek. Ekran bir istekle açılmadıysa `null`.
+  Future<AutofillRequestInfo?> currentRequest() async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.AutofillApi.currentRequest$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
+    return pigeonVar_replyValue as AutofillRequestInfo?;
+  }
+
+  /// Kayıtların uygulamaya bağlanabilmesi için verilen paketin imzası
+  /// kayıttaki özetlerin hepsiyle tutuyor mu. İmza geçmişi de kabul edilir.
+  Future<bool> hasSigningCertificates(
+    String packageName,
+    List<String> certsSha256,
+  ) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.AutofillApi.hasSigningCertificates$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[packageName, certsSha256],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as bool;
+  }
+
+  /// Değerleri forma verir ve ekranı kapatır.
+  Future<void> fill(String username, String password) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.AutofillApi.fill$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[username, password],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
+  }
+
+  /// Hiçbir şey doldurmadan ekranı kapatır.
+  Future<void> cancel() async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.AutofillApi.cancel$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
   }
 }

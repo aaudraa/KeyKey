@@ -46,3 +46,7 @@ lib/l10n/generated/
 Thumbs.db
 desktop.ini
 .claude/settings.local.json
+
+# Test uygulamalarının Gradle durumu ve sahte imza anahtarları.
+resources/test-apps/**/.gradle/
+resources/test-apps/**/*.jks

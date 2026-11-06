@@ -389,10 +389,10 @@ Android'in otomatik doldurma çerçevesiyle (`AutofillService`) çalışır. Tem
 ### Akış
 
 1. Sistem bir giriş formu için `onFillRequest` çağırır. Kotlin'deki servis formu çözümler: kullanıcı adı, parola, yeni parola ve tek kullanımlık kod alanlarını bulur. Doldurulacak alan yoksa yanıt vermez.
-2. Servis **kasaya hiç dokunmaz**: kasa açık olsa bile kayıt adlarını bilmez. Yanıtta tek bir öneri vardır, "KeyKey ile doldur". Bu, yanıt düzeyinde kimlik doğrulamadır (`FillResponse.setAuthentication`): öneriye dokunulunca KeyKey'in doldurma ekranı açılır. Kilitliyken de açıkken de kayıt adı görünmez.
+2. Servis **kasaya hiç dokunmaz**: kasa açık olsa bile kayıt adlarını bilmez. Yanıtta tek bir öneri vardır, "KeyKey ile doldur". Öneri değer taşımaz ve kimlik doğrulama ister (`Dataset.setAuthentication`): öneriye dokunulunca KeyKey'in doldurma ekranı açılır. Doğrulama öneri düzeyindedir, yanıt düzeyinde değil; çünkü yanıt düzeyinde ekranın döndürdüğü tek bir `Dataset` sistemce yok sayılıyor ve öneri yeniden açılıyor (Android 16 emülatöründe görüldü). Kilitliyken de açıkken de kayıt adı görünmez.
 3. Doldurma ekranı (`AutofillActivity`), ana uygulamadan ayrı bir Flutter giriş noktasıyla (`autofillMain`) çalışır. Kendi kasa oturumunu açar: parmak izi veya ana parola. Hatalı parola beklemesi ana uygulamayla aynı sayacı kullanır.
 4. Ekran eşleşen kayıtları gösterir. Kullanıcı birini seçer. Şüpheli bir durum varsa önce açık bir uyarı ve ek onay gelir.
-5. Seçilen kaydın kullanıcı adı ve parolası Kotlin'e verilir. Kotlin bunlardan bir `Dataset` kurup sisteme döndürür. Ekran kapanınca kasa oturumu kapatılır, anahtarlar silinir.
+5. Seçilen kaydın kullanıcı adı ve parolası Kotlin'e verilir. Kotlin bunlardan bir `Dataset` kurup sisteme döndürür; sistem onu hemen doldurur. Yalnızca giriş parolası alanları doldurulur, yeni parola alanları doldurulmaz. Ekran kapanınca kasa oturumu kapatılır, anahtarlar silinir.
 
 Ekran son uygulamalar listesinde görünmez ve ekran görüntüsü alınamaz (`FLAG_SECURE`).
 
@@ -415,11 +415,11 @@ Ekran son uygulamalar listesinde görünmez ve ekran görüntüsü alınamaz (`F
 
 ### Yeni parola kaydetme
 
-Yanıtta bir `SaveInfo` bulunur. Kullanıcı formu gönderince sistem kaydetmeyi önerir ve `onSaveRequest` çağrılır. Servis yine kasaya dokunmaz; formdaki değerleri kendi kaydetme ekranına verir (`FillCallback.onSuccess(IntentSender)` ile). Kullanıcı kasayı açar, kaydı görür, gerekirse düzenler ve kaydeder. Uygulama veya alan adı kayda kendiliğinden bağlanır. Kaydetme ekranı da dışarıya açık değildir ve verileri başka bir yere yazmaz.
+Yanıtta bir `SaveInfo` bulunur. Kullanıcı formu gönderince sistem kaydetmeyi önerir ve `onSaveRequest` çağrılır. Servis yine kasaya dokunmaz; formdaki değerleri kendi kaydetme ekranına verir (`SaveCallback.onSuccess(IntentSender)` ile). Kullanıcı kasayı açar, kaydı görür, gerekirse düzenler ve kaydeder. Uygulama veya alan adı kayda kendiliğinden bağlanır. Kaydetme ekranı da dışarıya açık değildir ve verileri başka bir yere yazmaz.
 
 ### Satır içi öneriler
 
-Android 11+ klavyelerde öneri şerit halinde gösterilebilir. KeyKey'in şeridinde de yalnızca "KeyKey" yazar. Şerit, açılır listeyle aynı kimlik doğrulama akışını başlatır.
+Android 11+ klavyelerde öneri şerit halinde gösterilebilir. Klavye satır içi öneri isterse yanıtta yalnızca satır içi görünüm dikkate alınır; bu yüzden öneri her iki görünümle de verilir. KeyKey'in şeridinde de yalnızca "KeyKey ile doldur" yazar. Şerit, açılır listeyle aynı kimlik doğrulama akışını başlatır.
 
 ### 2FA kodu
 

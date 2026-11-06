@@ -205,5 +205,12 @@
   "otpConfirmTitle": "2FA kodlarını göster",
   "otpConfirmButton": "Doğrula",
   "settingsOtpRequireAuth": "2FA kodlarını göstermeden önce doğrula",
-  "settingsOtpRequireAuthHelp": "Kilidi açık telefonun başkasının eline geçerse kodları korur. Cihazdaki zararlı yazılıma karşı korumaz."
+  "settingsOtpRequireAuthHelp": "Kilidi açık telefonun başkasının eline geçerse kodları korur. Cihazdaki zararlı yazılıma karşı korumaz.",
+  "autofillTitle": "KeyKey ile doldur",
+  "autofillFor": "{target} için",
+  "autofillNoRequest": "Doldurulacak bir form yok.",
+  "autofillNoVault": "Önce KeyKey'de bir kasa oluştur.",
+  "autofillVaultUnavailable": "Kasa burada açılamıyor. Durumu görmek için KeyKey'i aç.",
+  "autofillEmpty": "Kasada henüz parola yok.",
+  "autofillClose": "Kapat"
 }

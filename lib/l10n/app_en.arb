@@ -957,5 +957,38 @@
   "settingsOtpRequireAuthHelp": "Protects the codes if someone picks up your unlocked phone. It does not protect against malware on the device.",
   "@settingsOtpRequireAuthHelp": {
     "description": "Explains what the setting protects against."
+  },
+  "autofillTitle": "Fill with KeyKey",
+  "@autofillTitle": {
+    "description": "Title of the autofill screen."
+  },
+  "autofillFor": "For {target}",
+  "@autofillFor": {
+    "description": "Shows which app or website will be filled.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillNoRequest": "There is no form to fill.",
+  "@autofillNoRequest": {
+    "description": "Autofill screen opened without a fill request."
+  },
+  "autofillNoVault": "Create a vault in KeyKey first.",
+  "@autofillNoVault": {
+    "description": "Autofill requested before a vault exists."
+  },
+  "autofillVaultUnavailable": "The vault cannot be opened here. Open KeyKey to check it.",
+  "@autofillVaultUnavailable": {
+    "description": "Autofill requested while the vault is unreadable or being recovered."
+  },
+  "autofillEmpty": "There are no passwords in the vault yet.",
+  "@autofillEmpty": {
+    "description": "Autofill screen when the vault has no logins."
+  },
+  "autofillClose": "Close",
+  "@autofillClose": {
+    "description": "Closes the autofill screen without filling."
   }
 }

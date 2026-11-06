@@ -47,7 +47,10 @@ object FieldClassifier {
     private const val TEXT_WEB_EMAIL_ADDRESS = 0x000000d0
     private const val NUMBER_PASSWORD = 0x00000010
 
-    private val PASSWORD_HINTS = setOf("password", "current-password", "currentpassword")
+    // "passwordAuto": Android 14+ parola türündeki alanlara bu ipucunu kendisi
+    // ekliyor; tanınmazsa alan "başka bir şey" sayılıp atlanıyordu.
+    private val PASSWORD_HINTS =
+        setOf("password", "passwordauto", "current-password", "currentpassword")
     private val NEW_PASSWORD_HINTS = setOf("newpassword", "new-password")
     private val USERNAME_HINTS =
         setOf("username", "newusername", "new-username", "emailaddress", "email")

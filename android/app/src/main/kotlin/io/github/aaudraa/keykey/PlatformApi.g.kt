@@ -353,6 +353,87 @@ data class BiometricUnwrapResult (
     return "BiometricUnwrapResult(status=$status, plainText=${plainText?.contentToString()})"
   }
 }
+
+/**
+ * Doldurma ekranını açan isteğin, kasaya bakmadan bilinen özeti.
+ *
+ * Kurallar güvenlik tasarımı belgesinin Otomatik doldurma bölümündedir.
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class AutofillRequestInfo (
+  /** Formu gösteren uygulama. Tarayıcıysa tarayıcının kendisi. */
+  val packageName: String,
+  val appLabel: String? = null,
+  /**
+   * Uygulamanın imza sertifikalarının SHA-256 özetleri, küçük harf
+   * onaltılık. Okunamadıysa boştur.
+   */
+  val certsSha256: List<String>,
+  /** Sayfanın alan adı; yalnızca güvenilen bir tarayıcıdan geldiyse dolu. */
+  val webDomain: String? = null,
+  val webScheme: String? = null,
+  /**
+   * Tarayıcı olmayan bir uygulamanın formu web alan adı bildiriyor
+   * (WebView). Eşleştirmede kullanılmaz, yalnızca uyarıda gösterilir.
+   */
+  val untrustedWebDomain: String? = null,
+  val hasUsernameField: Boolean,
+  val hasPasswordField: Boolean
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): AutofillRequestInfo {
+      val packageName = pigeonVar_list[0] as String
+      val appLabel = pigeonVar_list[1] as String?
+      val certsSha256 = pigeonVar_list[2] as List<String>
+      val webDomain = pigeonVar_list[3] as String?
+      val webScheme = pigeonVar_list[4] as String?
+      val untrustedWebDomain = pigeonVar_list[5] as String?
+      val hasUsernameField = pigeonVar_list[6] as Boolean
+      val hasPasswordField = pigeonVar_list[7] as Boolean
+      return AutofillRequestInfo(packageName, appLabel, certsSha256, webDomain, webScheme, untrustedWebDomain, hasUsernameField, hasPasswordField)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      packageName,
+      appLabel,
+      certsSha256,
+      webDomain,
+      webScheme,
+      untrustedWebDomain,
+      hasUsernameField,
+      hasPasswordField,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as AutofillRequestInfo
+    return PlatformApiPigeonUtils.deepEquals(this.packageName, other.packageName) && PlatformApiPigeonUtils.deepEquals(this.appLabel, other.appLabel) && PlatformApiPigeonUtils.deepEquals(this.certsSha256, other.certsSha256) && PlatformApiPigeonUtils.deepEquals(this.webDomain, other.webDomain) && PlatformApiPigeonUtils.deepEquals(this.webScheme, other.webScheme) && PlatformApiPigeonUtils.deepEquals(this.untrustedWebDomain, other.untrustedWebDomain) && PlatformApiPigeonUtils.deepEquals(this.hasUsernameField, other.hasUsernameField) && PlatformApiPigeonUtils.deepEquals(this.hasPasswordField, other.hasPasswordField)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.packageName)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.appLabel)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.certsSha256)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.webDomain)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.webScheme)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.untrustedWebDomain)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.hasUsernameField)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.hasPasswordField)
+    return result
+  }
+  override fun toString(): String {
+    return "AutofillRequestInfo(packageName=$packageName, appLabel=$appLabel, certsSha256=$certsSha256, webDomain=$webDomain, webScheme=$webScheme, untrustedWebDomain=$untrustedWebDomain, hasUsernameField=$hasUsernameField, hasPasswordField=$hasPasswordField)"
+  }
+}
 private open class PlatformApiPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -381,6 +462,11 @@ private open class PlatformApiPigeonCodec : StandardMessageCodec() {
           BiometricUnwrapResult.fromList(it)
         }
       }
+      134.toByte() -> {
+        (readValue(buffer) as? List<Any?>)?.let {
+          AutofillRequestInfo.fromList(it)
+        }
+      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -404,6 +490,10 @@ private open class PlatformApiPigeonCodec : StandardMessageCodec() {
       }
       is BiometricUnwrapResult -> {
         stream.write(133)
+        writeValue(stream, value.toList())
+      }
+      is AutofillRequestInfo -> {
+        stream.write(134)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -587,6 +677,104 @@ interface ImportCryptoApi {
             val cipherTextWithTagArg = args[2] as ByteArray
             val wrapped: List<Any?> = try {
               listOf(api.aesGcmDecrypt(keyArg, nonceArg, cipherTextWithTagArg))
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}
+/**
+ * Otomatik doldurma ekranının Kotlin tarafı.
+ *
+ * Generated interface from Pigeon that represents a handler of messages from Flutter.
+ */
+interface AutofillApi {
+  /** Ekranı açan istek. Ekran bir istekle açılmadıysa `null`. */
+  fun currentRequest(): AutofillRequestInfo?
+  /**
+   * Kayıtların uygulamaya bağlanabilmesi için verilen paketin imzası
+   * kayıttaki özetlerin hepsiyle tutuyor mu. İmza geçmişi de kabul edilir.
+   */
+  fun hasSigningCertificates(packageName: String, certsSha256: List<String>): Boolean
+  /** Değerleri forma verir ve ekranı kapatır. */
+  fun fill(username: String, password: String)
+  /** Hiçbir şey doldurmadan ekranı kapatır. */
+  fun cancel()
+
+  companion object {
+    /** The codec used by AutofillApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      PlatformApiPigeonCodec()
+    }
+    /** Sets up an instance of `AutofillApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: AutofillApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.AutofillApi.currentRequest$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.currentRequest())
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.AutofillApi.hasSigningCertificates$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val packageNameArg = args[0] as String
+            val certsSha256Arg = args[1] as List<String>
+            val wrapped: List<Any?> = try {
+              listOf(api.hasSigningCertificates(packageNameArg, certsSha256Arg))
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.AutofillApi.fill$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val usernameArg = args[0] as String
+            val passwordArg = args[1] as String
+            val wrapped: List<Any?> = try {
+              api.fill(usernameArg, passwordArg)
+              listOf(null)
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.AutofillApi.cancel$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              api.cancel()
+              listOf(null)
             } catch (exception: Throwable) {
               PlatformApiPigeonUtils.wrapError(exception)
             }

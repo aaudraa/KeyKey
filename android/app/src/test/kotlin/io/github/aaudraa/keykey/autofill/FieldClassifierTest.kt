@@ -32,6 +32,15 @@ class FieldClassifierTest {
     }
 
     @Test
+    fun sisteminEklediğiParolaIpucuTanınıyor() {
+        // Android 14+ parola alanlarına "passwordAuto" ekliyor; cihazda bulundu.
+        assertEquals(
+            FieldKind.PASSWORD,
+            kind(FieldInfo(autofillHints = listOf("passwordAuto"), inputType = textPassword, hint = "Parola")),
+        )
+    }
+
+    @Test
     fun başkaBirIpucuVarsaTahminEdilmiyor() {
         // Adres alanının kimliğinde "user" geçse bile doldurulmaz.
         assertNull(kind(FieldInfo(autofillHints = listOf("postalAddress"), idEntry = "user_address")))
