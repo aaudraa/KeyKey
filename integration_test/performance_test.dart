@@ -11,6 +11,8 @@ import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/settings/application/settings_controller.dart';
+import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:keykey/features/vault/application/login_search.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
@@ -76,6 +78,9 @@ void main() {
           vaultServiceProvider.overrideWithValue(service),
           initialVaultStatusProvider.overrideWithValue(VaultOpen(session)),
           loginRepositoryFactoryProvider.overrideWithValue((_) => repository),
+          settingsRepositoryFactoryProvider.overrideWithValue(
+            (session) => SettingsRepository(store: store, session: session),
+          ),
           otpRepositoryFactoryProvider.overrideWithValue(
             (session) =>
                 OtpRepository(store: store, session: session, sodium: sodium),

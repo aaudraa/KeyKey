@@ -15,6 +15,8 @@ import 'package:keykey/features/authenticator/data/import/platform_aes_gcm.dart'
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/settings/application/settings_controller.dart';
+import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:path_provider/path_provider.dart';
@@ -53,6 +55,9 @@ Future<List<Override>> bootstrap() async {
     loginRepositoryFactoryProvider.overrideWithValue(
       (session) =>
           LoginRepository(store: store, session: session, sodium: sodium),
+    ),
+    settingsRepositoryFactoryProvider.overrideWithValue(
+      (session) => SettingsRepository(store: store, session: session),
     ),
     otpRepositoryFactoryProvider.overrideWithValue(
       (session) =>

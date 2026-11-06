@@ -6,11 +6,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otp_generator.dart';
+import 'package:keykey/features/authenticator/application/otp_visibility.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/authenticator/presentation/otp_clock_builder.dart';
 import 'package:keykey/features/authenticator/presentation/otp_display.dart';
+import 'package:keykey/features/authenticator/presentation/otp_gate.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// [loginId] ile eşleştirilmiş, çöp kutusunda olmayan 2FA hesapları.
@@ -70,6 +72,19 @@ class _LinkedOtpTileState extends ConsumerState<LinkedOtpTile> {
     final theme = Theme.of(context);
     final parameters = widget.item.content.parameters;
     final isTotp = parameters.kind == OtpKind.totp;
+
+    final visible = ref.watch(otpCodesVisibleProvider);
+    if (visible == null) return const SizedBox.shrink();
+    if (!visible) {
+      return ListTile(
+        title: Text(l10n.loginOtpCode, style: theme.textTheme.labelMedium),
+        subtitle: Text(l10n.otpHiddenTitle),
+        trailing: TextButton(
+          onPressed: () => revealOtpCodes(context, ref),
+          child: Text(l10n.otpReveal),
+        ),
+      );
+    }
 
     return OtpClockBuilder(
       active: isTotp,

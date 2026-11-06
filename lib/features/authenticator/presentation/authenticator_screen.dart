@@ -10,12 +10,14 @@ import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otp_clock.dart';
 import 'package:keykey/features/authenticator/application/otp_search.dart';
+import 'package:keykey/features/authenticator/application/otp_visibility.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/authenticator/presentation/otp_clock_builder.dart';
 import 'package:keykey/features/authenticator/presentation/otp_code_tile.dart';
 import 'package:keykey/features/authenticator/presentation/otp_display.dart';
+import 'package:keykey/features/authenticator/presentation/otp_gate.dart';
 import 'package:keykey/features/authenticator/presentation/scanned_code_handler.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
@@ -181,13 +183,19 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        // Sekmeler aynı anda ağaçta durur, varsayılan Hero etiketi çakışır.
+        heroTag: 'otp-add',
         onPressed: state is OtpsLoaded ? _showAddOptions : null,
         icon: const Icon(Icons.add),
         label: Text(l10n.vaultAdd),
       ),
       body: switch (state) {
         OtpsLoading() => const Center(child: CircularProgressIndicator()),
-        OtpsLoaded() => _loaded(context, l10n, state),
+        OtpsLoaded() => switch (ref.watch(otpCodesVisibleProvider)) {
+          null => const Center(child: CircularProgressIndicator()),
+          false => const OtpGate(),
+          true => _loaded(context, l10n, state),
+        },
       },
     );
   }

@@ -364,7 +364,19 @@ Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/googl
 
 ### Kodları görmek için ek onay
 
-İsteğe bağlı bir ayardır. Açıksa 2FA ekranı, kasa açık olsa bile kodları göstermeden önce parmak izi, parmak izi kapalıysa ana parola ister. Onay, uygulama arka plana geçene kadar geçerlidir.
+İsteğe bağlı bir ayardır. Açıksa 2FA ekranı ve parola kaydındaki eşleşmiş kod, kasa açık olsa bile kodları göstermeden önce parmak izi, parmak izi kapalıysa ya da vazgeçilirse ana parola ister. Onay, kasa kilitlenene kadar geçerlidir; uygulama arka plana geçince kasa zaten kilitlenir.
+
+- **Doğrulama gerçekten kasayı açar.** Parmak izi, Keystore anahtarının kasa anahtarını açabildiğiyle; ana parola, parola yuvasının açılabildiğiyle doğrulanır. Açılan kopya hemen silinir. Ana parolada hatalı denemeler kilit ekranındaki sayaca eklenir ve aynı bekleme uygulanır, yani bu pencere parola denemek için kullanılamaz.
+- **Kapatmak doğrulama ister,** açmak istemez. Yoksa kilidi açık telefonu eline alan biri önce ayarı kapatabilirdi.
+- Ayarlar henüz okunmadıysa kodlar gösterilmez.
+
+**Ayar kaydı:** Ayarlar kasanın içinde, tür `settings` olan tek bir kayıtta durur. Kimliği 16 sıfır bayttır; tür ek doğrulama verisinde olduğu için başka bir kaydın yerine konamaz. Kayıt anahtarıyla şifrelenir. Düz metin:
+
+```json
+{ "version": 1, "otpRequireAuth": false }
+```
+
+- Kayıt yoksa ek onay kapalıdır. Kayıt var ama okunamıyorsa, biçime uymuyorsa veya türü farklıysa ek onay **açık** sayılır: dosyayı değiştiren biri ayarı böyle kapatamasın. Kullanıcı doğrulayıp kapatabilir. Kaydın tamamen silinmesi ise [kayıt silme sınırına](#bilinen-sınırlar) girer.
 
 **Sınır:** Bu, kasa anahtarını değiştirmez. 2FA anahtarı yine kasa anahtarından türetilir, çünkü ana parola ve kurtarma anahtarı da 2FA kayıtlarını açabilmelidir. Ayar, kilidi açık telefonu eline alan birine karşı koruma sağlar, cihazdaki zararlı yazılıma karşı korumaz.
 

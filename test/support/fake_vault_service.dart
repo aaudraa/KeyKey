@@ -23,6 +23,8 @@ import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/authenticator/presentation/qr_scan_screen.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/settings/application/settings_controller.dart';
+import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
@@ -275,6 +277,19 @@ class FakeQrImageReader implements QrImageReader {
   }
 }
 
+/// Bellekte duran ayarlar.
+class FakeSettingsRepository implements SettingsRepository {
+  new([this.settings = AppSettings.defaults]);
+
+  AppSettings settings;
+
+  @override
+  Future<AppSettings> load() async => settings;
+
+  @override
+  Future<void> save(AppSettings settings) async => this.settings = settings;
+}
+
 /// Seçilmiş gibi davranılan dışa aktarma dosyası.
 class FakeExportFilePicker implements ExportFilePicker {
   ExportFileResult next = const ExportFileCancelled();
@@ -388,6 +403,7 @@ Future<void> pumpKeyKey(
   FakeQrImageReader? qrImages,
   FakeQrCamera? camera,
   FakeExportFilePicker? files,
+  FakeSettingsRepository? settings,
   RecordingClipboard? clipboard,
   Locale locale = const Locale('tr'),
 }) async {
@@ -402,6 +418,9 @@ Future<void> pumpKeyKey(
         initialVaultStatusProvider.overrideWithValue(status),
         loginRepositoryFactoryProvider.overrideWithValue((_) => repository),
         otpRepositoryFactoryProvider.overrideWithValue((_) => otpRepository),
+        settingsRepositoryFactoryProvider.overrideWithValue(
+          (_) => settings ?? FakeSettingsRepository(),
+        ),
         if (clock != null) otpClockProvider.overrideWithValue(clock),
         qrImageReaderProvider.overrideWithValue(
           qrImages ?? FakeQrImageReader(),

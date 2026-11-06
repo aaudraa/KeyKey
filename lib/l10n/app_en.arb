@@ -846,5 +846,33 @@
   "otpImportBatch": "Google Authenticator splits large exports into several QR codes. Scan each of them.",
   "@otpImportBatch": {
     "description": "Hint shown for Google Authenticator exports that span several QR codes."
+  },
+  "otpHiddenTitle": "Codes are hidden",
+  "@otpHiddenTitle": {
+    "description": "Title shown instead of 2FA codes when extra confirmation is required."
+  },
+  "otpHiddenBody": "Confirm it is you to see your 2FA codes.",
+  "@otpHiddenBody": {
+    "description": "Text shown instead of 2FA codes when extra confirmation is required."
+  },
+  "otpReveal": "Show codes",
+  "@otpReveal": {
+    "description": "Button that asks for fingerprint or master password to show 2FA codes."
+  },
+  "otpConfirmTitle": "Show 2FA codes",
+  "@otpConfirmTitle": {
+    "description": "Title of the fingerprint prompt and the password dialog."
+  },
+  "otpConfirmButton": "Confirm",
+  "@otpConfirmButton": {
+    "description": "Button in the master password dialog."
+  },
+  "settingsOtpRequireAuth": "Confirm before showing 2FA codes",
+  "@settingsOtpRequireAuth": {
+    "description": "Setting that requires fingerprint or master password before codes are shown."
+  },
+  "settingsOtpRequireAuthHelp": "Protects the codes if someone picks up your unlocked phone. It does not protect against malware on the device.",
+  "@settingsOtpRequireAuthHelp": {
+    "description": "Explains what the setting protects against."
   }
 }

@@ -187,5 +187,12 @@
   "otpImportAdd": "{count, plural, =0{Ekle} other{{count} hesabı ekle}}",
   "otpImportDone": "{count, plural, other{{count} hesap eklendi.}}",
   "otpImportEmpty": "Aktarılacak hesap yok.",
-  "otpImportBatch": "Google Authenticator büyük dışa aktarmaları birkaç QR koduna böler. Her birini ayrı tara."
+  "otpImportBatch": "Google Authenticator büyük dışa aktarmaları birkaç QR koduna böler. Her birini ayrı tara.",
+  "otpHiddenTitle": "Kodlar gizli",
+  "otpHiddenBody": "2FA kodlarını görmek için kimliğini doğrula.",
+  "otpReveal": "Kodları göster",
+  "otpConfirmTitle": "2FA kodlarını göster",
+  "otpConfirmButton": "Doğrula",
+  "settingsOtpRequireAuth": "2FA kodlarını göstermeden önce doğrula",
+  "settingsOtpRequireAuthHelp": "Kilidi açık telefonun başkasının eline geçerse kodları korur. Cihazdaki zararlı yazılıma karşı korumaz."
 }
