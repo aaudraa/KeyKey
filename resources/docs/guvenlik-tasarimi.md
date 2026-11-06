@@ -171,6 +171,42 @@ Tür `login` olan kayıtların düz metni, şifrelemeden önce şu JSON'dur:
 - **Çöp kutusu:** Silinen kayıt önce çöp kutusuna gider ve 30 gün sonra kasa açıkken kalıcı olarak silinir. Kalıcı silme de `secure_delete` ile yapılır.
 - **Okunamayan kayıt:** Bir kayıt açılamazsa liste düşmez. Kayda dokunulmaz, kullanıcıya kaç kaydın okunamadığı söylenir.
 
+### 2FA kaydının içeriği
+
+Tür `otp` olan kayıtlar 2FA anahtarıyla şifrelenir. Düz metin şu JSON'dur:
+
+```json
+{
+  "version": 1,
+  "kind": "totp",
+  "issuer": "Örnek",
+  "account": "kullanici@example.com",
+  "secret": "JBSWY3DPEHPK3PXP",
+  "algorithm": "SHA1",
+  "digits": 6,
+  "period": 30,
+  "counter": null,
+  "loginId": null,
+  "notes": "",
+  "favorite": false,
+  "trashedAt": null
+}
+```
+
+| Alan | Kural |
+|---|---|
+| `kind` | `totp` veya `hotp`. |
+| `secret` | Gizli anahtar, RFC 4648 Base32, büyük harf ve dolgusuz. 1-256 bayt. |
+| `algorithm` | `SHA1`, `SHA256` veya `SHA512`. |
+| `digits` | 6, 7 veya 8. |
+| `period` | `totp` için 1-3600 saniye, `hotp` için `null`. |
+| `counter` | `hotp` için sıradaki sayaç değeri (0 veya daha büyük), `totp` için `null`. |
+| `loginId` | Eşleştirilen parola kaydının kimliği (32 karakter, küçük harf onaltılık) veya `null`. |
+
+- Okurken doğrulama parola kaydındaki kadar katıdır. Ayrıca Base32 metni yazdığımız biçimde olmalıdır: küçük harf, dolgu, boşluk veya fazladan bit reddedilir.
+- Çöp kutusu ve okunamayan kayıt kuralları parola kaydıyla aynıdır. Yanlışlıkla silinen 2FA hesabı servise girişi engelleyebileceği için hemen silinmez.
+- `loginId`'nin gösterdiği kayıt silinmişse eşleşme yok sayılır.
+
 ## Depolama
 
 Kasa, uygulamanın özel klasöründe tek bir SQLite dosyasında (`keykey.db`) durur. Android yedeklemesi ve cihaz aktarımı kapalıdır. Dosyanın tamamı şifrelenmez, koruma kayıt düzeyindeki şifrelemeden gelir. Bu yüzden SQLCipher gerekmiyor ve şifresiz kalan alanlar yukarıdaki listeyle sınırlı kalıyor.
@@ -275,6 +311,56 @@ Parmak izi üçüncü kapıdır ve isteğe bağlıdır. Yuvası üst bilgide de�
 - **Rastgele parola:** Seçilen her karakter sınıfından en az bir karakter bulunur. Bu, sonucu çok az daraltır, gösterilen entropi hesabı bunu göz ardı eder.
 - **Parola cümlesi:** [EFF büyük sözcük listesi](https://www.eff.org/dice) (7776 İngilizce sözcük, CC BY 3.0), sözcük başına yaklaşık 12,9 bit. Varsayılan 6 sözcük, yaklaşık 77 bit. Denetlenmiş bir Türkçe liste bulamadığımız için Türkçe seçenek yok.
 - **Güç tahmini:** Uzunluk ve karakter çeşitliliğinden kaba bir entropi hesaplanır. Yaygın parola listesi, klavye dizileri, ardışık karakterler, tekrarlar ve tarihler bunu düşürür. Yaygın parola listesi [SecLists](https://github.com/danielmiessler/SecLists) (MIT) kaynaklıdır. Bu yine bir tahmindir, gerçek gücü ölçmez.
+
+## 2FA kodları
+
+### Kod üretimi
+
+- **HOTP** (RFC 4226): `HMAC(gizli anahtar, sayaç)` hesaplanır, sayaç 8 baytlık büyük uçlu yazılır. Son baytın düşük 4 biti bir konum gösterir, o konumdaki 4 bayttan en üst bit atılır ve sonuç `10^hane`'ye göre kalanı alınarak önüne sıfır eklenir.
+- **TOTP** (RFC 6238): Sayaç `floor(unix zamanı / period)`'dur, başlangıç zamanı 0'dır. SHA-256 ve SHA-512 için de aynı kesme yöntemi kullanılır.
+- HMAC için `package:crypto` kullanılır. libsodium'da SHA-1 yok, HMAC-SHA256 ve HMAC-SHA512'si ise yalnızca 32 baytlık anahtar alıyor.
+- **HOTP sayacı:** Kod, kullanıcı istediğinde üretilir. Sayaç önce bir artırılıp diske yazılır, kod ondan sonra gösterilir. Böylece uygulama yarıda kapansa da aynı kod iki kez görünmez. Gösterilen kod kayıttaki eski sayaç değeriyle hesaplanır, yani `counter` her zaman sıradaki kullanılacak değerdir. Bu RFC 4226'daki tanıma uyar.
+- **Sıradaki kod:** TOTP süresinin bitmesine az kaldığında bir sonraki kod da gösterilir. Kullanıcı yazarken süre dolarsa kodu yeniden okumak zorunda kalmaz.
+- **Saat:** TOTP cihaz saatine dayanır. Uygulama internet kullanmadığı için saati kendisi doğrulayamaz. Kodlar tutmazsa saat ayarını gösteren bir yardım metni vardır.
+- Kodlar kopyalanırken parolalarla aynı [pano](#pano) kuralları geçerlidir.
+
+### `otpauth://` bağlantıları
+
+Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/google/google-authenticator/wiki/Key-Uri-Format): `otpauth://totp/Servis:hesap?secret=...&issuer=Servis`.
+
+- Şema ve tür büyük küçük harf ayırmaz. `totp` ve `hotp` dışındaki türler, örneğin `steam`, desteklenmiyor diye reddedilir.
+- `secret` zorunludur. Kullanıcıların elle yazdığı veya kopyaladığı metinlere uymak için Base32 okunurken küçük harf, boşluk, tire ve dolgu kabul edilir. Artan bitler atılır.
+- `issuer` parametresi varsa etiketteki `Servis:` önekinden önce gelir. Etiketteki iki noktadan sonraki boşluklar atılır.
+- `algorithm`, `digits` ve `period` verilmezse SHA1, 6 ve 30 kullanılır. `hotp` için `counter` zorunludur.
+- Bilinen bir parametre iki kez geçerse veya değeri kurallara uymazsa bağlantı reddedilir. Bilinmeyen parametreler, örneğin `image`, yok sayılır. `image` adresine bağlanılmaz.
+- 4096 karakterden uzun metin okunmaz.
+- Ayrıştırıcı yalnızca kendi hata türünü fırlatır. Hata mesajı hangi kuralın bozulduğunu söyler, gizli anahtarı içermez. Bozuk girdi testleri rastgele metinlerle de çalıştırılır.
+
+### QR okuma
+
+- Kamera görüntüsü ve seçilen görsel `flutter_zxing` ile cihazda çözülür. Görüntü hiçbir yere kaydedilmez.
+- Kamera izni yalnızca kullanıcı taramayı başlattığında istenir. Reddedilirse elle giriş ve görselden okuma çalışmaya devam eder.
+- Görsel Android'in fotoğraf seçicisiyle seçilir, depolama izni gerekmez.
+- Okunan hesap hemen kaydedilmez. Servis ve hesap adı gösterilir, kullanıcı onaylayınca kaydedilir.
+
+### İçe aktarma
+
+| Kaynak | Biçim |
+|---|---|
+| Google Authenticator | Dışa aktarma QR'ı: `otpauth-migration://offline?data=...`, içinde Base64 ile kodlanmış protobuf. Birden çok QR varsa her biri ayrı okunur. |
+| Aegis | Dışa aktarılan JSON dosyası. |
+| 2FAS | Dışa aktarılan `.2fas` dosyası. |
+
+- Dosyalar güvenilmeyen veri sayılır. Boyut sınırı vardır, okuma katıdır ve bozuk dosya uygulamayı düşürmez.
+- Desteklenmeyen hesaplar, örneğin Steam veya 5 haneli kodlar, atlanır ve kullanıcıya sayısı söylenir. Aynı gizli anahtar ve hesapla zaten kayıtlı olanlar tekrar eklenmez.
+- Hesaplar kaydedilmeden önce liste halinde gösterilir.
+- Şifreli dışa aktarma dosyalarının açılma yöntemi içe aktarma görevinde bu belgeye eklenecek.
+
+### Kodları görmek için ek onay
+
+İsteğe bağlı bir ayardır. Açıksa 2FA ekranı, kasa açık olsa bile kodları göstermeden önce parmak izi, parmak izi kapalıysa ana parola ister. Onay, uygulama arka plana geçene kadar geçerlidir.
+
+**Sınır:** Bu, kasa anahtarını değiştirmez. 2FA anahtarı yine kasa anahtarından türetilir, çünkü ana parola ve kurtarma anahtarı da 2FA kayıtlarını açabilmelidir. Ayar, kilidi açık telefonu eline alan birine karşı koruma sağlar, cihazdaki zararlı yazılıma karşı korumaz.
 
 ## Hata davranışı
 

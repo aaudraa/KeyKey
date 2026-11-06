@@ -18,7 +18,7 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 | 2 | Kripto çekirdeği | L | 1 | `faz/2-kripto-cekirdegi` | Tamamlandı |
 | 3 | Kasa, kilit ve biyometri | L | 2 | `faz/3-kasa-ve-kilit` | Tamamlandı |
 | 4 | Parola kasası | L | 3 | `faz/4-parola-kasasi` | Tamamlandı |
-| 5 | 2FA doğrulayıcı | M | 3 | `faz/5-2fa-dogrulayici` | Sırada |
+| 5 | 2FA doğrulayıcı | M | 3 | `faz/5-2fa-dogrulayici` | Devam ediyor |
 | 6 | Otomatik doldurma | XL | 4 | `faz/6-otomatik-doldurma` | Bekliyor |
 | 7 | Yedekleme, içe ve dışa aktarma | L | 4, 5 | `faz/7-yedekleme` | Bekliyor |
 | 8 | Güvenlik sertleştirme ve denetim | L | 6, 7 | `faz/8-guvenlik-denetimi` | Bekliyor |
