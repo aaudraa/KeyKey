@@ -1,9 +1,12 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 
 /// Paketlerle gelmeyen, uygulamaya veri olarak giren kaynakların lisansları.
 ///
 /// Flutter paket lisanslarını kendisi ekler. Sözcük listeleri paket olmadığı
-/// için burada elle eklenir, EFF listesi atıf istiyor.
+/// için burada elle eklenir, EFF listesi atıf istiyor. flutter_zxing'in
+/// içine gömülü C++ kitaplıkları da paketin lisansında yazmadığı için
+/// buradadır.
 void registerDataLicenses() {
   LicenseRegistry.addLicense(() async* {
     yield const LicenseEntryWithLineBreaks(
@@ -15,8 +18,20 @@ void registerDataLicenses() {
       'Used unchanged as the word list for passphrases.',
     );
     yield const LicenseEntryWithLineBreaks(['SecLists'], _secListsMit);
+    for (final (name, path) in _embeddedNative) {
+      yield LicenseEntryWithLineBreaks([
+        'flutter_zxing',
+        name,
+      ], await rootBundle.loadString(path));
+    }
   });
 }
+
+/// QR okuyucunun derlenen C++ kitaplıkları ve lisans metinleri.
+const _embeddedNative = [
+  ('zxing-cpp', 'resources/assets/licenses/zxing-cpp.txt'),
+  ('zint', 'resources/assets/licenses/zint.txt'),
+];
 
 const _secListsMit = '''
 MIT License
