@@ -301,6 +301,39 @@ void main() {
       expect(find.text('Yeni'), findsOneWidget);
     });
 
+    testWidgets('etkin sekmeye dokunmak kaydedilmemişi sormadan silmiyor', (
+      tester,
+    ) async {
+      await openForm(tester);
+      await tester.enterText(find.widgetWithText(TextField, 'Servis'), 'Yarım');
+      await settle(tester);
+
+      await tester.tap(find.byIcon(Icons.shield));
+      await settle(tester);
+      expect(find.text('Değişiklikler silinsin mi?'), findsOneWidget);
+      await tester.tap(find.text('Düzenlemeye devam et'));
+      await settle(tester);
+      expect(find.text('Yeni 2FA hesabı'), findsOneWidget);
+      expect(find.widgetWithText(TextField, 'Yarım'), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.shield));
+      await settle(tester);
+      await tester.tap(find.text('Sil'));
+      await settle(tester);
+      expect(find.text('Yeni 2FA hesabı'), findsNothing);
+      expect(otps.items, hasLength(3));
+    });
+
+    testWidgets('boş formda etkin sekme listeye döndürüyor', (tester) async {
+      await openForm(tester);
+
+      await tester.tap(find.byIcon(Icons.shield));
+      await settle(tester);
+
+      expect(find.text('Yeni 2FA hesabı'), findsNothing);
+      expect(find.text('287 082'), findsOneWidget);
+    });
+
     testWidgets('geçersiz anahtar ve eksik ad kaydedilmiyor', (tester) async {
       await openForm(tester);
 
