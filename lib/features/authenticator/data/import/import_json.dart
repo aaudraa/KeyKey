@@ -46,16 +46,15 @@ abstract final class ImportJson {
       value is Map<String, Object?> ? value : null;
 
   static Uint8List hex(Object? value) {
-    if (value is! String || value.length.isOdd) {
+    // `int.tryParse` "+1" ve "-1" gibi değerleri de kabul ederdi.
+    if (value is! String ||
+        value.length.isOdd ||
+        !RegExp(r'^[0-9a-fA-F]*$').hasMatch(value)) {
       throw const InvalidImportException('Geçersiz onaltılık değer.');
     }
     final bytes = Uint8List(value.length ~/ 2);
     for (var i = 0; i < bytes.length; i++) {
-      final byte = int.tryParse(value.substring(i * 2, i * 2 + 2), radix: 16);
-      if (byte == null) {
-        throw const InvalidImportException('Geçersiz onaltılık değer.');
-      }
-      bytes[i] = byte;
+      bytes[i] = int.parse(value.substring(i * 2, i * 2 + 2), radix: 16);
     }
     return bytes;
   }

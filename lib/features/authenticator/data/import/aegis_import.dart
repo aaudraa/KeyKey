@@ -62,15 +62,19 @@ final class AegisFile {
       }
       if (masterKey == null) throw const WrongImportPasswordException();
 
-      final plain = await aes.decrypt(
-        key: masterKey,
-        nonce: ImportJson.hex(params['nonce']),
-        cipherTextWithTag: Uint8List.fromList([
-          ...ImportJson.base64Value(db),
-          ...ImportJson.hex(params['tag']),
-        ]),
-      );
-      masterKey.fillRange(0, masterKey.length, 0);
+      final Uint8List? plain;
+      try {
+        plain = await aes.decrypt(
+          key: masterKey,
+          nonce: ImportJson.hex(params['nonce']),
+          cipherTextWithTag: Uint8List.fromList([
+            ...ImportJson.base64Value(db),
+            ...ImportJson.hex(params['tag']),
+          ]),
+        );
+      } finally {
+        masterKey.fillRange(0, masterKey.length, 0);
+      }
       if (plain == null) throw const WrongImportPasswordException();
       final decoded = ImportJson.object(ImportJson.decode(plain));
       plain.fillRange(0, plain.length, 0);
