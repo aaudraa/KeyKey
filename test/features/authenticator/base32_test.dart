@@ -100,5 +100,35 @@ void main() {
     test('bir bayta tamamlanmayan karakter boş sonuç veriyor', () {
       expect(Base32.decodeLenient('M'), isEmpty);
     });
+
+    test('Türkçe klavyedeki noktalı büyük İ, I sayılıyor', () {
+      expect(Base32.decodeLenient('İİİİ'), Base32.decodeLenient('IIII'));
+    });
+  });
+
+  group('firstForeignCharacter', () {
+    test('geçerli metinde null', () {
+      expect(Base32.firstForeignCharacter('jbsw y3dp-ehpk 3pxp=='), isNull);
+      expect(Base32.firstForeignCharacter('ıİ'), isNull);
+      expect(Base32.firstForeignCharacter(''), isNull);
+    });
+
+    test('ilk yanlış karakteri olduğu gibi döndürüyor', () {
+      expect(Base32.firstForeignCharacter('ABC0 18'), '0');
+      expect(Base32.firstForeignCharacter('abc1'), '1');
+      expect(Base32.firstForeignCharacter('ab.c'), '.');
+      expect(Base32.firstForeignCharacter('abş'), 'ş');
+    });
+
+    test('decodeLenient ile aynı karakterleri kabul ediyor', () {
+      for (final text in ['jbsw y3dp', 'MZXW1', 'ab.c', 'ıİi', 'MY==', '9']) {
+        final accepted = Base32.firstForeignCharacter(text) == null;
+        expect(
+          () => Base32.decodeLenient(text),
+          accepted ? returnsNormally : throwsFormatException,
+          reason: text,
+        );
+      }
+    });
   });
 }

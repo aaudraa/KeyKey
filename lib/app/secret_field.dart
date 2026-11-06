@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:keykey/features/lock/presentation/auto_lock_scope.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
@@ -21,8 +22,17 @@ class SecretField extends StatefulWidget {
     this.maxLines = 1,
     this.multiline = false,
     this.trailing,
+    this.initiallyVisible = false,
+    this.inputFormatters,
+    this.style,
     super.key,
   });
+
+  /// `true` ise gizli kutu açık başlar; gizle düğmesi yine çıkar.
+  final bool initiallyVisible;
+
+  final List<TextInputFormatter>? inputFormatters;
+  final TextStyle? style;
 
   /// Göster düğmesinin yanına konan ek düğme, örneğin parola üretici.
   final Widget? trailing;
@@ -51,7 +61,7 @@ class SecretField extends StatefulWidget {
 }
 
 class _SecretFieldState extends State<SecretField> {
-  bool _visible = false;
+  late bool _visible = widget.initiallyVisible;
 
   @override
   Widget build(BuildContext context) {
@@ -63,6 +73,8 @@ class _SecretFieldState extends State<SecretField> {
       // paroladan sonra kutuya yeniden dokunmak zorunda kalmaz.
       readOnly: !widget.enabled,
       obscureText: widget.obscure && !_visible,
+      inputFormatters: widget.inputFormatters,
+      style: widget.style,
       // visiblePassword, çoğu klavyede öneri ve öğrenmeyi de kapatır.
       keyboardType: widget.multiline
           ? TextInputType.multiline

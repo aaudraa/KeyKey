@@ -12,6 +12,7 @@ import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/authenticator/data/otpauth_uri.dart';
 import 'package:keykey/features/authenticator/presentation/login_picker.dart';
 import 'package:keykey/features/authenticator/presentation/otp_display.dart';
+import 'package:keykey/features/authenticator/presentation/secret_key_formatter.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
@@ -93,7 +94,7 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
   }
 
   void _setParameters(OtpParameters parameters) {
-    _secret.text = Base32.encode(parameters.secret);
+    _secret.text = SecretKeyFormatter.group(Base32.encode(parameters.secret));
     _kind = parameters.kind;
     _algorithm = parameters.algorithm;
     _digits = parameters.digits;
@@ -117,7 +118,9 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
     _changed(text);
     final trimmed = text.trim();
     if (!trimmed.toLowerCase().startsWith('otpauth://')) {
-      if (_linkError != null) setState(() => _linkError = null);
+      // Her karakterde yeniden çizilir; yanlış karakter hatası yazarken
+      // güncellenir.
+      setState(() => _linkError = null);
       return;
     }
     final l10n = AppLocalizations.of(context);
@@ -141,6 +144,26 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
 
   void _changed(String _) {
     if (!_dirty) setState(() => _dirty = true);
+  }
+
+  /// Alfabe dışı karakter yazıldıysa hangisi olduğunu söyleyen hata. Yazarken
+  /// hemen gösterilir; kaydetmeye basmak beklenmez.
+  String? _foreignCharacterError(AppLocalizations l10n) {
+    final text = _secret.text.trim();
+    if (text.toLowerCase().startsWith('otpauth:')) return null;
+    final character = Base32.firstForeignCharacter(text);
+    if (character == null) return null;
+    final rune = character.runes.first;
+    // Görünmeyen veya yön değiştiren karakterler mesaja yazılmaz.
+    final printable =
+        (rune >= 0x21 && rune <= 0x7e) || (rune >= 0xc0 && rune <= 0x24f);
+    return switch (character) {
+      '0' => l10n.otpSecretLooksLike(character, 'O'),
+      '8' => l10n.otpSecretLooksLike(character, 'B'),
+      '1' => l10n.otpSecretOneLooksLike,
+      _ when printable => l10n.otpSecretForeignCharacter(character),
+      _ => l10n.otpSecretInvalid,
+    };
   }
 
   Uint8List? _parsedSecret() {
@@ -305,6 +328,7 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
 
     final secretError =
         _linkError ??
+        _foreignCharacterError(l10n) ??
         (_validate && _parsedSecret() == null ? l10n.otpSecretInvalid : null);
     final nameError = _validate && !_hasName ? l10n.otpNameRequired : null;
 
@@ -353,6 +377,13 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
               label: l10n.otpSecret,
               helperText: l10n.otpSecretHelper,
               errorText: secretError,
+              // Elle eklenen yeni anahtar servisin ekranından okunarak
+              // yazılır; körlemesine yazmak hataya yol açıyordu.
+              initiallyVisible: _isNew && widget.initial == null,
+              inputFormatters: [SecretKeyFormatter()],
+              // Eş genişlikli yazı tipinde 0 ile O, 1 ile I daha kolay
+              // ayrılır.
+              style: const TextStyle(fontFamily: 'monospace'),
               textInputAction: TextInputAction.next,
               onChanged: _onSecretChanged,
             ),

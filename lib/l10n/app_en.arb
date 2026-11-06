@@ -654,6 +654,31 @@
   "@otpSecretInvalid": {
     "description": "Error for a secret key that is not Base32."
   },
+  "otpSecretForeignCharacter": "“{character}” can't appear in a key. Keys contain only the letters A to Z and the digits 2 to 7.",
+  "@otpSecretForeignCharacter": {
+    "description": "Shown while typing a secret key that contains a character outside Base32.",
+    "placeholders": {
+      "character": {
+        "type": "String"
+      }
+    }
+  },
+  "otpSecretLooksLike": "“{character}” can't appear in a key. It may be the capital letter {letter}.",
+  "@otpSecretLooksLike": {
+    "description": "Shown while typing a secret key that contains a digit often confused with a letter, such as 0 for O.",
+    "placeholders": {
+      "character": {
+        "type": "String"
+      },
+      "letter": {
+        "type": "String"
+      }
+    }
+  },
+  "otpSecretOneLooksLike": "“1” can't appear in a key. It may be the capital letter I or L.",
+  "@otpSecretOneLooksLike": {
+    "description": "Shown while typing a secret key that contains the digit 1."
+  },
   "otpLinkInvalid": "This otpauth link could not be read.",
   "@otpLinkInvalid": {
     "description": "Error for a malformed otpauth link."
