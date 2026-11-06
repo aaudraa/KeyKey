@@ -8,6 +8,8 @@ import 'package:keykey/app/app.dart';
 import 'package:keykey/core/storage/vault_database.dart';
 import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/vault_service.dart';
+import 'package:keykey/features/authenticator/application/otps_controller.dart';
+import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
@@ -89,6 +91,13 @@ void main() {
           key: UniqueKey(),
           overrides: [
             vaultServiceProvider.overrideWithValue(service),
+            otpRepositoryFactoryProvider.overrideWithValue(
+              (session) => OtpRepository(
+                store: VaultStore(database),
+                session: session,
+                sodium: sodium,
+              ),
+            ),
             loginRepositoryFactoryProvider.overrideWithValue(
               (session) => LoginRepository(
                 store: VaultStore(database),

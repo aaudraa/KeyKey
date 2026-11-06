@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -14,6 +13,8 @@ import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/core/vault/vault_session.dart';
+import 'package:keykey/features/authenticator/application/otps_controller.dart';
+import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
@@ -169,6 +170,10 @@ void main() {
                 session: session,
                 sodium: sodium,
               ),
+            ),
+            otpRepositoryFactoryProvider.overrideWithValue(
+              (session) =>
+                  OtpRepository(store: store, session: session, sodium: sodium),
             ),
             initialVaultStatusProvider.overrideWithValue(VaultOpen(session)),
           ],

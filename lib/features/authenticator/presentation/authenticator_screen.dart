@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -14,6 +13,7 @@ import 'package:keykey/features/authenticator/application/otp_search.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
+import 'package:keykey/features/authenticator/presentation/otp_clock_builder.dart';
 import 'package:keykey/features/authenticator/presentation/otp_code_tile.dart';
 import 'package:keykey/features/authenticator/presentation/otp_display.dart';
 import 'package:keykey/features/authenticator/presentation/scanned_code_handler.dart';
@@ -23,7 +23,7 @@ enum _AddOption { scan, image, manual }
 
 /// 2FA kodlarının listesi.
 ///
-/// TOTP hesabı varken her kare saate bakılır, ekran saniyede birkaç kez
+/// TOTP hesabı varken liste [OtpClockBuilder] ile saniyede birkaç kez
 /// yenilenir. Sekme arka plandayken `go_router` `TickerMode`'u kapatır,
 /// geri sayım da durur.
 class AuthenticatorScreen extends ConsumerStatefulWidget {
@@ -34,14 +34,8 @@ class AuthenticatorScreen extends ConsumerStatefulWidget {
       _AuthenticatorScreenState();
 }
 
-class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen>
-    with SingleTickerProviderStateMixin {
-  /// Ekranın yenilendiği aralık. Geri sayım halkası bu adımla ilerler.
-  static const _refreshStep = 250;
-
+class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
   final _search = TextEditingController();
-  late final Ticker _ticker = createTicker(_onTick);
-  int _step = 0;
 
   /// Bu ekranda üretilmiş HOTP kodları, hesap kimliğine göre. Kasa
   /// kilitlenince ekran kapanır ve bunlar da gider.
@@ -49,26 +43,11 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen>
 
   @override
   void dispose() {
-    _ticker.dispose();
     _search.dispose();
     super.dispose();
   }
 
   DateTime _now() => ref.read(otpClockProvider)();
-
-  void _onTick(Duration _) {
-    final step = _now().millisecondsSinceEpoch ~/ _refreshStep;
-    if (step != _step) setState(() => _step = step);
-  }
-
-  /// Ticker yalnızca ekranda TOTP hesabı varken çalışır.
-  void _syncTicker({required bool needed}) {
-    if (needed && !_ticker.isActive) {
-      _ticker.start();
-    } else if (!needed && _ticker.isActive) {
-      _ticker.stop();
-    }
-  }
 
   Future<void> _copy(String code) async {
     final l10n = AppLocalizations.of(context);
@@ -209,12 +188,6 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen>
   ) {
     final visible = visibleOtps(state.items, _search.text);
     final hasAccounts = state.active.isNotEmpty;
-    _syncTicker(
-      needed: visible.any(
-        (item) => item.content.parameters.kind == OtpKind.totp,
-      ),
-    );
-    final now = _now();
 
     return Column(
       children: [
@@ -251,23 +224,30 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen>
                     ),
                   ),
                 )
-              : ListView.separated(
-                  padding: const EdgeInsets.only(bottom: 88),
-                  itemCount: visible.length,
-                  separatorBuilder: (context, index) =>
-                      const Divider(height: 1, indent: 16),
-                  itemBuilder: (context, index) {
-                    final item = visible[index];
-                    return OtpCodeTile(
-                      key: ValueKey(otpIdHex(item)),
-                      item: item,
-                      now: now,
-                      hotpCode: _hotpCodes[otpIdHex(item)],
-                      onCopy: _copy,
-                      onGenerate: () => unawaited(_generate(item)),
-                      onAction: (action) => unawaited(_onAction(item, action)),
-                    );
-                  },
+              : OtpClockBuilder(
+                  // TOTP yoksa saati izlemeye gerek yok, pil harcanmaz.
+                  active: visible.any(
+                    (item) => item.content.parameters.kind == OtpKind.totp,
+                  ),
+                  builder: (context, now) => ListView.separated(
+                    padding: const EdgeInsets.only(bottom: 88),
+                    itemCount: visible.length,
+                    separatorBuilder: (context, index) =>
+                        const Divider(height: 1, indent: 16),
+                    itemBuilder: (context, index) {
+                      final item = visible[index];
+                      return OtpCodeTile(
+                        key: ValueKey(otpIdHex(item)),
+                        item: item,
+                        now: now,
+                        hotpCode: _hotpCodes[otpIdHex(item)],
+                        onCopy: _copy,
+                        onGenerate: () => unawaited(_generate(item)),
+                        onAction: (action) =>
+                            unawaited(_onAction(item, action)),
+                      );
+                    },
+                  ),
                 ),
         ),
       ],

@@ -751,5 +751,29 @@
   "otpCameraUnavailable": "The camera cannot be used. If you denied the permission, you can allow it in the Android settings, or read the QR code from an image instead.",
   "@otpCameraUnavailable": {
     "description": "Shown when the camera could not be opened."
+  },
+  "otpLinkedLogin": "Password entry",
+  "@otpLinkedLogin": {
+    "description": "Field in the 2FA form that shows the linked password entry."
+  },
+  "otpLinkNone": "Not linked",
+  "@otpLinkNone": {
+    "description": "Shown when a 2FA account is not linked to a password entry."
+  },
+  "otpLinkChoose": "Link to a password entry",
+  "@otpLinkChoose": {
+    "description": "Title of the dialog that picks a password entry."
+  },
+  "otpLinkRemove": "Remove link",
+  "@otpLinkRemove": {
+    "description": "Button that removes the link to a password entry."
+  },
+  "otpLinkHint": "The code is also shown in the password entry's details.",
+  "@otpLinkHint": {
+    "description": "Helper text under the password entry field in the 2FA form."
+  },
+  "loginOtpCode": "2FA code",
+  "@loginOtpCode": {
+    "description": "Label of the linked 2FA code in a password entry's details."
   }
 }

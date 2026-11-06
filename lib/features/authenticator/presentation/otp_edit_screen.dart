@@ -10,7 +10,11 @@ import 'package:keykey/features/authenticator/data/otp_content.dart';
 import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/authenticator/data/otpauth_uri.dart';
+import 'package:keykey/features/authenticator/presentation/login_picker.dart';
 import 'package:keykey/features/authenticator/presentation/otp_display.dart';
+import 'package:keykey/features/vault/application/logins_controller.dart';
+import 'package:keykey/features/vault/data/login_repository.dart';
+import 'package:keykey/features/vault/presentation/login_ids.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// 2FA hesabı ekleme ve düzenleme. [idHex] yoksa yeni hesap oluşturur.
@@ -40,6 +44,9 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
   int _digits = OtpParameters.defaultDigits;
 
   OtpItem? _original;
+
+  /// Eşleştirilen parola kaydı.
+  Uint8List? _loginId;
   bool _initialized = false;
   bool _dirty = false;
   bool _saving = false;
@@ -72,6 +79,7 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
     final initial = widget.initial;
     if (content != null) {
       _issuer.text = content.issuer;
+      _loginId = content.loginId;
       _account.text = content.account;
       _notes.text = content.notes;
       _setParameters(content.parameters);
@@ -188,7 +196,34 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
       issuer: _issuer.text.trim(),
       account: _account.text.trim(),
       notes: _notes.text,
+      // Parola kaydı silindiyse eşleşme de kalkar. Kayıtlar henüz
+      // yüklenmediyse bilinemez, eşleşmeye dokunulmaz.
+      loginId: _linkGone() ? null : _loginId,
     );
+  }
+
+  /// Eşleştirilen parola kaydı. Kayıt silinmişse eşleşme yok sayılır.
+  LoginItem? _linkedLogin() {
+    final id = _loginId;
+    if (id == null) return null;
+    return findLogin(ref.read(loginsControllerProvider), loginIdHex(id));
+  }
+
+  bool _linkGone() =>
+      _loginId != null &&
+      ref.read(loginsControllerProvider) is LoginsLoaded &&
+      _linkedLogin() == null;
+
+  Future<void> _chooseLogin() async {
+    final picked = await pickLogin(context, linked: _linkedLogin() != null);
+    if (picked == null || !mounted) return;
+    setState(() {
+      _loginId = switch (picked) {
+        LoginPicked(:final id) => id,
+        LoginUnlinked() => null,
+      };
+      _dirty = true;
+    });
   }
 
   Future<void> _save() async {
@@ -252,6 +287,8 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final state = ref.watch(otpsControllerProvider);
+    // Eşleşen kaydın adı, kayıtlar yüklenince görünsün.
+    ref.watch(loginsControllerProvider);
     if (!_initialized) {
       if (state is! OtpsLoaded) {
         return const Scaffold(body: Center(child: CircularProgressIndicator()));
@@ -330,6 +367,16 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
               onChanged: _changed,
             ),
             const SizedBox(height: 8),
+            _LinkedLoginField(
+              name: switch (_linkedLogin()) {
+                final login? =>
+                  login.content.name.trim().isEmpty
+                      ? '—'
+                      : login.content.name.trim(),
+                null => null,
+              },
+              onTap: _chooseLogin,
+            ),
             ExpansionTile(
               key: ValueKey(_showAdvanced),
               initiallyExpanded: _showAdvanced,
@@ -449,6 +496,34 @@ class _NumberField extends StatelessWidget {
         errorText: errorText,
         border: const OutlineInputBorder(),
       ),
+    );
+  }
+}
+
+/// Eşleştirilen parola kaydını gösterir, dokununca seçtirir.
+class _LinkedLoginField extends StatelessWidget {
+  const new({required this.name, required this.onTap});
+
+  /// Eşleşme yoksa `null`.
+  final String? name;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(name == null ? Icons.link_off : Icons.link),
+      title: Text(l10n.otpLinkedLogin),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(name ?? l10n.otpLinkNone),
+          Text(l10n.otpLinkHint, style: Theme.of(context).textTheme.bodySmall),
+        ],
+      ),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: onTap,
     );
   }
 }

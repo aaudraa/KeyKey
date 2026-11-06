@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:keykey/app/app.dart';
+import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:sodium/sodium_sumo.dart';
@@ -30,6 +31,9 @@ void main() {
         vaultServiceProvider.overrideWithValue(service),
         loginRepositoryFactoryProvider.overrideWithValue(
           (_) => FakeLoginRepository(),
+        ),
+        otpRepositoryFactoryProvider.overrideWithValue(
+          (_) => FakeOtpRepository(),
         ),
         initialVaultStatusProvider.overrideWithValue(
           VaultOpen(service.newSession()),

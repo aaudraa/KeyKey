@@ -167,5 +167,11 @@
   "otpScanHint": "Kamerayı servisin gösterdiği QR koduna tut.",
   "otpScanNotOtp": "Bu QR kodu bir 2FA hesabı değil.",
   "otpImageNoQr": "Görselde QR kodu bulunamadı.",
-  "otpCameraUnavailable": "Kamera kullanılamıyor. İzni reddettiysen Android ayarlarından verebilir ya da QR kodunu bir görselden okuyabilirsin."
+  "otpCameraUnavailable": "Kamera kullanılamıyor. İzni reddettiysen Android ayarlarından verebilir ya da QR kodunu bir görselden okuyabilirsin.",
+  "otpLinkedLogin": "Parola kaydı",
+  "otpLinkNone": "Eşleştirilmedi",
+  "otpLinkChoose": "Parola kaydıyla eşleştir",
+  "otpLinkRemove": "Eşleştirmeyi kaldır",
+  "otpLinkHint": "Kod, parola kaydının ayrıntısında da görünür.",
+  "loginOtpCode": "2FA kodu"
 }
