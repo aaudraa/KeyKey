@@ -106,11 +106,17 @@ final class OtpParameters {
     if (current == null) throw StateError('TOTP sayacı yok.');
     // Dart'ta tamsayı 64 bittir; en büyük değerde artırmak eksiye taşar.
     if (current == _maxInt) throw StateError('HOTP sayacı tükendi.');
+    return withCounter(current + 1);
+  }
+
+  /// Sayacı [value] olan HOTP. TOTP'de çağrılamaz.
+  OtpParameters withCounter(int value) {
+    if (kind != OtpKind.hotp) throw StateError('TOTP sayacı yok.');
     return OtpParameters.hotp(
       secret: secret,
       algorithm: algorithm,
       digits: digits,
-      counter: current + 1,
+      counter: value,
     );
   }
 

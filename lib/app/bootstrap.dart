@@ -8,6 +8,8 @@ import 'package:keykey/core/storage/storage_exceptions.dart';
 import 'package:keykey/core/storage/vault_database.dart';
 import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/vault_service.dart';
+import 'package:keykey/features/authenticator/application/otps_controller.dart';
+import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
@@ -45,6 +47,10 @@ Future<List<Override>> bootstrap() async {
     loginRepositoryFactoryProvider.overrideWithValue(
       (session) =>
           LoginRepository(store: store, session: session, sodium: sodium),
+    ),
+    otpRepositoryFactoryProvider.overrideWithValue(
+      (session) =>
+          OtpRepository(store: store, session: session, sodium: sodium),
     ),
     initialVaultStatusProvider.overrideWithValue(await _loadStatus(service)),
   ];
