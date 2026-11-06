@@ -23,22 +23,30 @@ sealed class ImportSource {
 
   /// Aegis veya 2FAS dosyasını tanır. İkisi de değilse
   /// [UnknownImportFileException].
+  ///
+  /// Biçim tanındıktan sonra içerik bozuksa [InvalidImportException]
+  /// fırlatır; kullanıcıya "bu dosya değil" yerine "dosya bozuk" denir.
   static ImportSource fromFile(Uint8List bytes, AesGcmDecrypter aes) {
-    try {
-      final aegis = AegisFile.parse(bytes);
+    final aegis = _tryParse(() => AegisFile.parse(bytes));
+    if (aegis != null) {
       return aegis.isEncrypted
           ? EncryptedImport((password) => aegis.decrypt(password, aes))
           : ReadyImport(aegis.accounts());
-    } on InvalidImportException {
-      // Aegis değil, 2FAS deneniyor.
     }
-    try {
-      final twofas = TwoFasFile.parse(bytes);
+    final twofas = _tryParse(() => TwoFasFile.parse(bytes));
+    if (twofas != null) {
       return twofas.isEncrypted
           ? EncryptedImport((password) => twofas.decrypt(password, aes))
           : ReadyImport(twofas.accounts());
+    }
+    throw const UnknownImportFileException();
+  }
+
+  static T? _tryParse<T>(T Function() parse) {
+    try {
+      return parse();
     } on InvalidImportException {
-      throw const UnknownImportFileException();
+      return null;
     }
   }
 

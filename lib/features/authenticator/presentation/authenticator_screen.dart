@@ -73,31 +73,39 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
       if (mounted) setState(() => _hotpCodes[otpIdHex(item)] = code);
     } on VaultLockedException {
       // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.
+    } on OtpNotFoundException {
+      // Hesap bu sırada silindi, liste zaten güncellendi.
     }
   }
 
   Future<void> _onAction(OtpItem item, OtpTileAction action) async {
     final controller = ref.read(otpsControllerProvider.notifier);
-    switch (action) {
-      case OtpTileAction.edit:
-        await context.push(AppRoutes.authenticatorItemEdit(otpIdHex(item)));
-      case OtpTileAction.favorite:
-        await controller.setFavorite(item, favorite: !item.content.favorite);
-      case OtpTileAction.trash:
-        final l10n = AppLocalizations.of(context);
-        final messenger = ScaffoldMessenger.of(context);
-        await controller.moveToTrash(item, DateTime.now().toUtc());
-        messenger
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(
-              content: Text(l10n.loginMovedToTrash),
-              action: SnackBarAction(
-                label: l10n.loginUndo,
-                onPressed: () => unawaited(controller.restoreById(item.id)),
+    try {
+      switch (action) {
+        case OtpTileAction.edit:
+          await context.push(AppRoutes.authenticatorItemEdit(otpIdHex(item)));
+        case OtpTileAction.favorite:
+          await controller.setFavorite(item, favorite: !item.content.favorite);
+        case OtpTileAction.trash:
+          final l10n = AppLocalizations.of(context);
+          final messenger = ScaffoldMessenger.of(context);
+          await controller.moveToTrash(item, DateTime.now().toUtc());
+          messenger
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text(l10n.loginMovedToTrash),
+                action: SnackBarAction(
+                  label: l10n.loginUndo,
+                  onPressed: () => unawaited(controller.restoreById(item.id)),
+                ),
               ),
-            ),
-          );
+            );
+      }
+    } on VaultLockedException {
+      // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.
+    } on OtpNotFoundException {
+      // Hesap bu sırada silindi, liste zaten güncellendi.
     }
   }
 

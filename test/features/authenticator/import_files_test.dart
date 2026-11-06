@@ -10,6 +10,7 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keykey/features/authenticator/application/otp_import.dart';
 import 'package:keykey/features/authenticator/data/base32.dart';
 import 'package:keykey/features/authenticator/data/import/aegis_import.dart';
 import 'package:keykey/features/authenticator/data/import/import_result.dart';
@@ -157,6 +158,26 @@ void main() {
   });
 
   group('bozuk dosyalar', () {
+    test('biçim tanınınca bozukluk ayrıca bildiriliyor', () {
+      final aegis = utf8.encode('{"version": 1, "header": {}, "db": {}}');
+      expect(
+        () => ImportSource.fromFile(aegis, aes),
+        throwsA(isA<InvalidImportException>()),
+      );
+      expect(
+        () => ImportSource.fromFile(utf8.encode('{"x": 1}'), aes),
+        throwsA(isA<UnknownImportFileException>()),
+      );
+      expect(
+        ImportSource.fromFile(importFixture('aegis_plain.json'), aes),
+        isA<ReadyImport>(),
+      );
+      expect(
+        ImportSource.fromFile(importFixture('2fas_encrypted_v4.2fas'), aes),
+        isA<EncryptedImport>(),
+      );
+    });
+
     test('başka biçimler birbirinin yerine okunmuyor', () {
       expect(
         () => AegisFile.parse(importFixture('2fas_plain_v4.2fas')),

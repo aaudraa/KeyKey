@@ -63,6 +63,8 @@ class _LinkedOtpTileState extends ConsumerState<LinkedOtpTile> {
       if (mounted) setState(() => _hotpCode = code);
     } on VaultLockedException {
       // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.
+    } on OtpNotFoundException {
+      // Hesap bu sırada silindi, ekran zaten güncellenecek.
     }
   }
 
