@@ -8,6 +8,9 @@ import 'dart:typed_data';
 abstract final class Base32 {
   static const _alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
+  /// Türkçe klavyede Shift ile yazılan I: U+0130.
+  static const _dottedCapitalI = 0x130;
+
   /// Büyük harf ve dolgusuz yazar.
   static String encode(List<int> bytes) {
     final out = StringBuffer();
@@ -35,15 +38,16 @@ abstract final class Base32 {
   static Uint8List decodeCanonical(String text) =>
       _decode(text, canonical: true);
 
-  /// Küçük harf, boşluk, tire ve sondaki `=` dolgusunu kabul eder. Bir bayta
-  /// tamamlanmayan artan bitler atılır.
+  /// Küçük harf, boşluk, tire ve sondaki `=` dolgusunu kabul eder. Türkçe
+  /// klavyenin noktalı büyük İ harfi I sayılır. Bir bayta tamamlanmayan artan
+  /// bitler atılır.
   ///
   /// Alfabe dışında karakter varsa [FormatException] fırlatır.
   static Uint8List decodeLenient(String text) {
     final cleaned = StringBuffer();
     for (final rune in text.runes) {
       if (rune == 0x20 || rune == 0x2d || rune == 0x09) continue;
-      cleaned.writeCharCode(rune);
+      cleaned.writeCharCode(rune == _dottedCapitalI ? 0x49 : rune);
     }
     var body = cleaned.toString().toUpperCase();
     final paddingStart = body.indexOf('=');
@@ -54,6 +58,22 @@ abstract final class Base32 {
       body = body.substring(0, paddingStart);
     }
     return _decode(body, canonical: false);
+  }
+
+  /// [decodeLenient]'in kabul etmeyeceği ilk karakter, yoksa `null`.
+  ///
+  /// Boşluk, tire, sekme ve `=` atlanır; harfler büyük harfe çevrilerek
+  /// denetlenir. Kullanıcıya hangi karakterin yanlış olduğunu söylemek için.
+  static String? firstForeignCharacter(String text) {
+    for (final rune in text.runes) {
+      if (rune == 0x20 || rune == 0x2d || rune == 0x09 || rune == 0x3d) {
+        continue;
+      }
+      if (rune == _dottedCapitalI) continue;
+      final character = String.fromCharCode(rune);
+      if (!_alphabet.contains(character.toUpperCase())) return character;
+    }
+    return null;
   }
 
   static Uint8List _decode(String text, {required bool canonical}) {

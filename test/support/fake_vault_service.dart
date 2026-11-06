@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/app.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/crypto/record_cipher.dart';
+import 'package:keykey/core/crypto/recovery_key.dart';
 import 'package:keykey/core/crypto/vault_crypto.dart';
 import 'package:keykey/core/crypto/vault_header.dart';
 import 'package:keykey/core/platform/export_file_picker.dart';
@@ -38,8 +39,17 @@ class FakeVaultService implements VaultService {
   new(this.sodium);
 
   static const correctPassword = 'dogru-Ana-Parola-47';
-  static const recoveryKey = 'AAAAA-BBBBB-CCCCC';
-  static const invalidRecoveryKey = 'GECERSIZ';
+  // Gerçek anahtar gibi 55 karakter; ekranlar uzunluğu denetliyor.
+  static const recoveryKey =
+      'AAAAA-BBBBB-CCCCC-DDDDD-EEEEE-FFFFF-GGGGG-HHHHH-JJJJJ-KKKKK-MMMMM';
+
+  /// Son grubu farklı; sahte servis bunu yazım hatası sayar.
+  static const invalidRecoveryKey =
+      'AAAAA-BBBBB-CCCCC-DDDDD-EEEEE-FFFFF-GGGGG-HHHHH-JJJJJ-KKKKK-MMMMN';
+
+  /// Doğru uzunlukta ama başka bir kasanın anahtarı.
+  static const otherRecoveryKey =
+      'ZZZZZ-ZZZZZ-ZZZZZ-ZZZZZ-ZZZZZ-ZZZZZ-ZZZZZ-ZZZZZ-ZZZZZ-ZZZZZ-ZZZZZ';
 
   final SodiumSumo sodium;
   final VaultHeader header = sampleHeader();
@@ -63,10 +73,15 @@ class FakeVaultService implements VaultService {
   }
 
   void _checkRecovery(String text) {
-    if (text == invalidRecoveryKey) {
+    // Ekran yazılanı biçimlendirir; gerçek çözücü gibi tire ve harf
+    // farklarına bakılmaz.
+    final symbols = RecoveryKeyCodec.symbolsOf(text);
+    if (symbols == RecoveryKeyCodec.symbolsOf(invalidRecoveryKey)) {
       throw const InvalidRecoveryKeyException('Geçersiz.');
     }
-    if (text != recoveryKey) throw const WrongSecretException();
+    if (symbols != RecoveryKeyCodec.symbolsOf(recoveryKey)) {
+      throw const WrongSecretException();
+    }
   }
 
   @override

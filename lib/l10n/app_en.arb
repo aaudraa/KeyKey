@@ -101,6 +101,39 @@
   "@recoveryVerifyIntro": {
     "description": "Intro on the recovery key verification step."
   },
+  "recoveryKeyProgress": "{count}/{total} characters",
+  "@recoveryKeyProgress": {
+    "description": "Helper under the recovery key field showing how many characters were typed, dashes excluded.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "recoveryKeyLength": "The key has {total} characters, you typed {count}.",
+  "@recoveryKeyLength": {
+    "description": "Error when the typed recovery key is too short or too long.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "recoveryKeyGroupWrong": "Group {group} has a typo. Compare it with the key on screen and on your paper.",
+  "@recoveryKeyGroupWrong": {
+    "description": "Error during setup naming the first group of five characters that differs from the shown recovery key.",
+    "placeholders": {
+      "group": {
+        "type": "int"
+      }
+    }
+  },
   "recoveryKeyLabel": "Recovery key",
   "@recoveryKeyLabel": {
     "description": "Label of the recovery key field."
@@ -653,6 +686,39 @@
   "otpSecretInvalid": "Not a valid key. Keys contain only the letters A to Z and the digits 2 to 7.",
   "@otpSecretInvalid": {
     "description": "Error for a secret key that is not Base32."
+  },
+  "otpSecretForeignCharacter": "“{character}” can't appear in a key. Keys contain only the letters A to Z and the digits 2 to 7.",
+  "@otpSecretForeignCharacter": {
+    "description": "Shown while typing a secret key that contains a character outside Base32.",
+    "placeholders": {
+      "character": {
+        "type": "String"
+      }
+    }
+  },
+  "otpSecretLooksLike": "“{character}” can't appear in a key. It may be the capital letter {letter}.",
+  "@otpSecretLooksLike": {
+    "description": "Shown while typing a secret key that contains a digit often confused with a letter, such as 0 for O.",
+    "placeholders": {
+      "character": {
+        "type": "String"
+      },
+      "letter": {
+        "type": "String"
+      }
+    }
+  },
+  "otpSecretPaste": "Paste",
+  "@otpSecretPaste": {
+    "description": "Button next to the secret key field that pastes from the clipboard."
+  },
+  "otpSecretPasteEmpty": "The clipboard has no text.",
+  "@otpSecretPasteEmpty": {
+    "description": "Shown when the paste button finds no text on the clipboard."
+  },
+  "otpSecretOneLooksLike": "“1” can't appear in a key. It may be the capital letter I or L.",
+  "@otpSecretOneLooksLike": {
+    "description": "Shown while typing a secret key that contains the digit 1."
   },
   "otpLinkInvalid": "This otpauth link could not be read.",
   "@otpLinkInvalid": {

@@ -351,7 +351,9 @@ Emülatörlerde gerçek güvenlik donanımı yok. Bu yüzden Faz 8'de gerçek bi
 
 **Bitti sayılması için:** RFC vektörleri geçiyor; üretilen kod gerçek bir servisteki test hesabında kabul ediliyor; bozuk QR uygulamayı düşürmüyor.
 
-**Sonuç:** RFC vektörleri geçiyor, bozuk QR ve bozuk dosyalar uygulamayı düşürmüyor (rastgele girdi testleriyle). Üretilen kodun gerçek bir serviste kabul edilmesi henüz denenmedi: kullanıcının bir test hesabıyla yapılacak.
+**Sonuç:** RFC vektörleri geçiyor, bozuk QR ve bozuk dosyalar uygulamayı düşürmüyor (rastgele girdi testleriyle). 2026-11-06'da gerçek telefonda (Samsung Galaxy S20 FE, sürüm derlemesi) bilgisayar ekranındaki QR kamerayla okundu ve üretilen kod, deneme amaçlı herkese açık bir serviste ([authenticationtest.com](https://authenticationtest.com/totpChallenge/)) kabul edildi. Aynı telefonda kasa kurulumu ve parmak iziyle açma da çalıştı.
+
+Telefon denemesi üç sorun buldu ve [#60](https://github.com/aaudraa/KeyKey/pull/60) ile düzeldi: kurulumdaki 55 karakterlik kurtarma anahtarı yazım hatasının yeri söylenmediği için yeniden yazılamıyordu; 2FA anahtarı gizli kutuya körlemesine yazılıyordu ve Türkçe klavyenin İ harfi reddediliyordu; kamera bilgisayar ekranındaki QR'ı ancak 15 saniyede okuyordu.
 
 ### Faz 6 — Otomatik doldurma
 

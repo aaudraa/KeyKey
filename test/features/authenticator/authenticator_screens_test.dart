@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/features/authenticator/data/base32.dart';
 import 'package:keykey/features/authenticator/data/otp_content.dart';
@@ -259,6 +260,13 @@ void main() {
       await openMenu(tester, 2);
       await tester.tap(find.text('Düzenle'));
       await settle(tester);
+      // Kayıtlı hesabın anahtarı gizli açılır.
+      expect(
+        tester
+            .widget<TextField>(find.widgetWithText(TextField, 'Gizli anahtar'))
+            .obscureText,
+        isTrue,
+      );
       await tester.enterText(
         find.widgetWithText(TextField, 'Servis'),
         'E-posta',
@@ -344,9 +352,153 @@ void main() {
       await tester.tap(find.text('Kaydet'));
       await settle(tester);
 
-      expect(find.textContaining('Geçerli bir anahtar değil'), findsOneWidget);
+      expect(
+        find.text('“0” anahtarlarda bulunmaz, büyük O harfi olabilir.'),
+        findsOneWidget,
+      );
       expect(find.text('Servis veya hesap adı gir.'), findsOneWidget);
       expect(otps.items, hasLength(3));
+    });
+
+    testWidgets('çok kısa anahtar kaydederken reddediliyor', (tester) async {
+      await openForm(tester);
+
+      await tester.enterText(find.widgetWithText(TextField, 'Servis'), 'Kısa');
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Gizli anahtar'),
+        'M',
+      );
+      await settle(tester);
+      expect(find.textContaining('Geçerli bir anahtar değil'), findsNothing);
+
+      await tester.tap(find.text('Kaydet'));
+      await settle(tester);
+      expect(find.textContaining('Geçerli bir anahtar değil'), findsOneWidget);
+      expect(otps.items, hasLength(3));
+    });
+
+    testWidgets('anahtar görünür, büyük harfli ve gruplu yazılıyor', (
+      tester,
+    ) async {
+      await openForm(tester);
+      final field = find.widgetWithText(TextField, 'Gizli anahtar');
+
+      expect(tester.widget<TextField>(field).obscureText, isFalse);
+      await tester.enterText(field, 'jbswy3dpehpk3pxp');
+      await settle(tester);
+
+      expect(find.text('JBSW Y3DP EHPK 3PXP'), findsOneWidget);
+    });
+
+    group('yapıştır düğmesi', () {
+      void mockClipboard(WidgetTester tester, String? text) {
+        tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          (call) async => call.method == 'Clipboard.getData'
+              ? (text == null ? null : <String, Object?>{'text': text})
+              : null,
+        );
+        addTearDown(
+          () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+            SystemChannels.platform,
+            null,
+          ),
+        );
+      }
+
+      testWidgets('panodaki anahtar gruplanarak geliyor', (tester) async {
+        mockClipboard(tester, '  jbsw y3dp ehpk 3pxp\n');
+        await openForm(tester);
+
+        await tester.tap(find.byTooltip('Yapıştır'));
+        await settle(tester);
+        expect(find.text('JBSW Y3DP EHPK 3PXP'), findsOneWidget);
+
+        await tester.enterText(
+          find.widgetWithText(TextField, 'Servis'),
+          'Yapışık',
+        );
+        await tester.tap(find.text('Kaydet'));
+        await settle(tester);
+        expect(
+          otps.items.last.content.parameters.secret,
+          Base32.decodeCanonical('JBSWY3DPEHPK3PXP'),
+        );
+      });
+
+      testWidgets('panodaki bağlantı formu dolduruyor', (tester) async {
+        mockClipboard(
+          tester,
+          'otpauth://totp/Banka:veli?secret=JBSWY3DPEHPK3PXP',
+        );
+        await openForm(tester);
+
+        await tester.tap(find.byTooltip('Yapıştır'));
+        await settle(tester);
+
+        expect(find.text('Bilgiler bağlantıdan dolduruldu.'), findsOneWidget);
+        expect(find.widgetWithText(TextField, 'Banka'), findsOneWidget);
+        expect(find.text('JBSW Y3DP EHPK 3PXP'), findsOneWidget);
+      });
+
+      testWidgets('pano boşsa söyleniyor', (tester) async {
+        mockClipboard(tester, null);
+        await openForm(tester);
+
+        await tester.tap(find.byTooltip('Yapıştır'));
+        await settle(tester);
+
+        expect(find.text('Panoda metin yok.'), findsOneWidget);
+      });
+    });
+
+    testWidgets('yanlış karakter yazarken hemen söyleniyor', (tester) async {
+      await openForm(tester);
+      final field = find.widgetWithText(TextField, 'Gizli anahtar');
+
+      await tester.enterText(field, 'JBSW1');
+      await settle(tester);
+      expect(
+        find.text('“1” anahtarlarda bulunmaz, büyük I veya L harfi olabilir.'),
+        findsOneWidget,
+      );
+
+      await tester.enterText(field, 'JBSW8');
+      await settle(tester);
+      expect(
+        find.text('“8” anahtarlarda bulunmaz, büyük B harfi olabilir.'),
+        findsOneWidget,
+      );
+
+      await tester.enterText(field, 'JBSWş');
+      await settle(tester);
+      expect(find.textContaining('“ş” anahtarlarda bulunmaz.'), findsOneWidget);
+
+      await tester.enterText(field, 'JBSWB');
+      await settle(tester);
+      expect(find.textContaining('anahtarlarda bulunmaz'), findsNothing);
+    });
+
+    testWidgets('Türkçe klavyenin İ harfiyle yazılan anahtar kaydediliyor', (
+      tester,
+    ) async {
+      await openForm(tester);
+
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Servis'),
+        'Türkçe',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Gizli anahtar'),
+        'İİİİ İİİİ',
+      );
+      await tester.tap(find.text('Kaydet'));
+      await settle(tester);
+
+      expect(
+        otps.items.last.content.parameters.secret,
+        Base32.decodeLenient('IIIIIIII'),
+      );
     });
 
     testWidgets('otpauth bağlantısı yapıştırılınca form doluyor', (

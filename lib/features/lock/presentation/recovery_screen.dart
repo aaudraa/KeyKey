@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
+import 'package:keykey/core/crypto/recovery_key.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/lock/presentation/recovery_key_formatter.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Ana parola unutulunca kurtarma anahtarıyla giriş.
@@ -26,6 +28,14 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
   void _submit() {
     if (_key.text.trim().isEmpty) return;
     final l10n = AppLocalizations.of(context);
+    final count = RecoveryKeyCodec.symbolsOf(_key.text).length;
+    if (count != RecoveryKeyCodec.textLength) {
+      setState(
+        () =>
+            _error = l10n.recoveryKeyLength(count, RecoveryKeyCodec.textLength),
+      );
+      return;
+    }
     try {
       ref
           .read(vaultControllerProvider.notifier)
@@ -56,6 +66,14 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
                 obscure: false,
                 autofocus: true,
                 errorText: _error,
+                helperText: l10n.recoveryKeyProgress(
+                  RecoveryKeyCodec.symbolsOf(_key.text).length,
+                  RecoveryKeyCodec.textLength,
+                ),
+                inputFormatters: [RecoveryKeyFormatter()],
+                style: const TextStyle(fontFamily: 'monospace'),
+                maxLines: 3,
+                onChanged: (_) => setState(() {}),
                 onSubmitted: (_) => _submit(),
               ),
               const SizedBox(height: 16),

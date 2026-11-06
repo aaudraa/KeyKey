@@ -13,8 +13,12 @@ final class RecoveryKeyCodec {
 
   static const keyLength = 32;
   static const _checksumLength = 2;
-  static const _textLength = 55;
-  static const _groupLength = 5;
+
+  /// Metindeki anlamlı karakter sayısı (tireler hariç).
+  static const textLength = 55;
+
+  /// Kaç karakterde bir tire konduğu.
+  static const groupLength = 5;
   static const _alphabet = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
   static const _checksumLabel = 'keykey/v1/recovery-checksum';
 
@@ -44,23 +48,30 @@ final class RecoveryKeyCodec {
 
     final encoded = text.toString();
     return [
-      for (var i = 0; i < encoded.length; i += _groupLength)
-        encoded.substring(i, i + _groupLength),
+      for (var i = 0; i < encoded.length; i += groupLength)
+        encoded.substring(i, i + groupLength),
     ].join('-');
   }
+
+  /// Metnin tire ve boşluk dışındaki karakterleri, [normalize] edilmiş olarak.
+  /// Alfabe dışı karakterler de kalır; iki metni karşılaştırmak içindir.
+  static String symbolsOf(String text) => [
+    for (final rune in text.runes)
+      if (rune != 0x20 && rune != 0x2d) normalize(String.fromCharCode(rune)),
+  ].join();
 
   Uint8List decode(String text) {
     final symbols = <int>[];
     for (final rune in text.runes) {
       final character = String.fromCharCode(rune);
       if (character == ' ' || character == '-') continue;
-      final value = _alphabet.indexOf(_normalize(character));
+      final value = _alphabet.indexOf(normalize(character));
       if (value < 0) {
         throw const InvalidRecoveryKeyException('Geçersiz karakter.');
       }
       symbols.add(value);
     }
-    if (symbols.length != _textLength) {
+    if (symbols.length != textLength) {
       throw const InvalidRecoveryKeyException('Geçersiz uzunluk.');
     }
 
@@ -98,9 +109,12 @@ final class RecoveryKeyCodec {
     return Uint8List.sublistView(hash, 0, _checksumLength);
   }
 
-  // Dart'ın toUpperCase işlevi dil ayarından etkilenmez, ama Türkçe klavyeden
-  // gelen ı ve İ harflerini ayrıca karşılamak gerekiyor.
-  static String _normalize(String character) => switch (character) {
+  /// Yazılan karakteri alfabedeki karşılığına çevirir: küçük harfler büyür,
+  /// alfabede olmayan I, L ve O, 1 ve 0 sayılır.
+  ///
+  /// Dart'ın toUpperCase işlevi dil ayarından etkilenmez, ama Türkçe klavyeden
+  /// gelen ı ve İ harflerini ayrıca karşılamak gerekiyor.
+  static String normalize(String character) => switch (character) {
     'i' || 'I' || 'ı' || 'İ' || 'l' || 'L' => '1',
     'o' || 'O' => '0',
     _ => character.toUpperCase(),

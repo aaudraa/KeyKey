@@ -64,6 +64,14 @@ class _ZxingCameraState extends State<_ZxingCamera> {
     return ReaderWidget(
       codeFormat: Format.qrCode,
       tryInverted: true,
+      // Gerçek telefonda bilgisayar ekranındaki QR, paketin varsayılanlarıyla
+      // (saniyede bir kare, görüntünün ortadaki yarısı, 720p) ancak 15 saniye
+      // uğraşınca okunabildi. Daha sık, daha geniş alanda ve daha dikkatli
+      // taranıyor; uzaktaki küçük QR için çözünürlük de artırıldı.
+      tryHarder: true,
+      cropPercent: 0.8,
+      scanDelay: const Duration(milliseconds: 250),
+      resolution: ResolutionPreset.veryHigh,
       showGallery: false,
       showToggleCamera: false,
       onScan: (code) {
