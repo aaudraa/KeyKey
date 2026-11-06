@@ -77,6 +77,15 @@ class LoginDetailScreen extends ConsumerWidget {
             LinkedOtpTile(key: ValueKey(otpIdHex(otp)), item: otp),
           for (final url in content.urls)
             _Field(label: l10n.loginUrl, value: url),
+          for (final app in content.apps)
+            ListTile(
+              leading: const Icon(Icons.android),
+              title: Text(
+                l10n.loginApp,
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
+              subtitle: Text(app.packageName),
+            ),
           if (content.folder != null)
             _Field(label: l10n.loginFolder, value: content.folder!),
           for (final field in content.customFields)

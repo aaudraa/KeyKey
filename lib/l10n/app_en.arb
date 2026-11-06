@@ -438,6 +438,23 @@
   "@loginAddUrl": {
     "description": "Button."
   },
+  "loginApp": "App",
+  "@loginApp": {
+    "description": "Label for an Android app linked to a login for autofill."
+  },
+  "loginAppSignature": "Signature {fingerprint}",
+  "@loginAppSignature": {
+    "description": "Shortened signing certificate fingerprint of a linked app.",
+    "placeholders": {
+      "fingerprint": {
+        "type": "String"
+      }
+    }
+  },
+  "loginRemoveApp": "Remove app",
+  "@loginRemoveApp": {
+    "description": "Tooltip for removing a linked app from a login."
+  },
   "loginRemoveUrl": "Remove website",
   "@loginRemoveUrl": {
     "description": "Tooltip."
