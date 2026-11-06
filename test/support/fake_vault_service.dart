@@ -13,6 +13,10 @@ import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/core/vault/vault_session.dart';
+import 'package:keykey/features/authenticator/application/otp_clock.dart';
+import 'package:keykey/features/authenticator/application/otps_controller.dart';
+import 'package:keykey/features/authenticator/data/otp_content.dart';
+import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
@@ -254,6 +258,64 @@ class FakeLoginRepository implements LoginRepository {
   }
 }
 
+/// Bellekte çalışan 2FA deposu. Şifrelemeyi depo testleri sınar.
+class FakeOtpRepository implements OtpRepository {
+  new({List<OtpItem>? items, this.unreadableCount = 0}) : items = items ?? [];
+
+  final List<OtpItem> items;
+  final int unreadableCount;
+  DateTime now = DateTime.utc(2026, 11, 6, 12);
+  var _nextId = 1;
+
+  static OtpItem item(OtpContent content, {int id = 0}) => OtpItem(
+    id: Uint8List(16)
+      ..[0] = 100
+      ..[15] = id,
+    content: content,
+    createdAt: DateTime.utc(2026),
+    updatedAt: DateTime.utc(2026),
+  );
+
+  @override
+  Future<LoadedOtps> loadAll() async =>
+      LoadedOtps(items: [...items], unreadableCount: unreadableCount);
+
+  @override
+  Future<OtpItem> add(OtpContent content) async {
+    final created = OtpItem(
+      id: Uint8List(16)
+        ..[0] = 201
+        ..[15] = _nextId++,
+      content: content,
+      createdAt: now,
+      updatedAt: now,
+    );
+    items.add(created);
+    return created;
+  }
+
+  @override
+  Future<OtpItem> update(OtpItem item, OtpContent content) async {
+    final updated = OtpItem(
+      id: item.id,
+      content: content,
+      createdAt: item.createdAt,
+      updatedAt: now,
+    );
+    final index = items.indexWhere((other) => listEquals(other.id, item.id));
+    items[index] = updated;
+    return updated;
+  }
+
+  @override
+  Future<void> deletePermanently(OtpItem item) async {
+    items.removeWhere((other) => listEquals(other.id, item.id));
+  }
+
+  @override
+  Future<List<OtpItem>> purgeExpiredTrash(List<OtpItem> items) async => items;
+}
+
 // Büyük varlık dosyalarını Flutter ayrı isolate'te okur, sahte saatli
 // testlerde bu tamamlanmaz. Testler listeleri doğrudan dosyadan alır.
 final List<String> _effWords = Wordlists.parseEff(
@@ -269,18 +331,23 @@ Future<void> pumpKeyKey(
   required VaultStatus status,
   required FakeVaultService service,
   FakeLoginRepository? logins,
+  FakeOtpRepository? otps,
+  DateTime Function()? clock,
   RecordingClipboard? clipboard,
   Locale locale = const Locale('tr'),
 }) async {
   tester.platformDispatcher.localesTestValue = [locale];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
   final repository = logins ?? FakeLoginRepository();
+  final otpRepository = otps ?? FakeOtpRepository();
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         vaultServiceProvider.overrideWithValue(service),
         initialVaultStatusProvider.overrideWithValue(status),
         loginRepositoryFactoryProvider.overrideWithValue((_) => repository),
+        otpRepositoryFactoryProvider.overrideWithValue((_) => otpRepository),
+        if (clock != null) otpClockProvider.overrideWithValue(clock),
         randomSourceProvider.overrideWithValue(
           SodiumRandomSource(service.sodium),
         ),

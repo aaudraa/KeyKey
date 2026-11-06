@@ -12,10 +12,6 @@
   "@navSettings": {
     "description": "Bottom navigation label and title of the settings screen."
   },
-  "authenticatorPlaceholder": "Your verification codes will be here soon.",
-  "@authenticatorPlaceholder": {
-    "description": "Temporary message on the two-factor screen until the feature exists."
-  },
   "secretShow": "Show",
   "@secretShow": {
     "description": "Tooltip: reveal a hidden secret field."
@@ -560,6 +556,175 @@
     "placeholders": {
       "seconds": {
         "type": "int"
+      }
+    }
+  },
+  "otpEmpty": "No 2FA accounts yet. Tap Add to set up the first one.",
+  "@otpEmpty": {
+    "description": "Empty state of the 2FA list."
+  },
+  "otpNoResults": "No matching accounts.",
+  "@otpNoResults": {
+    "description": "Search found nothing in the 2FA list."
+  },
+  "otpUnnamed": "Unnamed",
+  "@otpUnnamed": {
+    "description": "Shown when a 2FA account has neither a service nor an account name."
+  },
+  "otpNext": "Next: {code}",
+  "@otpNext": {
+    "description": "The code of the next period, shown when the current one is about to expire.",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "otpGenerate": "Generate code",
+  "@otpGenerate": {
+    "description": "Button that produces the next counter-based (HOTP) code."
+  },
+  "otpSecondsLeft": "{seconds, plural, =1{1 second left} other{{seconds} seconds left}}",
+  "@otpSecondsLeft": {
+    "description": "Screen reader text of the countdown.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "otpCopyCode": "Copy code",
+  "@otpCopyCode": {
+    "description": "Screen reader hint of a 2FA list entry."
+  },
+  "otpClockHelp": "Codes not working?",
+  "@otpClockHelp": {
+    "description": "Tooltip of the clock help button."
+  },
+  "otpClockHelpTitle": "Check the device clock",
+  "@otpClockHelpTitle": {
+    "description": "Title of the clock help dialog."
+  },
+  "otpClockHelpBody": "Codes are calculated from this device's clock. KeyKey works without the internet, so it cannot check the time itself. If services reject your codes, turn on automatic date and time in the Android settings.",
+  "@otpClockHelpBody": {
+    "description": "Body of the clock help dialog."
+  },
+  "otpClockNow": "Device time: {time}",
+  "@otpClockNow": {
+    "description": "Current device time in the clock help dialog.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "otpClose": "Close",
+  "@otpClose": {
+    "description": "Closes a dialog."
+  },
+  "otpAddTitle": "Add a 2FA account",
+  "@otpAddTitle": {
+    "description": "Title of the sheet that lists the ways to add an account."
+  },
+  "otpAddManual": "Enter key manually",
+  "@otpAddManual": {
+    "description": "Option that opens the manual entry form."
+  },
+  "otpNewTitle": "New 2FA account",
+  "@otpNewTitle": {
+    "description": "Title of the form for a new account."
+  },
+  "otpIssuer": "Service",
+  "@otpIssuer": {
+    "description": "Field for the service name, such as GitHub."
+  },
+  "otpAccount": "Account",
+  "@otpAccount": {
+    "description": "Field for the account name, such as an email address."
+  },
+  "otpSecret": "Secret key",
+  "@otpSecret": {
+    "description": "Field for the 2FA secret key."
+  },
+  "otpSecretHelper": "The key the service shows, or an otpauth:// link.",
+  "@otpSecretHelper": {
+    "description": "Helper text under the secret key field."
+  },
+  "otpSecretInvalid": "Not a valid key. Keys contain only the letters A to Z and the digits 2 to 7.",
+  "@otpSecretInvalid": {
+    "description": "Error for a secret key that is not Base32."
+  },
+  "otpLinkInvalid": "This otpauth link could not be read.",
+  "@otpLinkInvalid": {
+    "description": "Error for a malformed otpauth link."
+  },
+  "otpLinkUnsupported": "This code type is not supported. KeyKey supports TOTP and HOTP.",
+  "@otpLinkUnsupported": {
+    "description": "Error for an otpauth link of another type, such as Steam."
+  },
+  "otpLinkFilled": "Filled in from the link.",
+  "@otpLinkFilled": {
+    "description": "Shown after an otpauth link was pasted into the secret field."
+  },
+  "otpNameRequired": "Enter a service or account name.",
+  "@otpNameRequired": {
+    "description": "Error when both names are empty."
+  },
+  "otpAdvanced": "Advanced",
+  "@otpAdvanced": {
+    "description": "Section with algorithm, digits and period."
+  },
+  "otpAdvancedHint": "Change these only if the service gives different values.",
+  "@otpAdvancedHint": {
+    "description": "Hint in the advanced section."
+  },
+  "otpType": "Type",
+  "@otpType": {
+    "description": "Label of the code type choice."
+  },
+  "otpTypeTotp": "Time-based (TOTP)",
+  "@otpTypeTotp": {
+    "description": "TOTP choice."
+  },
+  "otpTypeHotp": "Counter-based (HOTP)",
+  "@otpTypeHotp": {
+    "description": "HOTP choice."
+  },
+  "otpAlgorithm": "Algorithm",
+  "@otpAlgorithm": {
+    "description": "Label of the hash algorithm choice."
+  },
+  "otpDigits": "Digits",
+  "@otpDigits": {
+    "description": "Label of the code length choice."
+  },
+  "otpPeriod": "Period (seconds)",
+  "@otpPeriod": {
+    "description": "Field for the TOTP period."
+  },
+  "otpCounter": "Counter",
+  "@otpCounter": {
+    "description": "Field for the HOTP counter."
+  },
+  "otpPeriodInvalid": "Enter a whole number from 1 to {max}.",
+  "@otpPeriodInvalid": {
+    "description": "Error for an invalid period.",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "otpCounterInvalid": "Enter 0 or a larger whole number.",
+  "@otpCounterInvalid": {
+    "description": "Error for an invalid counter."
+  },
+  "otpTrashDeleteMessage": "\"{name}\" will be deleted and cannot be recovered. Without this key you may not be able to sign in to the service.",
+  "@otpTrashDeleteMessage": {
+    "description": "Dialog text before a 2FA account is deleted permanently.",
+    "placeholders": {
+      "name": {
+        "type": "String"
       }
     }
   }

@@ -39,7 +39,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.shield_outlined));
     await tester.pumpAndSettle();
     expect(
-      find.text('Doğrulama kodların yakında burada olacak.'),
+      find.text("Henüz 2FA hesabı yok. İlkini kurmak için Ekle'ye dokun."),
       findsOneWidget,
     );
 

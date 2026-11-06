@@ -10,6 +10,14 @@ import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 
+/// İstenen 2FA kaydı artık yok, örneğin bu sırada kalıcı olarak silindi.
+final class OtpNotFoundException implements Exception {
+  const new();
+
+  @override
+  String toString() => 'OtpNotFoundException: 2FA kaydı bulunamadı.';
+}
+
 /// Çözülmüş 2FA kayıtlarının durumu.
 sealed class OtpsState {
   const new();
@@ -202,11 +210,11 @@ class OtpsController extends Notifier<OtpsState> {
     );
   });
 
-  /// Durumdaki en son kopya. Kayıt silinmişse veya kasa kilitlendiyse hata.
+  /// Durumdaki en son kopya. Kayıt bu arada silindiyse [OtpNotFoundException].
   OtpItem _latest(OtpItem item) {
     final current = state;
     final latest = current is OtpsLoaded ? current.byId(item.id) : null;
-    if (latest == null) throw StateError('2FA kaydı bulunamadı.');
+    if (latest == null) throw const OtpNotFoundException();
     return latest;
   }
 

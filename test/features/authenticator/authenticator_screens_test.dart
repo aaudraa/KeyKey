@@ -1,0 +1,440 @@
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:keykey/features/authenticator/data/base32.dart';
+import 'package:keykey/features/authenticator/data/otp_content.dart';
+import 'package:keykey/features/authenticator/data/otp_parameters.dart';
+import 'package:keykey/features/authenticator/presentation/otp_display.dart';
+import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:sodium/sodium_sumo.dart';
+
+import '../../support/fake_vault_service.dart';
+
+void main() {
+  // RFC 4226 Ek D anahtarı: sayaç 1 → 287082, 2 → 359152, 0 → 755224.
+  final rfcSecret = ascii.encode('12345678901234567890');
+
+  late SodiumSumo sodium;
+  late FakeVaultService service;
+  late FakeOtpRepository otps;
+  late RecordingClipboard clipboard;
+  late DateTime now;
+
+  setUpAll(() async {
+    sodium = await SodiumSumoInit.init();
+    // Ekran dışına düşen dokunuş başka bir düğmeye basabilir, sessiz geçmesin.
+    WidgetController.hitTestWarningShouldBeFatal = true;
+  });
+
+  tearDownAll(() => WidgetController.hitTestWarningShouldBeFatal = false);
+
+  OtpContent totp(String issuer, {String account = '', bool favorite = false}) {
+    return OtpContent(
+      parameters: OtpParameters.totp(
+        secret: issuer == 'GitHub' ? rfcSecret : utf8.encode('$issuer-anahtar'),
+      ),
+      issuer: issuer,
+      account: account,
+      favorite: favorite,
+    );
+  }
+
+  setUp(() {
+    service = FakeVaultService(sodium);
+    clipboard = RecordingClipboard();
+    // 30. saniye: TOTP sayacı 1, sürenin tamamı kalıyor.
+    now = DateTime.fromMillisecondsSinceEpoch(30000, isUtc: true);
+    otps = FakeOtpRepository(
+      items: [
+        FakeOtpRepository.item(
+          totp('GitHub', account: 'ali@example.com'),
+          id: 1,
+        ),
+        FakeOtpRepository.item(totp('Posta'), id: 2),
+        FakeOtpRepository.item(totp('Zeka', favorite: true), id: 3),
+      ],
+    );
+  });
+
+  /// Geri sayım her karede yeni kare istediği için pumpAndSettle bitmez.
+  Future<void> settle(WidgetTester tester) async {
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+  }
+
+  Future<void> openAuthenticator(
+    WidgetTester tester, {
+    Locale locale = const Locale('tr'),
+  }) async {
+    await pumpKeyKey(
+      tester,
+      status: VaultOpen(service.newSession()),
+      service: service,
+      otps: otps,
+      clock: () => now,
+      clipboard: clipboard,
+      locale: locale,
+    );
+    await tester.tap(find.byIcon(Icons.shield_outlined));
+    await settle(tester);
+  }
+
+  Finder tileOf(int id) => find.byKey(
+    ValueKey(otpIdHex(otps.items.firstWhere((i) => i.id[15] == id))),
+  );
+
+  /// Küçük test ekranında alttaki düğmeler önce görünür alana kaydırılır.
+  Future<void> tapVisible(WidgetTester tester, Finder finder) async {
+    await tester.ensureVisible(finder);
+    await settle(tester);
+    await tester.tap(finder);
+    await settle(tester);
+  }
+
+  Future<void> openMenu(WidgetTester tester, int id) async {
+    await tester.tap(
+      find.descendant(of: tileOf(id), matching: find.byIcon(Icons.more_vert)),
+    );
+    await settle(tester);
+  }
+
+  group('liste', () {
+    testWidgets('kodlar gösteriliyor, favori önde', (tester) async {
+      await openAuthenticator(tester);
+
+      expect(find.text('287 082'), findsOneWidget);
+      expect(find.text('ali@example.com'), findsOneWidget);
+      final titles = [
+        for (final text in tester.widgetList<Text>(find.byType(Text)))
+          if (['GitHub', 'Posta', 'Zeka'].contains(text.data)) text.data,
+      ];
+      expect(titles, ['Zeka', 'GitHub', 'Posta']);
+      expect(find.textContaining('Sıradaki'), findsNothing);
+    });
+
+    testWidgets('dokununca kod boşluksuz kopyalanıyor', (tester) async {
+      await openAuthenticator(tester);
+
+      await tester.tap(find.text('287 082'));
+      await settle(tester);
+
+      expect(clipboard.copied, ['287082']);
+      expect(find.textContaining('Kopyalandı'), findsOneWidget);
+    });
+
+    testWidgets('saat ilerledikçe geri sayım ve kod değişiyor', (tester) async {
+      await openAuthenticator(tester);
+      expect(find.text('30'), findsWidgets);
+
+      now = DateTime.fromMillisecondsSinceEpoch(45500, isUtc: true);
+      await settle(tester);
+      expect(find.text('15'), findsWidgets);
+      expect(find.text('287 082'), findsOneWidget);
+
+      now = DateTime.fromMillisecondsSinceEpoch(60000, isUtc: true);
+      await settle(tester);
+      expect(find.text('359 152'), findsOneWidget);
+    });
+
+    testWidgets('süre bitmek üzereyken sıradaki kod görünüyor', (tester) async {
+      now = DateTime.fromMillisecondsSinceEpoch(50000, isUtc: true);
+      await openAuthenticator(tester);
+
+      expect(find.text('Sıradaki: 359 152'), findsOneWidget);
+    });
+
+    testWidgets('arama servis ve hesap adında', (tester) async {
+      await openAuthenticator(tester);
+
+      await tester.enterText(find.widgetWithText(TextField, 'Ara'), 'ALİ');
+      await settle(tester);
+      expect(find.text('GitHub'), findsOneWidget);
+      expect(find.text('Posta'), findsNothing);
+
+      await tester.enterText(find.widgetWithText(TextField, 'Ara'), 'yok');
+      await settle(tester);
+      expect(find.text('Eşleşen hesap yok.'), findsOneWidget);
+    });
+
+    testWidgets('hesap yoksa yönlendiren metin', (tester) async {
+      otps.items.clear();
+      await openAuthenticator(tester);
+
+      expect(find.textContaining('Henüz 2FA hesabı yok'), findsOneWidget);
+      expect(find.widgetWithText(TextField, 'Ara'), findsNothing);
+    });
+
+    testWidgets('okunamayan kayıt sayısı bildiriliyor', (tester) async {
+      otps = FakeOtpRepository(items: otps.items, unreadableCount: 2);
+      await openAuthenticator(tester);
+
+      expect(find.textContaining('2 kayıt okunamadı'), findsOneWidget);
+    });
+
+    testWidgets('HOTP kodu istenince üretiliyor ve sayaç ilerliyor', (
+      tester,
+    ) async {
+      otps.items
+        ..clear()
+        ..add(
+          FakeOtpRepository.item(
+            OtpContent(
+              parameters: OtpParameters.hotp(secret: rfcSecret),
+              issuer: 'Sayaçlı',
+            ),
+            id: 9,
+          ),
+        );
+      await openAuthenticator(tester);
+      expect(find.text('••• •••'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Kod üret'));
+      await settle(tester);
+      expect(find.text('755 224'), findsOneWidget);
+      expect(otps.items.single.content.parameters.counter, 1);
+
+      await tester.tap(find.byTooltip('Kod üret'));
+      await settle(tester);
+      expect(find.text('287 082'), findsOneWidget);
+      expect(otps.items.single.content.parameters.counter, 2);
+
+      await tester.tap(find.text('287 082'));
+      await settle(tester);
+      expect(clipboard.copied, ['287082']);
+    });
+
+    testWidgets('saat yardımı cihaz saatini gösteriyor', (tester) async {
+      await openAuthenticator(tester);
+
+      await tester.tap(find.byTooltip('Kodlar tutmuyor mu?'));
+      await settle(tester);
+
+      expect(find.text('Cihaz saatini kontrol et'), findsOneWidget);
+      expect(find.textContaining('Cihaz saati: '), findsOneWidget);
+      expect(find.textContaining('1970'), findsOneWidget);
+      await tester.tap(find.text('Kapat'));
+      await settle(tester);
+      expect(find.text('Cihaz saatini kontrol et'), findsNothing);
+    });
+
+    testWidgets('İngilizce', (tester) async {
+      otps.items.clear();
+      await openAuthenticator(tester, locale: const Locale('en'));
+
+      expect(find.textContaining('No 2FA accounts yet'), findsOneWidget);
+    });
+  });
+
+  group('menü', () {
+    testWidgets('favori', (tester) async {
+      await openAuthenticator(tester);
+
+      await openMenu(tester, 2);
+      await tester.tap(find.text('Favorilere ekle'));
+      await settle(tester);
+
+      expect(otps.items[1].content.favorite, isTrue);
+    });
+
+    testWidgets('çöp kutusuna taşı ve geri al', (tester) async {
+      await openAuthenticator(tester);
+
+      await openMenu(tester, 2);
+      await tester.tap(find.text('Çöp kutusuna taşı'));
+      await settle(tester);
+      expect(find.text('Posta'), findsNothing);
+      expect(otps.items[1].content.isTrashed, isTrue);
+
+      await tester.tap(find.text('Geri al'));
+      await settle(tester);
+      expect(find.text('Posta'), findsOneWidget);
+      expect(otps.items[1].content.isTrashed, isFalse);
+    });
+
+    testWidgets('düzenleme', (tester) async {
+      await openAuthenticator(tester);
+
+      await openMenu(tester, 2);
+      await tester.tap(find.text('Düzenle'));
+      await settle(tester);
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Servis'),
+        'E-posta',
+      );
+      await tester.tap(find.text('Kaydet'));
+      await settle(tester);
+
+      expect(find.text('E-posta'), findsOneWidget);
+      expect(otps.items[1].content.issuer, 'E-posta');
+      expect(otps.items[1].content.parameters, totp('Posta').parameters);
+    });
+  });
+
+  group('elle ekleme', () {
+    Future<void> openForm(WidgetTester tester) async {
+      await openAuthenticator(tester);
+      await tester.tap(find.text('Ekle'));
+      await settle(tester);
+      await tester.tap(find.text('Anahtarı elle gir'));
+      await settle(tester);
+    }
+
+    testWidgets('anahtar ve servis adıyla kaydediliyor', (tester) async {
+      await openForm(tester);
+
+      await tester.enterText(find.widgetWithText(TextField, 'Servis'), 'Yeni');
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Gizli anahtar'),
+        'jbsw y3dp ehpk 3pxp',
+      );
+      await tester.tap(find.text('Kaydet'));
+      await settle(tester);
+
+      final added = otps.items.last.content;
+      expect(added.issuer, 'Yeni');
+      expect(
+        added.parameters,
+        OtpParameters.totp(secret: Base32.decodeCanonical('JBSWY3DPEHPK3PXP')),
+      );
+      expect(find.text('Yeni'), findsOneWidget);
+    });
+
+    testWidgets('geçersiz anahtar ve eksik ad kaydedilmiyor', (tester) async {
+      await openForm(tester);
+
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Gizli anahtar'),
+        'BU-ANAHTAR-01',
+      );
+      await tester.tap(find.text('Kaydet'));
+      await settle(tester);
+
+      expect(find.textContaining('Geçerli bir anahtar değil'), findsOneWidget);
+      expect(find.text('Servis veya hesap adı gir.'), findsOneWidget);
+      expect(otps.items, hasLength(3));
+    });
+
+    testWidgets('otpauth bağlantısı yapıştırılınca form doluyor', (
+      tester,
+    ) async {
+      await openForm(tester);
+
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Gizli anahtar'),
+        'otpauth://hotp/Banka:veli?secret=JBSWY3DPEHPK3PXP&counter=4&digits=8',
+      );
+      await settle(tester);
+
+      expect(find.text('Bilgiler bağlantıdan dolduruldu.'), findsOneWidget);
+      expect(find.widgetWithText(TextField, 'Banka'), findsOneWidget);
+      expect(find.widgetWithText(TextField, 'veli'), findsOneWidget);
+
+      await tester.tap(find.text('Kaydet'));
+      await settle(tester);
+      final added = otps.items.last.content;
+      expect(added.parameters.kind, OtpKind.hotp);
+      expect(added.parameters.counter, 4);
+      expect(added.parameters.digits, 8);
+    });
+
+    testWidgets('desteklenmeyen bağlantı anlaşılır hata veriyor', (
+      tester,
+    ) async {
+      await openForm(tester);
+
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Gizli anahtar'),
+        'otpauth://steam/x?secret=JBSWY3DPEHPK3PXP',
+      );
+      await settle(tester);
+
+      expect(find.textContaining('Bu kod türü desteklenmiyor'), findsOneWidget);
+    });
+
+    testWidgets('gelişmiş ayarlar: SHA-512, 8 hane, 60 saniye', (tester) async {
+      await openForm(tester);
+
+      await tester.enterText(find.widgetWithText(TextField, 'Servis'), 'Özel');
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Gizli anahtar'),
+        'JBSWY3DPEHPK3PXP',
+      );
+      await tester.tap(find.text('Gelişmiş'));
+      await settle(tester);
+      await tapVisible(tester, find.text('SHA512'));
+      await tapVisible(tester, find.text('8'));
+      await tester.enterText(find.widgetWithText(TextField, '30'), '60');
+      await tester.tap(find.text('Kaydet'));
+      await settle(tester);
+
+      final parameters = otps.items.last.content.parameters;
+      expect(parameters.algorithm, OtpAlgorithm.sha512);
+      expect(parameters.digits, 8);
+      expect(parameters.period, 60);
+    });
+
+    testWidgets('geçersiz süre gelişmiş bölümde gösteriliyor', (tester) async {
+      await openForm(tester);
+
+      await tester.enterText(find.widgetWithText(TextField, 'Servis'), 'Özel');
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Gizli anahtar'),
+        'JBSWY3DPEHPK3PXP',
+      );
+      await tester.tap(find.text('Gelişmiş'));
+      await settle(tester);
+      await tester.enterText(find.widgetWithText(TextField, '30'), '0');
+      await tester.tap(find.text('Kaydet'));
+      await settle(tester);
+
+      expect(
+        find.text('1 ile 3600 arasında bir tam sayı gir.'),
+        findsOneWidget,
+      );
+      expect(otps.items, hasLength(3));
+    });
+  });
+
+  group('çöp kutusu', () {
+    setUp(() {
+      otps.items[1] = FakeOtpRepository.item(
+        totp('Posta').copyWith(trashedAt: DateTime.utc(2026, 11)),
+        id: 2,
+      );
+    });
+
+    Future<void> openTrash(WidgetTester tester) async {
+      await openAuthenticator(tester);
+      await tester.tap(find.byTooltip('Çöp kutusu'));
+      await settle(tester);
+    }
+
+    testWidgets('geri alma', (tester) async {
+      await openTrash(tester);
+
+      await tester.tap(find.byTooltip('Geri al'));
+      await settle(tester);
+
+      expect(otps.items[1].content.isTrashed, isFalse);
+      expect(find.text('Çöp kutusu boş.'), findsOneWidget);
+    });
+
+    testWidgets('kalıcı silme uyarıyla soruluyor', (tester) async {
+      await openTrash(tester);
+
+      await tester.tap(find.byTooltip('Kalıcı olarak sil'));
+      await settle(tester);
+      expect(
+        find.textContaining('servise giriş yapamayabilirsin'),
+        findsOneWidget,
+      );
+      await tester.tap(find.widgetWithText(TextButton, 'Kalıcı olarak sil'));
+      await settle(tester);
+
+      expect(otps.items, hasLength(2));
+      expect(find.text('Çöp kutusu boş.'), findsOneWidget);
+    });
+  });
+}

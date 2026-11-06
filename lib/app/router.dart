@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/app_shell.dart';
 import 'package:keykey/features/authenticator/presentation/authenticator_screen.dart';
+import 'package:keykey/features/authenticator/presentation/otp_edit_screen.dart';
+import 'package:keykey/features/authenticator/presentation/otp_trash_screen.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/lock_screen.dart';
 import 'package:keykey/features/lock/presentation/new_password_screen.dart';
@@ -21,6 +23,8 @@ abstract final class AppRoutes {
   static const vaultNew = '/kasa/yeni';
   static const vaultTrash = '/kasa/cop';
   static const authenticator = '/2fa';
+  static const authenticatorNew = '/2fa/yeni';
+  static const authenticatorTrash = '/2fa/cop';
   static const settings = '/ayarlar';
   static const changePassword = '/ayarlar/parola';
   static const setup = '/kurulum';
@@ -32,6 +36,9 @@ abstract final class AppRoutes {
   static String vaultItem(String idHex) => '/kasa/kayit/$idHex';
 
   static String vaultItemEdit(String idHex) => '/kasa/kayit/$idHex/duzenle';
+
+  static String authenticatorItemEdit(String idHex) =>
+      '/2fa/hesap/$idHex/duzenle';
 }
 
 /// Kasa durumuna göre gidilmesi gereken yer. `null` ise olduğu yerde kalır.
@@ -133,6 +140,21 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: AppRoutes.authenticator,
                 builder: (context, state) => const AuthenticatorScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'yeni',
+                    builder: (context, state) => const OtpEditScreen(),
+                  ),
+                  GoRoute(
+                    path: 'cop',
+                    builder: (context, state) => const OtpTrashScreen(),
+                  ),
+                  GoRoute(
+                    path: 'hesap/:id/duzenle',
+                    builder: (context, state) =>
+                        OtpEditScreen(idHex: state.pathParameters['id']),
+                  ),
+                ],
               ),
             ],
           ),
