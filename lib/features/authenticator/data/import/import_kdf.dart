@@ -11,21 +11,27 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 /// kullanıcının verdiği dosyayı açmak için çalışır, kasanın şifrelemesinde
 /// kullanılmaz.
 abstract final class ImportKdf {
-  /// Bozuk veya kötü niyetli bir dosya cihazı belleksiz bırakmasın diye
-  /// scrypt parametrelerinin üst sınırları. Aegis'in varsayılanı N=2^15, r=8,
-  /// p=1, yani 32 MiB.
+  /// Bozuk veya kötü niyetli bir dosya cihazı belleksiz bırakmasın ve
+  /// dakikalarca meşgul etmesin diye scrypt parametrelerinin üst sınırları.
+  /// Aegis'in varsayılanı N=2^15, r=8, p=1: 32 MiB bellek ve 32 MiB iş.
+  ///
+  /// Bellek, N bloğun yanında p bloğu da sayar (`128·r·(N+p)` bayt), çünkü
+  /// p çok büyük r ile tek başına gigabaytlar ayırtabilir. İş `128·r·N·p`.
   static const int maxScryptMemory = 128 * 1024 * 1024;
+  static const int maxScryptWork = 1024 * 1024 * 1024;
   static const maxScryptP = 16;
   static const maxPbkdf2Iterations = 10000000;
 
   /// Parametreler [scrypt]'in kabul edeceği gibi mi.
-  static bool isValidScrypt({required int n, required int r, required int p}) =>
-      n >= 2 &&
-      n & (n - 1) == 0 &&
-      r >= 1 &&
-      p >= 1 &&
-      p <= maxScryptP &&
-      128 * r <= maxScryptMemory ~/ n;
+  static bool isValidScrypt({required int n, required int r, required int p}) {
+    if (n < 2 || n & (n - 1) != 0 || r < 1 || p < 1 || p > maxScryptP) {
+      return false;
+    }
+    // Bölerek karşılaştırılır; çarpım 64 biti taşabilir.
+    final blockBytes = 128 * r;
+    return blockBytes <= maxScryptMemory ~/ (n + p) &&
+        blockBytes <= maxScryptWork ~/ n ~/ p;
+  }
 
   /// PBKDF2-HMAC-SHA256 (RFC 8018).
   static Uint8List pbkdf2Sha256({
@@ -66,12 +72,12 @@ abstract final class ImportKdf {
     required int p,
     required int length,
   }) {
-    if (n < 2 || n & (n - 1) != 0) throw ArgumentError.value(n, 'n');
-    if (r < 1 || p < 1 || p > maxScryptP) {
-      throw ArgumentError.value('$r, $p', 'r, p');
-    }
-    if (128 * r > maxScryptMemory ~/ n) {
-      throw ArgumentError.value(n, 'n', 'Çok fazla bellek');
+    if (!isValidScrypt(n: n, r: r, p: p)) {
+      throw ArgumentError.value(
+        '$n, $r, $p',
+        'n, r, p',
+        'Geçersiz veya sınır dışı',
+      );
     }
     final blockWords = 32 * r;
     final b = pbkdf2Sha256(

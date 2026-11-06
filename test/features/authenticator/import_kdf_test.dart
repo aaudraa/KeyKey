@@ -139,6 +139,17 @@ void main() {
       expect(() => run(1 << 20, 8, 1), throwsArgumentError, reason: '1 GiB');
       expect(() => run(16, 0, 1), throwsArgumentError);
       expect(() => run(16, 1, 17), throwsArgumentError);
+      // N küçük ama p bloğu dev: tek başına 1 GiB ayırtırdı.
+      expect(() => run(2, 1 << 19, 16), throwsArgumentError, reason: 'p·r');
+      // Bellek 96 MiB ama iş 1,5 GiB: dakikalarca sürerdi.
+      expect(() => run(1 << 16, 12, 16), throwsArgumentError, reason: 'iş');
+      expect(
+        ImportKdf.isValidScrypt(n: 1 << 15, r: 8, p: 1),
+        isTrue,
+        reason: "Aegis'in varsayılanı",
+      );
+      expect(ImportKdf.isValidScrypt(n: 1 << 16, r: 8, p: 8), isTrue);
+      expect(ImportKdf.isValidScrypt(n: 1 << 62, r: 1, p: 16), isFalse);
       expect(
         () => ImportKdf.pbkdf2Sha256(
           password: const [1],
