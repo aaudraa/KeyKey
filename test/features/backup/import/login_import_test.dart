@@ -25,11 +25,11 @@ void main() {
       expect(login.password, 'wpC9qFvsbWQK5Z');
     });
 
-    test('CRLF ve çok satırlı not', () {
+    test('CRLF ve çok satırlı not; notta satır sonu LF oluyor', () {
       final login = read('chrome_note.csv').logins.single;
       expect(
         login.notes,
-        'First line, with a comma\r\nSecond line with "quotes"',
+        'First line, with a comma\nSecond line with "quotes"',
       );
       expect(login.password, 'fake-password');
     });
@@ -57,6 +57,24 @@ void main() {
       expect(mail.folder, 'E-posta');
       expect(mail.notes, 'İki satırlı\nnot, virgüllü');
       expect(mail.totp, isNull);
+    });
+
+    test('KeePassXC 2.8.0 CLI ile alınmış gerçek dışa aktarma', () {
+      // keepassxc-cli export -f csv; kök grubun adı arayüz diline göre
+      // değişiyor (burada "Parolalar").
+      final export = read('keepassxc_gercek.csv');
+      expect(export.source, LoginExportSource.keepassxcCsv);
+      expect(export.skipped, 0);
+      expect(export.logins.map((login) => login.folder), [
+        null,
+        'E-posta',
+        'E-posta/İş',
+      ]);
+      final bank = export.logins[0];
+      expect(bank.notes, 'İki satırlı\nnot, "tırnaklı"');
+      expect(bank.totp, contains('secret=JBSWY3DPEHPK3PXP'));
+      expect(export.logins[1].urls, ['mail.example.com']);
+      expect(export.logins[2].urls, isEmpty);
     });
 
     test('Group sütunu olmayan eski dosya', () {

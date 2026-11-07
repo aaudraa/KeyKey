@@ -294,7 +294,8 @@ abstract final class LoginExportReader {
       username: username.trim(),
       password: password,
       urls: cleanUrls,
-      notes: notes,
+      // Windows'ta alınan dışa aktarmalarda notlar CRLF ile gelir.
+      notes: notes.replaceAll('\r\n', '\n').replaceAll('\r', '\n'),
       folder: cleanFolder == null || cleanFolder.isEmpty ? null : cleanFolder,
       favorite: favorite,
       fields: fields,
