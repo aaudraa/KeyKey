@@ -4,8 +4,25 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.File
 
 class TrustedBrowsersTest {
+    @Test
+    fun manifestBütünTarayıcılarıAdıylaBildiriyor() {
+        // Kaydetme ekranı tarayıcının imzasını ancak manifestteki <queries>
+        // sayesinde okuyabiliyor; liste ile manifest ayrışmamalı.
+        // Birim testleri modül klasöründe (android/app) çalışır.
+        val manifest = File("src/main/AndroidManifest.xml").readText()
+        val start = manifest.indexOf("<!-- güvenilen-tarayıcılar: başla")
+        val end = manifest.indexOf("<!-- güvenilen-tarayıcılar: bitir -->")
+        assertTrue(start in 0 until end)
+        val declared = Regex("""<package android:name="([^"]+)" />""")
+            .findAll(manifest.substring(start, end))
+            .map { it.groupValues[1] }
+            .toSet()
+        assertEquals(TRUSTED_BROWSERS.keys, declared)
+    }
+
     @Test
     fun chromeYayınİmzasıylaListede() {
         assertEquals(

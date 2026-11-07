@@ -6,12 +6,16 @@
 //   node resources/scripts/trusted-browsers.mjs apps.json
 //
 // Çıktı: android/app/src/main/kotlin/io/github/aaudraa/keykey/autofill/TrustedBrowserList.kt
+// ve android/app/src/main/AndroidManifest.xml içindeki <queries> bloğu.
 // Kurallar güvenlik tasarımı belgesinin "Eşleştirme" bölümünde.
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 
 const output =
   'android/app/src/main/kotlin/io/github/aaudraa/keykey/autofill/TrustedBrowserList.kt';
+const manifest = 'android/app/src/main/AndroidManifest.xml';
+const manifestStart = '<!-- güvenilen-tarayıcılar: başla';
+const manifestEnd = '<!-- güvenilen-tarayıcılar: bitir -->';
 
 // Listede olup tarayıcı olmayanlar. Bunların bildirdiği alan adına
 // güvenilmez: Google Play Hizmetleri ve kimlik bilgisi sağlayıcıları.
@@ -82,3 +86,19 @@ ${entries}
 `;
 writeFileSync(output, kotlin);
 console.log(`${names.length} uygulama yazıldı: ${output}`);
+
+// Kaydetme ekranını sistem başlattığında Android KeyKey'e tarayıcıyı
+// göstermiyor; imzası okunabilsin diye tarayıcılar adıyla bildirilir.
+const xml = readFileSync(manifest, 'utf8');
+const start = xml.indexOf(manifestStart);
+const end = xml.indexOf(manifestEnd);
+if (start < 0 || end < start) throw new Error('Manifestte tarayıcı bloğu yok.');
+const lineStart = xml.lastIndexOf('\n', start) + 1;
+const indent = xml.slice(lineStart, start);
+const block = [
+  `${manifestStart}. trusted-browsers.mjs üretir; elle düzenlenmez. -->`,
+  ...names.map((name) => `<package android:name="${name}" />`),
+  manifestEnd,
+].join(`\n${indent}`);
+writeFileSync(manifest, xml.slice(0, start) + block + xml.slice(end + manifestEnd.length));
+console.log(`Manifest güncellendi: ${manifest}`);
