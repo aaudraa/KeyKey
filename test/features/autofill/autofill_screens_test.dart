@@ -1,14 +1,22 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keykey/core/platform/sensitive_clipboard.dart';
+import 'package:keykey/features/authenticator/application/otp_clock.dart';
+import 'package:keykey/features/authenticator/application/otp_generator.dart';
+import 'package:keykey/features/authenticator/application/otps_controller.dart';
+import 'package:keykey/features/authenticator/data/otp_content.dart';
+import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/autofill/application/autofill_bridge.dart';
 import 'package:keykey/features/autofill/application/autofill_matches.dart';
 import 'package:keykey/features/autofill/domain/public_suffix_list.dart';
 import 'package:keykey/features/autofill/presentation/autofill_app.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
+import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
@@ -49,7 +57,11 @@ void main() {
   late SodiumSumo sodium;
   late FakeVaultService service;
   late FakeLoginRepository logins;
+  late FakeOtpRepository otps;
+  late FakeSettingsRepository settings;
+  late RecordingClipboard clipboard;
   late PublicSuffixList psl;
+  final now = DateTime.utc(2026, 11, 7, 9);
 
   const cert =
       'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc';
@@ -67,6 +79,9 @@ void main() {
 
   setUp(() {
     service = FakeVaultService(sodium);
+    otps = FakeOtpRepository();
+    settings = FakeSettingsRepository();
+    clipboard = RecordingClipboard();
     logins = FakeLoginRepository(
       items: [
         FakeLoginRepository.item(
@@ -118,9 +133,10 @@ void main() {
           vaultServiceProvider.overrideWithValue(service),
           initialVaultStatusProvider.overrideWithValue(status),
           loginRepositoryFactoryProvider.overrideWithValue((_) => logins),
-          settingsRepositoryFactoryProvider.overrideWithValue(
-            (_) => FakeSettingsRepository(),
-          ),
+          settingsRepositoryFactoryProvider.overrideWithValue((_) => settings),
+          otpRepositoryFactoryProvider.overrideWithValue((_) => otps),
+          sensitiveClipboardProvider.overrideWithValue(clipboard),
+          otpClockProvider.overrideWithValue(() => now),
           autofillBridgeProvider.overrideWithValue(bridge),
           publicSuffixListProvider.overrideWith((ref) => psl),
         ],
@@ -207,6 +223,70 @@ void main() {
 
     expect(find.text('Posta'), findsOneWidget);
     expect(find.text('Banka'), findsNothing);
+  });
+
+  group('2FA kodu', () {
+    // "Örnek hesap" kaydının kimliği.
+    final loginId = FakeLoginRepository.item(
+      const LoginContent(name: ''),
+      id: 3,
+    ).id;
+    final parameters = OtpParameters.totp(secret: utf8.encode('ornek-anahtar'));
+
+    testWidgets('bağlı TOTP kodu doldurmadan önce kopyalanıyor', (
+      tester,
+    ) async {
+      otps.items.add(
+        FakeOtpRepository.item(
+          OtpContent(parameters: parameters, loginId: loginId),
+        ),
+      );
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+      );
+
+      await tester.tap(find.text('Örnek hesap'));
+      await tester.pumpAndSettle();
+
+      expect(clipboard.copied, [OtpGenerator.codeFor(parameters, now)]);
+      expect(bridge.filled?.username, 'veli');
+    });
+
+    testWidgets('ayar kapalıysa kopyalanmıyor', (tester) async {
+      settings.settings = const AppSettings(
+        otpRequireAuth: false,
+        autofillCopyOtp: false,
+      );
+      otps.items.add(
+        FakeOtpRepository.item(
+          OtpContent(parameters: parameters, loginId: loginId),
+        ),
+      );
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+      );
+
+      await tester.tap(find.text('Örnek hesap'));
+      await tester.pumpAndSettle();
+
+      expect(clipboard.copied, isEmpty);
+      expect(bridge.filled?.username, 'veli');
+    });
+
+    testWidgets('bağlı hesap yoksa kopyalanmıyor', (tester) async {
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+      );
+
+      await tester.tap(find.text('Örnek hesap'));
+      await tester.pumpAndSettle();
+
+      expect(clipboard.copied, isEmpty);
+      expect(bridge.filled, isNotNull);
+    });
   });
 
   testWidgets('kapat düğmesi hiçbir şey doldurmuyor', (tester) async {

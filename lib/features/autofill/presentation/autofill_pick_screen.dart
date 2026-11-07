@@ -3,13 +3,18 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/secret_field.dart';
+import 'package:keykey/core/platform/sensitive_clipboard.dart';
+import 'package:keykey/features/authenticator/application/otp_clock.dart';
+import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/autofill/application/autofill_bridge.dart';
 import 'package:keykey/features/autofill/application/autofill_matches.dart';
+import 'package:keykey/features/autofill/application/autofill_otp.dart';
 import 'package:keykey/features/autofill/domain/fill_warnings.dart';
 import 'package:keykey/features/autofill/domain/login_matcher.dart';
 import 'package:keykey/features/autofill/presentation/autofill_app.dart';
 import 'package:keykey/features/autofill/presentation/fill_confirm_dialog.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/vault/application/login_search.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
@@ -87,15 +92,41 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
   }
 
   /// Değerleri alır, kasayı kilitler ve forma verir. Kilit önce gelir:
-  /// anahtarlar silindikten sonra yalnızca seçilen iki değer kalır.
+  /// anahtarlar silindikten sonra yalnızca seçilen iki değer ve varsa 2FA
+  /// kodu kalır. Kod, ekran kapanmadan önce panoya kopyalanır.
   Future<void> _fill(LoginItem item) async {
     final username = item.content.username;
     final password = item.content.password;
+    final code = await _linkedOtpCode(item);
     ref.read(autofillDoneProvider.notifier).markDone();
     ref.read(vaultControllerProvider.notifier).lock();
+    if (code != null) {
+      try {
+        await ref.read(sensitiveClipboardProvider).copy(code);
+      } on Exception {
+        // Kopyalanamazsa doldurma yine yapılır.
+      }
+    }
     await ref
         .read(autofillBridgeProvider)
         .fill(username: username, password: password);
+  }
+
+  /// Ayar açıksa kayda bağlı TOTP hesabının güncel kodu. Hata doldurmayı
+  /// engellemez.
+  Future<String?> _linkedOtpCode(LoginItem item) async {
+    final status = ref.read(vaultControllerProvider);
+    if (status is! VaultOpen) return null;
+    try {
+      return await linkedOtpCodeForFill(
+        settings: ref.read(settingsRepositoryFactoryProvider)(status.session),
+        otps: ref.read(otpRepositoryFactoryProvider)(status.session),
+        loginId: item.id,
+        now: ref.read(otpClockProvider)(),
+      );
+    } on Exception {
+      return null;
+    }
   }
 
   @override

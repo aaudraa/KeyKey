@@ -1177,5 +1177,18 @@
         "type": "String"
       }
     }
+  },
+  "settingsAutofillCopyOtp": "Copy 2FA code after filling",
+  "@settingsAutofillCopyOtp": {
+    "description": "Setting that copies the linked 2FA code after autofill."
+  },
+  "settingsAutofillCopyOtpHelp": "If the filled login has a linked 2FA account, its current code is copied and cleared after {seconds} seconds.",
+  "@settingsAutofillCopyOtpHelp": {
+    "description": "Explains the copy 2FA code setting.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
   }
 }

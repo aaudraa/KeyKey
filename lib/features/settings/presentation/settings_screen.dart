@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
+import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/presentation/confirm_identity.dart';
@@ -92,6 +93,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  Future<void> _setAutofillCopyOtp({required bool value}) async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ref
+          .read(settingsControllerProvider.notifier)
+          .setAutofillCopyOtp(value: value);
+    } on VaultLockedException {
+      // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.
+    } on Exception {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.loginSaveFailed)));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -128,6 +143,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onChanged: settings == null
                 ? null
                 : (value) => _setOtpRequireAuth(value: value),
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.content_paste_go),
+            title: Text(l10n.settingsAutofillCopyOtp),
+            subtitle: Text(
+              l10n.settingsAutofillCopyOtpHelp(
+                SensitiveClipboard.clearAfter.inSeconds,
+              ),
+            ),
+            value: settings?.autofillCopyOtp ?? false,
+            onChanged: settings == null
+                ? null
+                : (value) => unawaited(_setAutofillCopyOtp(value: value)),
           ),
           ListTile(
             leading: const Icon(Icons.lock_outline),

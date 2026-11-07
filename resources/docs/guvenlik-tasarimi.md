@@ -375,10 +375,11 @@ Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/googl
 **Ayar kaydı:** Ayarlar kasanın içinde, tür `settings` olan tek bir kayıtta durur. Kimliği 16 sıfır bayttır; tür ek doğrulama verisinde olduğu için başka bir kaydın yerine konamaz. Kayıt anahtarıyla şifrelenir. Düz metin:
 
 ```json
-{ "version": 1, "otpRequireAuth": false }
+{ "version": 2, "otpRequireAuth": false, "autofillCopyOtp": true }
 ```
 
-- Kayıt yoksa ek onay kapalıdır. Kayıt var ama okunamıyorsa, biçime uymuyorsa veya türü farklıysa ek onay **açık** sayılır: dosyayı değiştiren biri ayarı böyle kapatamasın. Kullanıcı doğrulayıp kapatabilir. Kaydın tamamen silinmesi ise [kayıt silme sınırına](#bilinen-sınırlar) girer.
+- `autofillCopyOtp` sürüm 2 ile geldi ve [doldurmadan sonra 2FA kodunu kopyalamayı](#2fa-kodu) açar. Sürüm 1 kaydı okunmaya devam eder; o zaman bu ayar açık sayılır.
+- Kayıt yoksa ek onay kapalıdır. Kayıt var ama okunamıyorsa, biçime uymuyorsa veya türü farklıysa ek onay **açık** sayılır: dosyayı değiştiren biri ayarı böyle kapatamasın. Kod kopyalama ise kapalı sayılır. Kullanıcı doğrulayıp ek onayı kapatabilir. Kaydın tamamen silinmesi ise [kayıt silme sınırına](#bilinen-sınırlar) girer.
 
 **Sınır:** Bu, kasa anahtarını değiştirmez. 2FA anahtarı yine kasa anahtarından türetilir, çünkü ana parola ve kurtarma anahtarı da 2FA kayıtlarını açabilmelidir. Ayar, kilidi açık telefonu eline alan birine karşı koruma sağlar, cihazdaki zararlı yazılıma karşı korumaz.
 
@@ -433,7 +434,12 @@ Android 11+ klavyelerde öneri şerit halinde gösterilebilir. Klavye satır iç
 
 ### 2FA kodu
 
-Doldurulan kayıtla eşleşmiş bir 2FA hesabı varsa, ayar açıksa, güncel kod doldurmadan sonra [güvenli panoya](#pano) kopyalanır.
+Doldurulan kayıtla eşleşmiş bir 2FA hesabı varsa, ayar açıksa, güncel kod doldurmadan sonra [güvenli panoya](#pano) kopyalanır. Ayar varsayılan olarak açıktır.
+
+- Kod, kasa kilitlenmeden önce hesaplanır ve ekran kapanmadan panoya yazılır. Kopyalama başarısız olursa doldurma yine yapılır.
+- Yalnızca TOTP hesapları kopyalanır. HOTP'de kod üretmek sayacı ilerletir; bunu kullanıcı istemeden yapmamak gerekir.
+- Birden çok hesap bağlıysa en eski olanın kodu kopyalanır. Çöp kutusundaki hesaplar kullanılmaz.
+- Kullanıcı kasayı doldurma ekranında az önce açtığı için [ek onay](#kodları-görmek-için-ek-onay) ayarı burada yeniden sorulmaz.
 
 ### Chrome
 
