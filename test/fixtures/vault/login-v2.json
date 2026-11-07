@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "name": "Örnek",
+  "username": "kullanici@example.com",
+  "password": "deneme-degeri",
+  "urls": ["https://example.com"],
+  "apps": [
+    {
+      "package": "com.example.app",
+      "certsSha256": ["0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"]
+    }
+  ],
+  "notes": "Not",
+  "customFields": [{ "name": "PIN", "value": "deneme", "hidden": true }],
+  "favorite": true,
+  "folder": "İş",
+  "trashedAt": null,
+  "passwordHistory": [{ "password": "eski-deger", "changedAt": 1730000000000 }]
+}

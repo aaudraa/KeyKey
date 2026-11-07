@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
+import 'package:keykey/features/autofill/application/autofill_setup.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:sodium/sodium_sumo.dart';
 
@@ -159,5 +160,134 @@ void main() {
       find.widgetWithText(FilledButton, 'Parolayı değiştir'),
     );
     expect(button.onPressed, isNull);
+  });
+
+  group('otomatik doldurma kurulumu', () {
+    Future<FakeAutofillSetup> pumpWith(
+      WidgetTester tester,
+      AutofillSetupState state,
+    ) async {
+      final setup = FakeAutofillSetup(state);
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        autofillSetup: setup,
+      );
+      await tester.tap(find.byIcon(Icons.settings_outlined));
+      await tester.pumpAndSettle();
+      return setup;
+    }
+
+    testWidgets('kapalıysa söylüyor ve sistem ayarını açıyor', (tester) async {
+      final setup = await pumpWith(
+        tester,
+        const AutofillSetupState(supported: true, enabled: false),
+      );
+
+      expect(find.text("Kapalı. Dokun ve KeyKey'i seç."), findsOneWidget);
+      expect(find.text("Chrome'da otomatik doldurma"), findsNothing);
+      await tester.tap(find.text('Otomatik doldurma'));
+      await tester.pump();
+      expect(setup.opened, ['autofill']);
+    });
+
+    testWidgets('KeyKey seçiliyse ve Chrome yeniyse Chrome bağlantısı var', (
+      tester,
+    ) async {
+      final setup = await pumpWith(
+        tester,
+        const AutofillSetupState(
+          supported: true,
+          enabled: true,
+          chromeMajorVersion: 145,
+        ),
+      );
+
+      expect(find.text('KeyKey seçili.'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text("Chrome'da otomatik doldurma"),
+        100,
+      );
+      expect(find.textContaining('yeniden başlat'), findsOneWidget);
+      await tester.tap(find.text("Chrome'da otomatik doldurma"));
+      await tester.pump();
+      expect(setup.opened, ['chrome']);
+    });
+
+    testWidgets('Chrome eskiyse güncellemesi söyleniyor, bağlantı yok', (
+      tester,
+    ) async {
+      final setup = await pumpWith(
+        tester,
+        const AutofillSetupState(
+          supported: true,
+          enabled: true,
+          chromeMajorVersion: 133,
+        ),
+      );
+
+      await tester.scrollUntilVisible(
+        find.textContaining("Chrome'u güncelle"),
+        100,
+      );
+      expect(find.textContaining('sürüm 133'), findsOneWidget);
+      await tester.tap(find.text("Chrome'da otomatik doldurma"));
+      await tester.pump();
+      expect(setup.opened, isEmpty);
+    });
+
+    testWidgets('ayar açılamazsa söylüyor', (tester) async {
+      final setup = FakeAutofillSetup()..canOpen = false;
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        autofillSetup: setup,
+      );
+      await tester.tap(find.byIcon(Icons.settings_outlined));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Otomatik doldurma'));
+      await tester.pump();
+      expect(find.text('Ayar açılamadı.'), findsOneWidget);
+    });
+
+    testWidgets('desteklenmiyorsa bunu söylüyor', (tester) async {
+      await pumpWith(
+        tester,
+        const AutofillSetupState(supported: false, enabled: false),
+      );
+
+      expect(
+        find.text('Bu cihaz otomatik doldurmayı desteklemiyor.'),
+        findsOneWidget,
+      );
+    });
+  });
+
+  testWidgets('2FA kodu kopyalama ayarı kapatılıp açılabiliyor', (
+    tester,
+  ) async {
+    final settings = FakeSettingsRepository();
+    await pumpKeyKey(
+      tester,
+      status: VaultOpen(service.newSession()),
+      service: service,
+      settings: settings,
+    );
+    await tester.tap(find.byIcon(Icons.settings_outlined));
+    await tester.pumpAndSettle();
+
+    final copySwitch = find.widgetWithText(
+      SwitchListTile,
+      'Doldurduktan sonra 2FA kodunu kopyala',
+    );
+    await tester.scrollUntilVisible(copySwitch, 100);
+    expect(tester.widget<SwitchListTile>(copySwitch).value, isTrue);
+    await tester.tap(copySwitch);
+    await tester.pumpAndSettle();
+    expect(settings.settings.autofillCopyOtp, isFalse);
+    expect(tester.widget<SwitchListTile>(copySwitch).value, isFalse);
   });
 }

@@ -45,6 +45,11 @@ dependencies {
     implementation("androidx.biometric:biometric:1.1.0")
     // pigeon'un ürettiği köprü coroutine kullanıyor.
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
+    // Otomatik doldurmanın klavye şeridindeki (satır içi) öneri görünümü.
+    implementation("androidx.autofill:autofill:1.1.0")
+
+    // Otomatik doldurmanın saf Kotlin kısımları (alan tespiti, eşleştirme) JVM'de sınanır.
+    testImplementation("junit:junit:4.13.2")
 }
 
 flutter {

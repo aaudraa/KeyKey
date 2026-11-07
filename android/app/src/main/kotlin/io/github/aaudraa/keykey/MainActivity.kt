@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.WindowManager
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
+import io.github.aaudraa.keykey.autofill.AutofillSetup
 
 // BiometricPrompt, FragmentActivity gerektirdiği için FlutterActivity kullanılmıyor.
 class MainActivity : FlutterFragmentActivity() {
@@ -26,5 +27,6 @@ class MainActivity : FlutterFragmentActivity() {
         BiometricApi.setUp(messenger, BiometricVault(this))
         ClipboardApi.setUp(messenger, SecureClipboard(this))
         ImportCryptoApi.setUp(messenger, ImportCrypto())
+        AutofillSetupApi.setUp(messenger, AutofillSetup(this))
     }
 }

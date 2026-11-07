@@ -8,6 +8,7 @@ import 'package:keykey/features/generator/presentation/password_strength_meter.d
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
+import 'package:keykey/features/vault/presentation/cert_fingerprint.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
@@ -43,6 +44,9 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
   final _folder = TextEditingController();
   final _notes = TextEditingController();
   final List<TextEditingController> _urls = [];
+
+  /// Otomatik doldurmanın bağladığı uygulamalar. Burada yalnızca kaldırılır.
+  final List<LoginApp> _apps = [];
   final List<_CustomFieldControllers> _customFields = [];
 
   LoginItem? _original;
@@ -82,6 +86,7 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
       for (final url in content.urls) TextEditingController(text: url),
       if (content.urls.isEmpty) TextEditingController(),
     ]);
+    _apps.addAll(content.apps);
     _customFields.addAll([
       for (final field in content.customFields)
         _CustomFieldControllers(
@@ -104,6 +109,7 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
         for (final url in _urls)
           if (url.text.trim().isNotEmpty) url.text.trim(),
       ],
+      apps: List.of(_apps),
       notes: _notes.text,
       folder: folder.isEmpty ? null : folder,
       customFields: [
@@ -288,6 +294,26 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
                 label: Text(l10n.loginAddUrl),
               ),
             ),
+            for (final (index, app) in _apps.indexed)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.android),
+                title: Text(app.packageName),
+                subtitle: Text(
+                  l10n.loginAppSignature(
+                    formatCertFingerprint(app.certsSha256.first, short: true),
+                  ),
+                  style: const TextStyle(fontFamily: 'monospace'),
+                ),
+                trailing: IconButton(
+                  tooltip: l10n.loginRemoveApp,
+                  icon: const Icon(Icons.remove_circle_outline),
+                  onPressed: () => setState(() {
+                    _apps.removeAt(index);
+                    _dirty = true;
+                  }),
+                ),
+              ),
             const SizedBox(height: 12),
             SecretField(
               controller: _folder,

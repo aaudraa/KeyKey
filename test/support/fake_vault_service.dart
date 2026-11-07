@@ -22,6 +22,7 @@ import 'package:keykey/features/authenticator/data/import/platform_aes_gcm.dart'
 import 'package:keykey/features/authenticator/data/otp_content.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/authenticator/presentation/qr_scan_screen.dart';
+import 'package:keykey/features/autofill/application/autofill_setup.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
@@ -292,6 +293,30 @@ class FakeQrImageReader implements QrImageReader {
   }
 }
 
+/// Otomatik doldurma kurulumunun sahtesi; açılan ayarları kaydeder.
+class FakeAutofillSetup implements AutofillSetupBridge {
+  new([this.state = const AutofillSetupState(supported: true, enabled: false)]);
+
+  AutofillSetupState state;
+  bool canOpen = true;
+  final List<String> opened = [];
+
+  @override
+  Future<AutofillSetupState> status() async => state;
+
+  @override
+  Future<bool> openAutofillSettings() async {
+    opened.add('autofill');
+    return canOpen;
+  }
+
+  @override
+  Future<bool> openChromeAutofillSettings() async {
+    opened.add('chrome');
+    return canOpen;
+  }
+}
+
 /// Bellekte duran ayarlar.
 class FakeSettingsRepository implements SettingsRepository {
   new([this.settings = AppSettings.defaults]);
@@ -420,6 +445,7 @@ Future<void> pumpKeyKey(
   FakeExportFilePicker? files,
   FakeSettingsRepository? settings,
   RecordingClipboard? clipboard,
+  FakeAutofillSetup? autofillSetup,
   Locale locale = const Locale('tr'),
 }) async {
   tester.platformDispatcher.localesTestValue = [locale];
@@ -450,6 +476,9 @@ Future<void> pumpKeyKey(
         ),
         sensitiveClipboardProvider.overrideWithValue(
           clipboard ?? RecordingClipboard(),
+        ),
+        autofillSetupBridgeProvider.overrideWithValue(
+          autofillSetup ?? FakeAutofillSetup(),
         ),
         effWordlistProvider.overrideWith((ref) async => _effWords),
         commonPasswordsProvider.overrideWith((ref) async => _commonPasswords),

@@ -66,6 +66,9 @@ class UnlockState extends Table {
 void configureConnection(sqlite.Database database) {
   database
     ..execute('PRAGMA journal_mode = DELETE')
+    // Doldurma ekranı aynı dosyayı ikinci bir bağlantıyla açabilir; aynı anda
+    // yazmada hemen hata vermek yerine beş saniye beklenir.
+    ..execute('PRAGMA busy_timeout = 5000')
     ..execute('PRAGMA secure_delete = ON');
 }
 
