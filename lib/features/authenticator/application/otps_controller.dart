@@ -76,7 +76,12 @@ class OtpsController extends Notifier<OtpsState> {
     _generation++;
     final vault = ref.read(vaultControllerProvider.notifier)
       ..addLockListener(_wipe);
-    ref.onDispose(() => vault.removeLockListener(_wipe));
+    ref.onDispose(() {
+      vault.removeLockListener(_wipe);
+      // Süren yükleme atılmış denetleyiciye yazmasın; uygulama kapanırken
+      // oturum kilit dinleyicisi çağrılmadan kapanabilir.
+      _generation++;
+    });
 
     final status = ref.watch(vaultControllerProvider);
     if (status is! VaultOpen) {
