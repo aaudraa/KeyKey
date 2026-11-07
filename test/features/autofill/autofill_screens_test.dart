@@ -482,6 +482,26 @@ void main() {
       );
     });
 
+    testWidgets('alan adı bildirmeyen WebView uyarısı', (tester) async {
+      await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: const AutofillTarget(
+          packageName: 'io.github.aaudraa.ornekgiris',
+          appLabel: 'Örnek Giriş',
+          certsSha256: [cert],
+          inWebView: true,
+        ),
+      );
+
+      await tester.tap(find.text('Banka'));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('sayfanın kime ait olduğunu doğrulayamaz'),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('http sayfasında eşleşen kayıt da uyarılıyor', (tester) async {
       await pumpAutofill(
         tester,

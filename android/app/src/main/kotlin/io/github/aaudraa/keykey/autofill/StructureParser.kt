@@ -19,11 +19,17 @@ class ParsedStructure(
      * isteğinde okunur; doldurma isteğinde boştur.
      */
     val values: List<String?> = emptyList(),
+    /**
+     * Formda web içeriği var: WebView, HTML alanı ya da alan adı. Bazı
+     * WebView sürümleri alan adını bildirmiyor; uyarı yine de verilsin diye.
+     */
+    val hasWebContent: Boolean = webDomain != null,
 ) {
     fun idsOf(kind: FieldKind): List<AutofillId> = form.of(kind).map { ids[it] }
 
     /** Değerler atılmış kopya; bekleyen kaydetme isteğinde başka alan kalmasın. */
-    fun withoutValues(): ParsedStructure = ParsedStructure(packageName, webDomain, webScheme, ids, fields, form)
+    fun withoutValues(): ParsedStructure =
+        ParsedStructure(packageName, webDomain, webScheme, ids, fields, form, hasWebContent = hasWebContent)
 
     /** Bu türdeki ilk dolu alanın değeri. */
     fun firstValue(kind: FieldKind): String? =
@@ -43,9 +49,11 @@ object StructureParser {
         val fields = mutableListOf<FieldInfo>()
         var webDomain: String? = null
         var webScheme: String? = null
+        var hasWebContent = false
 
         fun visit(node: AssistStructure.ViewNode, parentVisible: Boolean) {
             val visible = parentVisible && node.visibility == View.VISIBLE
+            if (node.className == "android.webkit.WebView" || node.htmlInfo != null) hasWebContent = true
             if (webDomain == null && !node.webDomain.isNullOrEmpty()) {
                 webDomain = node.webDomain
                 webScheme = node.webScheme
@@ -86,6 +94,7 @@ object StructureParser {
             fields = fields,
             form = FormParser.parse(fields),
             values = values,
+            hasWebContent = hasWebContent || webDomain != null,
         )
     }
 }

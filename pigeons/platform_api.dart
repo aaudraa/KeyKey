@@ -97,6 +97,7 @@ class AutofillRequestInfo {
     required this.webDomain,
     required this.webScheme,
     required this.untrustedWebDomain,
+    required this.inWebView,
     required this.hasUsernameField,
     required this.hasPasswordField,
     this.save,
@@ -117,6 +118,10 @@ class AutofillRequestInfo {
   /// Tarayıcı olmayan bir uygulamanın formu web alan adı bildiriyor
   /// (WebView). Eşleştirmede kullanılmaz, yalnızca uyarıda gösterilir.
   String? untrustedWebDomain;
+
+  /// Tarayıcı olmayan bir uygulamanın formu bir web sayfasında (WebView).
+  /// Bazı WebView sürümleri alan adını bildirmediği için ayrıca tutulur.
+  bool inWebView;
 
   bool hasUsernameField;
   bool hasPasswordField;

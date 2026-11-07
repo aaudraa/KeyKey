@@ -180,7 +180,7 @@ class _AutofillSaveScreenState extends ConsumerState<AutofillSaveScreen> {
                 l10n.autofillSaveNoApp(autofillTargetName(widget.target)),
               ),
             )
-          else if (widget.target.untrustedWebDomain != null)
+          else if (widget.target.showsWebPage)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(l10n.autofillSaveWebView),

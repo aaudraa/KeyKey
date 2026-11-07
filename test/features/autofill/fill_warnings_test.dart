@@ -65,6 +65,18 @@ void main() {
     expect(warn(webView, matched), isEmpty);
   });
 
+  test('alan adı bildirmeyen WebView de uyarılıyor', () {
+    // Android 14 emülatöründeki WebView alan adını bildirmedi.
+    const webView = AutofillTarget(
+      packageName: 'com.banka.mobil',
+      certsSha256: [cert],
+      inWebView: true,
+    );
+    expect(webView.showsWebPage, isTrue);
+    expect(warn(webView, other), {FillWarning.noMatch, FillWarning.webView});
+    expect(warn(webView, matched), isEmpty);
+  });
+
   test('tarayıcıda bağlama yok, http uyarılıyor', () {
     const web = AutofillTarget(
       packageName: 'com.android.chrome',

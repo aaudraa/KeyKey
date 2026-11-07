@@ -20,6 +20,7 @@ internal object AutofillRequests {
             webDomain = form.webDomain.takeIf { trustedBrowser },
             webScheme = form.webScheme.takeIf { trustedBrowser },
             untrustedWebDomain = form.webDomain.takeUnless { trustedBrowser },
+            inWebView = form.hasWebContent && !trustedBrowser,
             hasUsernameField = form.idsOf(FieldKind.USERNAME).isNotEmpty(),
             hasPasswordField = form.idsOf(FieldKind.PASSWORD).isNotEmpty(),
             save = save,

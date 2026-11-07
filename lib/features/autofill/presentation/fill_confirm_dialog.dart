@@ -54,7 +54,10 @@ class _FillConfirmDialogState extends State<_FillConfirmDialog> {
         else
           l10n.autofillWarnNoMatchApp(appName),
       if (warnings.contains(FillWarning.webView))
-        l10n.autofillWarnWebView(target.untrustedWebDomain!),
+        switch (target.untrustedWebDomain) {
+          final domain? => l10n.autofillWarnWebView(domain),
+          null => l10n.autofillWarnWebViewUnknown,
+        },
       if (warnings.contains(FillWarning.insecure)) l10n.autofillWarnInsecure,
     ];
 

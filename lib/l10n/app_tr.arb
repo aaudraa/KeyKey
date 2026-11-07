@@ -250,5 +250,6 @@
   "autofillSetupChromeTitle": "Chrome'da otomatik doldurma",
   "autofillSetupChrome": "Chrome'un ayarında başka bir servisle otomatik doldurmayı seç, sonra Chrome'u yeniden başlat düğmesine dokun. Dokunmazsan seçim kaybolur.",
   "autofillSetupChromeUpdate": "Chrome'u güncelle. Chrome başka bir doldurma servisini 135 sürümünden beri kullanabiliyor; bu cihazdaki sürüm {version}.",
-  "autofillSetupOpenFailed": "Ayar açılamadı."
+  "autofillSetupOpenFailed": "Ayar açılamadı.",
+  "autofillWarnWebViewUnknown": "Bu uygulama içinde bir web sayfası gösteriyor. KeyKey sayfanın kime ait olduğunu doğrulayamaz; doldurulan parolayı uygulama okuyabilir."
 }

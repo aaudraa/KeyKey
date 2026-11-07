@@ -1227,5 +1227,9 @@
   "autofillSetupOpenFailed": "Couldn't open the setting.",
   "@autofillSetupOpenFailed": {
     "description": "The system or Chrome setting could not be opened."
+  },
+  "autofillWarnWebViewUnknown": "This app shows a web page inside it. KeyKey cannot verify who the page belongs to, and the app can read the password that is filled.",
+  "@autofillWarnWebViewUnknown": {
+    "description": "WebView warning when the page did not report its address."
   }
 }

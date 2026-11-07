@@ -25,6 +25,7 @@ final class AutofillTarget {
     this.webDomain,
     this.webScheme,
     this.untrustedWebDomain,
+    this.inWebView = false,
     this.hasUsernameField = true,
     this.hasPasswordField = true,
     this.save,
@@ -42,6 +43,13 @@ final class AutofillTarget {
   /// Tarayıcı olmayan bir uygulamanın bildirdiği alan adı (WebView).
   /// Eşleştirmede kullanılmaz.
   final String? untrustedWebDomain;
+
+  /// Tarayıcı olmayan bir uygulamanın formu bir web sayfasında (WebView).
+  /// Alan adı bildirilmemiş olabilir.
+  final bool inWebView;
+
+  /// Tarayıcı olmayan bir uygulama bir web sayfası gösteriyor.
+  bool get showsWebPage => inWebView || untrustedWebDomain != null;
 
   final bool hasUsernameField;
   final bool hasPasswordField;
@@ -81,6 +89,7 @@ final class PigeonAutofillBridge implements AutofillBridge {
       webDomain: request.webDomain,
       webScheme: request.webScheme,
       untrustedWebDomain: request.untrustedWebDomain,
+      inWebView: request.inWebView,
       hasUsernameField: request.hasUsernameField,
       hasPasswordField: request.hasPasswordField,
       save: switch (request.save) {

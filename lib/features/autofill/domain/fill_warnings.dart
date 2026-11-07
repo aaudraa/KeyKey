@@ -35,7 +35,7 @@ Set<FillWarning> fillWarnings({
   } else if (!matched) {
     warnings.add(FillWarning.noMatch);
   }
-  if (!matched && target.untrustedWebDomain != null) {
+  if (!matched && target.showsWebPage) {
     warnings.add(FillWarning.webView);
   }
   if (target.isWeb && target.webScheme?.toLowerCase() == 'http') {

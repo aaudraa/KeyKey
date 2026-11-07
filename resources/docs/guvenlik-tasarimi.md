@@ -405,7 +405,7 @@ Ekran son uygulamalar listesinde görünmez ve ekran görüntüsü alınamaz (`F
 
 Tarayıcıda kayda bağlı uygulamalar dikkate alınmaz, yalnızca adresler karşılaştırılır. Eşleşen kayıtlar listenin üstünde, diğerleri altında gösterilir; kullanıcı aramayla bütün kayıtlara ulaşabilir.
 
-**WebView içeren uygulamalar:** Tarayıcı olmayan bir uygulamanın formunda `webDomain` olsa da bu değer eşleştirmede kullanılmaz. Uygulama içindeki bir web sayfasına doldurulan parolayı, sayfayı barındıran uygulama da okuyabilir (2023'te yayımlanan AutoSpill). Böyle bir formda yalnızca o uygulamaya bağlı kayıtlar eşleşir.
+**WebView içeren uygulamalar:** Tarayıcı olmayan bir uygulamanın formunda `webDomain` olsa da bu değer eşleştirmede kullanılmaz. Uygulama içindeki bir web sayfasına doldurulan parolayı, sayfayı barındıran uygulama da okuyabilir (2023'te yayımlanan AutoSpill). Böyle bir formda yalnızca o uygulamaya bağlı kayıtlar eşleşir. Bazı WebView sürümleri alan adını hiç bildirmiyor (Android 14 emülatöründe görüldü); bu yüzden formda WebView ya da HTML alanı varsa da web sayfası sayılır ve aynı uyarı verilir.
 
 ### Şüpheli durumlar
 

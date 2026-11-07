@@ -378,6 +378,11 @@ data class AutofillRequestInfo (
    * (WebView). Eşleştirmede kullanılmaz, yalnızca uyarıda gösterilir.
    */
   val untrustedWebDomain: String? = null,
+  /**
+   * Tarayıcı olmayan bir uygulamanın formu bir web sayfasında (WebView).
+   * Bazı WebView sürümleri alan adını bildirmediği için ayrıca tutulur.
+   */
+  val inWebView: Boolean,
   val hasUsernameField: Boolean,
   val hasPasswordField: Boolean,
   /** Ekran kaydetmek için açıldıysa formdaki değerler; doldurmada `null`. */
@@ -392,10 +397,11 @@ data class AutofillRequestInfo (
       val webDomain = pigeonVar_list[3] as String?
       val webScheme = pigeonVar_list[4] as String?
       val untrustedWebDomain = pigeonVar_list[5] as String?
-      val hasUsernameField = pigeonVar_list[6] as Boolean
-      val hasPasswordField = pigeonVar_list[7] as Boolean
-      val save = pigeonVar_list[8] as AutofillSaveValues?
-      return AutofillRequestInfo(packageName, appLabel, certsSha256, webDomain, webScheme, untrustedWebDomain, hasUsernameField, hasPasswordField, save)
+      val inWebView = pigeonVar_list[6] as Boolean
+      val hasUsernameField = pigeonVar_list[7] as Boolean
+      val hasPasswordField = pigeonVar_list[8] as Boolean
+      val save = pigeonVar_list[9] as AutofillSaveValues?
+      return AutofillRequestInfo(packageName, appLabel, certsSha256, webDomain, webScheme, untrustedWebDomain, inWebView, hasUsernameField, hasPasswordField, save)
     }
   }
   fun toList(): List<Any?> {
@@ -406,6 +412,7 @@ data class AutofillRequestInfo (
       webDomain,
       webScheme,
       untrustedWebDomain,
+      inWebView,
       hasUsernameField,
       hasPasswordField,
       save,
@@ -419,7 +426,7 @@ data class AutofillRequestInfo (
       return true
     }
     val other = other as AutofillRequestInfo
-    return PlatformApiPigeonUtils.deepEquals(this.packageName, other.packageName) && PlatformApiPigeonUtils.deepEquals(this.appLabel, other.appLabel) && PlatformApiPigeonUtils.deepEquals(this.certsSha256, other.certsSha256) && PlatformApiPigeonUtils.deepEquals(this.webDomain, other.webDomain) && PlatformApiPigeonUtils.deepEquals(this.webScheme, other.webScheme) && PlatformApiPigeonUtils.deepEquals(this.untrustedWebDomain, other.untrustedWebDomain) && PlatformApiPigeonUtils.deepEquals(this.hasUsernameField, other.hasUsernameField) && PlatformApiPigeonUtils.deepEquals(this.hasPasswordField, other.hasPasswordField) && PlatformApiPigeonUtils.deepEquals(this.save, other.save)
+    return PlatformApiPigeonUtils.deepEquals(this.packageName, other.packageName) && PlatformApiPigeonUtils.deepEquals(this.appLabel, other.appLabel) && PlatformApiPigeonUtils.deepEquals(this.certsSha256, other.certsSha256) && PlatformApiPigeonUtils.deepEquals(this.webDomain, other.webDomain) && PlatformApiPigeonUtils.deepEquals(this.webScheme, other.webScheme) && PlatformApiPigeonUtils.deepEquals(this.untrustedWebDomain, other.untrustedWebDomain) && PlatformApiPigeonUtils.deepEquals(this.inWebView, other.inWebView) && PlatformApiPigeonUtils.deepEquals(this.hasUsernameField, other.hasUsernameField) && PlatformApiPigeonUtils.deepEquals(this.hasPasswordField, other.hasPasswordField) && PlatformApiPigeonUtils.deepEquals(this.save, other.save)
   }
 
   override fun hashCode(): Int {
@@ -430,13 +437,14 @@ data class AutofillRequestInfo (
     result = 31 * result + PlatformApiPigeonUtils.deepHash(this.webDomain)
     result = 31 * result + PlatformApiPigeonUtils.deepHash(this.webScheme)
     result = 31 * result + PlatformApiPigeonUtils.deepHash(this.untrustedWebDomain)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.inWebView)
     result = 31 * result + PlatformApiPigeonUtils.deepHash(this.hasUsernameField)
     result = 31 * result + PlatformApiPigeonUtils.deepHash(this.hasPasswordField)
     result = 31 * result + PlatformApiPigeonUtils.deepHash(this.save)
     return result
   }
   override fun toString(): String {
-    return "AutofillRequestInfo(packageName=$packageName, appLabel=$appLabel, certsSha256=$certsSha256, webDomain=$webDomain, webScheme=$webScheme, untrustedWebDomain=$untrustedWebDomain, hasUsernameField=$hasUsernameField, hasPasswordField=$hasPasswordField, save=$save)"
+    return "AutofillRequestInfo(packageName=$packageName, appLabel=$appLabel, certsSha256=$certsSha256, webDomain=$webDomain, webScheme=$webScheme, untrustedWebDomain=$untrustedWebDomain, inWebView=$inWebView, hasUsernameField=$hasUsernameField, hasPasswordField=$hasPasswordField, save=$save)"
   }
 }
 

@@ -256,6 +256,7 @@ class AutofillRequestInfo {
     this.webDomain,
     this.webScheme,
     this.untrustedWebDomain,
+    required this.inWebView,
     required this.hasUsernameField,
     required this.hasPasswordField,
     this.save,
@@ -279,6 +280,10 @@ class AutofillRequestInfo {
   /// (WebView). Eşleştirmede kullanılmaz, yalnızca uyarıda gösterilir.
   String? untrustedWebDomain;
 
+  /// Tarayıcı olmayan bir uygulamanın formu bir web sayfasında (WebView).
+  /// Bazı WebView sürümleri alan adını bildirmediği için ayrıca tutulur.
+  bool inWebView;
+
   bool hasUsernameField;
 
   bool hasPasswordField;
@@ -294,6 +299,7 @@ class AutofillRequestInfo {
       webDomain,
       webScheme,
       untrustedWebDomain,
+      inWebView,
       hasUsernameField,
       hasPasswordField,
       save,
@@ -313,9 +319,10 @@ class AutofillRequestInfo {
       webDomain: result[3] as String?,
       webScheme: result[4] as String?,
       untrustedWebDomain: result[5] as String?,
-      hasUsernameField: result[6]! as bool,
-      hasPasswordField: result[7]! as bool,
-      save: result[8] as AutofillSaveValues?,
+      inWebView: result[6]! as bool,
+      hasUsernameField: result[7]! as bool,
+      hasPasswordField: result[8]! as bool,
+      save: result[9] as AutofillSaveValues?,
     );
   }
 
@@ -334,6 +341,7 @@ class AutofillRequestInfo {
         _deepEquals(webDomain, other.webDomain) &&
         _deepEquals(webScheme, other.webScheme) &&
         _deepEquals(untrustedWebDomain, other.untrustedWebDomain) &&
+        _deepEquals(inWebView, other.inWebView) &&
         _deepEquals(hasUsernameField, other.hasUsernameField) &&
         _deepEquals(hasPasswordField, other.hasPasswordField) &&
         _deepEquals(save, other.save);
@@ -345,7 +353,7 @@ class AutofillRequestInfo {
 
   @override
   String toString() {
-    return 'AutofillRequestInfo(packageName: $packageName, appLabel: $appLabel, certsSha256: $certsSha256, webDomain: $webDomain, webScheme: $webScheme, untrustedWebDomain: $untrustedWebDomain, hasUsernameField: $hasUsernameField, hasPasswordField: $hasPasswordField, save: $save)';
+    return 'AutofillRequestInfo(packageName: $packageName, appLabel: $appLabel, certsSha256: $certsSha256, webDomain: $webDomain, webScheme: $webScheme, untrustedWebDomain: $untrustedWebDomain, inWebView: $inWebView, hasUsernameField: $hasUsernameField, hasPasswordField: $hasPasswordField, save: $save)';
   }
 }
 
