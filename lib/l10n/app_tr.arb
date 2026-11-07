@@ -239,5 +239,6 @@
   "autofillSaveWebView": "Bu uygulama içinde bir web sayfası gösteriyor. KeyKey sayfanın adresini doğrulayamadığı için kayıt uygulamaya bağlanacak.",
   "autofillSaveExisting": "{name} kaydında bu kullanıcı adı zaten var. Yeni parolayı oraya kaydedebilirsin; eskisi parola geçmişinde kalır.",
   "autofillSaveUpdate": "Parolasını güncelle",
-  "autofillSaveAlready": "Bu giriş {name} kaydında zaten var."
+  "autofillSaveAlready": "Bu giriş {name} kaydında zaten var.",
+  "autofillSaveNoApp": "{app} uygulaması doğrulanamadığı için kayda bağlanmadı. Bu uygulamada ilk doldurmada bağlayabilirsin."
 }

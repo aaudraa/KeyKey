@@ -171,7 +171,16 @@ class _AutofillSaveScreenState extends ConsumerState<AutofillSaveScreen> {
                 style: const TextStyle(fontFamily: 'monospace'),
               ),
             ),
-          if (widget.target.untrustedWebDomain != null)
+          // Uygulama görünmüyorsa (Android imzayı vermediyse) bağlanmaz;
+          // kullanıcı ilk doldurmada bağlayabilir.
+          if (!widget.target.isWeb && app == null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                l10n.autofillSaveNoApp(autofillTargetName(widget.target)),
+              ),
+            )
+          else if (widget.target.untrustedWebDomain != null)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(l10n.autofillSaveWebView),

@@ -555,6 +555,34 @@ void main() {
       expect(item.content.apps.single.packageName, saveApp.packageName);
     });
 
+    testWidgets('imzası okunamayan uygulama bağlanmıyor ve söyleniyor', (
+      tester,
+    ) async {
+      // Android uygulamayı KeyKey'e göstermezse ad ve imza gelmez.
+      await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: const AutofillTarget(
+          packageName: 'com.ornek.yeni',
+          untrustedWebDomain: 'banka.example.com',
+          save: AutofillSave(username: 'ayse', password: 'yeni-parola-1'),
+        ),
+      );
+
+      expect(
+        find.textContaining('com.ornek.yeni uygulaması doğrulanamadığı için'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('web sayfası gösteriyor'), findsNothing);
+      await tester.tap(find.widgetWithText(FilledButton, 'Kaydet'));
+      await tester.pumpAndSettle();
+
+      final item = saved('ayse')!;
+      expect(item.content.name, 'com.ornek.yeni');
+      expect(item.content.apps, isEmpty);
+      expect(item.content.urls, isEmpty);
+    });
+
     testWidgets('aynı kullanıcı adlı kaydın parolası güncellenebiliyor', (
       tester,
     ) async {

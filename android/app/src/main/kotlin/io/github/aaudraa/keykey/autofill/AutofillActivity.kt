@@ -58,7 +58,8 @@ class AutofillActivity : FlutterFragmentActivity(), AutofillApi {
     private fun readRequest(intent: Intent) {
         val saveToken = intent.getStringExtra(EXTRA_SAVE_TOKEN)
         if (saveToken != null) {
-            request = PendingSaves.take(saveToken)
+            val pending = PendingSaves.take(saveToken) ?: return
+            request = AutofillRequests.of(this, pending.form, pending.values)
             return
         }
         val structure = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

@@ -1168,5 +1168,14 @@
         "type": "String"
       }
     }
+  },
+  "autofillSaveNoApp": "{app} couldn't be verified, so it wasn't linked to the login. You can link it the first time you fill in this app.",
+  "@autofillSaveNoApp": {
+    "description": "The app's signature couldn't be read, so the saved login isn't linked to it.",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
   }
 }

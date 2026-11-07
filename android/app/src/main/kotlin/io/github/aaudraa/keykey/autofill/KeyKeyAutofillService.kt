@@ -78,7 +78,7 @@ class KeyKeyAutofillService : AutofillService() {
             username = parsed.firstValue(FieldKind.USERNAME).orEmpty(),
             password = password,
         )
-        val token = PendingSaves.put(AutofillRequests.of(this, parsed, save))
+        val token = PendingSaves.put(PendingSave(parsed.withoutValues(), save))
         val intent = Intent(this, AutofillActivity::class.java)
             .putExtra(AutofillActivity.EXTRA_SAVE_TOKEN, token)
         val pending = PendingIntent.getActivity(

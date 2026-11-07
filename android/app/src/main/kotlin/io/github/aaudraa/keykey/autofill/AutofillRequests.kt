@@ -33,6 +33,9 @@ internal object AutofillRequests {
     }
 }
 
+/** Kaydetme ekranını bekleyen form ve kaydedilecek değerler. */
+internal class PendingSave(val form: ParsedStructure, val values: AutofillSaveValues)
+
 /**
  * Kaydetme ekranını bekleyen istekler.
  *
@@ -40,15 +43,19 @@ internal object AutofillRequests {
  * tutulur. Servis ve ekran aynı süreçte çalıştığı için istek bellekte bir
  * anahtarla bekler; niyet yalnızca anahtarı taşır. Ekran isteği alınca
  * buradan siler. Süreç kapanırsa istek de gider, ekran "form yok" der.
+ *
+ * Uygulamanın adı ve imzası serviste değil ekranda okunur: ekranı sistem
+ * hedef uygulama adına başlatır ve Android ekrana o uygulamayı görme izni
+ * verir. Servis ise hedef uygulamayı göremeyebilir.
  */
 internal object PendingSaves {
     /** Sistem kaydetme ekranını hemen açar; birikmesin diye sınır var. */
     private const val MAX_PENDING = 4
 
-    private val pending = LinkedHashMap<String, AutofillRequestInfo>()
+    private val pending = LinkedHashMap<String, PendingSave>()
 
     @Synchronized
-    fun put(request: AutofillRequestInfo): String {
+    fun put(request: PendingSave): String {
         while (pending.size >= MAX_PENDING) pending.remove(pending.keys.first())
         val token = UUID.randomUUID().toString()
         pending[token] = request
@@ -56,5 +63,5 @@ internal object PendingSaves {
     }
 
     @Synchronized
-    fun take(token: String): AutofillRequestInfo? = pending.remove(token)
+    fun take(token: String): PendingSave? = pending.remove(token)
 }

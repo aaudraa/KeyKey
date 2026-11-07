@@ -22,6 +22,9 @@ class ParsedStructure(
 ) {
     fun idsOf(kind: FieldKind): List<AutofillId> = form.of(kind).map { ids[it] }
 
+    /** Değerler atılmış kopya; bekleyen kaydetme isteğinde başka alan kalmasın. */
+    fun withoutValues(): ParsedStructure = ParsedStructure(packageName, webDomain, webScheme, ids, fields, form)
+
     /** Bu türdeki ilk dolu alanın değeri. */
     fun firstValue(kind: FieldKind): String? =
         form.of(kind).firstNotNullOfOrNull { index -> values.getOrNull(index)?.takeIf { it.isNotEmpty() } }
