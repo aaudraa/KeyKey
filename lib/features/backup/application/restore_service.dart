@@ -102,8 +102,65 @@ class RestoreService {
   }
 
   /// Kasayı yedekle değiştirir; kasa yoksa kurar.
-  Future<void> replace(OpenedBackup backup) =>
-      _store.replaceVault(backup.header, backup.records);
+  ///
+  /// Son yedek zamanı yedeğin içinde değildir, çünkü dosya kaydedildikten
+  /// sonra yazılır. Geri yüklenen kasa bu yedeğin kendisi olduğu için ayar
+  /// kaydındaki zaman en az yedeğin alındığı an yapılır; yoksa hatırlatıcı
+  /// "hiç yedek yok" derdi.
+  Future<void> replace(OpenedBackup backup) async {
+    final cipher = _cipherFor(backup);
+    final List<StoredRecord> records;
+    try {
+      records = [
+        for (final record in backup.records)
+          if (record.type == SettingsRepository.recordType)
+            _withBackupTime(record, cipher, backup.createdAt)
+          else
+            record,
+      ];
+    } finally {
+      cipher.dispose();
+    }
+    await _store.replaceVault(backup.header, records);
+  }
+
+  StoredRecord _withBackupTime(
+    StoredRecord record,
+    RecordCipher cipher,
+    DateTime createdAt,
+  ) {
+    final plain = cipher.decrypt(
+      recordId: record.id,
+      type: record.type,
+      blob: record.blob,
+    );
+    final AppSettings? settings;
+    try {
+      settings = AppSettings.tryParse(plain);
+    } finally {
+      plain.fillRange(0, plain.length, 0);
+    }
+    // Ayar kaydı açılırken doğrulandı; yine de okunamazsa olduğu gibi kalır.
+    if (settings == null) return record;
+    final last = settings.lastBackupAt;
+    if (last != null && !last.isBefore(createdAt)) return record;
+    final updated = settings.copyWith(lastBackupAt: createdAt).toJsonBytes();
+    try {
+      return StoredRecord(
+        id: record.id,
+        type: record.type,
+        blob: cipher.encrypt(
+          recordId: record.id,
+          type: record.type,
+          plainText: updated,
+        ),
+        createdAt: record.createdAt,
+        updatedAt: record.updatedAt,
+      );
+    } finally {
+      updated.fillRange(0, updated.length, 0);
+    }
+  }
 
   /// Yedeğin parola ve 2FA kayıtlarını açık kasaya ekler. Ayar kaydı alınmaz.
   ///

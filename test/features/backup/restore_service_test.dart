@@ -267,6 +267,42 @@ void main() {
       },
     );
 
+    test('geri yüklenen kasada son yedek zamanı yedeğin zamanı', () async {
+      // Yedek dosyası kaydedildikten sonra yazılan zaman yedeğin içinde
+      // eski kalır; geri yüklenince hatırlatıcı "hiç yedek yok" dememeli.
+      await SettingsRepository(store: a.store, session: a.session).save(
+        AppSettings.requireAuth.copyWith(lastBackupAt: DateTime.utc(2026, 10)),
+      );
+      final opened = await openA();
+      await RestoreService(sodium: sodium, store: b.store).replace(opened);
+      opened.dispose();
+
+      final settings = await SettingsRepository(
+        store: b.store,
+        session: a.session,
+      ).load();
+      expect(settings.lastBackupAt, DateTime.utc(2026, 11, 7));
+      // Diğer ayarlar olduğu gibi kaldı.
+      expect(settings.otpRequireAuth, isTrue);
+    });
+
+    test('daha yeni son yedek zamanı korunuyor', () async {
+      final later = DateTime.utc(2026, 12);
+      await SettingsRepository(
+        store: a.store,
+        session: a.session,
+      ).save(AppSettings.defaults.copyWith(lastBackupAt: later));
+      final opened = await openA();
+      await RestoreService(sodium: sodium, store: b.store).replace(opened);
+      opened.dispose();
+
+      final settings = await SettingsRepository(
+        store: b.store,
+        session: a.session,
+      ).load();
+      expect(settings.lastBackupAt, later);
+    });
+
     test('birleştirme kayıtları açık kasanın anahtarıyla yazıyor', () async {
       await put(a, 1);
       await put(a, 2, type: 'otp');

@@ -543,6 +543,8 @@ parça   = uzunluk (4 bayt, büyük uçlu) || şifreli parça
 
 Geri yükleme bir yedeğin parolasını denemek için kullanılsa da kasanın hatalı deneme sayacına eklenmez: dosyayı ele geçiren biri onu zaten uygulama dışında deneyebilir.
 
+Son yedek zamanı dosya kaydedildikten sonra yazıldığı için yedeğin içindeki ayar kaydında eski kalır. İlk kurulumda ve değiştirmede ayar kaydındaki bu zaman, daha yeni değilse yedeğin alındığı an yapılır; kasa o yedeğin kendisidir, hatırlatıcı "hiç yedek yok" dememelidir.
+
 ### Yedek hatırlatıcısı
 
 - Son yedekten sonra değişmiş bir parola veya 2FA kaydı varsa ve son yedek 14 günden eskiyse (ya da hiç yedek alınmadıysa) kasa ekranında bir hatırlatma çıkar. Değişiklik, veritabanındaki şifresiz `updatedAt` değerinden anlaşılır; ayar kaydı sayılmaz.
