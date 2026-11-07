@@ -92,8 +92,16 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
-        <!-- Kaydetme ekranında tarayıcının imzası okunabilsin diye güvenilen
-             tarayıcılar adıyla bildirilir; Android başka uygulamaları göstermez. -->
+        <!-- Kaydetme ekranını sistem başlattığı için Android, KeyKey'e hedef
+             uygulamayı kendiliğinden göstermiyor. Uygulamanın adı ve imzası
+             ilk kaydetmede de okunabilsin diye ana ekranda simgesi olan
+             uygulamalar görünür. Bütün paketleri görme izni istenmez. -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+        <!-- Güvenilen tarayıcılar ayrıca adıyla bildirilir: ana ekranda
+             simgesi olmasa da imzaları okunur ve site adresine güvenilir. -->
         <!-- güvenilen-tarayıcılar: başla. trusted-browsers.mjs üretir; elle düzenlenmez. -->
         <package android:name="ai.perplexity.comet" />
         <package android:name="app.vanadium.browser" />

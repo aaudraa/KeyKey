@@ -44,9 +44,10 @@ internal class PendingSave(val form: ParsedStructure, val values: AutofillSaveVa
  * anahtarla bekler; niyet yalnızca anahtarı taşır. Ekran isteği alınca
  * buradan siler. Süreç kapanırsa istek de gider, ekran "form yok" der.
  *
- * Uygulamanın adı ve imzası serviste değil ekranda okunur: ekranı sistem
- * hedef uygulama adına başlatır ve Android ekrana o uygulamayı görme izni
- * verir. Servis ise hedef uygulamayı göremeyebilir.
+ * Uygulamanın adı ve imzası ekranda okunur. Android KeyKey'e başka
+ * uygulamaları ancak manifestteki sorgular sayesinde gösterir: ana ekranda
+ * simgesi olan uygulamalar ve güvenilen tarayıcılar. Bunların dışındaki bir
+ * uygulamanın imzası okunamazsa kayıt bağlanmadan kaydedilir.
  */
 internal object PendingSaves {
     /** Sistem kaydetme ekranını hemen açar; birikmesin diye sınır var. */
