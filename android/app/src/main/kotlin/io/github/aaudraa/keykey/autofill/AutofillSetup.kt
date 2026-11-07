@@ -31,8 +31,9 @@ class AutofillSetup(private val activity: Activity) : AutofillSetupApi {
     override fun openAutofillSettings(): Boolean {
         val intent = Intent(Settings.ACTION_REQUEST_SET_AUTOFILL_SERVICE)
             .setData(Uri.parse("package:${activity.packageName}"))
-        // Sistem isteyen paketi sonuç beklenen başlatmadan okur; düz
-        // startActivity ile seçim ekranı açılmıyor.
+        // Sistem, niyetteki paketin isteyen uygulama olduğunu
+        // getCallingPackage ile denetler; bu yalnızca sonuç beklenen
+        // başlatmada doludur.
         return start { @Suppress("DEPRECATION") activity.startActivityForResult(intent, REQUEST_AUTOFILL) }
     }
 
