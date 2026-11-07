@@ -108,6 +108,22 @@ void main() {
     key.dispose();
   });
 
+  test('son değişiklik ayar kaydını saymıyor', () async {
+    final backups = BackupService(sodium: sodium, store: store);
+    expect(await backups.latestChange(), isNull);
+
+    await SettingsRepository(
+      store: store,
+      session: session,
+      clock: () => DateTime.utc(2026, 12),
+    ).save(AppSettings.defaults);
+    expect(await backups.latestChange(), isNull);
+
+    await putLogin(3);
+    await putLogin(5);
+    expect(await backups.latestChange(), DateTime.utc(2026, 2, 5));
+  });
+
   test('önerilen dosya adı yerel tarihi taşıyor', () {
     expect(
       BackupService.fileNameFor(DateTime(2026, 3, 9, 23, 59)),

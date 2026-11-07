@@ -1383,5 +1383,17 @@
   "restoreFailed": "Restoring failed. Your vault was not changed.",
   "@restoreFailed": {
     "description": "Error when writing the restored data fails."
+  },
+  "backupReminderNever": "You have no backup yet. If you lose this phone, everything in your vault is lost with it.",
+  "@backupReminderNever": {
+    "description": "Backup reminder when no backup was ever taken."
+  },
+  "backupReminderStale": "Your vault changed since your last backup, and that backup is more than two weeks old.",
+  "@backupReminderStale": {
+    "description": "Backup reminder when the last backup is old and there are changes."
+  },
+  "backupReminderLater": "Later",
+  "@backupReminderLater": {
+    "description": "Snoozes the backup reminder for a week."
   }
 }

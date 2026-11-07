@@ -178,6 +178,20 @@ final class VaultStore {
     return rows.map(_toRecord).toList();
   }
 
+  /// Verilen türlerdeki kayıtların en son değiştiği an; kayıt yoksa `null`.
+  ///
+  /// Zaman damgaları şifresiz olduğu için kasa anahtarı gerekmez.
+  Future<DateTime?> latestUpdate(Set<String> types) async {
+    final latest = _database.records.updatedAt.max();
+    final query = _database.selectOnly(_database.records)
+      ..addColumns([latest])
+      ..where(_database.records.type.isIn(types));
+    final value = await query.map((row) => row.read(latest)).getSingle();
+    return value == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(value, isUtc: true);
+  }
+
   Future<void> deleteRecord(Uint8List id) async {
     final query = _database.delete(_database.records)
       ..where((row) => row.id.equals(id));

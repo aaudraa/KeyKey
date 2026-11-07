@@ -283,5 +283,8 @@
   "restoreCancel": "Vazgeç",
   "restoreMerged": "{added} kayıt eklendi, {updated} kayıt güncellendi.",
   "restoreDone": "Yedek geri yüklendi.",
-  "restoreFailed": "Geri yükleme başarısız oldu. Kasana dokunulmadı."
+  "restoreFailed": "Geri yükleme başarısız oldu. Kasana dokunulmadı.",
+  "backupReminderNever": "Henüz yedek almadın. Bu telefon kaybolursa kasandaki her şey de kaybolur.",
+  "backupReminderStale": "Son yedeğinden sonra kasanda değişiklik var ve o yedek iki haftadan eski.",
+  "backupReminderLater": "Sonra"
 }

@@ -388,6 +388,12 @@ class FakeBackupService implements BackupService {
   Uint8List bytes = Uint8List.fromList([1, 2, 3]);
   int creates = 0;
 
+  /// Kayıtların en son değiştiği an; `null` boş kasa demek.
+  DateTime? latest;
+
+  @override
+  Future<DateTime?> latestChange() async => latest;
+
   @override
   Future<Uint8List> create(VaultSession session, DateTime now) async {
     if (session.isDisposed) throw const VaultLockedException();

@@ -13,6 +13,48 @@ import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
+/// Açık kasanın yedeğini üretir ve kullanıcının seçtiği yere kaydeder.
+///
+/// Dosya kasa açıkken üretilir; seçici açıkken yalnızca şifreli baytlar
+/// bekler. Başarılıysa son yedek zamanı ayar kaydına yazılır.
+Future<void> backUpVault(BuildContext context, WidgetRef ref) async {
+  final status = ref.read(vaultControllerProvider);
+  if (status is! VaultOpen) return;
+  final l10n = AppLocalizations.of(context);
+  final messenger = ScaffoldMessenger.of(context);
+  final settings = ref.read(settingsControllerProvider.notifier);
+  final files = ref.read(documentFilesProvider);
+  final now = ref.read(backupClockProvider)();
+  final Uint8List bytes;
+  try {
+    bytes = await ref.read(backupServiceProvider).create(status.session, now);
+  } on VaultLockedException {
+    return;
+  }
+  final result = await ref
+      .read(externalActivityGateProvider.notifier)
+      .run(
+        () => files.save(
+          suggestedName: BackupService.fileNameFor(now),
+          mimeType: BackupService.mimeType,
+          bytes: bytes,
+        ),
+      );
+  switch (result) {
+    case DocumentSaveResult.saved:
+      try {
+        await settings.recordBackup(now);
+      } on VaultLockedException {
+        // Dosya kaydedildi; kasa kilitlendiği için zaman yazılamadı.
+      }
+      messenger.showSnackBar(SnackBar(content: Text(l10n.backupSaved)));
+    case DocumentSaveResult.cancelled:
+      break;
+    case DocumentSaveResult.failed:
+      messenger.showSnackBar(SnackBar(content: Text(l10n.backupFailed)));
+  }
+}
+
 /// Ayarlar ekranında yedek alma ve son yedeğin zamanı.
 class BackupSection extends ConsumerStatefulWidget {
   const new({super.key});
@@ -25,47 +67,10 @@ class _BackupSectionState extends ConsumerState<BackupSection> {
   bool _busy = false;
 
   Future<void> _backUp() async {
-    final status = ref.read(vaultControllerProvider);
-    if (_busy || status is! VaultOpen) return;
-    final l10n = AppLocalizations.of(context);
-    final messenger = ScaffoldMessenger.of(context);
-    final settings = ref.read(settingsControllerProvider.notifier);
-    final files = ref.read(documentFilesProvider);
-    final now = ref.read(backupClockProvider)();
+    if (_busy) return;
     setState(() => _busy = true);
     try {
-      // Dosya kasa açıkken üretilir; seçici açıkken yalnızca şifreli baytlar
-      // bekler.
-      final Uint8List bytes;
-      try {
-        bytes = await ref
-            .read(backupServiceProvider)
-            .create(status.session, now);
-      } on VaultLockedException {
-        return;
-      }
-      final result = await ref
-          .read(externalActivityGateProvider.notifier)
-          .run(
-            () => files.save(
-              suggestedName: BackupService.fileNameFor(now),
-              mimeType: BackupService.mimeType,
-              bytes: bytes,
-            ),
-          );
-      switch (result) {
-        case DocumentSaveResult.saved:
-          try {
-            await settings.recordBackup(now);
-          } on VaultLockedException {
-            // Dosya kaydedildi; kasa kilitlendiği için zaman yazılamadı.
-          }
-          messenger.showSnackBar(SnackBar(content: Text(l10n.backupSaved)));
-        case DocumentSaveResult.cancelled:
-          break;
-        case DocumentSaveResult.failed:
-          messenger.showSnackBar(SnackBar(content: Text(l10n.backupFailed)));
-      }
+      await backUpVault(context, ref);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
