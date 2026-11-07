@@ -92,8 +92,8 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
-        <!-- Kaydetme ekranını sistem başlattığı için Android, KeyKey'e hedef
-             uygulamayı kendiliğinden göstermiyor. Uygulamanın adı ve imzası
+        <!-- Kaydetme ekranını hedef uygulama başlatmadığı için Android, KeyKey'e
+             o uygulamayı kendiliğinden göstermiyor. Uygulamanın adı ve imzası
              ilk kaydetmede de okunabilsin diye ana ekranda simgesi olan
              uygulamalar görünür. Bütün paketleri görme izni istenmez. -->
         <intent>

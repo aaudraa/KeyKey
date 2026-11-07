@@ -79,15 +79,22 @@ class KeyKeyAutofillService : AutofillService() {
             password = password,
         )
         val token = PendingSaves.put(PendingSave(parsed.withoutValues(), save))
+        // Ekran servisten açılır. SaveCallback.onSuccess(IntentSender) ile
+        // verilen başlatıcıyı sistem formun ekranı üzerinden başlatıyor; giriş
+        // ekranı kapanmışsa (çoğu uygulama girişten sonra kapatır) hiçbir şey
+        // açılmıyordu (Android 11 emülatöründe görüldü). Sistemin bağladığı
+        // doldurma servisi arka plandan ekran açabilir.
         val intent = Intent(this, AutofillActivity::class.java)
             .putExtra(AutofillActivity.EXTRA_SAVE_TOKEN, token)
-        val pending = PendingIntent.getActivity(
-            this,
-            token.hashCode(),
-            intent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_CANCEL_CURRENT,
-        )
-        callback.onSuccess(pending.intentSender)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        try {
+            startActivity(intent)
+        } catch (error: RuntimeException) {
+            PendingSaves.take(token)
+            callback.onFailure(null)
+            return
+        }
+        callback.onSuccess()
     }
 
     private fun lockedResponse(
