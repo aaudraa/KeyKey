@@ -101,6 +101,36 @@ void main() {
     }
   });
 
+  test('sürüm 1 kaydı okunuyor, kod kopyalama açık sayılıyor', () async {
+    await putRaw(encrypt('{"version":1,"otpRequireAuth":true}'));
+    final settings = await repository.load();
+    expect(settings.otpRequireAuth, isTrue);
+    expect(settings.autofillCopyOtp, isTrue);
+  });
+
+  test('kod kopyalama ayarı yazılıp okunuyor', () async {
+    expect((await repository.load()).autofillCopyOtp, isTrue);
+    await repository.save(
+      AppSettings.defaults.copyWith(autofillCopyOtp: false),
+    );
+    final settings = await repository.load();
+    expect(settings.autofillCopyOtp, isFalse);
+    expect(settings.otpRequireAuth, isFalse);
+  });
+
+  test('okunamayan kayıtta kod kopyalama kapalı sayılıyor', () async {
+    for (final json in [
+      '{"version":2,"otpRequireAuth":false,"autofillCopyOtp":"evet"}',
+      '{"version":3,"otpRequireAuth":false,"autofillCopyOtp":true}',
+      '{"version":1,"otpRequireAuth":false,"autofillCopyOtp":true}',
+    ]) {
+      await putRaw(encrypt(json));
+      final settings = await repository.load();
+      expect(settings.autofillCopyOtp, isFalse, reason: json);
+      expect(settings.otpRequireAuth, isTrue, reason: json);
+    }
+  });
+
   test('aynı kimlikte başka türden kayıt okunamaz sayılıyor', () async {
     await putRaw(Uint8List(64), type: 'login');
     expect((await repository.load()).otpRequireAuth, isTrue);

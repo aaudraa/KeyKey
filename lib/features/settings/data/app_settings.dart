@@ -10,23 +10,43 @@ import 'package:keykey/core/vault/vault_session.dart';
 ///
 /// Biçim güvenlik tasarımı belgesinde. Okurken doğrulama katıdır.
 final class AppSettings {
-  const new({required this.otpRequireAuth});
+  const new({required this.otpRequireAuth, required this.autofillCopyOtp});
 
-  static const defaults = AppSettings(otpRequireAuth: false);
+  static const defaults = AppSettings(
+    otpRequireAuth: false,
+    autofillCopyOtp: true,
+  );
 
   /// Ek onay açık. Kayıt var ama okunamıyorsa da bu kullanılır: dosyayı
   /// değiştiren biri ayarı böyle kapatamasın; kullanıcı doğrulayıp kapatabilir.
-  static const requireAuth = AppSettings(otpRequireAuth: true);
-  static const currentVersion = 1;
+  /// Kod kopyalama da kapalı sayılır.
+  static const requireAuth = AppSettings(
+    otpRequireAuth: true,
+    autofillCopyOtp: false,
+  );
+
+  /// Sürüm 2 [autofillCopyOtp] alanını ekledi. Sürüm 1 okunmaya devam eder.
+  static const currentVersion = 2;
 
   /// 2FA kodlarını göstermeden önce parmak izi veya ana parola istenir.
   final bool otpRequireAuth;
 
-  AppSettings copyWith({bool? otpRequireAuth}) =>
-      AppSettings(otpRequireAuth: otpRequireAuth ?? this.otpRequireAuth);
+  /// Otomatik doldurmadan sonra kayda bağlı 2FA hesabının güncel kodu güvenli
+  /// panoya kopyalanır.
+  final bool autofillCopyOtp;
+
+  AppSettings copyWith({bool? otpRequireAuth, bool? autofillCopyOtp}) =>
+      AppSettings(
+        otpRequireAuth: otpRequireAuth ?? this.otpRequireAuth,
+        autofillCopyOtp: autofillCopyOtp ?? this.autofillCopyOtp,
+      );
 
   Uint8List toJsonBytes() => utf8.encode(
-    jsonEncode({'version': currentVersion, 'otpRequireAuth': otpRequireAuth}),
+    jsonEncode({
+      'version': currentVersion,
+      'otpRequireAuth': otpRequireAuth,
+      'autofillCopyOtp': autofillCopyOtp,
+    }),
   );
 
   /// Biçime uymayan içerikte `null` döner.
@@ -37,14 +57,26 @@ final class AppSettings {
     } on FormatException {
       return null;
     }
-    if (decoded is! Map<String, Object?> ||
-        decoded.length != 2 ||
-        decoded['version'] != currentVersion) {
+    if (decoded is! Map<String, Object?>) return null;
+    // Sürüm 1'de kod kopyalama yoktu; varsayılanı açık.
+    final keys = switch (decoded['version']) {
+      1 => const {'version', 'otpRequireAuth'},
+      currentVersion => const {'version', 'otpRequireAuth', 'autofillCopyOtp'},
+      _ => null,
+    };
+    if (keys == null ||
+        decoded.length != keys.length ||
+        !keys.containsAll(decoded.keys)) {
       return null;
     }
     final otpRequireAuth = decoded['otpRequireAuth'];
-    if (otpRequireAuth is! bool) return null;
-    return AppSettings(otpRequireAuth: otpRequireAuth);
+    final autofillCopyOtp =
+        decoded['autofillCopyOtp'] ?? defaults.autofillCopyOtp;
+    if (otpRequireAuth is! bool || autofillCopyOtp is! bool) return null;
+    return AppSettings(
+      otpRequireAuth: otpRequireAuth,
+      autofillCopyOtp: autofillCopyOtp,
+    );
   }
 }
 

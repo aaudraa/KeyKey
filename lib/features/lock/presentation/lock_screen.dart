@@ -12,7 +12,14 @@ import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Kasa kilitliyken açılan ekran.
 class LockScreen extends ConsumerStatefulWidget {
-  const new({super.key});
+  const new({this.allowRecovery = true, this.subtitle, super.key});
+
+  /// `false` ise "Parolamı unuttum" gösterilmez. Doldurma ekranında
+  /// kurtarma yapılmaz, kullanıcı ana uygulamaya yönlendirilir.
+  final bool allowRecovery;
+
+  /// Başlığın altında gösterilen açıklama, örneğin neyin doldurulacağı.
+  final String? subtitle;
 
   @override
   ConsumerState<LockScreen> createState() => _LockScreenState();
@@ -162,6 +169,10 @@ class _LockScreenState extends ConsumerState<LockScreen> {
                   textAlign: TextAlign.center,
                   style: theme.textTheme.headlineSmall,
                 ),
+                if (widget.subtitle != null) ...[
+                  const SizedBox(height: 8),
+                  Text(widget.subtitle!, textAlign: TextAlign.center),
+                ],
                 const SizedBox(height: 24),
                 SecretField(
                   controller: _password,
@@ -191,13 +202,15 @@ class _LockScreenState extends ConsumerState<LockScreen> {
                     label: Text(l10n.lockUseBiometric),
                   ),
                 ],
-                const SizedBox(height: 8),
-                TextButton(
-                  onPressed: _busy
-                      ? null
-                      : () => context.push(AppRoutes.recovery),
-                  child: Text(l10n.lockForgot),
-                ),
+                if (widget.allowRecovery) ...[
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: _busy
+                        ? null
+                        : () => context.push(AppRoutes.recovery),
+                    child: Text(l10n.lockForgot),
+                  ),
+                ],
               ],
             ),
           ),

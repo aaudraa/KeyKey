@@ -85,3 +85,102 @@ abstract class ImportCryptoApi {
     Uint8List cipherTextWithTag,
   );
 }
+
+/// Doldurma ekranını açan isteğin, kasaya bakmadan bilinen özeti.
+///
+/// Kurallar güvenlik tasarımı belgesinin Otomatik doldurma bölümündedir.
+class AutofillRequestInfo {
+  AutofillRequestInfo({
+    required this.packageName,
+    required this.appLabel,
+    required this.certsSha256,
+    required this.webDomain,
+    required this.webScheme,
+    required this.untrustedWebDomain,
+    required this.inWebView,
+    required this.hasUsernameField,
+    required this.hasPasswordField,
+    this.save,
+  });
+
+  /// Formu gösteren uygulama. Tarayıcıysa tarayıcının kendisi.
+  String packageName;
+  String? appLabel;
+
+  /// Uygulamanın imza sertifikalarının SHA-256 özetleri, küçük harf
+  /// onaltılık. Okunamadıysa boştur.
+  List<String> certsSha256;
+
+  /// Sayfanın alan adı; yalnızca güvenilen bir tarayıcıdan geldiyse dolu.
+  String? webDomain;
+  String? webScheme;
+
+  /// Tarayıcı olmayan bir uygulamanın formu web alan adı bildiriyor
+  /// (WebView). Eşleştirmede kullanılmaz, yalnızca uyarıda gösterilir.
+  String? untrustedWebDomain;
+
+  /// Tarayıcı olmayan bir uygulamanın formu bir web sayfasında (WebView).
+  /// Bazı WebView sürümleri alan adını bildirmediği için ayrıca tutulur.
+  bool inWebView;
+
+  bool hasUsernameField;
+  bool hasPasswordField;
+
+  /// Ekran kaydetmek için açıldıysa formdaki değerler; doldurmada `null`.
+  AutofillSaveValues? save;
+}
+
+/// Kullanıcının forma yazıp kaydetmeyi onayladığı değerler.
+class AutofillSaveValues {
+  AutofillSaveValues({required this.username, required this.password});
+
+  String username;
+  String password;
+}
+
+/// Otomatik doldurma ekranının Kotlin tarafı.
+@HostApi()
+abstract class AutofillApi {
+  /// Ekranı açan istek. Ekran bir istekle açılmadıysa `null`.
+  AutofillRequestInfo? currentRequest();
+
+  /// Kayıtların uygulamaya bağlanabilmesi için verilen paketin imzası
+  /// kayıttaki özetlerin hepsiyle tutuyor mu. İmza geçmişi de kabul edilir.
+  bool hasSigningCertificates(String packageName, List<String> certsSha256);
+
+  /// Değerleri forma verir ve ekranı kapatır.
+  void fill(String username, String password);
+
+  /// Hiçbir şey doldurmadan ekranı kapatır. Kaydetme bitince de kullanılır.
+  void cancel();
+}
+
+/// Ana uygulamanın otomatik doldurma kurulumu durumu.
+class AutofillSetupStatus {
+  AutofillSetupStatus({
+    required this.supported,
+    required this.enabled,
+    this.chromeMajorVersion,
+  });
+
+  /// Cihaz otomatik doldurmayı destekliyor.
+  bool supported;
+
+  /// Seçili otomatik doldurma servisi KeyKey.
+  bool enabled;
+
+  /// Kurulu Chrome'un ana sürümü; Chrome yoksa `null`.
+  int? chromeMajorVersion;
+}
+
+/// Kurulum ekranının Kotlin tarafı: durum ve ayarlara doğrudan geçiş.
+@HostApi()
+abstract class AutofillSetupApi {
+  AutofillSetupStatus status();
+
+  /// Sistemin otomatik doldurma servisi seçimini açar. Açılamazsa `false`.
+  bool openAutofillSettings();
+
+  /// Chrome'un otomatik doldurma ayarını açar. Açılamazsa `false`.
+  bool openChromeAutofillSettings();
+}

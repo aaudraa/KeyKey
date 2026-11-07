@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Otomatik doldurma servisinin ayarları. Uyumluluk modu (compatibilityPackages)
+     bilerek yok: Chrome onu kaldırdı, Chrome 135+ kendi ayarıyla çalışıyor.
+     Satır içi öneriler klavye şeridinde gösterilir (Android 11+). -->
+<autofill-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:settingsActivity="io.github.aaudraa.keykey.MainActivity"
+    android:supportsInlineSuggestions="true" />

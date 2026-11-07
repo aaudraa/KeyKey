@@ -2,7 +2,7 @@
 
 KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-06 · **Şu anki faz:** Faz 6
+**Son güncelleme:** 2026-11-07 · **Şu anki faz:** Faz 6
 
 > [!IMPORTANT]
 > **Gerçek parolalarını Faz 8 bitene kadar KeyKey'e koyma.** Kasa biçimi o zamana kadar değişebilir ve güvenlik denetimi henüz yapılmadı.
@@ -19,7 +19,7 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 | 3 | Kasa, kilit ve biyometri | L | 2 | `faz/3-kasa-ve-kilit` | Tamamlandı |
 | 4 | Parola kasası | L | 3 | `faz/4-parola-kasasi` | Tamamlandı |
 | 5 | 2FA doğrulayıcı | M | 3 | `faz/5-2fa-dogrulayici` | Tamamlandı |
-| 6 | Otomatik doldurma | XL | 4 | `faz/6-otomatik-doldurma` | Sırada |
+| 6 | Otomatik doldurma | XL | 4 | `faz/6-otomatik-doldurma` | Sürüyor |
 | 7 | Yedekleme, içe ve dışa aktarma | L | 4, 5 | `faz/7-yedekleme` | Bekliyor |
 | 8 | Güvenlik sertleştirme ve denetim | L | 6, 7 | `faz/8-guvenlik-denetimi` | Bekliyor |
 | 9 | 1.0 yayını | M | 8 | `faz/9-yayin` | Bekliyor |
@@ -361,20 +361,22 @@ Telefon denemesi üç sorun buldu ve [#60](https://github.com/aaudraa/KeyKey/pul
 
 **Tasarım:** Kasa kilitliyken sistem yalnızca "KeyKey ile doldur" seçeneğini görür. Kullanıcı seçince KeyKey açılır, kilit çözülür ve eşleşen kayıt onaylanır. Kullanıcı onayı olmadan hiçbir veri servise veya hedef uygulamaya verilmez.
 
-- [ ] Kotlin `AutofillService` ve manifest kaydı
-- [ ] Alan tespiti: autofill ipuçları, giriş türü, HTML nitelikleri, Türkçe ve İngilizce alan adları (test edilebilir saf Kotlin işlevleri olarak)
-- [ ] Kilit akışı: yanıt düzeyinde kimlik doğrulama ile KeyKey ekranını açmak
-- [ ] Hızlı açılan, ayrı bir Flutter giriş noktası (`autofillMain`)
-- [ ] Uygulama eşleştirme: paket adı ve imza sertifikası özeti birlikte
-- [ ] Web eşleştirme: gömülü Public Suffix List ile alan adı; `webDomain` yalnızca güvenilen tarayıcılardan kabul edilir
-- [ ] Şüpheli eşleşmede açık uyarı ve ek onay
-- [ ] Satır içi öneriler (Android 11+)
-- [ ] Yeni parola kaydetme akışı
-- [ ] Doldurma sonrası 2FA kodunu panoya kopyalama seçeneği
-- [ ] Kurulum yönlendirmesi: sistem ayarına doğrudan geçiş ve Chrome 135+ için [gereken "Autofill using another service" ayarına](https://android-developers.googleblog.com/2025/02/chrome-3p-autofill-services-update.html) doğrudan bağlantı
-- [ ] Saldırı testleri: aynı paket adıyla farklı imzalı uygulama, sahte `webDomain`, WebView içeren uygulama (2023'te yayımlanan AutoSpill senaryosu)
+- [x] Kotlin `AutofillService` ve manifest kaydı
+- [x] Alan tespiti: autofill ipuçları, giriş türü, HTML nitelikleri, Türkçe ve İngilizce alan adları (test edilebilir saf Kotlin işlevleri olarak)
+- [x] Kilit akışı: öneri düzeyinde kimlik doğrulama (`Dataset.setAuthentication`) ile KeyKey ekranını açmak
+- [x] Hızlı açılan, ayrı bir Flutter giriş noktası (`autofillMain`)
+- [x] Uygulama eşleştirme: paket adı ve imza sertifikası özeti birlikte
+- [x] Web eşleştirme: gömülü Public Suffix List ile alan adı; `webDomain` yalnızca güvenilen tarayıcılardan kabul edilir
+- [x] Şüpheli eşleşmede açık uyarı ve ek onay
+- [x] Satır içi öneriler (Android 11+)
+- [x] Yeni parola kaydetme akışı
+- [x] Doldurma sonrası 2FA kodunu panoya kopyalama seçeneği
+- [x] Kurulum yönlendirmesi: sistem ayarına doğrudan geçiş ve Chrome 135+ için [gereken "Autofill using another service" ayarına](https://android-developers.googleblog.com/2025/02/chrome-3p-autofill-services-update.html) doğrudan bağlantı
+- [x] Saldırı testleri: aynı paket adıyla farklı imzalı uygulama, sahte `webDomain`, WebView içeren uygulama (2023'te yayımlanan AutoSpill senaryosu)
 
-**Bitti sayılması için:** Dört emülatörde Chrome'daki bir giriş formu ve örnek bir uygulama dolduruluyor; yeni parola kaydediliyor; kilitliyken hiçbir kayıt adı görünmüyor; saldırı testlerinin hepsinde parola sahte hedefe verilmiyor.
+**Durum (2026-11-07):** #61-#69 bitti. #70 son denemeleri dört emülatörde (Android 11, 14, 16, 17) yapıldı: kaydetme, kilitliyken kayıt adının görünmemesi ve saldırı denemeleri hepsinde geçti; denemelerde iki hata bulunup düzeltildi. Yeni bir uygulamada ilk kayıt da uygulamaya bağlanıyor; bunun için KeyKey ana ekranda simgesi olan uygulamaları görebiliyor. Chrome yalnızca Android 17'de (Chrome 145) denenebildi; diğer emülatörlerdeki Chrome 83, 113 ve 133 başka doldurma servisini desteklemiyor ve güncellenemiyor. Ölçüt kullanıcının onayıyla buna göre değiştirildi (2026-11-07). Samsung Internet telefonda denenecek.
+
+**Bitti sayılması için:** Dört emülatörde örnek bir uygulama, Chrome 135+ olan emülatörde (Android 17) Chrome'daki bir giriş formu dolduruluyor; yeni parola kaydediliyor; kilitliyken hiçbir kayıt adı görünmüyor; saldırı testlerinin hepsinde parola sahte hedefe verilmiyor.
 
 ### Faz 7 — Yedekleme, içe ve dışa aktarma
 
@@ -442,6 +444,7 @@ Bu fikirlerin hiçbiri henüz planlanmış değil. Sırası kullanıma göre bel
 |---|---|---|
 | libsodium'un Windows'ta Android için derlenmesi kırılgan olabilir | Derleme bozulur | Bu bilgisayarda doğrulandı, gereken araçlar [belgelendi](#geliştirme-ortamı). CI Linux'ta derler, proje yolu kısa tutulur. |
 | Otomatik doldurma tarayıcıya ve üreticiye göre farklı davranır | Bazı yerlerde doldurmaz | Dört sürümlük test düzeni, saf işlevlerle alan tespiti, Faz 8'de gerçek cihaz. |
+| Android, kaydetme sırasında ana ekranda simgesi olmayan uygulamayı KeyKey'e göstermiyor | O uygulamada ilk kayıt uygulamaya bağlanmaz, ilk doldurmada uyarı çıkar | Kayıt yine kaydedilir ve ekran durumu söyler; uygulama ilk doldurmada bir dokunuşla bağlanır. Gerçek bir örnek çıkarsa çözülecek: [#71](https://github.com/aaudraa/KeyKey/issues/71). |
 | Otomatik doldurma ekranında Flutter'ın yavaş açılması | Kullanım zorlaşır | Ayrı ve hafif giriş noktası, Faz 6 başında süre ölçümü. |
 | Kasa göçü veya biçim hatası | Veri kaybı | Biçim sürümleri, örnek dosyalı uyumluluk testleri, Faz 8'e kadar gerçek veri yok. |
 | Bağımlılık kaynaklı güvenlik sorunu | Tedarik zinciri saldırısı | Az paket, `pubspec.lock`, Dependabot, SHA'ya sabit Action'lar. |

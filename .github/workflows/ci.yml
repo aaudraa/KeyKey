@@ -68,6 +68,11 @@ jobs:
         run: flutter build apk --release --target-platform android-arm64,android-x64
       - name: APK güvenlik denetimi
         run: bash resources/scripts/check-release-apk.sh
+      # Otomatik doldurmanın saf Kotlin kısımları. Gradle ayarlarını bir önceki
+      # flutter build adımı hazırlar.
+      - name: Kotlin birim testleri
+        working-directory: android
+        run: ./gradlew :app:testDebugUnitTest --console=plain
 
   gizli-bilgi:
     name: Gizli bilgi taraması

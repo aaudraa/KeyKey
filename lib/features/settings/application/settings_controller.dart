@@ -56,13 +56,19 @@ class SettingsController extends Notifier<AppSettings?> {
     if (generation == _generation) state = settings;
   }
 
-  Future<void> setOtpRequireAuth({required bool value}) async {
+  Future<void> setOtpRequireAuth({required bool value}) =>
+      _update((current) => current.copyWith(otpRequireAuth: value));
+
+  Future<void> setAutofillCopyOtp({required bool value}) =>
+      _update((current) => current.copyWith(autofillCopyOtp: value));
+
+  Future<void> _update(AppSettings Function(AppSettings) change) async {
     final repository = _repository;
     final current = state;
     if (repository == null || current == null) {
       throw const VaultLockedException();
     }
-    final updated = current.copyWith(otpRequireAuth: value);
+    final updated = change(current);
     await repository.save(updated);
     if (identical(_repository, repository)) state = updated;
   }

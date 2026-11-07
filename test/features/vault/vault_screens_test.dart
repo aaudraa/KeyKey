@@ -298,6 +298,64 @@ void main() {
     });
   });
 
+  group('bağlı uygulamalar', () {
+    final app = LoginApp(
+      packageName: 'com.example.posta',
+      certsSha256: ['ab' * 32],
+    );
+
+    setUp(() {
+      logins.items[0] = FakeLoginRepository.item(
+        logins.items[0].content.copyWith(apps: [app]),
+        id: 1,
+      );
+    });
+
+    Future<void> openEdit(WidgetTester tester) async {
+      await pumpVault(tester);
+      await tester.tap(find.text('Posta'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Düzenle'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('ayrıntıda görünüyor', (tester) async {
+      await pumpVault(tester);
+      await tester.tap(find.text('Posta'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Uygulama'), findsOneWidget);
+      expect(find.text('com.example.posta'), findsOneWidget);
+    });
+
+    testWidgets('düzenlemede imzasıyla görünüyor ve korunuyor', (tester) async {
+      await openEdit(tester);
+      expect(find.text('com.example.posta'), findsOneWidget);
+      expect(find.text('İmza AB:AB:AB:AB:AB:AB:AB:AB…'), findsOneWidget);
+
+      await tester.enterText(find.widgetWithText(TextField, 'Ad'), 'E-posta');
+      await tester.tap(find.widgetWithText(TextButton, 'Kaydet'));
+      await tester.pumpAndSettle();
+
+      expect(logins.items.first.content.name, 'E-posta');
+      expect(logins.items.first.content.apps, [app]);
+    });
+
+    testWidgets('düzenlemede kaldırılabiliyor', (tester) async {
+      await openEdit(tester);
+
+      await tester.tap(find.byTooltip('Uygulamayı kaldır'));
+      await tester.pump();
+      expect(find.text('com.example.posta'), findsNothing);
+      await tester.tap(find.widgetWithText(TextButton, 'Kaydet'));
+      await tester.pumpAndSettle();
+
+      final content = logins.items.first.content;
+      expect(content.apps, isEmpty);
+      expect(content.urls, ['https://mail.example.com']);
+    });
+  });
+
   group('çöp kutusu', () {
     Future<void> trashPosta(WidgetTester tester) async {
       await pumpVault(tester);

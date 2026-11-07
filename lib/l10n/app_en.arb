@@ -438,6 +438,23 @@
   "@loginAddUrl": {
     "description": "Button."
   },
+  "loginApp": "App",
+  "@loginApp": {
+    "description": "Label for an Android app linked to a login for autofill."
+  },
+  "loginAppSignature": "Signature {fingerprint}",
+  "@loginAppSignature": {
+    "description": "Shortened signing certificate fingerprint of a linked app.",
+    "placeholders": {
+      "fingerprint": {
+        "type": "String"
+      }
+    }
+  },
+  "loginRemoveApp": "Remove app",
+  "@loginRemoveApp": {
+    "description": "Tooltip for removing a linked app from a login."
+  },
   "loginRemoveUrl": "Remove website",
   "@loginRemoveUrl": {
     "description": "Tooltip."
@@ -940,5 +957,279 @@
   "settingsOtpRequireAuthHelp": "Protects the codes if someone picks up your unlocked phone. It does not protect against malware on the device.",
   "@settingsOtpRequireAuthHelp": {
     "description": "Explains what the setting protects against."
+  },
+  "autofillTitle": "Fill with KeyKey",
+  "@autofillTitle": {
+    "description": "Title of the autofill screen."
+  },
+  "autofillFor": "For {target}",
+  "@autofillFor": {
+    "description": "Shows which app or website will be filled.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillNoRequest": "There is no form to fill.",
+  "@autofillNoRequest": {
+    "description": "Autofill screen opened without a fill request."
+  },
+  "autofillNoVault": "Create a vault in KeyKey first.",
+  "@autofillNoVault": {
+    "description": "Autofill requested before a vault exists."
+  },
+  "autofillVaultUnavailable": "The vault cannot be opened here. Open KeyKey to check it.",
+  "@autofillVaultUnavailable": {
+    "description": "Autofill requested while the vault is unreadable or being recovered."
+  },
+  "autofillEmpty": "There are no passwords in the vault yet.",
+  "@autofillEmpty": {
+    "description": "Autofill screen when the vault has no logins."
+  },
+  "autofillClose": "Close",
+  "@autofillClose": {
+    "description": "Closes the autofill screen without filling."
+  },
+  "autofillMatching": "Matching logins",
+  "@autofillMatching": {
+    "description": "Header above logins that match the app or website being filled."
+  },
+  "autofillOtherLogins": "Other logins",
+  "@autofillOtherLogins": {
+    "description": "Header above the logins that do not match."
+  },
+  "autofillAllLogins": "All logins",
+  "@autofillAllLogins": {
+    "description": "Header above the list when nothing matches."
+  },
+  "autofillNoMatch": "No saved login for {target}. You can pick one from the list.",
+  "@autofillNoMatch": {
+    "description": "Shown when no login matches the app or website being filled.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillWarnTitle": "Before filling",
+  "@autofillWarnTitle": {
+    "description": "Title of the warning shown before filling an unmatched or risky login."
+  },
+  "autofillWarnSignatureTitle": "This app may be fake",
+  "@autofillWarnSignatureTitle": {
+    "description": "Warning title when the app's signing key does not match the linked app."
+  },
+  "autofillWarnSignature": "This login is linked to {package}, but the app on this phone is signed with a different key. Do not fill unless you installed the app from a trusted source.",
+  "@autofillWarnSignature": {
+    "description": "The package name matches but the signature does not.",
+    "placeholders": {
+      "package": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillWarnNoMatchApp": "This login is not linked to {app}. Make sure you picked the right one.",
+  "@autofillWarnNoMatchApp": {
+    "description": "The user picked a login that does not match the app.",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillWarnNoMatchWeb": "This login was not saved for {site}. Fake sites use names that look like the real one; check the address bar.",
+  "@autofillWarnNoMatchWeb": {
+    "description": "The user picked a login that does not match the website.",
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillWarnWebView": "This app shows a web page inside it and says it is {site}. KeyKey cannot verify that, and the app can read the password that is filled.",
+  "@autofillWarnWebView": {
+    "description": "A non-browser app reports a website domain (WebView).",
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillWarnInsecure": "The connection is not encrypted (http). The password travels in the clear.",
+  "@autofillWarnInsecure": {
+    "description": "The page was opened over http."
+  },
+  "autofillWarnLogin": "Selected login: {name}",
+  "@autofillWarnLogin": {
+    "description": "Names the login about to be filled.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillAppName": "App: {name}",
+  "@autofillAppName": {
+    "description": "App details in the fill warning.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillAppPackage": "Package: {package}",
+  "@autofillAppPackage": {
+    "description": "App details in the fill warning.",
+    "placeholders": {
+      "package": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillAppSignature": "Signature (SHA-256): {fingerprint}",
+  "@autofillAppSignature": {
+    "description": "App details in the fill warning; the full certificate fingerprint.",
+    "placeholders": {
+      "fingerprint": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillBindApp": "Link this app to the login",
+  "@autofillBindApp": {
+    "description": "Checkbox to remember the app for this login."
+  },
+  "autofillBindAppHint": "It will match automatically next time.",
+  "@autofillBindAppHint": {
+    "description": "Explains linking the app."
+  },
+  "autofillFillAnyway": "Fill anyway",
+  "@autofillFillAnyway": {
+    "description": "Confirms filling despite the warning."
+  },
+  "autofillCancel": "Cancel",
+  "@autofillCancel": {
+    "description": "Closes the fill warning without filling."
+  },
+  "autofillSaveTitle": "Save to KeyKey",
+  "@autofillSaveTitle": {
+    "description": "Title of the screen that saves a login typed into another app."
+  },
+  "autofillSaveFor": "Save for {target}",
+  "@autofillSaveFor": {
+    "description": "Shown on the lock screen when a login is being saved.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillSaveSite": "Linked website: {url}",
+  "@autofillSaveSite": {
+    "description": "The address the new login will be linked to.",
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillSaveApp": "Linked app: {name}",
+  "@autofillSaveApp": {
+    "description": "The app the new login will be linked to.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillSaveWebView": "This app shows a web page inside it. KeyKey can't verify the page's address, so the login will be linked to the app.",
+  "@autofillSaveWebView": {
+    "description": "Explains why a login saved from a WebView is linked to the app."
+  },
+  "autofillSaveExisting": "{name} already has this username. You can save the new password there; the old one stays in the password history.",
+  "@autofillSaveExisting": {
+    "description": "Offers updating a matching login instead of adding a new one.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillSaveUpdate": "Update its password",
+  "@autofillSaveUpdate": {
+    "description": "Saves the new password into the matching login."
+  },
+  "autofillSaveAlready": "This login is already saved in {name}.",
+  "@autofillSaveAlready": {
+    "description": "The typed username and password are already in the vault.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillSaveNoApp": "{app} couldn't be verified, so it wasn't linked to the login. You can link it the first time you fill in this app.",
+  "@autofillSaveNoApp": {
+    "description": "The app's signature couldn't be read, so the saved login isn't linked to it.",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsAutofillCopyOtp": "Copy 2FA code after filling",
+  "@settingsAutofillCopyOtp": {
+    "description": "Setting that copies the linked 2FA code after autofill."
+  },
+  "settingsAutofillCopyOtpHelp": "If the filled login has a linked 2FA account, its current code is copied and cleared after {seconds} seconds.",
+  "@settingsAutofillCopyOtpHelp": {
+    "description": "Explains the copy 2FA code setting.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "autofillSetupTitle": "Autofill",
+  "@autofillSetupTitle": {
+    "description": "Settings entry for the system autofill service."
+  },
+  "autofillSetupEnabled": "KeyKey is selected.",
+  "@autofillSetupEnabled": {
+    "description": "KeyKey is the active autofill service."
+  },
+  "autofillSetupDisabled": "Off. Tap and choose KeyKey.",
+  "@autofillSetupDisabled": {
+    "description": "KeyKey is not the active autofill service."
+  },
+  "autofillSetupUnsupported": "This device doesn't support autofill.",
+  "@autofillSetupUnsupported": {
+    "description": "The device has no autofill framework."
+  },
+  "autofillSetupChromeTitle": "Autofill in Chrome",
+  "@autofillSetupChromeTitle": {
+    "description": "Settings entry that opens Chrome's autofill setting."
+  },
+  "autofillSetupChrome": "In Chrome's settings, choose autofill using another service, then tap Restart Chrome. Otherwise the choice is lost.",
+  "@autofillSetupChrome": {
+    "description": "How to let Chrome use KeyKey."
+  },
+  "autofillSetupChromeUpdate": "Update Chrome. Chrome can use another autofill service since version 135; this device has version {version}.",
+  "@autofillSetupChromeUpdate": {
+    "description": "Chrome is too old for third-party autofill.",
+    "placeholders": {
+      "version": {
+        "type": "int"
+      }
+    }
+  },
+  "autofillSetupOpenFailed": "Couldn't open the setting.",
+  "@autofillSetupOpenFailed": {
+    "description": "The system or Chrome setting could not be opened."
+  },
+  "autofillWarnWebViewUnknown": "This app shows a web page inside it. KeyKey cannot verify who the page belongs to, and the app can read the password that is filled.",
+  "@autofillWarnWebViewUnknown": {
+    "description": "WebView warning when the page did not report its address."
   }
 }
