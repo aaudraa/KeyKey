@@ -9,8 +9,10 @@
 key.properties
 local.properties
 
-# Dışa aktarılan KeyKey kasa ve yedek dosyaları
+# Dışa aktarılan KeyKey kasa ve yedek dosyaları. Biçim uyumluluğu testinin
+# deneme yedeği hariç.
 *.keykey
+!/test/fixtures/backup/backup-v1.keykey
 
 # ---------------------------------------------------------------------------
 # Dart / Flutter

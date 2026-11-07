@@ -3,12 +3,13 @@
 useDefault = true
 
 # Biçim uyumluluğu testleri bilerek sabit deneme anahtarları içeriyor. Bunlar
-# gerçek bir kasaya ait değil. Liste yalnızca bu iki dosyayla sınırlı kalmalı.
+# gerçek bir kasaya ait değil. Liste yalnızca bu dosyalarla sınırlı kalmalı.
 [[allowlists]]
 description = "Yalnızca deneme verisi içeren biçim uyumluluğu dosyaları"
 paths = [
   '''^test/fixtures/crypto/vault-v1\.json$''',
   '''^integration_test/vault_v1_fixture\.dart$''',
+  '''^test/fixtures/backup/backup-v1\.json$''',
 ]
 
 # İçe aktarma testlerinin örnek dosyaları. Aegis ve 2FAS örnekleri Aegis
