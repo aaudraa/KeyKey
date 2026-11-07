@@ -450,6 +450,10 @@ Doldurulan kayıtla eşleşmiş bir 2FA hesabı varsa, ayar açıksa, güncel ko
 
 Chrome 135'ten beri parolaları başka bir doldurma servisine bırakması için kullanıcının Chrome ayarlarında "Autofill using another service" seçeneğini açması gerekir. KeyKey'in kurulum ekranı bu ayara doğrudan götürür (`ACTION_APPLICATION_PREFERENCES`, `CATEGORY_APP_BROWSER`, `CATEGORY_PREFERENCE`). Ayarın açık olup olmadığını okumak `READ_USER_DICTIONARY` izni ve paket sorgusu istediği için okunmaz. Kullanıcıya, seçimden sonra Chrome'un gösterdiği "Chrome'u yeniden başlat" düğmesine dokunması söylenir; dokunmazsa seçim kaybolur. Kurulu Chrome 135'ten eskiyse bağlantı gösterilmez, güncellemesi istenir.
 
+### Samsung Internet
+
+Samsung Internet 30 (Samsung Galaxy S20 FE, Android 13) KeyKey'i seçili doldurma servisi olarak görüyor, ama giriş formunda servise hiç istek göndermiyor. Yalnızca kendi kayıtlı parolalarını, profillerini ve Samsung Pass'i öneriyor; tarayıcının kendi doldurma ayarları kapatılınca da istek gelmiyor. Chrome'daki gibi başka bir servise bırakma ayarı yok, ayar niyetine de yanıt vermiyor. Bu tarayıcıda KeyKey'in yapabileceği bir şey olmadığı için desteklenmiyor; parola KeyKey'den kopyalanarak girilebilir. Aynı telefonda Samsung klavyesiyle uygulamalarda doldurma ve kaydetme çalışıyor. Öneri ilk dokunuşta klavye şeridinde çıkıyor; kutudaki yazı silinince klavye şerit isteğini yinelemediği için sistem aynı öneriyi kutunun altındaki listede gösteriyor. İki görünüm de aynı kilitli öneri, değer taşımıyor.
+
 Ayarlar ekranı KeyKey'in seçili servis olup olmadığını da gösterir (`AutofillManager.hasEnabledAutofillServices`). Dokununca sistemin servis seçimi açılır (`ACTION_REQUEST_SET_AUTOFILL_SERVICE`). Sistem, niyetteki paketin isteyen uygulama olduğunu `getCallingPackage` ile denetler ve bu yalnızca sonuç beklenen başlatmada dolu olduğu için niyet `startActivityForResult` ile açılır. Ayara gitmek uygulamayı arka plana aldığı için kasa kilitlenir; dönüşte durum yeniden okunur. Eski uyumluluk modu (`compatibilityPackages`) kullanılmaz; Chrome onu 2025'te kaldırdı.
 
 ### Eşzamanlılık
