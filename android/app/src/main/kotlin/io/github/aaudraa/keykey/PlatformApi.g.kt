@@ -379,7 +379,9 @@ data class AutofillRequestInfo (
    */
   val untrustedWebDomain: String? = null,
   val hasUsernameField: Boolean,
-  val hasPasswordField: Boolean
+  val hasPasswordField: Boolean,
+  /** Ekran kaydetmek için açıldıysa formdaki değerler; doldurmada `null`. */
+  val save: AutofillSaveValues? = null
 )
  {
   companion object {
@@ -392,7 +394,8 @@ data class AutofillRequestInfo (
       val untrustedWebDomain = pigeonVar_list[5] as String?
       val hasUsernameField = pigeonVar_list[6] as Boolean
       val hasPasswordField = pigeonVar_list[7] as Boolean
-      return AutofillRequestInfo(packageName, appLabel, certsSha256, webDomain, webScheme, untrustedWebDomain, hasUsernameField, hasPasswordField)
+      val save = pigeonVar_list[8] as AutofillSaveValues?
+      return AutofillRequestInfo(packageName, appLabel, certsSha256, webDomain, webScheme, untrustedWebDomain, hasUsernameField, hasPasswordField, save)
     }
   }
   fun toList(): List<Any?> {
@@ -405,6 +408,7 @@ data class AutofillRequestInfo (
       untrustedWebDomain,
       hasUsernameField,
       hasPasswordField,
+      save,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -415,7 +419,7 @@ data class AutofillRequestInfo (
       return true
     }
     val other = other as AutofillRequestInfo
-    return PlatformApiPigeonUtils.deepEquals(this.packageName, other.packageName) && PlatformApiPigeonUtils.deepEquals(this.appLabel, other.appLabel) && PlatformApiPigeonUtils.deepEquals(this.certsSha256, other.certsSha256) && PlatformApiPigeonUtils.deepEquals(this.webDomain, other.webDomain) && PlatformApiPigeonUtils.deepEquals(this.webScheme, other.webScheme) && PlatformApiPigeonUtils.deepEquals(this.untrustedWebDomain, other.untrustedWebDomain) && PlatformApiPigeonUtils.deepEquals(this.hasUsernameField, other.hasUsernameField) && PlatformApiPigeonUtils.deepEquals(this.hasPasswordField, other.hasPasswordField)
+    return PlatformApiPigeonUtils.deepEquals(this.packageName, other.packageName) && PlatformApiPigeonUtils.deepEquals(this.appLabel, other.appLabel) && PlatformApiPigeonUtils.deepEquals(this.certsSha256, other.certsSha256) && PlatformApiPigeonUtils.deepEquals(this.webDomain, other.webDomain) && PlatformApiPigeonUtils.deepEquals(this.webScheme, other.webScheme) && PlatformApiPigeonUtils.deepEquals(this.untrustedWebDomain, other.untrustedWebDomain) && PlatformApiPigeonUtils.deepEquals(this.hasUsernameField, other.hasUsernameField) && PlatformApiPigeonUtils.deepEquals(this.hasPasswordField, other.hasPasswordField) && PlatformApiPigeonUtils.deepEquals(this.save, other.save)
   }
 
   override fun hashCode(): Int {
@@ -428,10 +432,56 @@ data class AutofillRequestInfo (
     result = 31 * result + PlatformApiPigeonUtils.deepHash(this.untrustedWebDomain)
     result = 31 * result + PlatformApiPigeonUtils.deepHash(this.hasUsernameField)
     result = 31 * result + PlatformApiPigeonUtils.deepHash(this.hasPasswordField)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.save)
     return result
   }
   override fun toString(): String {
-    return "AutofillRequestInfo(packageName=$packageName, appLabel=$appLabel, certsSha256=$certsSha256, webDomain=$webDomain, webScheme=$webScheme, untrustedWebDomain=$untrustedWebDomain, hasUsernameField=$hasUsernameField, hasPasswordField=$hasPasswordField)"
+    return "AutofillRequestInfo(packageName=$packageName, appLabel=$appLabel, certsSha256=$certsSha256, webDomain=$webDomain, webScheme=$webScheme, untrustedWebDomain=$untrustedWebDomain, hasUsernameField=$hasUsernameField, hasPasswordField=$hasPasswordField, save=$save)"
+  }
+}
+
+/**
+ * Kullanıcının forma yazıp kaydetmeyi onayladığı değerler.
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class AutofillSaveValues (
+  val username: String,
+  val password: String
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): AutofillSaveValues {
+      val username = pigeonVar_list[0] as String
+      val password = pigeonVar_list[1] as String
+      return AutofillSaveValues(username, password)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      username,
+      password,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as AutofillSaveValues
+    return PlatformApiPigeonUtils.deepEquals(this.username, other.username) && PlatformApiPigeonUtils.deepEquals(this.password, other.password)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.username)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.password)
+    return result
+  }
+  override fun toString(): String {
+    return "AutofillSaveValues(username=$username, password=$password)"
   }
 }
 private open class PlatformApiPigeonCodec : StandardMessageCodec() {
@@ -467,6 +517,11 @@ private open class PlatformApiPigeonCodec : StandardMessageCodec() {
           AutofillRequestInfo.fromList(it)
         }
       }
+      135.toByte() -> {
+        (readValue(buffer) as? List<Any?>)?.let {
+          AutofillSaveValues.fromList(it)
+        }
+      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -494,6 +549,10 @@ private open class PlatformApiPigeonCodec : StandardMessageCodec() {
       }
       is AutofillRequestInfo -> {
         stream.write(134)
+        writeValue(stream, value.toList())
+      }
+      is AutofillSaveValues -> {
+        stream.write(135)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -704,7 +763,7 @@ interface AutofillApi {
   fun hasSigningCertificates(packageName: String, certsSha256: List<String>): Boolean
   /** Değerleri forma verir ve ekranı kapatır. */
   fun fill(username: String, password: String)
-  /** Hiçbir şey doldurmadan ekranı kapatır. */
+  /** Hiçbir şey doldurmadan ekranı kapatır. Kaydetme bitince de kullanılır. */
   fun cancel()
 
   companion object {

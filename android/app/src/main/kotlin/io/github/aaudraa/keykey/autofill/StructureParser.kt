@@ -14,8 +14,17 @@ class ParsedStructure(
     val ids: List<AutofillId>,
     val fields: List<FieldInfo>,
     val form: ParsedForm,
+    /**
+     * Alanların metin değerleri, [ids] ile aynı sırada. Yalnızca kaydetme
+     * isteğinde okunur; doldurma isteğinde boştur.
+     */
+    val values: List<String?> = emptyList(),
 ) {
     fun idsOf(kind: FieldKind): List<AutofillId> = form.of(kind).map { ids[it] }
+
+    /** Bu türdeki ilk dolu alanın değeri. */
+    fun firstValue(kind: FieldKind): String? =
+        form.of(kind).firstNotNullOfOrNull { index -> values.getOrNull(index)?.takeIf { it.isNotEmpty() } }
 
     /** Doldurulacak kullanıcı adı ve parola alanları, sırasıyla. */
     val credentialIds: List<AutofillId>
@@ -24,8 +33,10 @@ class ParsedStructure(
 }
 
 object StructureParser {
-    fun parse(structure: AssistStructure): ParsedStructure {
+    /** [readValues] yalnızca kaydetmede açılır; değerler gereksiz yere okunmaz. */
+    fun parse(structure: AssistStructure, readValues: Boolean = false): ParsedStructure {
         val ids = mutableListOf<AutofillId>()
+        val values = mutableListOf<String?>()
         val fields = mutableListOf<FieldInfo>()
         var webDomain: String? = null
         var webScheme: String? = null
@@ -40,6 +51,10 @@ object StructureParser {
             if (id != null && node.autofillType != View.AUTOFILL_TYPE_NONE) {
                 val html = node.htmlInfo
                 ids += id
+                if (readValues) {
+                    val value = node.autofillValue
+                    values += if (value != null && value.isText) value.textValue.toString() else null
+                }
                 fields += FieldInfo(
                     autofillHints = node.autofillHints?.toList().orEmpty(),
                     inputType = node.inputType,
@@ -67,6 +82,7 @@ object StructureParser {
             ids = ids,
             fields = fields,
             form = FormParser.parse(fields),
+            values = values,
         )
     }
 }

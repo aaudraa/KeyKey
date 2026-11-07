@@ -2,6 +2,15 @@ import 'package:flutter/foundation.dart' show immutable;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/core/platform/platform_api.g.dart';
 
+/// Kullanıcının forma yazıp kaydetmeyi onayladığı değerler.
+@immutable
+final class AutofillSave {
+  const new({required this.username, required this.password});
+
+  final String username;
+  final String password;
+}
+
 /// Doldurulacak formun sahibi: uygulama ve varsa web sitesi.
 ///
 /// Kasaya bakmadan bilinenlerdir. [webDomain] yalnızca güvenilen bir
@@ -18,6 +27,7 @@ final class AutofillTarget {
     this.untrustedWebDomain,
     this.hasUsernameField = true,
     this.hasPasswordField = true,
+    this.save,
   });
 
   final String packageName;
@@ -36,6 +46,9 @@ final class AutofillTarget {
   final bool hasUsernameField;
   final bool hasPasswordField;
 
+  /// Ekran kaydetmek için açıldıysa formdaki değerler; doldurmada `null`.
+  final AutofillSave? save;
+
   bool get isWeb => webDomain != null;
 }
 
@@ -50,7 +63,7 @@ abstract interface class AutofillBridge {
   /// Değerleri forma verir; Android ekranı kapatır.
   Future<void> fill({required String username, required String password});
 
-  /// Hiçbir şey doldurmadan kapatır.
+  /// Hiçbir şey doldurmadan kapatır. Kaydetme bitince de kullanılır.
   Future<void> cancel();
 }
 
@@ -70,6 +83,13 @@ final class PigeonAutofillBridge implements AutofillBridge {
       untrustedWebDomain: request.untrustedWebDomain,
       hasUsernameField: request.hasUsernameField,
       hasPasswordField: request.hasPasswordField,
+      save: switch (request.save) {
+        final save? => AutofillSave(
+          username: save.username,
+          password: save.password,
+        ),
+        null => null,
+      },
     );
   }
 

@@ -11,6 +11,7 @@ import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
+import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../../support/fake_vault_service.dart';
@@ -417,6 +418,201 @@ void main() {
       expect(find.textContaining('Bağlantı şifresiz (http)'), findsOneWidget);
       expect(find.textContaining('kaydedilmemiş'), findsNothing);
       expect(find.textContaining('Paket:'), findsNothing);
+    });
+  });
+
+  group('kaydetme', () {
+    const saveApp = AutofillTarget(
+      packageName: 'io.github.aaudraa.ornekgiris',
+      appLabel: 'Örnek Giriş',
+      certsSha256: [cert],
+      save: AutofillSave(username: 'ayse', password: 'yeni-parola-1'),
+    );
+
+    LoginItem? saved(String username) {
+      for (final item in logins.items) {
+        if (item.content.username == username) return item;
+      }
+      return null;
+    }
+
+    testWidgets('kilitliyken yalnızca hedef görünüyor, değer görünmüyor', (
+      tester,
+    ) async {
+      await pumpAutofill(
+        tester,
+        status: VaultLocked(service.header),
+        target: saveApp,
+      );
+
+      expect(find.text('Örnek Giriş için kaydet'), findsOneWidget);
+      expect(find.text('ayse'), findsNothing);
+      expect(find.text('Örnek hesap'), findsNothing);
+    });
+
+    testWidgets('yeni kayıt uygulamaya bağlanıyor ve kasa kilitleniyor', (
+      tester,
+    ) async {
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultLocked(service.header),
+        target: saveApp,
+      );
+      await tester.enterText(
+        find.byType(TextField),
+        FakeVaultService.correctPassword,
+      );
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+
+      expect(find.text("KeyKey'e kaydet"), findsOneWidget);
+      expect(find.text('Bağlanacak uygulama: Örnek Giriş'), findsOneWidget);
+      await tester.tap(find.widgetWithText(FilledButton, 'Kaydet'));
+      await tester.pumpAndSettle();
+
+      final item = saved('ayse');
+      expect(item, isNotNull);
+      expect(item!.content.name, 'Örnek Giriş');
+      expect(item.content.password, 'yeni-parola-1');
+      expect(item.content.urls, isEmpty);
+      expect(item.content.apps, [
+        LoginApp(packageName: saveApp.packageName, certsSha256: const [cert]),
+      ]);
+      expect(bridge.cancelled, isTrue);
+      expect(bridge.filled, isNull);
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(AutofillHome)),
+      );
+      expect(container.read(vaultControllerProvider), isA<VaultLocked>());
+      expect(find.text('KeyKey kilitli'), findsNothing);
+    });
+
+    testWidgets('düzenlenen değerler kaydediliyor', (tester) async {
+      await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: saveApp,
+      );
+
+      await tester.enterText(find.widgetWithText(TextField, 'Ad'), 'İş');
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Kullanıcı adı'),
+        'ayse.k',
+      );
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Kaydet'));
+      await tester.pumpAndSettle();
+
+      expect(saved('ayse.k')?.content.name, 'İş');
+      expect(saved('ayse'), isNull);
+    });
+
+    testWidgets('tarayıcıda site adresi bağlanıyor', (tester) async {
+      await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: const AutofillTarget(
+          packageName: 'com.android.chrome',
+          certsSha256: [cert],
+          webDomain: 'www.yeni.example.com',
+          webScheme: 'https',
+          save: AutofillSave(username: 'ayse', password: 'yeni-parola-1'),
+        ),
+      );
+
+      expect(
+        find.text('Bağlanacak site: https://www.yeni.example.com'),
+        findsOneWidget,
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Kaydet'));
+      await tester.pumpAndSettle();
+
+      final item = saved('ayse')!;
+      expect(item.content.name, 'yeni.example.com');
+      expect(item.content.urls, ['https://www.yeni.example.com']);
+      expect(item.content.apps, isEmpty);
+    });
+
+    testWidgets('WebView sayfası değil, uygulama bağlanıyor', (tester) async {
+      await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: const AutofillTarget(
+          packageName: 'io.github.aaudraa.ornekgiris',
+          appLabel: 'Örnek Giriş',
+          certsSha256: [cert],
+          untrustedWebDomain: 'banka.example.com',
+          save: AutofillSave(username: 'ayse', password: 'yeni-parola-1'),
+        ),
+      );
+
+      expect(find.textContaining('web sayfası gösteriyor'), findsOneWidget);
+      await tester.tap(find.widgetWithText(FilledButton, 'Kaydet'));
+      await tester.pumpAndSettle();
+
+      final item = saved('ayse')!;
+      expect(item.content.urls, isEmpty);
+      expect(item.content.apps.single.packageName, saveApp.packageName);
+    });
+
+    testWidgets('aynı kullanıcı adlı kaydın parolası güncellenebiliyor', (
+      tester,
+    ) async {
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: const AutofillTarget(
+          packageName: 'io.github.aaudraa.ornekgiris',
+          appLabel: 'Örnek Giriş',
+          certsSha256: [cert],
+          save: AutofillSave(username: 'veli', password: 'degisen-parola'),
+        ),
+      );
+
+      expect(find.textContaining('Örnek hesap kaydında'), findsOneWidget);
+      await tester.tap(find.text('Parolasını güncelle'));
+      await tester.pumpAndSettle();
+
+      final item = saved('veli')!;
+      expect(item.content.password, 'degisen-parola');
+      expect(item.content.passwordHistory.single.password, 'ornek-parolasi');
+      expect(logins.items, hasLength(3));
+      expect(bridge.cancelled, isTrue);
+    });
+
+    testWidgets('kayıt zaten varsa bunu söylüyor', (tester) async {
+      await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: const AutofillTarget(
+          packageName: 'io.github.aaudraa.ornekgiris',
+          appLabel: 'Örnek Giriş',
+          certsSha256: [cert],
+          save: AutofillSave(username: 'veli', password: 'ornek-parolasi'),
+        ),
+      );
+
+      expect(
+        find.text('Bu giriş Örnek hesap kaydında zaten var.'),
+        findsOneWidget,
+      );
+      expect(find.text('Parolasını güncelle'), findsNothing);
+    });
+
+    testWidgets('eşleşmeyen kaydın parolası önerilmiyor', (tester) async {
+      // "Posta" kaydının kullanıcı adı aynı ama uygulamaya bağlı değil.
+      await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: const AutofillTarget(
+          packageName: 'io.github.aaudraa.ornekgiris',
+          appLabel: 'Örnek Giriş',
+          certsSha256: [cert],
+          save: AutofillSave(username: 'ali', password: 'baska'),
+        ),
+      );
+
+      expect(find.text('Parolasını güncelle'), findsNothing);
     });
   });
 }

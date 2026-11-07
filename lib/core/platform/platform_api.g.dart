@@ -258,6 +258,7 @@ class AutofillRequestInfo {
     this.untrustedWebDomain,
     required this.hasUsernameField,
     required this.hasPasswordField,
+    this.save,
   });
 
   /// Formu gösteren uygulama. Tarayıcıysa tarayıcının kendisi.
@@ -282,6 +283,9 @@ class AutofillRequestInfo {
 
   bool hasPasswordField;
 
+  /// Ekran kaydetmek için açıldıysa formdaki değerler; doldurmada `null`.
+  AutofillSaveValues? save;
+
   List<Object?> _toList() {
     return <Object?>[
       packageName,
@@ -292,6 +296,7 @@ class AutofillRequestInfo {
       untrustedWebDomain,
       hasUsernameField,
       hasPasswordField,
+      save,
     ];
   }
 
@@ -310,6 +315,7 @@ class AutofillRequestInfo {
       untrustedWebDomain: result[5] as String?,
       hasUsernameField: result[6]! as bool,
       hasPasswordField: result[7]! as bool,
+      save: result[8] as AutofillSaveValues?,
     );
   }
 
@@ -329,7 +335,8 @@ class AutofillRequestInfo {
         _deepEquals(webScheme, other.webScheme) &&
         _deepEquals(untrustedWebDomain, other.untrustedWebDomain) &&
         _deepEquals(hasUsernameField, other.hasUsernameField) &&
-        _deepEquals(hasPasswordField, other.hasPasswordField);
+        _deepEquals(hasPasswordField, other.hasPasswordField) &&
+        _deepEquals(save, other.save);
   }
 
   @override
@@ -338,7 +345,54 @@ class AutofillRequestInfo {
 
   @override
   String toString() {
-    return 'AutofillRequestInfo(packageName: $packageName, appLabel: $appLabel, certsSha256: $certsSha256, webDomain: $webDomain, webScheme: $webScheme, untrustedWebDomain: $untrustedWebDomain, hasUsernameField: $hasUsernameField, hasPasswordField: $hasPasswordField)';
+    return 'AutofillRequestInfo(packageName: $packageName, appLabel: $appLabel, certsSha256: $certsSha256, webDomain: $webDomain, webScheme: $webScheme, untrustedWebDomain: $untrustedWebDomain, hasUsernameField: $hasUsernameField, hasPasswordField: $hasPasswordField, save: $save)';
+  }
+}
+
+/// Kullanıcının forma yazıp kaydetmeyi onayladığı değerler.
+class AutofillSaveValues {
+  AutofillSaveValues({required this.username, required this.password});
+
+  String username;
+
+  String password;
+
+  List<Object?> _toList() {
+    return <Object?>[username, password];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static AutofillSaveValues decode(Object result) {
+    result as List<Object?>;
+    return AutofillSaveValues(
+      username: result[0]! as String,
+      password: result[1]! as String,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! AutofillSaveValues || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(username, other.username) &&
+        _deepEquals(password, other.password);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'AutofillSaveValues(username: $username, password: $password)';
   }
 }
 
@@ -367,6 +421,9 @@ class _PigeonCodec extends StandardMessageCodec {
     } else if (value is AutofillRequestInfo) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
+    } else if (value is AutofillSaveValues) {
+      buffer.putUint8(135);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -389,6 +446,8 @@ class _PigeonCodec extends StandardMessageCodec {
         return BiometricUnwrapResult.decode(readValue(buffer)!);
       case 134:
         return AutofillRequestInfo.decode(readValue(buffer)!);
+      case 135:
+        return AutofillSaveValues.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -680,7 +739,7 @@ class AutofillApi {
     );
   }
 
-  /// Hiçbir şey doldurmadan ekranı kapatır.
+  /// Hiçbir şey doldurmadan ekranı kapatır. Kaydetme bitince de kullanılır.
   Future<void> cancel() async {
     final pigeonVar_channelName =
         'dev.flutter.pigeon.keykey.AutofillApi.cancel$pigeonVar_messageChannelSuffix';

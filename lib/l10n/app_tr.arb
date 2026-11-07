@@ -231,5 +231,13 @@
   "autofillBindApp": "Uygulamayı bu kayda bağla",
   "autofillBindAppHint": "Sonraki seferde kendiliğinden eşleşir.",
   "autofillFillAnyway": "Yine de doldur",
-  "autofillCancel": "Vazgeç"
+  "autofillCancel": "Vazgeç",
+  "autofillSaveTitle": "KeyKey'e kaydet",
+  "autofillSaveFor": "{target} için kaydet",
+  "autofillSaveSite": "Bağlanacak site: {url}",
+  "autofillSaveApp": "Bağlanacak uygulama: {name}",
+  "autofillSaveWebView": "Bu uygulama içinde bir web sayfası gösteriyor. KeyKey sayfanın adresini doğrulayamadığı için kayıt uygulamaya bağlanacak.",
+  "autofillSaveExisting": "{name} kaydında bu kullanıcı adı zaten var. Yeni parolayı oraya kaydedebilirsin; eskisi parola geçmişinde kalır.",
+  "autofillSaveUpdate": "Parolasını güncelle",
+  "autofillSaveAlready": "Bu giriş {name} kaydında zaten var."
 }

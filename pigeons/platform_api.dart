@@ -99,6 +99,7 @@ class AutofillRequestInfo {
     required this.untrustedWebDomain,
     required this.hasUsernameField,
     required this.hasPasswordField,
+    this.save,
   });
 
   /// Formu gösteren uygulama. Tarayıcıysa tarayıcının kendisi.
@@ -119,6 +120,17 @@ class AutofillRequestInfo {
 
   bool hasUsernameField;
   bool hasPasswordField;
+
+  /// Ekran kaydetmek için açıldıysa formdaki değerler; doldurmada `null`.
+  AutofillSaveValues? save;
+}
+
+/// Kullanıcının forma yazıp kaydetmeyi onayladığı değerler.
+class AutofillSaveValues {
+  AutofillSaveValues({required this.username, required this.password});
+
+  String username;
+  String password;
 }
 
 /// Otomatik doldurma ekranının Kotlin tarafı.
@@ -134,6 +146,6 @@ abstract class AutofillApi {
   /// Değerleri forma verir ve ekranı kapatır.
   void fill(String username, String password);
 
-  /// Hiçbir şey doldurmadan ekranı kapatır.
+  /// Hiçbir şey doldurmadan ekranı kapatır. Kaydetme bitince de kullanılır.
   void cancel();
 }

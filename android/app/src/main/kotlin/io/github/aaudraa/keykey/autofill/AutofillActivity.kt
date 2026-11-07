@@ -2,7 +2,6 @@ package io.github.aaudraa.keykey.autofill
 
 import android.app.assist.AssistStructure
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.service.autofill.Dataset
@@ -21,7 +20,9 @@ import io.github.aaudraa.keykey.R
 import io.github.aaudraa.keykey.SecureClipboard
 
 /**
- * Öneriye dokunulunca açılan doldurma ekranı.
+ * Öneriye dokunulunca açılan doldurma ekranı. Kaydetme de bu ekranda yapılır:
+ * niyet [EXTRA_SAVE_TOKEN] taşıyorsa ekran [PendingSaves] içindeki isteği alır
+ * ve yalnızca kaydeder, hiçbir şey doldurmaz.
  *
  * Ana uygulamadan ayrı bir Flutter giriş noktasıyla (`autofillMain`) çalışır:
  * kasayı kendisi açar, kullanıcı kaydı seçer ve onaylar. Seçilen değerler
@@ -55,6 +56,11 @@ class AutofillActivity : FlutterFragmentActivity(), AutofillApi {
     }
 
     private fun readRequest(intent: Intent) {
+        val saveToken = intent.getStringExtra(EXTRA_SAVE_TOKEN)
+        if (saveToken != null) {
+            request = PendingSaves.take(saveToken)
+            return
+        }
         val structure = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getParcelableExtra(AutofillManager.EXTRA_ASSIST_STRUCTURE, AssistStructure::class.java)
         } else {
@@ -69,27 +75,7 @@ class AutofillActivity : FlutterFragmentActivity(), AutofillApi {
         // KeyKey kendi formlarını doldurmaz.
         if (form.packageName == packageName || !form.form.hasCredentials) return
         parsed = form
-
-        val pm = packageManager
-        // Web alan adına yalnızca güvenilen tarayıcıdan gelirse inanılır;
-        // WebView'lı bir uygulama istediği alan adını yazabilir.
-        val trustedBrowser = TrustedBrowsers.isTrusted(pm, form.packageName)
-        request = AutofillRequestInfo(
-            packageName = form.packageName,
-            appLabel = labelOf(pm, form.packageName),
-            certsSha256 = SigningCerts.digestsOf(pm, form.packageName),
-            webDomain = form.webDomain.takeIf { trustedBrowser },
-            webScheme = form.webScheme.takeIf { trustedBrowser },
-            untrustedWebDomain = form.webDomain.takeUnless { trustedBrowser },
-            hasUsernameField = form.idsOf(FieldKind.USERNAME).isNotEmpty(),
-            hasPasswordField = form.idsOf(FieldKind.PASSWORD).isNotEmpty(),
-        )
-    }
-
-    private fun labelOf(pm: PackageManager, packageName: String): String? = try {
-        pm.getApplicationLabel(pm.getApplicationInfo(packageName, 0)).toString()
-    } catch (error: PackageManager.NameNotFoundException) {
-        null
+        request = AutofillRequests.of(this, form)
     }
 
     override fun currentRequest(): AutofillRequestInfo? = request
@@ -139,5 +125,10 @@ class AutofillActivity : FlutterFragmentActivity(), AutofillApi {
     override fun cancel() {
         setResult(RESULT_CANCELED)
         finish()
+    }
+
+    companion object {
+        /** Kaydetme isteğinin [PendingSaves] içindeki anahtarı. */
+        const val EXTRA_SAVE_TOKEN = "io.github.aaudraa.keykey.autofill.SAVE_TOKEN"
     }
 }

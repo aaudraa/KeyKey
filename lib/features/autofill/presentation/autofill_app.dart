@@ -5,11 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/theme.dart';
 import 'package:keykey/features/autofill/application/autofill_bridge.dart';
 import 'package:keykey/features/autofill/presentation/autofill_pick_screen.dart';
+import 'package:keykey/features/autofill/presentation/autofill_save_screen.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/lock_screen.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
-/// Doldurma bitti; ekran kapanırken kilit ekranı yeniden çizilmesin.
+/// Doldurma veya kaydetme bitti; ekran kapanırken kilit ekranı yeniden
+/// çizilmesin.
 final autofillDoneProvider = NotifierProvider<AutofillDone, bool>(
   AutofillDone.new,
 );
@@ -39,7 +41,8 @@ class AutofillApp extends StatelessWidget {
   }
 }
 
-/// Neyin doldurulacağı ve kasanın durumuna göre doğru ekranı seçer.
+/// Neyin doldurulacağı ya da kaydedileceği ve kasanın durumuna göre doğru
+/// ekranı seçer.
 class AutofillHome extends ConsumerWidget {
   const new({super.key});
 
@@ -55,13 +58,21 @@ class AutofillHome extends ConsumerWidget {
           error: (_, _) => _Message(l10n.autofillNoRequest),
           data: (target) {
             if (target == null) return _Message(l10n.autofillNoRequest);
+            final save = target.save;
+            final name = autofillTargetName(target);
             return switch (ref.watch(vaultControllerProvider)) {
               VaultNotSetUp() => _Message(l10n.autofillNoVault),
               VaultUnavailable() ||
               VaultRecovering() => _Message(l10n.autofillVaultUnavailable),
               VaultLocked() => LockScreen(
                 allowRecovery: false,
-                subtitle: l10n.autofillFor(autofillTargetName(target)),
+                subtitle: save == null
+                    ? l10n.autofillFor(name)
+                    : l10n.autofillSaveFor(name),
+              ),
+              VaultOpen() when save != null => AutofillSaveScreen(
+                target: target,
+                save: save,
               ),
               VaultOpen() => AutofillPickScreen(target: target),
             };

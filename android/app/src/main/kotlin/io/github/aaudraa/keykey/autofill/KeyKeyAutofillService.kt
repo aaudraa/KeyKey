@@ -11,11 +11,13 @@ import android.service.autofill.FillRequest
 import android.service.autofill.FillResponse
 import android.service.autofill.InlinePresentation
 import android.service.autofill.SaveCallback
+import android.service.autofill.SaveInfo
 import android.service.autofill.SaveRequest
 import android.widget.RemoteViews
 import android.widget.inline.InlinePresentationSpec
 import androidx.autofill.inline.UiVersions
 import androidx.autofill.inline.v1.InlineSuggestionUi
+import io.github.aaudraa.keykey.AutofillSaveValues
 import io.github.aaudraa.keykey.MainActivity
 import io.github.aaudraa.keykey.R
 
@@ -25,6 +27,8 @@ import io.github.aaudraa.keykey.R
  * Kasaya hiç dokunmaz, kayıt adlarını bilmez. Doldurulacak alan bulursa tek
  * bir öneri döndürür: "KeyKey ile doldur". Öneriye dokunulunca
  * [AutofillActivity] açılır; kasa orada açılır ve kayıt orada seçilir.
+ * Form gönderilince sistem kaydetmeyi önerir; kullanıcı kabul ederse
+ * [onSaveRequest] değerleri yine kasaya dokunmadan aynı ekrana verir.
  * Ayrıntılar güvenlik tasarımı belgesinin "Otomatik doldurma" bölümünde.
  */
 class KeyKeyAutofillService : AutofillService() {
@@ -55,7 +59,35 @@ class KeyKeyAutofillService : AutofillService() {
     }
 
     override fun onSaveRequest(request: SaveRequest, callback: SaveCallback) {
-        callback.onSuccess()
+        val structure = request.fillContexts.lastOrNull()?.structure
+        val parsed = try {
+            structure?.let { StructureParser.parse(it, readValues = true) }
+        } catch (error: RuntimeException) {
+            null
+        }
+        // Yeni parola alanı varsa (kayıt ya da parola değiştirme formu) o
+        // kaydedilir, yoksa giriş parolası.
+        val password = parsed?.let {
+            it.firstValue(FieldKind.NEW_PASSWORD) ?: it.firstValue(FieldKind.PASSWORD)
+        }
+        if (parsed == null || parsed.packageName == packageName || password == null) {
+            callback.onSuccess()
+            return
+        }
+        val save = AutofillSaveValues(
+            username = parsed.firstValue(FieldKind.USERNAME).orEmpty(),
+            password = password,
+        )
+        val token = PendingSaves.put(AutofillRequests.of(this, parsed, save))
+        val intent = Intent(this, AutofillActivity::class.java)
+            .putExtra(AutofillActivity.EXTRA_SAVE_TOKEN, token)
+        val pending = PendingIntent.getActivity(
+            this,
+            token.hashCode(),
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_CANCEL_CURRENT,
+        )
+        callback.onSuccess(pending.intentSender)
     }
 
     private fun lockedResponse(
@@ -89,7 +121,30 @@ class KeyKeyAutofillService : AutofillService() {
             for (id in ids) setValue(id, null)
             setAuthentication(pending.intentSender)
         }.build()
-        return FillResponse.Builder().addDataset(dataset).build()
+        return FillResponse.Builder().addDataset(dataset).apply {
+            saveInfo(parsed)?.let { setSaveInfo(it) }
+        }.build()
+    }
+
+    /**
+     * Form gönderilince kaydetme önerilsin diye. Parola alanı yoksa öneri
+     * yapılmaz. Yeni parola alanları varsa (kayıt ya da parola değiştirme)
+     * onlar gerekir; kullanıcı adı ve eski parola isteğe bağlıdır.
+     */
+    private fun saveInfo(parsed: ParsedStructure): SaveInfo? {
+        val newPasswords = parsed.idsOf(FieldKind.NEW_PASSWORD)
+        val passwords = parsed.idsOf(FieldKind.PASSWORD)
+        val usernames = parsed.idsOf(FieldKind.USERNAME)
+        val required = newPasswords.ifEmpty { passwords }
+        if (required.isEmpty()) return null
+        val optional = (usernames + passwords).filterNot { it in required }.distinct()
+        var type = SaveInfo.SAVE_DATA_TYPE_PASSWORD
+        if (usernames.isNotEmpty()) type = type or SaveInfo.SAVE_DATA_TYPE_USERNAME
+        return SaveInfo.Builder(type, required.toTypedArray()).apply {
+            if (optional.isNotEmpty()) setOptionalIds(optional.toTypedArray())
+            // Giriş aynı ekranda bitip form gizlendiğinde de öneri gelsin.
+            setFlags(SaveInfo.FLAG_SAVE_ON_ALL_VIEWS_INVISIBLE)
+        }.build()
     }
 
     /** Klavye şeridindeki öneri; yalnızca "KeyKey ile doldur" yazar. */

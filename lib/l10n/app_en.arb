@@ -1111,5 +1111,62 @@
   "autofillCancel": "Cancel",
   "@autofillCancel": {
     "description": "Closes the fill warning without filling."
+  },
+  "autofillSaveTitle": "Save to KeyKey",
+  "@autofillSaveTitle": {
+    "description": "Title of the screen that saves a login typed into another app."
+  },
+  "autofillSaveFor": "Save for {target}",
+  "@autofillSaveFor": {
+    "description": "Shown on the lock screen when a login is being saved.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillSaveSite": "Linked website: {url}",
+  "@autofillSaveSite": {
+    "description": "The address the new login will be linked to.",
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillSaveApp": "Linked app: {name}",
+  "@autofillSaveApp": {
+    "description": "The app the new login will be linked to.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillSaveWebView": "This app shows a web page inside it. KeyKey can't verify the page's address, so the login will be linked to the app.",
+  "@autofillSaveWebView": {
+    "description": "Explains why a login saved from a WebView is linked to the app."
+  },
+  "autofillSaveExisting": "{name} already has this username. You can save the new password there; the old one stays in the password history.",
+  "@autofillSaveExisting": {
+    "description": "Offers updating a matching login instead of adding a new one.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillSaveUpdate": "Update its password",
+  "@autofillSaveUpdate": {
+    "description": "Saves the new password into the matching login."
+  },
+  "autofillSaveAlready": "This login is already saved in {name}.",
+  "@autofillSaveAlready": {
+    "description": "The typed username and password are already in the vault.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

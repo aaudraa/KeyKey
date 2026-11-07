@@ -419,7 +419,12 @@ Birden fazla durum aynı anda geçerliyse hepsi tek pencerede yazılır. Uygulam
 
 ### Yeni parola kaydetme
 
-Yanıtta bir `SaveInfo` bulunur. Kullanıcı formu gönderince sistem kaydetmeyi önerir ve `onSaveRequest` çağrılır. Servis yine kasaya dokunmaz; formdaki değerleri kendi kaydetme ekranına verir (`SaveCallback.onSuccess(IntentSender)` ile). Kullanıcı kasayı açar, kaydı görür, gerekirse düzenler ve kaydeder. Uygulama veya alan adı kayda kendiliğinden bağlanır. Kaydetme ekranı da dışarıya açık değildir ve verileri başka bir yere yazmaz.
+Yanıtta bir `SaveInfo` bulunur. Kullanıcı formu gönderince sistem kaydetmeyi önerir ve `onSaveRequest` çağrılır. Servis yine kasaya dokunmaz; formdaki değerleri kendi kaydetme ekranına verir (`SaveCallback.onSuccess(IntentSender)` ile). Kullanıcı kasayı açar, kaydı görür, gerekirse düzenler ve kaydeder. Kaydettikten sonra kasa kilitlenir ve ekran kapanır. Kaydetme ekranı da dışarıya açık değildir ve verileri başka bir yere yazmaz.
+
+- **Hangi alanlar:** Formda yeni parola alanı varsa (kayıt veya parola değiştirme formu) kaydedilen parola odur, yoksa giriş parolasıdır. Kullanıcı adı ve eski parola alanları isteğe bağlıdır. Parola alanı olmayan formda kaydetme önerilmez.
+- **Değerler niyete konmaz.** Niyetler sistem sürecinden geçer ve orada tutulur. Servis ile ekran aynı süreçte çalıştığından değerler bellekte rastgele bir anahtarla bekler; niyet yalnızca anahtarı taşır. Ekran açılınca değerleri alır ve bekleyen kopyayı siler. Süreç kapanırsa değerler de gider.
+- **Bağlama:** Güvenilen tarayıcıda sitenin adresi kayda eklenir. Başka bir uygulamada uygulamanın paket adı ve imza özetleri eklenir. WebView'ın bildirdiği alan adı doğrulanamadığı için eklenmez; kayıt uygulamaya bağlanır ve ekran bunu söyler. İmzası okunamayan uygulama bağlanmaz.
+- **Var olan kayıt:** Bu hedefle zaten eşleşen ve aynı kullanıcı adını taşıyan bir kayıt varsa, ekran onun parolasını güncellemeyi önerir; eski parola geçmişe girer. Eşleşmeyen bir kaydın parolası önerilmez; böylece sahte bir uygulama başka bir kaydın parolasını değiştirtemez. Parola da aynıysa ekran kaydın zaten var olduğunu söyler.
 
 ### Satır içi öneriler
 
