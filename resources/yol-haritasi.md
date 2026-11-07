@@ -444,6 +444,7 @@ Bu fikirlerin hiçbiri henüz planlanmış değil. Sırası kullanıma göre bel
 |---|---|---|
 | libsodium'un Windows'ta Android için derlenmesi kırılgan olabilir | Derleme bozulur | Bu bilgisayarda doğrulandı, gereken araçlar [belgelendi](#geliştirme-ortamı). CI Linux'ta derler, proje yolu kısa tutulur. |
 | Otomatik doldurma tarayıcıya ve üreticiye göre farklı davranır | Bazı yerlerde doldurmaz | Dört sürümlük test düzeni, saf işlevlerle alan tespiti, Faz 8'de gerçek cihaz. |
+| Android, kaydetme sırasında ana ekranda simgesi olmayan uygulamayı KeyKey'e göstermiyor | O uygulamada ilk kayıt uygulamaya bağlanmaz, ilk doldurmada uyarı çıkar | Kayıt yine kaydedilir ve ekran durumu söyler; uygulama ilk doldurmada bir dokunuşla bağlanır. Gerçek bir örnek çıkarsa çözülecek: [#71](https://github.com/aaudraa/KeyKey/issues/71). |
 | Otomatik doldurma ekranında Flutter'ın yavaş açılması | Kullanım zorlaşır | Ayrı ve hafif giriş noktası, Faz 6 başında süre ölçümü. |
 | Kasa göçü veya biçim hatası | Veri kaybı | Biçim sürümleri, örnek dosyalı uyumluluk testleri, Faz 8'e kadar gerçek veri yok. |
 | Bağımlılık kaynaklı güvenlik sorunu | Tedarik zinciri saldırısı | Az paket, `pubspec.lock`, Dependabot, SHA'ya sabit Action'lar. |
