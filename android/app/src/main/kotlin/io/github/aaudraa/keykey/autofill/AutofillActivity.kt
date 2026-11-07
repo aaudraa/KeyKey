@@ -74,7 +74,7 @@ class AutofillActivity : FlutterFragmentActivity(), AutofillApi {
             return
         }
         // KeyKey kendi formlarını doldurmaz.
-        if (form.packageName == packageName || !form.form.hasCredentials) return
+        if (IgnoredPackages.isIgnored(form.packageName, packageName) || !form.form.hasCredentials) return
         parsed = form
         request = AutofillRequests.of(this, form)
     }

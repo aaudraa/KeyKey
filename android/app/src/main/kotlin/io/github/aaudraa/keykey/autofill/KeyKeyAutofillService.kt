@@ -49,8 +49,9 @@ class KeyKeyAutofillService : AutofillService() {
             callback.onSuccess(null)
             return
         }
-        // KeyKey'in kendi formları (ana parola, kayıt düzenleme) doldurulmaz.
-        if (parsed.packageName == packageName || !parsed.form.hasCredentials) {
+        // KeyKey'in kendi formları (ana parola, kayıt düzenleme) ve sistem
+        // formları doldurulmaz.
+        if (IgnoredPackages.isIgnored(parsed.packageName, packageName) || !parsed.form.hasCredentials) {
             callback.onSuccess(null)
             return
         }
@@ -70,7 +71,7 @@ class KeyKeyAutofillService : AutofillService() {
         val password = parsed?.let {
             it.firstValue(FieldKind.NEW_PASSWORD) ?: it.firstValue(FieldKind.PASSWORD)
         }
-        if (parsed == null || parsed.packageName == packageName || password == null) {
+        if (parsed == null || IgnoredPackages.isIgnored(parsed.packageName, packageName) || password == null) {
             callback.onSuccess()
             return
         }
