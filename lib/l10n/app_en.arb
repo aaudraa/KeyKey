@@ -1395,5 +1395,109 @@
   "backupReminderLater": "Later",
   "@backupReminderLater": {
     "description": "Snoozes the backup reminder for a week."
+  },
+  "loginImportTitle": "Import passwords",
+  "@loginImportTitle": {
+    "description": "Settings tile and screen title for importing passwords."
+  },
+  "loginImportHelp": "Bitwarden, Chrome or KeePassXC export file",
+  "@loginImportHelp": {
+    "description": "Subtitle of the password import tile."
+  },
+  "otpImportSettingsTitle": "Import 2FA accounts",
+  "@otpImportSettingsTitle": {
+    "description": "Settings tile for importing 2FA accounts."
+  },
+  "otpImportSettingsHelp": "Aegis or 2FAS export file",
+  "@otpImportSettingsHelp": {
+    "description": "Subtitle of the 2FA import tile in settings."
+  },
+  "loginImportUnknown": "This file was not recognised. Choose a Bitwarden (JSON or CSV), Chrome (CSV) or KeePassXC (CSV) export.",
+  "@loginImportUnknown": {
+    "description": "Error when the import file format is unknown."
+  },
+  "loginImportEncrypted": "This Bitwarden file is encrypted with a password, and KeyKey cannot open it. Export an unencrypted .json or .csv file from Bitwarden.",
+  "@loginImportEncrypted": {
+    "description": "Error for encrypted Bitwarden exports."
+  },
+  "loginImportTooLarge": "The file is too large.",
+  "@loginImportTooLarge": {
+    "description": "Error when the import file is over the size limit."
+  },
+  "loginImportRead": "{count, plural, =1{1 entry read from the {source} file.} other{{count} entries read from the {source} file.}}",
+  "@loginImportRead": {
+    "description": "Summary at the top of the import list.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "loginImportSkipped": "{count, plural, =1{1 row was skipped because it is not supported or is damaged.} other{{count} rows were skipped because they are not supported or are damaged.}}",
+  "@loginImportSkipped": {
+    "description": "How many rows were skipped.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "loginImportSkippedOtps": "{count, plural, =1{1 2FA key could not be read; its entry is still added.} other{{count} 2FA keys could not be read; their entries are still added.}}",
+  "@loginImportSkippedOtps": {
+    "description": "How many 2FA keys could not be read.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "loginImportDuplicatesNote": "Entries that are already in your vault are not selected.",
+  "@loginImportDuplicatesNote": {
+    "description": "Explains why some entries are unchecked."
+  },
+  "loginImportDuplicate": "Already in your vault",
+  "@loginImportDuplicate": {
+    "description": "Marks an entry that already exists."
+  },
+  "loginImportWithOtp": "with 2FA",
+  "@loginImportWithOtp": {
+    "description": "Marks an entry that brings a 2FA key."
+  },
+  "loginImportNothing": "There is nothing to import in this file.",
+  "@loginImportNothing": {
+    "description": "Shown when the file has no importable entries."
+  },
+  "loginImportAdd": "{count, plural, =0{Add} =1{Add 1 entry} other{Add {count} entries}}",
+  "@loginImportAdd": {
+    "description": "Button that saves the selected entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "loginImportDone": "{count, plural, =1{1 entry added.} other{{count} entries added.}}",
+  "@loginImportDone": {
+    "description": "Snackbar after importing.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "loginImportDeleteTitle": "Delete the source file",
+  "@loginImportDeleteTitle": {
+    "description": "Title of the dialog after importing."
+  },
+  "loginImportDeleteBody": "The file you imported is not encrypted: all your passwords are in it as plain text. KeyKey cannot delete it. Delete it yourself in your Files app or in Drive.",
+  "@loginImportDeleteBody": {
+    "description": "Reminds the user to delete the plaintext export."
+  },
+  "loginImportDeleteOk": "OK",
+  "@loginImportDeleteOk": {
+    "description": "Closes the delete reminder."
   }
 }

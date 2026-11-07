@@ -10,6 +10,8 @@ import 'package:keykey/features/authenticator/presentation/otp_edit_screen.dart'
 import 'package:keykey/features/authenticator/presentation/otp_import_screen.dart';
 import 'package:keykey/features/authenticator/presentation/otp_trash_screen.dart';
 import 'package:keykey/features/authenticator/presentation/qr_scan_screen.dart';
+import 'package:keykey/features/backup/data/import/login_import.dart';
+import 'package:keykey/features/backup/presentation/login_import_screen.dart';
 import 'package:keykey/features/backup/presentation/restore_screen.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/lock_screen.dart';
@@ -35,6 +37,7 @@ abstract final class AppRoutes {
   static const authenticatorImport = '/2fa/ice-aktar';
   static const settings = '/ayarlar';
   static const changePassword = '/ayarlar/parola';
+  static const loginImport = '/ayarlar/ice-aktar';
   static const setup = '/kurulum';
   static const restore = '/geri-yukle';
   static const lock = '/kilit';
@@ -210,6 +213,16 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'parola',
                     builder: (context, state) => const ChangePasswordScreen(),
+                  ),
+                  GoRoute(
+                    path: 'ice-aktar',
+                    // Okunan dosya yalnızca bellekte, ekrana doğrudan verilir.
+                    // Yoksa, örneğin uygulama yeniden açıldıysa, ayarlara
+                    // dönülür.
+                    redirect: (context, state) =>
+                        state.extra is LoginExport ? null : AppRoutes.settings,
+                    builder: (context, state) =>
+                        LoginImportScreen(export: state.extra! as LoginExport),
                   ),
                 ],
               ),

@@ -553,14 +553,14 @@ Geri yükleme bir yedeğin parolasını denemek için kullanılsa da kasanın ha
 
 | Kaynak | Biçim | Not |
 |---|---|---|
-| Bitwarden | Şifresiz JSON ve CSV dışa aktarma | Yalnızca giriş kayıtları alınır. JSON'daki `login.totp` 2FA hesabı olarak eklenir ve kayda bağlanır. Parola korumalı JSON desteklenmez. |
+| Bitwarden | Şifresiz JSON ve CSV dışa aktarma | Yalnızca giriş kayıtları alınır. `totp` alanı 2FA hesabı olarak eklenir ve kayda bağlanır. Metin ve gizli özel alanlar alınır. CSV'deki `login_uri` alanı, Bitwarden'ın okuyucusundaki gibi kendi içinde bir CSV satırıdır. Parola korumalı veya hesaba bağlı şifreli JSON desteklenmez; kullanıcıya şifresiz dışa aktarması söylenir. |
 | Chrome | Parolalar CSV'si (`name,url,username,password,note`) | |
-| KeePassXC | CSV dışa aktarma | `TOTP` sütunu 2FA hesabı olarak eklenir. Grup adı klasör olur. |
+| KeePassXC | CSV dışa aktarma | `TOTP` sütunu 2FA hesabı olarak eklenir. Grubun yolu, kök grup atılarak klasör olur. |
 
 - Biçim, dosyanın ilk satırındaki sütun adlarından veya JSON yapısından anlaşılır.
 - CSV okuyucu kendi kodumuzdur ve RFC 4180'e uyar: tırnak içinde virgül ve satır sonu, `""` kaçışı, isteğe bağlı UTF-8 BOM. Rastgele bozulmuş girdilerle de sınanır.
 - Dosyalar güvenilmeyen veri sayılır: bilinmeyen sütunlar ve alanlar yok sayılır, bozuk satır atlanır, bozuk dosya uygulamayı düşürmez. 2FA bağlantıları [`otpauth://` kurallarıyla](#otpauth-bağlantıları) okunur.
-- Kart, not ve kimlik gibi desteklenmeyen kayıtlar atlanır ve sayısı söylenir. `androidapp://` adresleri alınmaz, çünkü KeyKey uygulama bağlarken imza sertifikası da ister.
+- Kart, not ve kimlik gibi desteklenmeyen kayıtlar atlanır ve sayısı söylenir. Uygulama adresleri (Bitwarden'ın `androidapp://`, Chrome'un `android://` adresleri) alınmaz, çünkü KeyKey uygulama bağlarken imza sertifikası da ister.
 - Kayıtlar eklenmeden önce liste halinde gösterilir. Adresi, kullanıcı adı ve parolası kasadaki bir kayıtla aynı olan satırlar yinelenen diye işaretlenir ve varsayılan olarak seçilmez.
 - Dosya [2FA içe aktarmadaki](#içe-aktarma) gibi belge seçiciyle seçilir, önbellek kopyası okunur okunmaz silinir. İşlem bitince kullanıcıya düz metin kaynak dosyasını silmesi hatırlatılır; KeyKey o dosyayı silemez, çünkü yalnızca bir kez okuma izni almıştır.
 

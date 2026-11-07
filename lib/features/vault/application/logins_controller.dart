@@ -102,6 +102,21 @@ class LoginsController extends Notifier<LoginsState> {
     return item;
   }
 
+  /// İçe aktarılan kayıtları sırayla ekler. Yarıda kilitlenirse o ana kadar
+  /// yazılanlar kalır.
+  Future<List<LoginItem>> addAll(List<LoginContent> contents) async {
+    final repository = _openRepository;
+    final added = <LoginItem>[];
+    try {
+      for (final content in contents) {
+        added.add(await repository.add(content));
+      }
+    } finally {
+      _replaceItems((items) => [...items, ...added]);
+    }
+    return added;
+  }
+
   /// Parola değiştiyse eskisi geçmişe eklenir.
   Future<LoginItem> update(LoginItem item, LoginContent edited) async {
     final updated = await _openRepository.update(item, edited);

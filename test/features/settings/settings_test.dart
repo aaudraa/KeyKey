@@ -180,6 +180,9 @@ void main() {
       );
       await tester.tap(find.byIcon(Icons.settings_outlined));
       await tester.pumpAndSettle();
+      // Bölüm yedekleme girişlerinin altında; ekrana kaydırılır.
+      await tester.scrollUntilVisible(find.text('Otomatik doldurma'), 300);
+      await tester.pumpAndSettle();
       return setup;
     }
 
@@ -250,6 +253,8 @@ void main() {
         autofillSetup: setup,
       );
       await tester.tap(find.byIcon(Icons.settings_outlined));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text('Otomatik doldurma'), 300);
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Otomatik doldurma'));

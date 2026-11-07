@@ -6,7 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/vault/vault_session.dart';
+import 'package:keykey/features/authenticator/presentation/scanned_code_handler.dart';
 import 'package:keykey/features/backup/application/backup_service.dart';
+import 'package:keykey/features/backup/presentation/login_import_screen.dart';
 import 'package:keykey/features/backup/presentation/restore_screen.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
@@ -110,6 +112,20 @@ class _BackupSectionState extends ConsumerState<BackupSection> {
           subtitle: Text(l10n.restoreHelp),
           enabled: !_busy,
           onTap: () => unawaited(pickBackupToRestore(context, ref)),
+        ),
+        ListTile(
+          leading: const Icon(Icons.input),
+          title: Text(l10n.loginImportTitle),
+          subtitle: Text(l10n.loginImportHelp),
+          enabled: !_busy,
+          onTap: () => unawaited(pickLoginExport(context, ref)),
+        ),
+        ListTile(
+          leading: const Icon(Icons.phonelink_lock_outlined),
+          title: Text(l10n.otpImportSettingsTitle),
+          subtitle: Text(l10n.otpImportSettingsHelp),
+          enabled: !_busy,
+          onTap: () => unawaited(importFromFile(context, ref)),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(72, 0, 16, 8),

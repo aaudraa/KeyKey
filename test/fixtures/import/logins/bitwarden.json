@@ -1,0 +1,92 @@
+{
+  "encrypted": false,
+  "folders": [
+    {
+      "id": "f1",
+      "name": "İş"
+    }
+  ],
+  "items": [
+    {
+      "id": "a1",
+      "organizationId": null,
+      "folderId": "f1",
+      "type": 1,
+      "reprompt": 0,
+      "name": "Şirket",
+      "notes": "Not",
+      "favorite": true,
+      "fields": [
+        {
+          "name": "PIN",
+          "value": "4321",
+          "type": 1,
+          "linkedId": null
+        },
+        {
+          "name": "Bölüm",
+          "value": "BT",
+          "type": 0,
+          "linkedId": null
+        },
+        {
+          "name": "Onay",
+          "value": "true",
+          "type": 2,
+          "linkedId": null
+        }
+      ],
+      "login": {
+        "uris": [
+          {
+            "match": null,
+            "uri": "https://sirket.example.com"
+          },
+          {
+            "match": null,
+            "uri": "androidapp://com.sirket"
+          }
+        ],
+        "username": "veli",
+        "password": "deneme-Sirket-5",
+        "totp": "otpauth://totp/Sirket:veli?secret=JBSWY3DPEHPK3PXP&issuer=Sirket&digits=8"
+      },
+      "collectionIds": null
+    },
+    {
+      "id": "a2",
+      "organizationId": null,
+      "folderId": null,
+      "type": 1,
+      "reprompt": 0,
+      "name": "Basit",
+      "notes": null,
+      "favorite": false,
+      "fields": null,
+      "login": {
+        "uris": null,
+        "username": null,
+        "password": "deneme-Basit-6",
+        "totp": null
+      },
+      "collectionIds": null
+    },
+    {
+      "id": "a3",
+      "type": 2,
+      "name": "Not",
+      "notes": "gizli",
+      "secureNote": {
+        "type": 0
+      }
+    },
+    {
+      "id": "a4",
+      "type": 3,
+      "name": "Kart",
+      "card": {
+        "number": "4111111111111111"
+      }
+    }
+  ]
+}
