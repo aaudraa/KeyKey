@@ -35,4 +35,7 @@ regexes = [
   '''^dogru-Ana-Parola-47$''',
   '''^ikinci-Ana-Parola-58$''',
   '''^yepyeni-Ana-Parola-58$''',
+  '''^yedek-Parolasi-55$''',
+  '''^yedek-Alan-Parola-61$''',
+  '''^yeni-Telefon-Parola-73$''',
 ]
