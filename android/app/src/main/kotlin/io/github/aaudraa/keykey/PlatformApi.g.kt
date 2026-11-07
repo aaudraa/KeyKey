@@ -484,6 +484,58 @@ data class AutofillSaveValues (
     return "AutofillSaveValues(username=$username, password=$password)"
   }
 }
+
+/**
+ * Ana uygulamanın otomatik doldurma kurulumu durumu.
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class AutofillSetupStatus (
+  /** Cihaz otomatik doldurmayı destekliyor. */
+  val supported: Boolean,
+  /** Seçili otomatik doldurma servisi KeyKey. */
+  val enabled: Boolean,
+  /** Kurulu Chrome'un ana sürümü; Chrome yoksa `null`. */
+  val chromeMajorVersion: Long? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): AutofillSetupStatus {
+      val supported = pigeonVar_list[0] as Boolean
+      val enabled = pigeonVar_list[1] as Boolean
+      val chromeMajorVersion = pigeonVar_list[2] as Long?
+      return AutofillSetupStatus(supported, enabled, chromeMajorVersion)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      supported,
+      enabled,
+      chromeMajorVersion,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as AutofillSetupStatus
+    return PlatformApiPigeonUtils.deepEquals(this.supported, other.supported) && PlatformApiPigeonUtils.deepEquals(this.enabled, other.enabled) && PlatformApiPigeonUtils.deepEquals(this.chromeMajorVersion, other.chromeMajorVersion)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.supported)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.enabled)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.chromeMajorVersion)
+    return result
+  }
+  override fun toString(): String {
+    return "AutofillSetupStatus(supported=$supported, enabled=$enabled, chromeMajorVersion=$chromeMajorVersion)"
+  }
+}
 private open class PlatformApiPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -522,6 +574,11 @@ private open class PlatformApiPigeonCodec : StandardMessageCodec() {
           AutofillSaveValues.fromList(it)
         }
       }
+      136.toByte() -> {
+        (readValue(buffer) as? List<Any?>)?.let {
+          AutofillSetupStatus.fromList(it)
+        }
+      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -553,6 +610,10 @@ private open class PlatformApiPigeonCodec : StandardMessageCodec() {
       }
       is AutofillSaveValues -> {
         stream.write(135)
+        writeValue(stream, value.toList())
+      }
+      is AutofillSetupStatus -> {
+        stream.write(136)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -834,6 +895,75 @@ interface AutofillApi {
             val wrapped: List<Any?> = try {
               api.cancel()
               listOf(null)
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}
+/**
+ * Kurulum ekranının Kotlin tarafı: durum ve ayarlara doğrudan geçiş.
+ *
+ * Generated interface from Pigeon that represents a handler of messages from Flutter.
+ */
+interface AutofillSetupApi {
+  fun status(): AutofillSetupStatus
+  /** Sistemin otomatik doldurma servisi seçimini açar. Açılamazsa `false`. */
+  fun openAutofillSettings(): Boolean
+  /** Chrome'un otomatik doldurma ayarını açar. Açılamazsa `false`. */
+  fun openChromeAutofillSettings(): Boolean
+
+  companion object {
+    /** The codec used by AutofillSetupApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      PlatformApiPigeonCodec()
+    }
+    /** Sets up an instance of `AutofillSetupApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: AutofillSetupApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.AutofillSetupApi.status$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.status())
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.AutofillSetupApi.openAutofillSettings$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.openAutofillSettings())
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.AutofillSetupApi.openChromeAutofillSettings$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.openChromeAutofillSettings())
             } catch (exception: Throwable) {
               PlatformApiPigeonUtils.wrapError(exception)
             }

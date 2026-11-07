@@ -242,5 +242,13 @@
   "autofillSaveAlready": "Bu giriş {name} kaydında zaten var.",
   "autofillSaveNoApp": "{app} uygulaması doğrulanamadığı için kayda bağlanmadı. Bu uygulamada ilk doldurmada bağlayabilirsin.",
   "settingsAutofillCopyOtp": "Doldurduktan sonra 2FA kodunu kopyala",
-  "settingsAutofillCopyOtpHelp": "Doldurulan kayda bağlı bir 2FA hesabı varsa güncel kodu panoya kopyalanır ve {seconds} saniye sonra silinir."
+  "settingsAutofillCopyOtpHelp": "Doldurulan kayda bağlı bir 2FA hesabı varsa güncel kodu panoya kopyalanır ve {seconds} saniye sonra silinir.",
+  "autofillSetupTitle": "Otomatik doldurma",
+  "autofillSetupEnabled": "KeyKey seçili.",
+  "autofillSetupDisabled": "Kapalı. Dokun ve KeyKey'i seç.",
+  "autofillSetupUnsupported": "Bu cihaz otomatik doldurmayı desteklemiyor.",
+  "autofillSetupChromeTitle": "Chrome'da otomatik doldurma",
+  "autofillSetupChrome": "Chrome'un ayarında başka bir servisle otomatik doldurmayı seç, sonra Chrome'u yeniden başlat düğmesine dokun. Dokunmazsan seçim kaybolur.",
+  "autofillSetupChromeUpdate": "Chrome'u güncelle. Chrome başka bir doldurma servisini 135 sürümünden beri kullanabiliyor; bu cihazdaki sürüm {version}.",
+  "autofillSetupOpenFailed": "Ayar açılamadı."
 }

@@ -1190,5 +1190,42 @@
         "type": "int"
       }
     }
+  },
+  "autofillSetupTitle": "Autofill",
+  "@autofillSetupTitle": {
+    "description": "Settings entry for the system autofill service."
+  },
+  "autofillSetupEnabled": "KeyKey is selected.",
+  "@autofillSetupEnabled": {
+    "description": "KeyKey is the active autofill service."
+  },
+  "autofillSetupDisabled": "Off. Tap and choose KeyKey.",
+  "@autofillSetupDisabled": {
+    "description": "KeyKey is not the active autofill service."
+  },
+  "autofillSetupUnsupported": "This device doesn't support autofill.",
+  "@autofillSetupUnsupported": {
+    "description": "The device has no autofill framework."
+  },
+  "autofillSetupChromeTitle": "Autofill in Chrome",
+  "@autofillSetupChromeTitle": {
+    "description": "Settings entry that opens Chrome's autofill setting."
+  },
+  "autofillSetupChrome": "In Chrome's settings, choose autofill using another service, then tap Restart Chrome. Otherwise the choice is lost.",
+  "@autofillSetupChrome": {
+    "description": "How to let Chrome use KeyKey."
+  },
+  "autofillSetupChromeUpdate": "Update Chrome. Chrome can use another autofill service since version 135; this device has version {version}.",
+  "@autofillSetupChromeUpdate": {
+    "description": "Chrome is too old for third-party autofill.",
+    "placeholders": {
+      "version": {
+        "type": "int"
+      }
+    }
+  },
+  "autofillSetupOpenFailed": "Couldn't open the setting.",
+  "@autofillSetupOpenFailed": {
+    "description": "The system or Chrome setting could not be opened."
   }
 }

@@ -396,6 +396,64 @@ class AutofillSaveValues {
   }
 }
 
+/// Ana uygulamanın otomatik doldurma kurulumu durumu.
+class AutofillSetupStatus {
+  AutofillSetupStatus({
+    required this.supported,
+    required this.enabled,
+    this.chromeMajorVersion,
+  });
+
+  /// Cihaz otomatik doldurmayı destekliyor.
+  bool supported;
+
+  /// Seçili otomatik doldurma servisi KeyKey.
+  bool enabled;
+
+  /// Kurulu Chrome'un ana sürümü; Chrome yoksa `null`.
+  int? chromeMajorVersion;
+
+  List<Object?> _toList() {
+    return <Object?>[supported, enabled, chromeMajorVersion];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static AutofillSetupStatus decode(Object result) {
+    result as List<Object?>;
+    return AutofillSetupStatus(
+      supported: result[0]! as bool,
+      enabled: result[1]! as bool,
+      chromeMajorVersion: result[2] as int?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! AutofillSetupStatus || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(supported, other.supported) &&
+        _deepEquals(enabled, other.enabled) &&
+        _deepEquals(chromeMajorVersion, other.chromeMajorVersion);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'AutofillSetupStatus(supported: $supported, enabled: $enabled, chromeMajorVersion: $chromeMajorVersion)';
+  }
+}
+
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -424,6 +482,9 @@ class _PigeonCodec extends StandardMessageCodec {
     } else if (value is AutofillSaveValues) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
+    } else if (value is AutofillSetupStatus) {
+      buffer.putUint8(136);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -448,6 +509,8 @@ class _PigeonCodec extends StandardMessageCodec {
         return AutofillRequestInfo.decode(readValue(buffer)!);
       case 135:
         return AutofillSaveValues.decode(readValue(buffer)!);
+      case 136:
+        return AutofillSetupStatus.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -756,5 +819,83 @@ class AutofillApi {
       pigeonVar_channelName,
       isNullValid: true,
     );
+  }
+}
+
+/// Kurulum ekranının Kotlin tarafı: durum ve ayarlara doğrudan geçiş.
+class AutofillSetupApi {
+  /// Constructor for [AutofillSetupApi]. The [binaryMessenger] named argument is
+  /// available for dependency injection. If it is left null, the default
+  /// BinaryMessenger will be used which routes to the host platform.
+  AutofillSetupApi({
+    BinaryMessenger? binaryMessenger,
+    String messageChannelSuffix = '',
+  }) : pigeonVar_binaryMessenger = binaryMessenger,
+       pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty
+           ? '.$messageChannelSuffix'
+           : '';
+
+  final BinaryMessenger? pigeonVar_binaryMessenger;
+  static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
+
+  final String pigeonVar_messageChannelSuffix;
+
+  Future<AutofillSetupStatus> status() async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.AutofillSetupApi.status$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as AutofillSetupStatus;
+  }
+
+  /// Sistemin otomatik doldurma servisi seçimini açar. Açılamazsa `false`.
+  Future<bool> openAutofillSettings() async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.AutofillSetupApi.openAutofillSettings$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as bool;
+  }
+
+  /// Chrome'un otomatik doldurma ayarını açar. Açılamazsa `false`.
+  Future<bool> openChromeAutofillSettings() async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.AutofillSetupApi.openChromeAutofillSettings$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as bool;
   }
 }

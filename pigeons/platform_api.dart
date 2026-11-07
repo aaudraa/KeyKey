@@ -149,3 +149,33 @@ abstract class AutofillApi {
   /// Hiçbir şey doldurmadan ekranı kapatır. Kaydetme bitince de kullanılır.
   void cancel();
 }
+
+/// Ana uygulamanın otomatik doldurma kurulumu durumu.
+class AutofillSetupStatus {
+  AutofillSetupStatus({
+    required this.supported,
+    required this.enabled,
+    this.chromeMajorVersion,
+  });
+
+  /// Cihaz otomatik doldurmayı destekliyor.
+  bool supported;
+
+  /// Seçili otomatik doldurma servisi KeyKey.
+  bool enabled;
+
+  /// Kurulu Chrome'un ana sürümü; Chrome yoksa `null`.
+  int? chromeMajorVersion;
+}
+
+/// Kurulum ekranının Kotlin tarafı: durum ve ayarlara doğrudan geçiş.
+@HostApi()
+abstract class AutofillSetupApi {
+  AutofillSetupStatus status();
+
+  /// Sistemin otomatik doldurma servisi seçimini açar. Açılamazsa `false`.
+  bool openAutofillSettings();
+
+  /// Chrome'un otomatik doldurma ayarını açar. Açılamazsa `false`.
+  bool openChromeAutofillSettings();
+}
