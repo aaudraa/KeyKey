@@ -50,6 +50,8 @@ void main() {
     documents.readGate = () => container.read(externalActivityGateProvider);
     final tile = find.text('Parolaları içe aktar');
     await tester.scrollUntilVisible(tile, 200);
+    await tester.ensureVisible(tile);
+    await tester.pumpAndSettle();
     await tester.tap(tile);
     await tester.pumpAndSettle();
   }

@@ -1499,5 +1499,41 @@
   "loginImportDeleteOk": "OK",
   "@loginImportDeleteOk": {
     "description": "Closes the delete reminder."
+  },
+  "exportTitle": "Export unencrypted",
+  "@exportTitle": {
+    "description": "Settings tile for the plaintext export."
+  },
+  "exportHelp": "CSV file for moving to another password manager",
+  "@exportHelp": {
+    "description": "Subtitle of the plaintext export tile."
+  },
+  "exportWarningTitle": "This file is not encrypted",
+  "@exportWarningTitle": {
+    "description": "Title of the warning before exporting."
+  },
+  "exportWarningBody": "All your passwords, notes and 2FA keys are written into the file as plain text. Any app or person that can reach the file can read them, including the cloud it syncs to.\n\nUse it only to move to another password manager, and delete it right after importing. To keep a backup, use \"Back up now\" instead; backups are encrypted.",
+  "@exportWarningBody": {
+    "description": "Explains the risk of the plaintext export."
+  },
+  "exportWarningContinue": "Continue",
+  "@exportWarningContinue": {
+    "description": "Continues past the export warning."
+  },
+  "exportWarningCancel": "Cancel",
+  "@exportWarningCancel": {
+    "description": "Cancels the export."
+  },
+  "exportConfirmTitle": "Export unencrypted",
+  "@exportConfirmTitle": {
+    "description": "Fingerprint prompt title before exporting."
+  },
+  "exportSaved": "Export saved. Delete the file once you have imported it.",
+  "@exportSaved": {
+    "description": "Snackbar after the export is saved."
+  },
+  "exportFailed": "The file could not be saved.",
+  "@exportFailed": {
+    "description": "Snackbar when saving the export fails."
   }
 }

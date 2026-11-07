@@ -571,7 +571,9 @@ Başka bir parola yöneticisine geçmek için. Dosya **şifresizdir**; bu yüzde
 - Önce dosyanın şifresiz olduğu ve kimlerin okuyabileceği açıkça anlatılır. Ardından ana parola veya parmak iziyle [kimlik doğrulanır](#kodları-görmek-için-ek-onay).
 - Biçim Bitwarden'ın CSV sütunlarıdır (`folder,favorite,type,name,notes,fields,reprompt,login_uri,login_username,login_password,login_totp`); çoğu parola yöneticisi bu biçimi okur. Bağlı 2FA hesabı `login_totp` sütununa `otpauth://` bağlantısı olarak yazılır. Bir kayda bağlı olmayan 2FA hesapları ayrı satırlara yazılır. Bağlı uygulamalar `androidapp://` adresi olarak eklenir.
 - Çöp kutusundaki kayıtlar ve parola geçmişi dışa aktarılmaz.
-- Dosya `ACTION_CREATE_DOCUMENT` ile kaydedilir, uygulamanın klasöründe kopya kalmaz.
+- Dosya `ACTION_CREATE_DOCUMENT` ile kaydedilir, uygulamanın klasöründe kopya kalmaz. Kaydedilen baytlar bellekte sıfırlanır.
+- Hücreler formül kaçışından geçirilmez. `=` ile başlayan bir parola olduğu gibi yazılır; dosya tablo programında açılmak için değil, başka bir parola yöneticisine verilmek içindir.
+- KeyKey kendi dışa aktarmasını Bitwarden CSV'si olarak geri okur (gidiş-dönüş testi). Biçimin taşıyamadıkları: özel alanların gizli işareti, uygulama imza özetleri (KeyKey `androidapp://` adreslerini içe almaz) ve parola geçmişi. Bağlı olmayan 2FA hesapları geri okununca 2FA hesabı bağlı birer kayıt olur.
 
 ## Hata davranışı
 

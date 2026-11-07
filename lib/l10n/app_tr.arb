@@ -305,5 +305,14 @@
   "loginImportDone": "{count} kayıt eklendi.",
   "loginImportDeleteTitle": "Kaynak dosyayı sil",
   "loginImportDeleteBody": "İçe aktardığın dosya şifresiz; bütün parolaların düz metin olarak içinde. KeyKey bu dosyayı silemez. Dosyalar uygulamasından ya da Drive'dan kendin sil.",
-  "loginImportDeleteOk": "Tamam"
+  "loginImportDeleteOk": "Tamam",
+  "exportTitle": "Şifresiz dışa aktar",
+  "exportHelp": "Başka bir parola yöneticisine geçmek için CSV dosyası",
+  "exportWarningTitle": "Bu dosya şifresiz",
+  "exportWarningBody": "Bütün parolaların, notların ve 2FA anahtarların dosyaya düz metin olarak yazılır. Dosyaya erişen her uygulama ve kişi, eşitlendiği bulut da dahil, hepsini okuyabilir.\n\nYalnızca başka bir parola yöneticisine geçmek için kullan ve içe aktardıktan hemen sonra sil. Yedek için bunun yerine \"Yedek al\"ı kullan; yedek şifrelidir.",
+  "exportWarningContinue": "Devam et",
+  "exportWarningCancel": "Vazgeç",
+  "exportConfirmTitle": "Şifresiz dışa aktar",
+  "exportSaved": "Dışa aktarma kaydedildi. İçe aktardıktan sonra dosyayı sil.",
+  "exportFailed": "Dosya kaydedilemedi."
 }

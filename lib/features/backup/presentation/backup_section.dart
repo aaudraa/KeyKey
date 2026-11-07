@@ -9,6 +9,7 @@ import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/presentation/scanned_code_handler.dart';
 import 'package:keykey/features/backup/application/backup_service.dart';
 import 'package:keykey/features/backup/presentation/login_import_screen.dart';
+import 'package:keykey/features/backup/presentation/plaintext_export.dart';
 import 'package:keykey/features/backup/presentation/restore_screen.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
@@ -126,6 +127,13 @@ class _BackupSectionState extends ConsumerState<BackupSection> {
           subtitle: Text(l10n.otpImportSettingsHelp),
           enabled: !_busy,
           onTap: () => unawaited(importFromFile(context, ref)),
+        ),
+        ListTile(
+          leading: const Icon(Icons.output),
+          title: Text(l10n.exportTitle),
+          subtitle: Text(l10n.exportHelp),
+          enabled: !_busy,
+          onTap: () => unawaited(exportPlaintext(context, ref)),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(72, 0, 16, 8),
