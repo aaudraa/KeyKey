@@ -372,9 +372,9 @@ Telefon denemesi üç sorun buldu ve [#60](https://github.com/aaudraa/KeyKey/pul
 - [x] Yeni parola kaydetme akışı
 - [x] Doldurma sonrası 2FA kodunu panoya kopyalama seçeneği
 - [x] Kurulum yönlendirmesi: sistem ayarına doğrudan geçiş ve Chrome 135+ için [gereken "Autofill using another service" ayarına](https://android-developers.googleblog.com/2025/02/chrome-3p-autofill-services-update.html) doğrudan bağlantı
-- [ ] Saldırı testleri: aynı paket adıyla farklı imzalı uygulama, sahte `webDomain`, WebView içeren uygulama (2023'te yayımlanan AutoSpill senaryosu)
+- [x] Saldırı testleri: aynı paket adıyla farklı imzalı uygulama, sahte `webDomain`, WebView içeren uygulama (2023'te yayımlanan AutoSpill senaryosu)
 
-**Durum (2026-11-07):** #61-#69 bitti. Kalan: #70 son denemeler. Android 17 emülatöründe kaydetme hem örnek uygulamada hem Chrome 145'te denendi; kurulum bağlantıları da çalışıyor. Yeni bir uygulamada ilk kayıt da uygulamaya bağlanıyor; bunun için KeyKey ana ekranda simgesi olan uygulamaları görebiliyor. Açık sorun: Android 16 emülatöründeki Chrome 133, başka doldurma servisini desteklemiyor (135+ gerekiyor) ve Google hesabı olmadığı için güncellenemiyor; Android 11 ve 14'te de durum aynı olabilir. Chrome denemesi o emülatörlerde yapılamazsa bu ölçüt tartışılacak.
+**Durum (2026-11-07):** #61-#69 bitti. #70 son denemeleri dört emülatörde (Android 11, 14, 16, 17) yapıldı: kaydetme, kilitliyken kayıt adının görünmemesi ve saldırı denemeleri hepsinde geçti; denemelerde iki hata bulunup düzeltildi. Yeni bir uygulamada ilk kayıt da uygulamaya bağlanıyor; bunun için KeyKey ana ekranda simgesi olan uygulamaları görebiliyor. Açık konu: Chrome yalnızca Android 17'de (Chrome 145) denenebildi. Diğer emülatörlerdeki Chrome 83, 113 ve 133 başka doldurma servisini desteklemiyor (135+ gerekiyor) ve Google hesabı olmadığı için güncellenemiyor. Bitiş ölçütünün bu kısmı kullanıcıyla netleşecek.
 
 **Bitti sayılması için:** Dört emülatörde Chrome'daki bir giriş formu ve örnek bir uygulama dolduruluyor; yeni parola kaydediliyor; kilitliyken hiçbir kayıt adı görünmüyor; saldırı testlerinin hepsinde parola sahte hedefe verilmiyor.
 
