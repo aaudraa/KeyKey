@@ -137,7 +137,8 @@ void main() {
 
     expect(service.changedPassword, newPassword);
     expect(find.text('Ana parola değiştirildi.'), findsOneWidget);
-    expect(find.text('Şimdi kilitle'), findsOneWidget);
+    // Ayarlar ekranına dönüldü.
+    expect(find.text('Ana parolayı değiştir'), findsOneWidget);
   });
 
   testWidgets('mevcut parola yanlışsa değişmiyor', (tester) async {
@@ -287,6 +288,8 @@ void main() {
       'Doldurduktan sonra 2FA kodunu kopyala',
     );
     await tester.scrollUntilVisible(copySwitch, 100);
+    await tester.ensureVisible(copySwitch);
+    await tester.pumpAndSettle();
     expect(tester.widget<SwitchListTile>(copySwitch).value, isTrue);
     await tester.tap(copySwitch);
     await tester.pumpAndSettle();

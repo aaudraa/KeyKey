@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/backup/application/backup_service.dart';
+import 'package:keykey/features/backup/presentation/restore_screen.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
@@ -97,6 +98,13 @@ class _BackupSectionState extends ConsumerState<BackupSection> {
           ),
           enabled: !_busy,
           onTap: () => unawaited(_backUp()),
+        ),
+        ListTile(
+          leading: const Icon(Icons.settings_backup_restore),
+          title: Text(l10n.restoreTitle),
+          subtitle: Text(l10n.restoreHelp),
+          enabled: !_busy,
+          onTap: () => unawaited(pickBackupToRestore(context, ref)),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(72, 0, 16, 8),

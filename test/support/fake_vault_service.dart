@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/app.dart';
+import 'package:keykey/core/backup/backup_codec.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/crypto/record_cipher.dart';
 import 'package:keykey/core/crypto/recovery_key.dart';
@@ -14,6 +15,7 @@ import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/platform/export_file_picker.dart';
 import 'package:keykey/core/platform/qr_image_reader.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
+import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/core/vault/vault_session.dart';
@@ -25,6 +27,7 @@ import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/authenticator/presentation/qr_scan_screen.dart';
 import 'package:keykey/features/autofill/application/autofill_setup.dart';
 import 'package:keykey/features/backup/application/backup_service.dart';
+import 'package:keykey/features/backup/application/restore_service.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
@@ -187,6 +190,14 @@ class FakeVaultService implements VaultService {
   Future<void> disableBiometric() async {
     biometricEnabled = false;
   }
+
+  @override
+  VaultSession openRestoredSession(VaultHeader header, SecureKey vaultKey) =>
+      VaultSession(
+        header: header,
+        vaultKey: vaultKey,
+        records: RecordCipher(sodium, vaultKey, header.vaultId),
+      );
 
   @override
   Future<BiometricOutcome<VaultSession>> unlockWithBiometric(
@@ -385,6 +396,74 @@ class FakeBackupService implements BackupService {
   }
 }
 
+/// Geri yükleme servisinin yerine. Dosya yapısını gerçek okuyucu denetler;
+/// açma, sahte servisin parolası veya kurtarma anahtarıyla başarılı olur.
+class FakeRestoreService implements RestoreService {
+  new(this.sodium);
+
+  static const password = 'yedek-Parolasi-55';
+
+  final SodiumSumo sodium;
+  int replaces = 0;
+  int merges = 0;
+  bool corrupted = false;
+  MergeCounts mergeResult = const MergeCounts(added: 2, updated: 1, kept: 4);
+
+  /// Gerçek biçimde, kayıtsız bir yedek dosyası.
+  Future<Uint8List> backupBytes(VaultHeader header) async {
+    final key = sodium.secureRandom(32);
+    try {
+      return await BackupCodec(sodium).encode(
+        header: header,
+        vaultKey: key,
+        records: const [],
+        createdAt: DateTime.utc(2026, 11, 1, 9),
+      );
+    } finally {
+      key.dispose();
+    }
+  }
+
+  @override
+  BackupFile parse(Uint8List bytes) => BackupCodec(sodium).parse(bytes);
+
+  @override
+  Future<OpenedBackup> openWithPassword(BackupFile file, String text) async {
+    if (text != password) throw const WrongSecretException();
+    return _opened(file);
+  }
+
+  @override
+  Future<OpenedBackup> openWithRecoveryKey(BackupFile file, String text) async {
+    if (RecoveryKeyCodec.symbolsOf(text) !=
+        RecoveryKeyCodec.symbolsOf(FakeVaultService.recoveryKey)) {
+      throw const WrongSecretException();
+    }
+    return _opened(file);
+  }
+
+  OpenedBackup _opened(BackupFile file) {
+    if (corrupted) throw const CorruptedDataException();
+    return OpenedBackup.forTesting(
+      header: file.header,
+      vaultKey: sodium.secureRandom(32),
+      createdAt: DateTime.utc(2026, 11, 1, 9),
+      loginCount: 3,
+      otpCount: 2,
+    );
+  }
+
+  @override
+  Future<void> replace(OpenedBackup backup) async => replaces++;
+
+  @override
+  Future<MergeCounts> merge(OpenedBackup backup, VaultSession session) async {
+    if (session.isDisposed) throw const VaultLockedException();
+    merges++;
+    return mergeResult;
+  }
+}
+
 /// Seçilmiş gibi davranılan dışa aktarma dosyası.
 class FakeExportFilePicker implements ExportFilePicker {
   ExportFileResult next = const ExportFileCancelled();
@@ -503,6 +582,7 @@ Future<void> pumpKeyKey(
   FakeAutofillSetup? autofillSetup,
   FakeDocumentFiles? documents,
   FakeBackupService? backups,
+  FakeRestoreService? restores,
   Locale locale = const Locale('tr'),
 }) async {
   tester.platformDispatcher.localesTestValue = [locale];
@@ -525,6 +605,9 @@ Future<void> pumpKeyKey(
           documents ?? FakeDocumentFiles(),
         ),
         backupServiceProvider.overrideWithValue(backups ?? FakeBackupService()),
+        restoreServiceProvider.overrideWithValue(
+          restores ?? FakeRestoreService(service.sodium),
+        ),
         qrImageReaderProvider.overrideWithValue(
           qrImages ?? FakeQrImageReader(),
         ),

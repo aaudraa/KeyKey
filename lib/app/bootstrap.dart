@@ -15,6 +15,7 @@ import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/data/import/platform_aes_gcm.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/backup/application/backup_service.dart';
+import 'package:keykey/features/backup/application/restore_service.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
@@ -55,6 +56,9 @@ Future<List<Override>> bootstrap() async {
     documentFilesProvider.overrideWithValue(PigeonDocumentFiles()),
     backupServiceProvider.overrideWithValue(
       BackupService(sodium: sodium, store: store),
+    ),
+    restoreServiceProvider.overrideWithValue(
+      RestoreService(sodium: sodium, store: store),
     ),
     aesGcmProvider.overrideWithValue(PlatformAesGcm()),
     vaultServiceProvider.overrideWithValue(service),

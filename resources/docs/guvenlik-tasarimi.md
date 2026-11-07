@@ -537,7 +537,7 @@ parça   = uzunluk (4 bayt, büyük uçlu) || şifreli parça
 
 | Durum | Ne olur |
 |---|---|
-| İlk kurulum (kasa yok) | Yedeğin üst bilgisi ve kayıtları olduğu gibi yazılır. Kasa, yedeği alan kasanın aynısı olur; aynı ana parola ve kurtarma anahtarıyla açılır. |
+| İlk kurulum (kasa yok) | Yedeğin üst bilgisi ve kayıtları olduğu gibi yazılır. Kasa, yedeği alan kasanın aynısı olur; aynı ana parola ve kurtarma anahtarıyla açılır. Kullanıcı yedeği açarken parolayı zaten girdiği için kasa hemen açık gelir. Parmak izi yeniden açılmalıdır. |
 | Açık kasaya **birleştirme** | Yedeğin kayıtları çözülür ve açık kasanın anahtarıyla yeniden şifrelenir. Kayıt kimlikleri korunur, böylece 2FA hesaplarının parola kayıtlarıyla bağı kopmaz. Aynı kimlikte kayıt varsa `updatedAt` değeri yeni olan kalır. Ayar kaydı alınmaz, açık kasanın ayarları korunur. |
 | Açık kasayı **değiştirme** | Ek onay ister. Kasanın bütün kayıtları silinir, yedeğin üst bilgisi ve kayıtları yazılır. Parmak izi yuvası ve hatalı deneme sayacı silinir, kasa kilitlenir ve yedeğin ana parolası istenir. |
 

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/crypto/recovery_key.dart';
+import 'package:keykey/features/backup/presentation/restore_screen.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/new_password_fields.dart';
 import 'package:keykey/features/lock/presentation/recovery_key_formatter.dart';
@@ -158,6 +159,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           onPressed: _canCreate ? _create : null,
           child: Text(_busy ? l10n.setupCreating : l10n.setupCreate),
         ),
+      ),
+      const SizedBox(height: 8),
+      TextButton(
+        onPressed: _busy ? null : () => pickBackupToRestore(context, ref),
+        child: Text(l10n.restoreTitle),
       ),
     ];
   }

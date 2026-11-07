@@ -45,7 +45,7 @@ void main() {
 
     await tester.tap(find.byIcon(Icons.settings_outlined));
     await tester.pumpAndSettle();
-    expect(find.text('Şimdi kilitle'), findsOneWidget);
+    expect(find.text('Ana parolayı değiştir'), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.lock_outline).last);
     await tester.pumpAndSettle();

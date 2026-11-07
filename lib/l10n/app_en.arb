@@ -1260,5 +1260,128 @@
   "backupFailed": "The backup could not be saved. Try another location.",
   "@backupFailed": {
     "description": "Snackbar when writing the backup file fails."
+  },
+  "restoreTitle": "Restore from backup",
+  "@restoreTitle": {
+    "description": "Title and button for restoring a .keykey backup."
+  },
+  "restoreHelp": "Open a KeyKey backup file (.keykey).",
+  "@restoreHelp": {
+    "description": "Subtitle of the restore tile in settings."
+  },
+  "restoreNotBackup": "This file is not a KeyKey backup, or it is damaged.",
+  "@restoreNotBackup": {
+    "description": "Error when the picked file is not a valid backup."
+  },
+  "restoreTooLarge": "This file is too large to be a KeyKey backup.",
+  "@restoreTooLarge": {
+    "description": "Error when the picked file exceeds the size limit."
+  },
+  "restoreOpenFailed": "The file could not be read.",
+  "@restoreOpenFailed": {
+    "description": "Error when reading the picked file fails."
+  },
+  "restoreUnlockIntro": "The backup opens with the master password you had when you took it, or with your recovery key.",
+  "@restoreUnlockIntro": {
+    "description": "Explains which secret opens a backup."
+  },
+  "restoreUseRecoveryKey": "Use recovery key instead",
+  "@restoreUseRecoveryKey": {
+    "description": "Switches the restore form to the recovery key."
+  },
+  "restoreUsePassword": "Use master password instead",
+  "@restoreUsePassword": {
+    "description": "Switches the restore form back to the master password."
+  },
+  "restoreOpen": "Open backup",
+  "@restoreOpen": {
+    "description": "Button that opens the backup with the typed secret."
+  },
+  "restoreOpening": "Opening…",
+  "@restoreOpening": {
+    "description": "Button text while the backup is being opened."
+  },
+  "restoreWrongPassword": "This password does not open the backup. Try the master password you had when you took it.",
+  "@restoreWrongPassword": {
+    "description": "Error for a wrong backup password."
+  },
+  "restoreWrongRecoveryKey": "This recovery key does not belong to the vault in this backup.",
+  "@restoreWrongRecoveryKey": {
+    "description": "Error for a recovery key from another vault."
+  },
+  "restoreCorrupted": "The backup is damaged or was changed. Nothing was restored.",
+  "@restoreCorrupted": {
+    "description": "Error when the backup content fails verification."
+  },
+  "restoreSummary": "Backup from {date}: {logins} passwords and {otps} 2FA accounts.",
+  "@restoreSummary": {
+    "description": "Summary of an opened backup.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "logins": {
+        "type": "int"
+      },
+      "otps": {
+        "type": "int"
+      }
+    }
+  },
+  "restoreRestore": "Restore",
+  "@restoreRestore": {
+    "description": "Button that restores the backup on a new phone."
+  },
+  "restoreMerge": "Merge into my vault",
+  "@restoreMerge": {
+    "description": "Button that merges the backup into the open vault."
+  },
+  "restoreMergeHelp": "Adds the entries that are missing. If an entry is in both, the newer version stays. Your settings stay as they are.",
+  "@restoreMergeHelp": {
+    "description": "Explains merging."
+  },
+  "restoreReplace": "Replace my vault",
+  "@restoreReplace": {
+    "description": "Button that replaces the open vault with the backup."
+  },
+  "restoreReplaceHelp": "Deletes everything in your vault and puts the backup in its place. Afterwards the vault opens with the backup's master password.",
+  "@restoreReplaceHelp": {
+    "description": "Explains replacing."
+  },
+  "restoreReplaceConfirmTitle": "Replace your vault?",
+  "@restoreReplaceConfirmTitle": {
+    "description": "Title of the replace confirmation dialog."
+  },
+  "restoreReplaceConfirmBody": "Every password and 2FA account in this vault will be deleted and replaced with the backup. Fingerprint unlock is turned off. This cannot be undone.",
+  "@restoreReplaceConfirmBody": {
+    "description": "Body of the replace confirmation dialog."
+  },
+  "restoreReplaceConfirm": "Replace",
+  "@restoreReplaceConfirm": {
+    "description": "Confirm button of the replace dialog."
+  },
+  "restoreCancel": "Cancel",
+  "@restoreCancel": {
+    "description": "Cancel button of the replace dialog."
+  },
+  "restoreMerged": "{added} added, {updated} updated.",
+  "@restoreMerged": {
+    "description": "Snackbar after merging a backup.",
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "updated": {
+        "type": "int"
+      }
+    }
+  },
+  "restoreDone": "Backup restored.",
+  "@restoreDone": {
+    "description": "Snackbar after restoring on a new phone."
+  },
+  "restoreFailed": "Restoring failed. Your vault was not changed.",
+  "@restoreFailed": {
+    "description": "Error when writing the restored data fails."
   }
 }
