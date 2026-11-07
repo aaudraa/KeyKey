@@ -374,9 +374,9 @@ Telefon denemesi üç sorun buldu ve [#60](https://github.com/aaudraa/KeyKey/pul
 - [x] Kurulum yönlendirmesi: sistem ayarına doğrudan geçiş ve Chrome 135+ için [gereken "Autofill using another service" ayarına](https://android-developers.googleblog.com/2025/02/chrome-3p-autofill-services-update.html) doğrudan bağlantı
 - [x] Saldırı testleri: aynı paket adıyla farklı imzalı uygulama, sahte `webDomain`, WebView içeren uygulama (2023'te yayımlanan AutoSpill senaryosu)
 
-**Durum (2026-11-07):** #61-#69 bitti. #70 son denemeleri dört emülatörde (Android 11, 14, 16, 17) yapıldı: kaydetme, kilitliyken kayıt adının görünmemesi ve saldırı denemeleri hepsinde geçti; denemelerde iki hata bulunup düzeltildi. Yeni bir uygulamada ilk kayıt da uygulamaya bağlanıyor; bunun için KeyKey ana ekranda simgesi olan uygulamaları görebiliyor. Açık konu: Chrome yalnızca Android 17'de (Chrome 145) denenebildi. Diğer emülatörlerdeki Chrome 83, 113 ve 133 başka doldurma servisini desteklemiyor (135+ gerekiyor) ve Google hesabı olmadığı için güncellenemiyor. Bitiş ölçütünün bu kısmı kullanıcıyla netleşecek.
+**Durum (2026-11-07):** #61-#69 bitti. #70 son denemeleri dört emülatörde (Android 11, 14, 16, 17) yapıldı: kaydetme, kilitliyken kayıt adının görünmemesi ve saldırı denemeleri hepsinde geçti; denemelerde iki hata bulunup düzeltildi. Yeni bir uygulamada ilk kayıt da uygulamaya bağlanıyor; bunun için KeyKey ana ekranda simgesi olan uygulamaları görebiliyor. Chrome yalnızca Android 17'de (Chrome 145) denenebildi; diğer emülatörlerdeki Chrome 83, 113 ve 133 başka doldurma servisini desteklemiyor ve güncellenemiyor. Ölçüt kullanıcının onayıyla buna göre değiştirildi (2026-11-07). Samsung Internet telefonda denenecek.
 
-**Bitti sayılması için:** Dört emülatörde Chrome'daki bir giriş formu ve örnek bir uygulama dolduruluyor; yeni parola kaydediliyor; kilitliyken hiçbir kayıt adı görünmüyor; saldırı testlerinin hepsinde parola sahte hedefe verilmiyor.
+**Bitti sayılması için:** Dört emülatörde örnek bir uygulama, Chrome 135+ olan emülatörde (Android 17) Chrome'daki bir giriş formu dolduruluyor; yeni parola kaydediliyor; kilitliyken hiçbir kayıt adı görünmüyor; saldırı testlerinin hepsinde parola sahte hedefe verilmiyor.
 
 ### Faz 7 — Yedekleme, içe ve dışa aktarma
 
