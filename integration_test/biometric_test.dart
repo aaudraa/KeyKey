@@ -250,6 +250,8 @@ void main() {
       expect(session.isDisposed, isFalse, reason: 'Kasa açık kalmalı');
       await tester.tap(find.byIcon(Icons.settings_outlined));
       await tester.pump(const Duration(seconds: 1));
+      await tester.ensureVisible(find.text('Şimdi kilitle'));
+      await tester.pump(const Duration(milliseconds: 500));
 
       await tester.tap(find.text('Şimdi kilitle'));
       await tester.pump();

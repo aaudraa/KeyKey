@@ -121,6 +121,9 @@ void main() {
   testWidgets('şimdi kilitle kasayı kilitliyor', (tester) async {
     await pumpSettings(tester);
 
+    await tester.scrollUntilVisible(find.text('Şimdi kilitle'), 100);
+    await tester.ensureVisible(find.text('Şimdi kilitle'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Şimdi kilitle'));
     await tester.pumpAndSettle();
 

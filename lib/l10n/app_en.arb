@@ -1231,5 +1231,34 @@
   "autofillWarnWebViewUnknown": "This app shows a web page inside it. KeyKey cannot verify who the page belongs to, and the app can read the password that is filled.",
   "@autofillWarnWebViewUnknown": {
     "description": "WebView warning when the page did not report its address."
+  },
+  "backupCreate": "Back up now",
+  "@backupCreate": {
+    "description": "Settings tile that saves an encrypted backup file."
+  },
+  "backupLast": "Last backup: {time}",
+  "@backupLast": {
+    "description": "Subtitle with the time of the last backup.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "backupNever": "No backup yet.",
+  "@backupNever": {
+    "description": "Subtitle when no backup was taken."
+  },
+  "backupHelp": "The backup file is encrypted. It opens with your current master password or your recovery key. If you lose this phone, it is the only way to get your data back.",
+  "@backupHelp": {
+    "description": "Explains what a backup is and how it opens."
+  },
+  "backupSaved": "Backup saved.",
+  "@backupSaved": {
+    "description": "Snackbar after a backup is saved."
+  },
+  "backupFailed": "The backup could not be saved. Try another location.",
+  "@backupFailed": {
+    "description": "Snackbar when writing the backup file fails."
   }
 }

@@ -227,6 +227,24 @@ enum class BiometricStatus(val raw: Int) {
   }
 }
 
+/** Belge kaydetmenin veya açmanın sonucu. */
+enum class DocumentStatus(val raw: Int) {
+  /** İşlem tamamlandı. */
+  DONE(0),
+  /** Kullanıcı seçiciden vazgeçti. */
+  CANCELLED(1),
+  /** Seçilen dosya izin verilen boyuttan büyük. */
+  TOO_LARGE(2),
+  /** Yazma, okuma veya doğrulama başarısız oldu. */
+  FAILED(3);
+
+  companion object {
+    fun ofRaw(raw: Int): DocumentStatus? {
+      return values().firstOrNull { it.raw == raw }
+    }
+  }
+}
+
 /** Generated class from Pigeon that represents data sent in messages. */
 data class BiometricPromptTexts (
   val title: String,
@@ -544,6 +562,52 @@ data class AutofillSetupStatus (
     return "AutofillSetupStatus(supported=$supported, enabled=$enabled, chromeMajorVersion=$chromeMajorVersion)"
   }
 }
+
+/**
+ * Belge seçicinin sonucu. Açmada [bytes] yalnızca [status] `done` ise
+ * doludur.
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class DocumentResult (
+  val status: DocumentStatus,
+  val bytes: ByteArray? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): DocumentResult {
+      val status = pigeonVar_list[0] as DocumentStatus
+      val bytes = pigeonVar_list[1] as ByteArray?
+      return DocumentResult(status, bytes)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      status,
+      bytes,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as DocumentResult
+    return PlatformApiPigeonUtils.deepEquals(this.status, other.status) && PlatformApiPigeonUtils.deepEquals(this.bytes, other.bytes)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.status)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.bytes)
+    return result
+  }
+  override fun toString(): String {
+    return "DocumentResult(status=$status, bytes=${bytes?.contentToString()})"
+  }
+}
 private open class PlatformApiPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -558,33 +622,43 @@ private open class PlatformApiPigeonCodec : StandardMessageCodec() {
         }
       }
       131.toByte() -> {
-        (readValue(buffer) as? List<Any?>)?.let {
-          BiometricPromptTexts.fromList(it)
+        (readValue(buffer) as Long?)?.let {
+          DocumentStatus.ofRaw(it.toInt())
         }
       }
       132.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          BiometricWrapResult.fromList(it)
+          BiometricPromptTexts.fromList(it)
         }
       }
       133.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          BiometricUnwrapResult.fromList(it)
+          BiometricWrapResult.fromList(it)
         }
       }
       134.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          AutofillRequestInfo.fromList(it)
+          BiometricUnwrapResult.fromList(it)
         }
       }
       135.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          AutofillSaveValues.fromList(it)
+          AutofillRequestInfo.fromList(it)
         }
       }
       136.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
+          AutofillSaveValues.fromList(it)
+        }
+      }
+      137.toByte() -> {
+        (readValue(buffer) as? List<Any?>)?.let {
           AutofillSetupStatus.fromList(it)
+        }
+      }
+      138.toByte() -> {
+        (readValue(buffer) as? List<Any?>)?.let {
+          DocumentResult.fromList(it)
         }
       }
       else -> super.readValueOfType(type, buffer)
@@ -600,28 +674,36 @@ private open class PlatformApiPigeonCodec : StandardMessageCodec() {
         stream.write(130)
         writeValue(stream, value.raw.toLong())
       }
-      is BiometricPromptTexts -> {
+      is DocumentStatus -> {
         stream.write(131)
-        writeValue(stream, value.toList())
+        writeValue(stream, value.raw.toLong())
       }
-      is BiometricWrapResult -> {
+      is BiometricPromptTexts -> {
         stream.write(132)
         writeValue(stream, value.toList())
       }
-      is BiometricUnwrapResult -> {
+      is BiometricWrapResult -> {
         stream.write(133)
         writeValue(stream, value.toList())
       }
-      is AutofillRequestInfo -> {
+      is BiometricUnwrapResult -> {
         stream.write(134)
         writeValue(stream, value.toList())
       }
-      is AutofillSaveValues -> {
+      is AutofillRequestInfo -> {
         stream.write(135)
         writeValue(stream, value.toList())
       }
-      is AutofillSetupStatus -> {
+      is AutofillSaveValues -> {
         stream.write(136)
+        writeValue(stream, value.toList())
+      }
+      is AutofillSetupStatus -> {
+        stream.write(137)
+        writeValue(stream, value.toList())
+      }
+      is DocumentResult -> {
+        stream.write(138)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -976,6 +1058,78 @@ interface AutofillSetupApi {
               PlatformApiPigeonUtils.wrapError(exception)
             }
             reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}
+/**
+ * Android'in belge oluşturma ve açma ekranları (Storage Access Framework).
+ *
+ * Depolama izni gerekmez; dosya uygulamanın klasörüne hiç yazılmaz.
+ *
+ * Generated interface from Pigeon that represents a handler of messages from Flutter.
+ */
+interface DocumentApi {
+  /**
+   * Belge oluşturma ekranını açar, [bytes]'ı seçilen yere yazar, geri okuyup
+   * karşılaştırır. Tutmazsa yarım dosyayı silmeyi dener ve `failed` döner.
+   */
+  suspend fun save(suggestedName: String, mimeType: String, bytes: ByteArray): DocumentResult
+  /**
+   * Belge açma ekranını açar ve seçilen dosyayı okur. [maxBytes]'tan büyükse
+   * okumadan `tooLarge` döner.
+   */
+  suspend fun open(mimeTypes: List<String>, maxBytes: Long): DocumentResult
+
+  companion object {
+    /** The codec used by DocumentApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      PlatformApiPigeonCodec()
+    }
+    /** Sets up an instance of `DocumentApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: DocumentApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.DocumentApi.save$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val suggestedNameArg = args[0] as String
+            val mimeTypeArg = args[1] as String
+            val bytesArg = args[2] as ByteArray
+            CoroutineScope(Dispatchers.Main).launch {
+              val wrapped: List<Any?> = try {
+                listOf(api.save(suggestedNameArg, mimeTypeArg, bytesArg))
+              } catch (exception: Throwable) {
+                PlatformApiPigeonUtils.wrapError(exception)
+              }
+              reply.reply(wrapped)
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.DocumentApi.open$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val mimeTypesArg = args[0] as List<String>
+            val maxBytesArg = args[1] as Long
+            CoroutineScope(Dispatchers.Main).launch {
+              val wrapped: List<Any?> = try {
+                listOf(api.open(mimeTypesArg, maxBytesArg))
+              } catch (exception: Throwable) {
+                PlatformApiPigeonUtils.wrapError(exception)
+              }
+              reply.reply(wrapped)
+            }
           }
         } else {
           channel.setMessageHandler(null)

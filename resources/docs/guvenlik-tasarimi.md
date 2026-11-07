@@ -376,10 +376,17 @@ Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/googl
 **Ayar kaydı:** Ayarlar kasanın içinde, tür `settings` olan tek bir kayıtta durur. Kimliği 16 sıfır bayttır; tür ek doğrulama verisinde olduğu için başka bir kaydın yerine konamaz. Kayıt anahtarıyla şifrelenir. Düz metin:
 
 ```json
-{ "version": 2, "otpRequireAuth": false, "autofillCopyOtp": true }
+{
+  "version": 3,
+  "otpRequireAuth": false,
+  "autofillCopyOtp": true,
+  "lastBackupAt": 1730000000000,
+  "backupReminderSnoozedUntil": null
+}
 ```
 
 - `autofillCopyOtp` sürüm 2 ile geldi ve [doldurmadan sonra 2FA kodunu kopyalamayı](#2fa-kodu) açar. Sürüm 1 kaydı okunmaya devam eder; o zaman bu ayar açık sayılır.
+- `lastBackupAt` ve `backupReminderSnoozedUntil` sürüm 3 ile geldi: son yedeğin zamanı ve [yedek hatırlatıcısının](#yedek-hatırlatıcısı) susturulduğu son an, 1970'ten beri geçen milisaniye ya da `null`. Daha eski kayıtlarda ikisi de `null` sayılır.
 - Kayıt yoksa ek onay kapalıdır. Kayıt var ama okunamıyorsa, biçime uymuyorsa veya türü farklıysa ek onay **açık** sayılır: dosyayı değiştiren biri ayarı böyle kapatamasın. Kod kopyalama ise kapalı sayılır. Kullanıcı doğrulayıp ek onayı kapatabilir. Kaydın tamamen silinmesi ise [kayıt silme sınırına](#bilinen-sınırlar) girer.
 
 **Sınır:** Bu, kasa anahtarını değiştirmez. 2FA anahtarı yine kasa anahtarından türetilir, çünkü ana parola ve kurtarma anahtarı da 2FA kayıtlarını açabilmelidir. Ayar, kilidi açık telefonu eline alan birine karşı koruma sağlar, cihazdaki zararlı yazılıma karşı korumaz.
@@ -517,7 +524,8 @@ parça   = uzunluk (4 bayt, büyük uçlu) || şifreli parça
 
 - Dosya Android'in belge oluşturma ekranıyla (`ACTION_CREATE_DOCUMENT`) kaydedilir. Kullanıcı konumu seçer; Drive gibi bulut konumları kendi uygulamaları üzerinden çalışır. KeyKey'e depolama veya internet izni gerekmez ve uygulamanın klasörüne hiçbir şey yazılmaz.
 - Önerilen dosya adı `keykey-yedek-YYYY-AA-GG.keykey` biçimindedir.
-- Yazılan dosya hemen geri okunur ve bayt bayt karşılaştırılır. Tutmazsa kullanıcıya hata gösterilir.
+- Yedek, kasa açıkken bellekte üretilir; seçici açıkken yalnızca şifreli baytlar bekler. Seçici açıkken kasa [otomatik kilit istisnasıyla](#otomatik-kilit) açık kalır.
+- Yazılan dosya hemen geri okunur ve bayt bayt karşılaştırılır. Tutmazsa yarım dosya silinmeye çalışılır ve kullanıcıya hata gösterilir. Yazılan baytlar işi bitince bellekte sıfırlanır.
 - Son yedeğin zamanı [ayar kaydında](#kodları-görmek-için-ek-onay), yani kasanın içinde şifreli tutulur ve Ayarlar'da gösterilir.
 
 ### Geri yükleme

@@ -10,7 +10,12 @@ import 'package:keykey/core/vault/vault_session.dart';
 ///
 /// Biçim güvenlik tasarımı belgesinde. Okurken doğrulama katıdır.
 final class AppSettings {
-  const new({required this.otpRequireAuth, required this.autofillCopyOtp});
+  const new({
+    required this.otpRequireAuth,
+    required this.autofillCopyOtp,
+    this.lastBackupAt,
+    this.backupReminderSnoozedUntil,
+  });
 
   static const defaults = AppSettings(
     otpRequireAuth: false,
@@ -25,8 +30,9 @@ final class AppSettings {
     autofillCopyOtp: false,
   );
 
-  /// Sürüm 2 [autofillCopyOtp] alanını ekledi. Sürüm 1 okunmaya devam eder.
-  static const currentVersion = 2;
+  /// Sürüm 2 [autofillCopyOtp], sürüm 3 yedek bilgilerini ([lastBackupAt],
+  /// [backupReminderSnoozedUntil]) ekledi. Eski sürümler okunmaya devam eder.
+  static const currentVersion = 3;
 
   /// 2FA kodlarını göstermeden önce parmak izi veya ana parola istenir.
   final bool otpRequireAuth;
@@ -35,17 +41,35 @@ final class AppSettings {
   /// panoya kopyalanır.
   final bool autofillCopyOtp;
 
-  AppSettings copyWith({bool? otpRequireAuth, bool? autofillCopyOtp}) =>
-      AppSettings(
-        otpRequireAuth: otpRequireAuth ?? this.otpRequireAuth,
-        autofillCopyOtp: autofillCopyOtp ?? this.autofillCopyOtp,
-      );
+  /// Son başarılı yedeğin zamanı; hiç yedek alınmadıysa `null`.
+  final DateTime? lastBackupAt;
+
+  /// Yedek hatırlatıcısı bu zamana kadar gösterilmez.
+  final DateTime? backupReminderSnoozedUntil;
+
+  /// Yedek zamanları yalnızca ileri alınır, silinmez; bu yüzden `null`
+  /// verilen alan olduğu gibi kalır.
+  AppSettings copyWith({
+    bool? otpRequireAuth,
+    bool? autofillCopyOtp,
+    DateTime? lastBackupAt,
+    DateTime? backupReminderSnoozedUntil,
+  }) => AppSettings(
+    otpRequireAuth: otpRequireAuth ?? this.otpRequireAuth,
+    autofillCopyOtp: autofillCopyOtp ?? this.autofillCopyOtp,
+    lastBackupAt: lastBackupAt ?? this.lastBackupAt,
+    backupReminderSnoozedUntil:
+        backupReminderSnoozedUntil ?? this.backupReminderSnoozedUntil,
+  );
 
   Uint8List toJsonBytes() => utf8.encode(
     jsonEncode({
       'version': currentVersion,
       'otpRequireAuth': otpRequireAuth,
       'autofillCopyOtp': autofillCopyOtp,
+      'lastBackupAt': lastBackupAt?.millisecondsSinceEpoch,
+      'backupReminderSnoozedUntil':
+          backupReminderSnoozedUntil?.millisecondsSinceEpoch,
     }),
   );
 
@@ -58,10 +82,18 @@ final class AppSettings {
       return null;
     }
     if (decoded is! Map<String, Object?>) return null;
-    // Sürüm 1'de kod kopyalama yoktu; varsayılanı açık.
+    // Sürüm 1'de kod kopyalama yoktu; varsayılanı açık. Sürüm 3'ten önce
+    // yedek bilgisi yoktu.
     final keys = switch (decoded['version']) {
       1 => const {'version', 'otpRequireAuth'},
-      currentVersion => const {'version', 'otpRequireAuth', 'autofillCopyOtp'},
+      2 => const {'version', 'otpRequireAuth', 'autofillCopyOtp'},
+      currentVersion => const {
+        'version',
+        'otpRequireAuth',
+        'autofillCopyOtp',
+        'lastBackupAt',
+        'backupReminderSnoozedUntil',
+      },
       _ => null,
     };
     if (keys == null ||
@@ -73,11 +105,24 @@ final class AppSettings {
     final autofillCopyOtp =
         decoded['autofillCopyOtp'] ?? defaults.autofillCopyOtp;
     if (otpRequireAuth is! bool || autofillCopyOtp is! bool) return null;
+    final lastBackupAt = decoded['lastBackupAt'];
+    final snoozedUntil = decoded['backupReminderSnoozedUntil'];
+    if (!_isTime(lastBackupAt) || !_isTime(snoozedUntil)) return null;
     return AppSettings(
       otpRequireAuth: otpRequireAuth,
       autofillCopyOtp: autofillCopyOtp,
+      lastBackupAt: _toTime(lastBackupAt),
+      backupReminderSnoozedUntil: _toTime(snoozedUntil),
     );
   }
+
+  /// Zaman alanı yok, `null` veya 1970'ten beri geçen milisaniye olabilir.
+  static bool _isTime(Object? value) =>
+      value == null || (value is int && value >= 0);
+
+  static DateTime? _toTime(Object? value) => value is int
+      ? DateTime.fromMillisecondsSinceEpoch(value, isUtc: true)
+      : null;
 }
 
 /// Ayarları kayıt anahtarıyla şifreleyip tek bir kayıtta saklar.

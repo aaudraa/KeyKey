@@ -10,6 +10,7 @@ import 'package:keykey/core/crypto/record_cipher.dart';
 import 'package:keykey/core/crypto/recovery_key.dart';
 import 'package:keykey/core/crypto/vault_crypto.dart';
 import 'package:keykey/core/crypto/vault_header.dart';
+import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/platform/export_file_picker.dart';
 import 'package:keykey/core/platform/qr_image_reader.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
@@ -23,6 +24,7 @@ import 'package:keykey/features/authenticator/data/otp_content.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/authenticator/presentation/qr_scan_screen.dart';
 import 'package:keykey/features/autofill/application/autofill_setup.dart';
+import 'package:keykey/features/backup/application/backup_service.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
@@ -330,6 +332,59 @@ class FakeSettingsRepository implements SettingsRepository {
   Future<void> save(AppSettings settings) async => this.settings = settings;
 }
 
+/// Belge seçicinin yerine: kaydedilen baytları tutar, açmada [nextOpen] döner.
+class FakeDocumentFiles implements DocumentFiles {
+  DocumentSaveResult nextSave = DocumentSaveResult.saved;
+  DocumentOpenResult nextOpen = const DocumentOpenCancelled();
+
+  /// Son kaydedilen dosyanın adı ve baytlarının kopyası.
+  String? savedName;
+  Uint8List? savedBytes;
+  int saves = 0;
+  int opens = 0;
+
+  /// Seçici açıkken arka plan kilidi ertelendi mi.
+  bool? gateWasActive;
+  bool Function()? readGate;
+
+  @override
+  Future<DocumentSaveResult> save({
+    required String suggestedName,
+    required String mimeType,
+    required Uint8List bytes,
+  }) async {
+    saves++;
+    gateWasActive = readGate?.call();
+    savedName = suggestedName;
+    savedBytes = Uint8List.fromList(bytes);
+    bytes.fillRange(0, bytes.length, 0);
+    return nextSave;
+  }
+
+  @override
+  Future<DocumentOpenResult> open({
+    required List<String> mimeTypes,
+    required int maxBytes,
+  }) async {
+    opens++;
+    gateWasActive = readGate?.call();
+    return nextOpen;
+  }
+}
+
+/// Yedek servisinin yerine: kasa yerine sabit baytlar üretir.
+class FakeBackupService implements BackupService {
+  Uint8List bytes = Uint8List.fromList([1, 2, 3]);
+  int creates = 0;
+
+  @override
+  Future<Uint8List> create(VaultSession session, DateTime now) async {
+    if (session.isDisposed) throw const VaultLockedException();
+    creates++;
+    return Uint8List.fromList(bytes);
+  }
+}
+
 /// Seçilmiş gibi davranılan dışa aktarma dosyası.
 class FakeExportFilePicker implements ExportFilePicker {
   ExportFileResult next = const ExportFileCancelled();
@@ -446,6 +501,8 @@ Future<void> pumpKeyKey(
   FakeSettingsRepository? settings,
   RecordingClipboard? clipboard,
   FakeAutofillSetup? autofillSetup,
+  FakeDocumentFiles? documents,
+  FakeBackupService? backups,
   Locale locale = const Locale('tr'),
 }) async {
   tester.platformDispatcher.localesTestValue = [locale];
@@ -463,6 +520,11 @@ Future<void> pumpKeyKey(
           (_) => settings ?? FakeSettingsRepository(),
         ),
         if (clock != null) otpClockProvider.overrideWithValue(clock),
+        if (clock != null) backupClockProvider.overrideWithValue(clock),
+        documentFilesProvider.overrideWithValue(
+          documents ?? FakeDocumentFiles(),
+        ),
+        backupServiceProvider.overrideWithValue(backups ?? FakeBackupService()),
         qrImageReaderProvider.overrideWithValue(
           qrImages ?? FakeQrImageReader(),
         ),

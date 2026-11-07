@@ -62,6 +62,14 @@ class SettingsController extends Notifier<AppSettings?> {
   Future<void> setAutofillCopyOtp({required bool value}) =>
       _update((current) => current.copyWith(autofillCopyOtp: value));
 
+  /// Başarılı bir yedeğin zamanını yazar.
+  Future<void> recordBackup(DateTime at) =>
+      _update((current) => current.copyWith(lastBackupAt: at));
+
+  /// Yedek hatırlatıcısını [until] anına kadar susturur.
+  Future<void> snoozeBackupReminder(DateTime until) =>
+      _update((current) => current.copyWith(backupReminderSnoozedUntil: until));
+
   Future<void> _update(AppSettings Function(AppSettings) change) async {
     final repository = _repository;
     final current = state;

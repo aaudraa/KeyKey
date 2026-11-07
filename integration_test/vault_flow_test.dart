@@ -190,6 +190,9 @@ void main() {
 
     // Eski parola artık çalışmıyor, yenisi çalışıyor.
     debugPrint('KKADIM Eski parola artık çalışmıyor, yenisi çalışıyor.');
+    // Ayarlar listesi uzun; öğe alt çubuğun altında kalmasın.
+    await tester.ensureVisible(find.text('Şimdi kilitle'));
+    await tester.pump(const Duration(milliseconds: 500));
     await tester.tap(find.text('Şimdi kilitle'));
     await pumpUntilFound(tester, find.text(lockedTitle));
     await unlock(tester, firstPassword, expecting: find.text('Parola yanlış.'));

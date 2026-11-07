@@ -9,6 +9,7 @@ import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/presentation/confirm_identity.dart';
 import 'package:keykey/features/autofill/presentation/autofill_setup_section.dart';
+import 'package:keykey/features/backup/presentation/backup_section.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
@@ -145,6 +146,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ? null
                 : (value) => _setOtpRequireAuth(value: value),
           ),
+          const BackupSection(),
           const AutofillSetupSection(),
           SwitchListTile(
             secondary: const Icon(Icons.content_paste_go),

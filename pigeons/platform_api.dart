@@ -184,3 +184,43 @@ abstract class AutofillSetupApi {
   /// Chrome'un otomatik doldurma ayarını açar. Açılamazsa `false`.
   bool openChromeAutofillSettings();
 }
+
+/// Belge kaydetmenin veya açmanın sonucu.
+enum DocumentStatus {
+  /// İşlem tamamlandı.
+  done,
+
+  /// Kullanıcı seçiciden vazgeçti.
+  cancelled,
+
+  /// Seçilen dosya izin verilen boyuttan büyük.
+  tooLarge,
+
+  /// Yazma, okuma veya doğrulama başarısız oldu.
+  failed,
+}
+
+/// Belge seçicinin sonucu. Açmada [bytes] yalnızca [status] `done` ise
+/// doludur.
+class DocumentResult {
+  DocumentResult({required this.status, this.bytes});
+
+  DocumentStatus status;
+  Uint8List? bytes;
+}
+
+/// Android'in belge oluşturma ve açma ekranları (Storage Access Framework).
+///
+/// Depolama izni gerekmez; dosya uygulamanın klasörüne hiç yazılmaz.
+@HostApi()
+abstract class DocumentApi {
+  /// Belge oluşturma ekranını açar, [bytes]'ı seçilen yere yazar, geri okuyup
+  /// karşılaştırır. Tutmazsa yarım dosyayı silmeyi dener ve `failed` döner.
+  @async
+  DocumentResult save(String suggestedName, String mimeType, Uint8List bytes);
+
+  /// Belge açma ekranını açar ve seçilen dosyayı okur. [maxBytes]'tan büyükse
+  /// okumadan `tooLarge` döner.
+  @async
+  DocumentResult open(List<String> mimeTypes, int maxBytes);
+}
