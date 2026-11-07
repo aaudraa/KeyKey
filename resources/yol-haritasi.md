@@ -2,7 +2,7 @@
 
 KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-06 · **Şu anki faz:** Faz 6
+**Son güncelleme:** 2026-11-07 · **Şu anki faz:** Faz 6
 
 > [!IMPORTANT]
 > **Gerçek parolalarını Faz 8 bitene kadar KeyKey'e koyma.** Kasa biçimi o zamana kadar değişebilir ve güvenlik denetimi henüz yapılmadı.
@@ -369,12 +369,12 @@ Telefon denemesi üç sorun buldu ve [#60](https://github.com/aaudraa/KeyKey/pul
 - [x] Web eşleştirme: gömülü Public Suffix List ile alan adı; `webDomain` yalnızca güvenilen tarayıcılardan kabul edilir
 - [x] Şüpheli eşleşmede açık uyarı ve ek onay
 - [x] Satır içi öneriler (Android 11+)
-- [ ] Yeni parola kaydetme akışı
-- [ ] Doldurma sonrası 2FA kodunu panoya kopyalama seçeneği
-- [ ] Kurulum yönlendirmesi: sistem ayarına doğrudan geçiş ve Chrome 135+ için [gereken "Autofill using another service" ayarına](https://android-developers.googleblog.com/2025/02/chrome-3p-autofill-services-update.html) doğrudan bağlantı
+- [x] Yeni parola kaydetme akışı
+- [x] Doldurma sonrası 2FA kodunu panoya kopyalama seçeneği
+- [x] Kurulum yönlendirmesi: sistem ayarına doğrudan geçiş ve Chrome 135+ için [gereken "Autofill using another service" ayarına](https://android-developers.googleblog.com/2025/02/chrome-3p-autofill-services-update.html) doğrudan bağlantı
 - [ ] Saldırı testleri: aynı paket adıyla farklı imzalı uygulama, sahte `webDomain`, WebView içeren uygulama (2023'te yayımlanan AutoSpill senaryosu)
 
-**Durum (2026-11-06):** #61-#66 bitti. Kalanlar: #67 kaydetme, #68 2FA kodu, #69 kurulum yönlendirmesi, #70 son denemeler. Android 16 ve 17 emülatörlerinde örnek uygulama, WebView ve aynı paket adlı sahte uygulama denendi; Chrome 145'le (Android 17) gerçek bir site dolduruldu. Açık sorun: Android 16 emülatöründeki Chrome 133, başka doldurma servisini desteklemiyor (135+ gerekiyor) ve Google hesabı olmadığı için güncellenemiyor. Android 11 ve 14'te de durum aynı olabilir. Chrome denemesi o emülatörlerde yapılamazsa bu ölçüt tartışılacak.
+**Durum (2026-11-07):** #61-#69 bitti. Kalan: #70 son denemeler. Android 17 emülatöründe kaydetme hem örnek uygulamada hem Chrome 145'te denendi; kurulum bağlantıları da çalışıyor. Açık sorunlar: (1) Yeni bir uygulamada ilk kaydetmede Android, KeyKey'e o uygulamayı göstermediği için imza okunamıyor; kayıt bağlanmadan kaydediliyor ve ekran bunu söylüyor. Kalıcı çözüm (başlatıcıdaki uygulamaları görme sorgusu) kullanıcının kararını bekliyor. (2) Android 16 emülatöründeki Chrome 133, başka doldurma servisini desteklemiyor (135+ gerekiyor) ve Google hesabı olmadığı için güncellenemiyor; Android 11 ve 14'te de durum aynı olabilir. Chrome denemesi o emülatörlerde yapılamazsa bu ölçüt tartışılacak.
 
 **Bitti sayılması için:** Dört emülatörde Chrome'daki bir giriş formu ve örnek bir uygulama dolduruluyor; yeni parola kaydediliyor; kilitliyken hiçbir kayıt adı görünmüyor; saldırı testlerinin hepsinde parola sahte hedefe verilmiyor.
 
