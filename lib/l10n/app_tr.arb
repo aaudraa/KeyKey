@@ -325,5 +325,6 @@
   "reportReusedGroup": "{count, plural, other{Aynı parola {count} kayıtta}}",
   "reportOpenHint": "Parolasını değiştirmek için kayda dokun.",
   "otpNoCode": "Henüz kod yok",
-  "secretConcealed": "Gizli"
+  "secretConcealed": "Gizli",
+  "favoriteMark": "Favori"
 }

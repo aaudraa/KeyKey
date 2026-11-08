@@ -84,6 +84,7 @@ class OtpCodeTile extends StatelessWidget {
                           Icons.star,
                           size: 16,
                           color: theme.colorScheme.primary,
+                          semanticLabel: l10n.favoriteMark,
                         ),
                       ],
                     ],

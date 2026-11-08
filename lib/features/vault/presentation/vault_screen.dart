@@ -176,17 +176,23 @@ class _LoginTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final content = item.content;
     final name = content.name.trim();
     return ListTile(
-      leading: CircleAvatar(
-        child: Text(name.isEmpty ? '?' : name.characters.first.toUpperCase()),
+      // Baş harf yalnızca görsel; ekran okuyucu adı zaten okuyor.
+      leading: ExcludeSemantics(
+        child: CircleAvatar(
+          child: Text(name.isEmpty ? '?' : name.characters.first.toUpperCase()),
+        ),
       ),
       title: Text(name.isEmpty ? '—' : name, overflow: TextOverflow.ellipsis),
       subtitle: content.username.isEmpty
           ? null
           : Text(content.username, overflow: TextOverflow.ellipsis),
-      trailing: content.favorite ? const Icon(Icons.star) : null,
+      trailing: content.favorite
+          ? Icon(Icons.star, semanticLabel: l10n.favoriteMark)
+          : null,
       onTap: () => context.push(AppRoutes.vaultItem(loginIdHex(item.id))),
     );
   }

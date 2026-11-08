@@ -306,6 +306,14 @@ void main() {
       handle.dispose();
     });
 
+    testWidgets('kayıt satırında baş harf okunmuyor', (tester) async {
+      final handle = tester.ensureSemantics();
+      await openAt(tester, AppRoutes.vault);
+
+      expect(find.bySemanticsLabel('Posta\nali@example.com'), findsOneWidget);
+      handle.dispose();
+    });
+
     testWidgets('gizli parola okunmuyor, gösterilince okunuyor', (
       tester,
     ) async {

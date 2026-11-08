@@ -126,3 +126,28 @@ Kasa açma hedefi 1 saniye; 864 ms bu aralıkta, parametreler değişmedi. Argon
 - Bu oturumun 38 bin satırlık logcat kaydında hiçbir [deneme değeri](../scripts/deneme-degerleri.txt) yok. Samsung pencereler ve oyun modu hakkında çok kayıt tutuyor, ama içerik yazmıyor.
 
 **Sınır.** Tek bir cihaz ölçüldü; 2020'nin üst seviye çipini taşıyor. Düşük donanımlı telefonlarda kasa açma hedef süreyi aşabilir ([Ölçülen süreler](guvenlik-tasarimi.md#ölçülen-süreler)). StrongBox'ı olmayan telefonlarda anahtar TEE'de tutulur; bu yol gerçek bir cihazda denenmedi (emülatörlerin anahtar deposu yazılımla çalışır).
+
+## Erişilebilirlik
+
+**Görev:** [#87](https://github.com/aaudraa/KeyKey/issues/87). **Tarih:** 2026-11-08. MASVS'in bir kontrolü değil. Ama gizli değerlerin ekran okuyucuya nasıl verildiği ve hassas işaretli pencere (MASVS-PLATFORM-3) güvenlikle ilgili olduğu için burada.
+
+**Otomatik denetim.** [`accessibility_test.dart`](../../test/accessibility/accessibility_test.dart) ana ekranları gerçek telefon boyutunda (1080x2400) açar. Ekranlar: kasa, kayıt ekleme, ayrıntı ve düzenleme, parola raporu, çöp kutuları, 2FA listesi ve ekleme, kodlar gizliyken 2FA, içe aktarmalar, ayarlar, parola değiştirme, parola üretici, kilit, kurtarma, kurulum ve yedekten kurulum. Otomatik doldurmanın kilit, liste ve kaydetme ekranları [`autofill_screens_test.dart`](../../test/features/autofill/autofill_screens_test.dart)'ta. Her biri açık ve koyu temada, normal ve %200 yazı boyutunda Flutter'ın üç kuralıyla denetlenir:
+- `androidTapTargetGuideline`: dokunma hedefleri en az 48x48 dp.
+- `labeledTapTargetGuideline`: her dokunulabilir öğenin adı var.
+- `textContrastGuideline`: metin kontrastı WCAG AA.
+
+%200'de taşma olursa Flutter hata verir ve test düşer.
+
+| Bulgu | Düzeltme |
+|---|---|
+| Parola içe aktarma ekranı %200 yazıda taşıyordu: bilgi kartları kaymayan bir sütundaydı | Kartlar listeyle birlikte kayıyor |
+| 2FA geri sayımı ilerleme çubuğu rolündeydi ve değeri her saniye değişiyordu; TalkBack bu satırdayken sürekli konuşabilirdi | İlerleme çubuğu rolü kaldırıldı; kalan süre etikette, satıra odaklanınca bir kez okunuyor |
+| 2FA kodu sayı olarak okunuyordu ("dört yüz yetmiş yedi bin ...") | Rakamlar tek tek okunuyor; henüz üretilmemiş sayaçlı kod "Henüz kod yok" |
+| Ayrıntı ekranında gizli parola "nokta nokta ..." diye okunuyordu | "Gizli" okunuyor; gösterilince değer okunuyor |
+| Kayıt listesinde baş harf rozeti okunuyordu ("P, Posta, ...") | Rozet ekran okuyucudan gizlendi; favori yıldızı "Favori" diye okunuyor |
+
+Ekran okuyucu davranışları ayrıca testle sabitlendi (`ekran okuyucu` grubu). Parola ve kurtarma anahtarı kutuları Android'in parola kutusu olarak bildirilir. TalkBack bunları, kullanıcının "parolaları seslendir" ayarına göre okur.
+
+**Android 14+ hassas işaretli pencere.** KeyKey'in pencereleri `accessibilityDataSensitive` ile işaretli ([Arayüz koruması](#arayüz-koruması)). Android bu pencereleri yalnızca kendini erişilebilirlik aracı olarak bildiren servislere açar; TalkBack böyle bir servis. Android 17 emülatöründe TalkBack açıkken erişilebilirlik odağı KeyKey penceresinin içindeydi (`dumpsys accessibility`: "Accessibility Focused Window" KeyKey). Saldırgan deneme servisi ise aynı pencereden hiçbir şey okuyamadı.
+
+**Elle deneme.** TalkBack'in konuşmasını adb ile süremedim ve dinleyemedim. Kaydırma ve klavye kısayolları odağı ilerletmedi, konuşma çıktısı katmanı da güncellenmedi. TalkBack'in okuduğu ağaç, testlerde dökülen ve `uiautomator`'ın gördüğü anlam ağacıyla aynı. Ama ana akışların kulakla denenmesi kullanıcıyla yapılacak.
