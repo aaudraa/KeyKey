@@ -323,5 +323,7 @@
   "reportWeakGuessable": "Kolay tahmin edilebilir",
   "reportReusedTitle": "{count, plural, other{Tekrar eden parolalar ({count})}}",
   "reportReusedGroup": "{count, plural, other{Aynı parola {count} kayıtta}}",
-  "reportOpenHint": "Parolasını değiştirmek için kayda dokun."
+  "reportOpenHint": "Parolasını değiştirmek için kayda dokun.",
+  "otpNoCode": "Henüz kod yok",
+  "secretConcealed": "Gizli"
 }

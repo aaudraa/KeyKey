@@ -170,9 +170,16 @@ class _FieldState extends ConsumerState<_Field> {
     final concealed = widget.hidden && !_revealed;
     return ListTile(
       title: Text(widget.label, style: Theme.of(context).textTheme.labelMedium),
-      subtitle: Text(
-        concealed ? '••••••••' : widget.value,
-        style: widget.hidden ? const TextStyle(fontFamily: 'monospace') : null,
+      // Gizliyken ekran okuyucu noktaları değil "gizli" okur.
+      subtitle: Semantics(
+        label: concealed ? l10n.secretConcealed : null,
+        excludeSemantics: concealed,
+        child: Text(
+          concealed ? '••••••••' : widget.value,
+          style: widget.hidden
+              ? const TextStyle(fontFamily: 'monospace')
+              : null,
+        ),
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,

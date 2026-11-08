@@ -1586,5 +1586,13 @@
   "reportOpenHint": "Tap an entry to change its password.",
   "@reportOpenHint": {
     "description": "Hint under the sections."
+  },
+  "otpNoCode": "No code yet",
+  "@otpNoCode": {
+    "description": "Screen reader label when a counter-based code has not been generated."
+  },
+  "secretConcealed": "Hidden",
+  "@secretConcealed": {
+    "description": "Screen reader label for a hidden password or field value."
   }
 }

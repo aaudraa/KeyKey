@@ -96,7 +96,9 @@ class OtpCodeTile extends StatelessWidget {
                     ),
                   const SizedBox(height: 4),
                   Semantics(
+                    label: code == null ? l10n.otpNoCode : spokenOtpCode(code),
                     hint: code == null ? null : l10n.otpCopyCode,
+                    excludeSemantics: true,
                     child: Text(
                       code == null
                           ? formatOtpCode('•' * parameters.digits)
@@ -111,10 +113,14 @@ class OtpCodeTile extends StatelessWidget {
                     ),
                   ),
                   if (nextCode != null)
-                    Text(
-                      l10n.otpNext(formatOtpCode(nextCode)),
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        fontFamily: 'monospace',
+                    Semantics(
+                      label: l10n.otpNext(spokenOtpCode(nextCode)),
+                      excludeSemantics: true,
+                      child: Text(
+                        l10n.otpNext(formatOtpCode(nextCode)),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontFamily: 'monospace',
+                        ),
                       ),
                     ),
                 ],
@@ -169,25 +175,27 @@ class _Countdown extends StatelessWidget {
     final seconds = (remaining.inMilliseconds / 1000).ceil();
     final warning = remaining <= OtpCodeTile.warningThreshold;
     final color = warning ? theme.colorScheme.error : theme.colorScheme.primary;
-    return SizedBox.square(
-      dimension: 40,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          CircularProgressIndicator(
-            value: remaining.inMilliseconds / (period * 1000),
-            color: color,
-            strokeWidth: 3,
-            semanticsLabel: l10n.otpSecondsLeft(seconds),
-            semanticsValue: '$seconds',
-          ),
-          ExcludeSemantics(
-            child: Text(
+    // İlerleme çubuğu rolü verilmez: TalkBack değeri değişen ilerleme
+    // çubuğunu her saniye okur. Kalan süre etikette durur, odaklanınca okunur.
+    return Semantics(
+      label: l10n.otpSecondsLeft(seconds),
+      excludeSemantics: true,
+      child: SizedBox.square(
+        dimension: 40,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            CircularProgressIndicator(
+              value: remaining.inMilliseconds / (period * 1000),
+              color: color,
+              strokeWidth: 3,
+            ),
+            Text(
               '$seconds',
               style: theme.textTheme.labelSmall?.copyWith(color: color),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
