@@ -373,6 +373,16 @@ Ana uygulama ve doldurma ekranı aynı korumayı kullanır (`WindowProtection`).
 - **Parola cümlesi:** [EFF büyük sözcük listesi](https://www.eff.org/dice) (7776 İngilizce sözcük, CC BY 3.0), sözcük başına yaklaşık 12,9 bit. Varsayılan 6 sözcük, yaklaşık 77 bit. Denetlenmiş bir Türkçe liste bulamadığımız için Türkçe seçenek yok.
 - **Güç tahmini:** Uzunluk ve karakter çeşitliliğinden kaba bir entropi hesaplanır. Yaygın parola listesi, klavye dizileri, ardışık karakterler, tekrarlar ve tarihler bunu düşürür. Yaygın parola listesi [SecLists](https://github.com/danielmiessler/SecLists) (MIT) kaynaklıdır. Bu yine bir tahmindir, gerçek gücü ölçmez.
 
+### Parola raporu
+
+Kasa ekranındaki "Parola raporu" zayıf ve birden çok kayıtta kullanılan parolaları gösterir.
+
+- **Zayıf:** Kayıt düzenleme ekranındaki güç göstergesiyle aynı kural (`PasswordPolicy.strengthOf`, yaygın parola listesiyle). "Çok kısa" (10 karakterden az) ve "zayıf" çıkanlar rapora girer. Parola üreticisi eşik değil, bit sayısı gösterir; ürettiği parola düzenleme ekranında aynı göstergeden geçer.
+- **Tekrar eden:** Parolası birebir aynı olan kayıtlar gruplanır.
+- **Kapsam:** Çöp kutusundaki ve parolası boş kayıtlar sayılmaz.
+- **Gizlilik:** Rapor, kasa açıkken zaten bellekte duran çözülmüş kayıtlardan hesaplanır. İnternete çıkmaz; sızıntı listelerine (ör. Have I Been Pwned) sorulmaz, çünkü KeyKey'in internet izni yok. Sonuç kasaya ve diske yazılmaz. Ekranda parolalar gösterilmez, yalnızca kayıt adları ve kullanıcı adları. Rapor ekranı kapanınca hesaplanan rapor atılır (`autoDispose`); kasa kilitlenince kayıtlarla birlikte bellekten çıkar.
+- **Kayda gitme:** Kayda dokununca düzenleme ekranı açılır; parola değişince rapor kendiliğinden güncellenir.
+
 ## 2FA kodları
 
 ### Kod üretimi

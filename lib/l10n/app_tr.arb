@@ -314,5 +314,14 @@
   "exportWarningCancel": "Vazgeç",
   "exportConfirmTitle": "Şifresiz dışa aktar",
   "exportSaved": "Dışa aktarma kaydedildi. İçe aktardıktan sonra dosyayı sil.",
-  "exportFailed": "Dosya kaydedilemedi."
+  "exportFailed": "Dosya kaydedilemedi.",
+  "reportTitle": "Parola raporu",
+  "reportInfo": "Yalnızca bu cihazda hesaplanır. Hiçbir yere gönderilmez ve kaydedilmez; bu ekrandan çıkınca ya da kasa kilitlenince silinir. Çöp kutusundaki kayıtlar sayılmaz.",
+  "reportClean": "Zayıf ya da tekrar eden parola yok.",
+  "reportWeakTitle": "{count, plural, other{Zayıf parolalar ({count})}}",
+  "reportWeakShort": "Çok kısa",
+  "reportWeakGuessable": "Kolay tahmin edilebilir",
+  "reportReusedTitle": "{count, plural, other{Tekrar eden parolalar ({count})}}",
+  "reportReusedGroup": "{count, plural, other{Aynı parola {count} kayıtta}}",
+  "reportOpenHint": "Parolasını değiştirmek için kayda dokun."
 }

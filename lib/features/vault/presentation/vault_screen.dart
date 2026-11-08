@@ -54,6 +54,13 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
             ],
           ),
           IconButton(
+            tooltip: l10n.reportTitle,
+            icon: const Icon(Icons.health_and_safety_outlined),
+            onPressed: state is LoginsLoaded
+                ? () => context.push(AppRoutes.vaultReport)
+                : null,
+          ),
+          IconButton(
             tooltip: l10n.trashTitle,
             icon: const Icon(Icons.delete_outline),
             onPressed: () => context.push(AppRoutes.vaultTrash),

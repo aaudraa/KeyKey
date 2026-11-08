@@ -1535,5 +1535,56 @@
   "exportFailed": "The file could not be saved.",
   "@exportFailed": {
     "description": "Snackbar when saving the export fails."
+  },
+  "reportTitle": "Password report",
+  "@reportTitle": {
+    "description": "Screen title and vault menu tooltip."
+  },
+  "reportInfo": "Checked on this device only. Nothing is sent or saved; the report is gone when you leave this screen or the vault locks. Entries in the trash are not counted.",
+  "@reportInfo": {
+    "description": "Explanation at the top of the report."
+  },
+  "reportClean": "No weak or reused passwords.",
+  "@reportClean": {
+    "description": "Shown when the report finds nothing."
+  },
+  "reportWeakTitle": "{count, plural, =1{Weak password (1)} other{Weak passwords ({count})}}",
+  "@reportWeakTitle": {
+    "description": "Section title.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reportWeakShort": "Too short",
+  "@reportWeakShort": {
+    "description": "Reason a password is weak."
+  },
+  "reportWeakGuessable": "Easy to guess",
+  "@reportWeakGuessable": {
+    "description": "Reason a password is weak."
+  },
+  "reportReusedTitle": "{count, plural, =1{Reused password (1)} other{Reused passwords ({count})}}",
+  "@reportReusedTitle": {
+    "description": "Section title; count is the number of distinct passwords used more than once.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reportReusedGroup": "{count, plural, other{Same password in {count} entries}}",
+  "@reportReusedGroup": {
+    "description": "Header of one group of entries sharing a password.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reportOpenHint": "Tap an entry to change its password.",
+  "@reportOpenHint": {
+    "description": "Hint under the sections."
   }
 }
