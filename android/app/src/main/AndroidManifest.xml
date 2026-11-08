@@ -13,6 +13,10 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove" />
+    <!-- KeyKey ekrandayken başka uygulamaların bindirme pencereleri gizlenir
+         (dokunma korsanlığı koruması, Android 12+). Kullanıcıya sorulmayan
+         normal bir izin. -->
+    <uses-permission android:name="android.permission.HIDE_OVERLAY_WINDOWS" />
     <application
         android:label="KeyKey"
         android:allowBackup="false"

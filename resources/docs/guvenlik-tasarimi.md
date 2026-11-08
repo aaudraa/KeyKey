@@ -43,8 +43,8 @@ Bu belge KeyKey'in verileri nasıl şifrelediğini bayt düzeyinde anlatır. Kod
 | Panoyu okuyan uygulama | Kopyalanan parolayı okumaya çalışır | Android 10'dan beri arka plandaki uygulamalar panoyu okuyamaz; değer hassas işaretli, 30 saniye sonra silinir | Kısmen: etkin klavye ve o an öndeki uygulama görebilir |
 | Kötü niyetli doldurma hedefi: sahte uygulama, sahte site, WebView içeren uygulama | Kayıtlı parolayı kendine doldurtmaya çalışır | Uygulamada paket adı ve imza, web'de Public Suffix List ile alan adı; `webDomain` yalnızca güvenilen tarayıcılardan; şüpheli durumda uyarı ve ek onay ([Otomatik doldurma](#otomatik-doldurma)) | Büyük ölçüde korunur |
 | Ekran görüntüsü, ekran kaydı, son uygulamalar önizlemesi | Ekranı kaydeder | `FLAG_SECURE`; son uygulamalarda önizleme kapalı | Korunur |
-| Bindirme (overlay) izni olan uygulama | Saydam pencereyle kullanıcıya istemediği bir şeye dokundurur (tapjacking) | Henüz yok, [#83](https://github.com/aaudraa/KeyKey/issues/83) | **Henüz korunmuyor** |
-| Erişilebilirlik izni olan zararlı uygulama | Ekrandaki metni okur, dokunuş üretir; `FLAG_SECURE` bunu engellemez | Henüz yok; Android 14+ için hassas pencere işareti [#83](https://github.com/aaudraa/KeyKey/issues/83) kapsamında | **Korunmuyor** |
+| Bindirme (overlay) izni olan uygulama | Saydam pencereyle kullanıcıya istemediği bir şeye dokundurur (tapjacking) | Android 12+: KeyKey ekrandayken bindirmeler gizlenir. Android 11: örtülü noktadaki dokunuş düşürülür ([Arayüz koruması](#arayüz-koruması)) | Korunur |
+| Erişilebilirlik izni olan zararlı uygulama | Ekrandaki metni okur, dokunuş üretir; `FLAG_SECURE` bunu engellemez | Android 14+: pencere hassas işaretli, yalnızca erişilebilirlik araçları okuyabilir ([Arayüz koruması](#arayüz-koruması)) | Android 14+ korunur; **11-13 korunmaz** |
 | Kötü niyetli klavye | Yazılan her şeyi, ana parola dahil, görür | Gizli alanlarda öneri ve öğrenme kapalı; bu yalnızca dürüst klavyeleri etkiler | **Korunmuyor** |
 | Root yetkili veya zararlı yazılım bulaşmış cihaz, kasa açık | Belleği okur | Anahtarlar korumalı bellekte, ama çözülmüş kayıtlar Dart belleğinde ([Bellek](#bellek)) | **Korunmuyor** |
 | Ana parola ve kurtarma anahtarı birlikte kayboldu | — | Bilinçli olarak arka kapı yok | Veri geri gelmez |
@@ -329,6 +329,28 @@ Parmak izi üçüncü kapıdır ve isteğe bağlıdır. Yuvası üst bilgide de�
 | Ana parola değişti | Yuva değişmez, çünkü kasa anahtarı aynıdır. |
 
 **Katman istisnası:** Kasa anahtarının ham bayta döndüğü tek yer bu köprüdür. Dart ile Kotlin arasında geçerken Dart ve JVM belleğinde kopyalar oluşur. Sarmalarken Kotlin aldığı diziyi, Dart da gönderdiği kopyayı sıfırlar. Açarken ise kopyalar sıfırlanamaz: Kotlin'in çözdüğü diziyi köprü fonksiyon döndükten sonra kodlar, Dart'a gelen kanal tamponu da salt okunurdur. Bu kopyalar çöp toplayıcı silene kadar JVM ve Dart belleğinde kalabilir. Yalnızca kasa açılırken veya açıkken oluşurlar; o sırada anahtar zaten bellektedir ve root yetkili cihaz tehdit modelinin dışındadır.
+
+## Arayüz koruması
+
+Ana uygulama ve doldurma ekranı aynı korumayı kullanır (`WindowProtection`).
+
+| Tehdit | Koruma | Android sürümü |
+|---|---|---|
+| Ekran görüntüsü, ekran kaydı | `FLAG_SECURE` | Hepsi |
+| Son uygulamalar önizlemesi | `FLAG_SECURE`, ayrıca `setRecentsScreenshotEnabled(false)` | Hepsi; ikincisi 13+ |
+| Bindirme penceresiyle dokunma korsanlığı (tapjacking) | KeyKey ekrandayken başka uygulamaların bindirme pencereleri gizlenir (`setHideOverlayWindows`, `HIDE_OVERLAY_WINDOWS` izni). Sistemin kendi pencereleri etkilenmez | 12+ |
+| Aynı saldırı, gizleme olmadan | Dokunulan noktanın üstünde başka bir uygulamanın penceresi varsa (`FLAG_WINDOW_IS_OBSCURED`) dokunuş düşürülür ve kullanıcıya nedeni söylenir | 11 |
+| Erişilebilirlik servisinin ekranı okuması | Pencere erişilebilirlik için hassas işaretlenir (`setAccessibilityDataSensitive`). Ekranı yalnızca kendini erişilebilirlik aracı olarak bildiren servisler (TalkBack, Switch Access gibi) okuyabilir ve kullanabilir | 14+ |
+
+**Android 11'in bedeli:** Ekran filtresi (mavi ışık, karartma) gibi ekranın tamamını kaplayan bir uygulama açıkken KeyKey'e dokunulamaz; kullanıcı her denemede "başka bir uygulama KeyKey'in üstünde görünüyor" uyarısını görür. Yalnızca dokunulan noktayı örten pencereler sayılır; ekranın başka bir yerindeki yüzen pencere dokunuşu engellemez. Android 12 ve sonrasında pencereler zaten gizlendiği için dokunuş süzülmez; böylece sistemin büyüteci gibi kendi pencereleri KeyKey'i kullanılmaz hale getirmez. Android 12 ayrıca, opaklığı 0,8'den yüksek başka uygulama pencerelerinden geçen dokunuşları kendisi engeller.
+
+**Sınırlar:**
+
+1. Android 11-13'te erişilebilirlik izni verilmiş zararlı bir uygulama ekrandaki metni okuyabilir. Bu sürümlerde bunu önleyecek bir platform özelliği yok.
+2. Kendini erişilebilirlik aracı olarak bildiren bir servis Android 14+'ta da okuyabilir. Google Play bu bildirimi gerçek erişilebilirlik araçlarına sınırlar; başka kaynaktan kurulan uygulamalar için böyle bir denetim yok.
+3. Erişilebilirlik izni ve bindirme izni kullanıcının kendisinin vermesi gereken izinlerdir; KeyKey bu izinleri kimin aldığını göremez.
+
+**Deneme:** [`tapjacking-device-test.sh`](../scripts/tapjacking-device-test.sh), [`resources/test-apps/saldirgan`](../test-apps/saldirgan) uygulamasıyla dener: ekranı kaplayan, dokunuşları geçiren 0,5 opaklıkta bir bindirme penceresi (Android 12'nin kendi engelinden geçen en zor durum) ve kendini araç olarak bildirmeyen bir erişilebilirlik servisi. Korumadan önceki sürümde bindirme KeyKey'in üstünde görünüyordu ve servis kilit ekranındaki metinleri okuyabiliyordu. Sonuçlar [denetim belgesinde](guvenlik-denetimi.md#arayüz-koruması).
 
 ## Pano
 

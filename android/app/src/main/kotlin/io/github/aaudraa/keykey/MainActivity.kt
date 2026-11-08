@@ -1,24 +1,24 @@
 package io.github.aaudraa.keykey
 
-import android.os.Build
 import android.os.Bundle
-import android.view.WindowManager
+import android.view.MotionEvent
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.github.aaudraa.keykey.autofill.AutofillSetup
 
 // BiometricPrompt, FragmentActivity gerektirdiği için FlutterActivity kullanılmıyor.
 class MainActivity : FlutterFragmentActivity() {
+    private val protection = WindowProtection(this)
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Ekran görüntüsünü, ekran kaydını ve son uygulamalar önizlemesini engeller.
-        window.setFlags(
-            WindowManager.LayoutParams.FLAG_SECURE,
-            WindowManager.LayoutParams.FLAG_SECURE,
-        )
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            setRecentsScreenshotEnabled(false)
-        }
+        protection.beforeCreate()
         super.onCreate(savedInstanceState)
+        protection.afterCreate()
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (protection.dropTouch(event)) return true
+        return super.dispatchTouchEvent(event)
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {

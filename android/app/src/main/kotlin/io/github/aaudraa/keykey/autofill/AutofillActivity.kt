@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.service.autofill.Dataset
-import android.view.WindowManager
+import android.view.MotionEvent
 import android.view.autofill.AutofillManager
 import android.view.autofill.AutofillValue
 import android.widget.RemoteViews
@@ -18,6 +18,7 @@ import io.github.aaudraa.keykey.BiometricVault
 import io.github.aaudraa.keykey.ClipboardApi
 import io.github.aaudraa.keykey.R
 import io.github.aaudraa.keykey.SecureClipboard
+import io.github.aaudraa.keykey.WindowProtection
 
 /**
  * Öneriye dokunulunca açılan doldurma ekranı. Kaydetme de bu ekranda yapılır:
@@ -33,16 +34,18 @@ class AutofillActivity : FlutterFragmentActivity(), AutofillApi {
     private var parsed: ParsedStructure? = null
     private var request: AutofillRequestInfo? = null
 
+    private val protection = WindowProtection(this)
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        window.setFlags(
-            WindowManager.LayoutParams.FLAG_SECURE,
-            WindowManager.LayoutParams.FLAG_SECURE,
-        )
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            setRecentsScreenshotEnabled(false)
-        }
+        protection.beforeCreate()
         readRequest(intent)
         super.onCreate(savedInstanceState)
+        protection.afterCreate()
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (protection.dropTouch(event)) return true
+        return super.dispatchTouchEvent(event)
     }
 
     override fun getDartEntrypointFunctionName(): String = "autofillMain"

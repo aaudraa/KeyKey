@@ -8,6 +8,10 @@ apk="${1:-build/app/outputs/flutter-apk/app-release.apk}"
 # Yeni bir izin gerekirse buraya bilinçli olarak eklenmeli.
 allowed_permissions=(
   "io.github.aaudraa.keykey.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+  # KeyKey ekrandayken başka uygulamaların bindirme pencerelerini gizlemek
+  # (dokunma korsanlığı koruması, Android 12+). Normal izin, kullanıcıya
+  # sorulmaz.
+  "android.permission.HIDE_OVERLAY_WINDOWS"
   # Parmak iziyle açma. androidx.biometric ikisini de ekliyor.
   "android.permission.USE_BIOMETRIC"
   "android.permission.USE_FINGERPRINT"

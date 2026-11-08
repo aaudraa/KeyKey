@@ -21,7 +21,7 @@ Bu, projenin kendi denetimidir; bağımsız bir denetim değildir.
 | MASVS-NETWORK-2 | Kimlik sabitleme | Bekliyor | #91 |
 | MASVS-PLATFORM-1 | Süreçler arası iletişim | Bekliyor | #91 |
 | MASVS-PLATFORM-2 | WebView | Bekliyor | #91 |
-| MASVS-PLATFORM-3 | Arayüzün güvenliği | Bekliyor | Dokunma korsanlığı ve erişilebilirlik [#83](https://github.com/aaudraa/KeyKey/issues/83) |
+| MASVS-PLATFORM-3 | Arayüzün güvenliği | Kısmen değerlendirildi | [Arayüz koruması](#arayüz-koruması); geri kalanı #91 |
 | MASVS-CODE-1 | Güncel platform sürümü | Bekliyor | #91 |
 | MASVS-CODE-2 | Güncelleme zorunluluğu | Bekliyor | #91 |
 | MASVS-CODE-3 | Bilinen açığı olmayan bileşenler | Bekliyor | Bağımlılık denetimi [#86](https://github.com/aaudraa/KeyKey/issues/86) |
@@ -45,3 +45,22 @@ Bu, projenin kendi denetimidir; bağımsız bir denetim değildir.
 Android 17 emülatöründe otomatik doldurma altyapısı ayrıntılı kayıt tutuyor (`AutofillManager`, `AutofillSession`), ama yalnızca alan kimliklerini ve durumları yazıyor. Klavye (Gboard) alanın parola alanı olduğunu kaydediyor, içeriğini yazmıyor.
 
 **Sınır.** Deneme emülatörde yapıldı. Üreticilerin değiştirdiği sistemler (ör. Samsung) farklı kayıt tutabilir; gerçek telefonda tekrarı [#88](https://github.com/aaudraa/KeyKey/issues/88) kapsamında.
+
+## Arayüz koruması
+
+**İlgili kontrol:** MASVS-PLATFORM-3. **Görev:** [#83](https://github.com/aaudraa/KeyKey/issues/83). **Tarih:** 2026-11-08. **Tasarım:** [Arayüz koruması](guvenlik-tasarimi.md#arayüz-koruması).
+
+[`tapjacking-device-test.sh`](../scripts/tapjacking-device-test.sh), sürüm derlemesi ve [saldırgan deneme uygulamasıyla](../test-apps/saldirgan): ekranı kaplayan, dokunuşları geçiren 0,5 opaklıkta bir bindirme penceresi ve kendini erişilebilirlik aracı olarak bildirmeyen bir servis.
+
+**Korumadan önce (Android 17):** Bindirme KeyKey'in üstünde görünüyordu (`isOnScreen=true`, ekran görüntüsünde KeyKey'in siyah güvenli içeriğinin üstünde kırmızı örtü). Servis `FLAG_SECURE`'a rağmen kilit ekranından 14 düğüm ve 4 metin okudu ("KeyKey is locked", "Show", "Open" ...).
+
+| Emülatör | Bindirme | Bindirmenin altındaki dokunuş | Erişilebilirlik servisi |
+|---|---|---|---|
+| Android 11 (API 30) | Gizlenemiyor (platformda yok) | Düşürüldü; KeyKey'in uyarısı (Toast) çıktı. Bindirme kapanınca dokunuş çalıştı | Okuyabildi: 6 olayda en fazla 9 metin. Bilinen sınır |
+| Android 14 (API 34) | Gizlendi | Çalıştı | Hiçbir şey okuyamadı |
+| Android 16 (API 36) | Gizlendi | Çalıştı | Hiçbir şey okuyamadı |
+| Android 17 (API 37) | Gizlendi (`mIsForceHiddenNonSystemOverlayWindow=true`); ana ekrana dönünce yeniden göründü | Çalıştı | Hiçbir şey okuyamadı; aynı sırada başlatıcıdan, sistem arayüzünden ve klavyeden olay aldı |
+
+`uiautomator` sistem tarafından araç sayıldığı için korumalı pencereyi okumaya devam ediyor; cihaz test betikleri bu yüzden etkilenmedi. Değişiklikten sonra Android 11'de bütün cihaz testleri (entegrasyon, parmak izi, pano, kamera), Android 16'da parmak izi ve kamera testleri geçti.
+
+**Açık kalan:** TalkBack'in korumalı pencereyi okuyabildiği emülatörde elle denenecek ([#87](https://github.com/aaudraa/KeyKey/issues/87)). Android 11-13'te erişilebilirlik servislerine karşı koruma yok; tasarım belgesinde sınır olarak yazıyor.

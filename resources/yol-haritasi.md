@@ -165,8 +165,8 @@ Bu bölüm tasarımın özeti. Ayrıntılı belge: [`resources/docs/guvenlik-tas
 | Sahte uygulama veya site parolayı istiyor | Büyük ölçüde | Uygulama imzası ve alan adı eşleştirmesi, doldurmadan önce kullanıcı onayı. |
 | Ekran görüntüsü ve ekran kaydı | Evet | `FLAG_SECURE`. |
 | Başka bir uygulama panoyu okuyor | Kısmen | Pano bir süre sonra temizlenir ve hassas olarak işaretlenir. Kopyalama anında aktif bir klavye veya kötü amaçlı uygulama yine görebilir. |
-| Bindirme izni olan uygulama kullanıcıya istemediği bir şeye dokunduruyor | **Henüz hayır** | Faz 8'de (#83). |
-| Erişilebilirlik izni olan zararlı uygulama ekranı okuyor | **Hayır** | `FLAG_SECURE` bunu engellemez. Android 14+ için hassas pencere işareti Faz 8'de (#83). |
+| Bindirme izni olan uygulama kullanıcıya istemediği bir şeye dokunduruyor | Evet | Android 12+ bindirmeler gizlenir; Android 11'de örtülü dokunuş düşürülür. |
+| Erişilebilirlik izni olan zararlı uygulama ekranı okuyor | Android 14+ evet, 11-13 **hayır** | `FLAG_SECURE` bunu engellemez. Android 14+ pencere hassas işaretli; yalnızca TalkBack gibi araçlar okuyabilir. |
 | Kötü niyetli klavye | **Hayır** | Yazılan her şeyi görür. Gizli alanlarda öğrenme kapalı, bu yalnızca dürüst klavyeleri etkiler. |
 | Telefon root'lu veya zararlı yazılım bulaşmış, kasa açık | **Hayır** | Kasa açıkken anahtar bellekte durur. Hiçbir uygulama bunu tam olarak önleyemez. |
 | Ana parola ve kurtarma anahtarı birlikte kayboldu | **Hayır** | Veri geri getirilemez. Bu bilinçli bir tasarım: arka kapı yok. |

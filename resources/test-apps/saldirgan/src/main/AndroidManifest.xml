@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Bindirme penceresi. Test betiği izni adb ile verir:
+         appops set io.github.aaudraa.saldirgan SYSTEM_ALERT_WINDOW allow -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <application
+        android:allowBackup="false"
+        android:label="Saldırgan">
+        <!-- Bindirmeyi açar; "mod" ekstrası "kapat" ise kapatır. Komutlar
+             resources/scripts/tapjacking-device-test.sh içinde. -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <!-- Erişilebilirlik servisi; kendini erişilebilirlik aracı olarak bildirmez.
+             adb shell settings put secure enabled_accessibility_services
+               io.github.aaudraa.saldirgan/.ReaderService -->
+        <service
+            android:name=".ReaderService"
+            android:exported="false"
+            android:label="Saldırgan okuyucu"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/reader" />
+        </service>
+    </application>
+</manifest>

@@ -2,4 +2,5 @@
 <resources>
     <string name="autofill_service_label">KeyKey</string>
     <string name="autofill_fill_with_keykey">Fill with KeyKey</string>
+    <string name="touch_blocked_overlay">Another app is drawing over KeyKey, so your tap was ignored. Close that app\'s floating window or screen filter and try again.</string>
 </resources>
