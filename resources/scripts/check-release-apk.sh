@@ -8,6 +8,10 @@ apk="${1:-build/app/outputs/flutter-apk/app-release.apk}"
 # Yeni bir izin gerekirse buraya bilinçli olarak eklenmeli.
 allowed_permissions=(
   "io.github.aaudraa.keykey.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+  # KeyKey ekrandayken başka uygulamaların bindirme pencerelerini gizlemek
+  # (dokunma korsanlığı koruması, Android 12+). Normal izin, kullanıcıya
+  # sorulmaz.
+  "android.permission.HIDE_OVERLAY_WINDOWS"
   # Parmak iziyle açma. androidx.biometric ikisini de ekliyor.
   "android.permission.USE_BIOMETRIC"
   "android.permission.USE_FINGERPRINT"
@@ -59,6 +63,65 @@ fi
 if ! grep -q 'android:dataExtractionRules' <<< "$manifest"; then
   fail "dataExtractionRules tanımlı değil."
 fi
+
+# Flutter'ın derin bağlantısı iki etkinlikte de kapalı olmalı; yoksa başka bir
+# uygulama adres taşıyan niyetle KeyKey'i istediği ekrana götürebilir.
+deeplink_off=$(awk '/E: activity /{n++} /flutter_deeplinking_enabled/{f=1; next} f && /:value[(]/{if ($0 ~ /=false|0x0/) c++; f=0} END {print c+0}' <<< "$manifest")
+activities=$(grep -c 'E: activity ' <<< "$manifest")
+if [[ "$deeplink_off" != "$activities" ]]; then
+  fail "flutter_deeplinking_enabled her etkinlikte false değil ($deeplink_off/$activities)."
+fi
+
+# İçerik denetimleri açılmış APK üzerinde yapılır.
+work="$(mktemp -d)"
+trap 'rm -rf "$work"' EXIT
+unzip -q -o "$apk" -d "$work"
+
+# R8: kendi paketimizden adı korunan sınıflar yalnızca manifestteki
+# bileşenler olabilir (Android onları adıyla bulur). R8 kapanırsa bütün sınıf
+# adları görünür ve bu denetim düşer.
+components="$(grep -oE ':name\([^)]*\)="io\.github\.aaudraa\.keykey\.[A-Za-z0-9_.$]+"' <<< "$manifest" \
+  | sed -E 's/.*="([^"]+)"/\1/' | sort -u)"
+kept="$(cat "$work"/classes*.dex | grep -aoE 'Lio/github/aaudraa/keykey/[A-Za-z0-9_/$]+;' \
+  | sed -E 's/^L//; s/;$//; s|/|.|g' | sort -u || true)"
+echo "Adı korunan sınıflar:"
+while IFS= read -r class; do
+  [[ -z "$class" ]] && continue
+  echo "  $class"
+  grep -qxF "$class" <<< "$components" || fail "R8 bu sınıfın adını korumuş, manifestte değil: $class"
+done <<< "$kept"
+[[ -n "$kept" ]] || fail "dex'te MainActivity bulunamadı; APK yapısı beklenmedik."
+
+# Yerel kütüphanelerde hata ayıklama bölümü ve tam sembol tablosu olmamalı.
+# Kalan dinamik semboller, kütüphanenin Dart'tan çağrılabilmesi için gerekir.
+readelf="$(find "$sdk/ndk" -path '*/toolchains/llvm/prebuilt/*/bin/llvm-readelf*' 2>/dev/null | sort -V | tail -n 1 || true)"
+if [[ -z "$readelf" ]]; then
+  fail "llvm-readelf bulunamadı ($sdk/ndk); yerel kütüphaneler denetlenemedi."
+else
+  libs=0
+  while IFS= read -r so; do
+    libs=$((libs + 1))
+    # Okunamayan dosya geçmiş sayılmasın.
+    if ! sections="$("$readelf" -S -W "$so")"; then
+      fail "okunamayan yerel kütüphane: ${so#"$work"/}"
+    elif grep -qE '\.(debug_[a-z_]+|symtab)\b' <<<"$sections"; then
+      fail "hata ayıklama bilgisi içeren kütüphane: ${so#"$work"/}"
+    fi
+  done < <(find "$work/lib" -name '*.so')
+  echo "Yerel kütüphaneler: $libs dosya denetlendi."
+fi
+
+# Yayına girmemesi gereken dosyalar.
+forbidden="$(cd "$work" && find . -type f \( -iname '*.jks' -o -iname '*.keystore' -o -iname '*.p12' \
+  -o -iname '*.pem' -o -iname '.env' -o -iname '*.keykey' -o -iname 'DebugProbesKt.bin' \
+  -o -path '*fixtures*' \) | sed 's|^\./||')"
+[[ -z "$forbidden" ]] || fail "yayına girmemesi gereken dosyalar: $(tr '\n' ' ' <<< "$forbidden")"
+
+# Testlerde ve elle denemelerde kullanılan parolalar, anahtarlar ve kullanıcı
+# adları APK'nın hiçbir dosyasında geçmemeli. Değer yazılmaz, yalnızca dosya.
+values="$(dirname "$0")/deneme-degerleri.txt"
+leaks="$(grep -vE '^\s*(#|$)' "$values" | grep -rlaiF -f - "$work" | sed "s|^$work/||" || true)"
+[[ -z "$leaks" ]] || fail "deneme değeri içeren dosyalar: $(tr '\n' ' ' <<< "$leaks")"
 
 if [[ "$failed" != 0 ]]; then
   echo "Sonuç: BAŞARISIZ"

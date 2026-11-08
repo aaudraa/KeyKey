@@ -2,7 +2,7 @@
 
 KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-07 · **Şu anki faz:** Faz 7
+**Son güncelleme:** 2026-11-09 · **Şu anki faz:** Faz 8
 
 > [!IMPORTANT]
 > **Gerçek parolalarını Faz 8 bitene kadar KeyKey'e koyma.** Kasa biçimi o zamana kadar değişebilir ve güvenlik denetimi henüz yapılmadı.
@@ -20,8 +20,8 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 | 4 | Parola kasası | L | 3 | `faz/4-parola-kasasi` | Tamamlandı |
 | 5 | 2FA doğrulayıcı | M | 3 | `faz/5-2fa-dogrulayici` | Tamamlandı |
 | 6 | Otomatik doldurma | XL | 4 | `faz/6-otomatik-doldurma` | Tamamlandı |
-| 7 | Yedekleme, içe ve dışa aktarma | L | 4, 5 | `faz/7-yedekleme` | Sürüyor |
-| 8 | Güvenlik sertleştirme ve denetim | L | 6, 7 | `faz/8-guvenlik-denetimi` | Bekliyor |
+| 7 | Yedekleme, içe ve dışa aktarma | L | 4, 5 | `faz/7-yedekleme` | Tamamlandı |
+| 8 | Güvenlik sertleştirme ve denetim | L | 6, 7 | `faz/8-guvenlik-denetimi` | Sürüyor |
 | 9 | 1.0 yayını | M | 8 | `faz/9-yayin` | Bekliyor |
 
 Büyüklük göreli iş miktarını gösterir, takvim sözü değildir. Faz 4 ve 5 aynı anda ilerleyebilir. İlerlemeyi [milestone'lardan](https://github.com/aaudraa/KeyKey/milestones) da izleyebilirsin.
@@ -155,6 +155,8 @@ Bu bölüm tasarımın özeti. Ayrıntılı belge: [`resources/docs/guvenlik-tas
 
 ### Tehdit modeli
 
+Özet. Varlıklar, saldırganlar ve kapsam dışı olanlarla ayrıntılı model [güvenlik tasarımı belgesinde](docs/guvenlik-tasarimi.md#tehdit-modeli).
+
 | Senaryo | KeyKey korur mu? | Nasıl |
 |---|---|---|
 | Telefon kilitli haldeyken çalındı veya kayboldu | Evet | Kasa diskte şifreli, anahtar ana paroladan türetiliyor ve diskte durmuyor. |
@@ -163,6 +165,9 @@ Bu bölüm tasarımın özeti. Ayrıntılı belge: [`resources/docs/guvenlik-tas
 | Sahte uygulama veya site parolayı istiyor | Büyük ölçüde | Uygulama imzası ve alan adı eşleştirmesi, doldurmadan önce kullanıcı onayı. |
 | Ekran görüntüsü ve ekran kaydı | Evet | `FLAG_SECURE`. |
 | Başka bir uygulama panoyu okuyor | Kısmen | Pano bir süre sonra temizlenir ve hassas olarak işaretlenir. Kopyalama anında aktif bir klavye veya kötü amaçlı uygulama yine görebilir. |
+| Bindirme izni olan uygulama kullanıcıya istemediği bir şeye dokunduruyor | Evet | Android 12+ bindirmeler gizlenir; Android 11'de örtülü dokunuş düşürülür. |
+| Erişilebilirlik izni olan zararlı uygulama ekranı okuyor | Android 14+ evet, 11-13 **hayır** | `FLAG_SECURE` bunu engellemez. Android 14+ pencere hassas işaretli; yalnızca TalkBack gibi araçlar okuyabilir. |
+| Kötü niyetli klavye | **Hayır** | Yazılan her şeyi görür. Gizli alanlarda öğrenme kapalı, bu yalnızca dürüst klavyeleri etkiler. |
 | Telefon root'lu veya zararlı yazılım bulaşmış, kasa açık | **Hayır** | Kasa açıkken anahtar bellekte durur. Hiçbir uygulama bunu tam olarak önleyemez. |
 | Ana parola ve kurtarma anahtarı birlikte kayboldu | **Hayır** | Veri geri getirilemez. Bu bilinçli bir tasarım: arka kapı yok. |
 
@@ -382,16 +387,16 @@ Telefon denemesi üç sorun buldu ve [#60](https://github.com/aaudraa/KeyKey/pul
 
 **Amaç:** Telefon kaybolsa bile verinin kurtarılabilmesi ve başka uygulamalardan kolay geçiş.
 
-- [ ] Sürümlü `.keykey` biçimi: Argon2id ve libsodium `secretstream`
-- [ ] Android dosya seçicisiyle kaydetme: Drive gibi konumlar internet izni olmadan çalışır
-- [ ] Geri yükleme: önce doğrulama, sonra birleştirme veya değiştirme seçeneği; hata olursa mevcut kasaya dokunulmaz
-- [ ] Yedek hatırlatıcısı ve "son yedek" bilgisi
-- [ ] İçe aktarma: Bitwarden (JSON, CSV), Chrome (CSV), KeePassXC (CSV), Aegis ve 2FAS
-- [ ] Düz metin kaynak dosyasını silmeyi hatırlatma
-- [ ] Çift onaylı ve uyarılı düz metin dışa aktarma
-- [ ] Biçim uyumluluğu testleri
+- [x] Sürümlü `.keykey` biçimi: Argon2id ve libsodium `secretstream`
+- [x] Android dosya seçicisiyle kaydetme: Drive gibi konumlar internet izni olmadan çalışır
+- [x] Geri yükleme: önce doğrulama, sonra birleştirme veya değiştirme seçeneği; hata olursa mevcut kasaya dokunulmaz
+- [x] Yedek hatırlatıcısı ve "son yedek" bilgisi
+- [x] İçe aktarma: Bitwarden (JSON, CSV), Chrome (CSV), KeePassXC (CSV), Aegis ve 2FAS
+- [x] Düz metin kaynak dosyasını silmeyi hatırlatma
+- [x] Çift onaylı ve uyarılı düz metin dışa aktarma
+- [x] Biçim uyumluluğu testleri
 
-**Durum (2026-11-07):** Faz başladı, görevler #73-#79. Yedek ayrı bir parola istemez: alındığı andaki ana parola veya kurtarma anahtarıyla açılır.
+**Durum (2026-11-08):** Tamamlandı ([#81](https://github.com/aaudraa/KeyKey/pull/81), `v0.7.0`). Yedek ayrı bir parola istemez: alındığı andaki ana parola veya kurtarma anahtarıyla açılır. API 36'da alınan yedek API 30'da aynen açıldı; bozuk dosya ve yanlış parola kasaya dokunmadan reddedildi; cihaz testleri dört emülatörde geçti. Bitwarden, Chrome 145 ve KeePassXC 2.8'in gerçek dışa aktarmaları testlere girdi. Telefonda (Samsung Galaxy S20 FE, Android 13) yedek Google Drive'a alındı, uygulama kaldırılıp yedek Drive'dan geri yüklendi. Bu deneme, ayarları hiç değiştirilmemiş bir kasanın yedeğinde son yedek saatinin boş kaldığı bir hatayı buldu; düzeltildi.
 
 **Bitti sayılması için:** API 36'da alınan yedek API 30'da aynen açılıyor; bozuk dosya temiz bir hata veriyor ve veri kaybettirmiyor; yanlış parola dosyayı açmıyor.
 
@@ -399,16 +404,18 @@ Telefon denemesi üç sorun buldu ve [#60](https://github.com/aaudraa/KeyKey/pul
 
 **Amaç:** 1.0 öncesi son güvenlik ve kalite geçişi. Gerçek veriyle kullanım ancak bu fazdan sonra düşünülebilir.
 
-- [ ] [OWASP MASVS](https://mas.owasp.org/MASVS/) maddelerini tek tek denetlemek ve sonucu `resources/docs/guvenlik-denetimi.md` dosyasına yazmak
-- [ ] Tehdit modeli ve tüm kayıt (log) çıktılarının gözden geçirilmesi
-- [ ] Dokunma korsanlığı koruması: `setHideOverlayWindows` ve gizlenmiş dokunuşları filtreleme
-- [ ] R8 ayarları ve yayın derlemesi testi (`debuggable` kapalı, gizli sembol yok)
-- [ ] Çevrimdışı parola raporu: zayıf ve tekrar eden parolalar
-- [ ] Bağımlılık ve lisans denetimi; gereksiz paketlerin çıkarılması
-- [ ] Gerçek ARM telefonda test: StrongBox, biyometri, performans
-- [ ] Erişilebilirlik: TalkBack, büyük yazı boyutu, kontrast
+- [x] [OWASP MASVS](https://mas.owasp.org/MASVS/) maddelerini tek tek denetlemek ve sonucu `resources/docs/guvenlik-denetimi.md` dosyasına yazmak
+- [x] Tehdit modeli ve tüm kayıt (log) çıktılarının gözden geçirilmesi
+- [x] Dokunma korsanlığı koruması: `setHideOverlayWindows` ve gizlenmiş dokunuşları filtreleme
+- [x] R8 ayarları ve yayın derlemesi testi (`debuggable` kapalı, gizli sembol yok)
+- [x] Çevrimdışı parola raporu: zayıf ve tekrar eden parolalar
+- [x] Bağımlılık ve lisans denetimi; gereksiz paketlerin çıkarılması
+- [x] Gerçek ARM telefonda test: StrongBox, biyometri, performans
+- [x] Erişilebilirlik: TalkBack, büyük yazı boyutu, kontrast
 - [ ] Deneme verisiyle uzun süreli günlük kullanım
 - [ ] Dışarıdan inceleme çağrısı: tasarım belgesini güvenlik topluluklarıyla paylaşmak
+
+**Durum (2026-11-08):** Faz başladı, görevler #82-#91 ve Faz 6'dan kalan #71. Biten: kayıtlar ve tehdit modeli (#82), arayüz koruması (#83), yayın derlemesi (#84), bağımlılık ve lisans denetimi (#86, [bağımlılık belgesi](docs/bagimliliklar.md)), çevrimdışı parola raporu (#85), erişilebilirlik (#87), gerçek telefon (#88; StrongBox, parmak izi, süreler [denetim belgesinde](docs/guvenlik-denetimi.md#gerçek-telefon)), MASVS denetimi (#91, 2026-11-09, [özet](docs/guvenlik-denetimi.md#özet)). Denetim bir açık buldu ve düzeltildi: başka bir uygulama, adres taşıyan bir niyetle KeyKey'i istediği ekrana götürebiliyordu. Kilitten sonra bellekte kalan dizeler kabul edilen risk olarak [bilinen sınırlara](docs/guvenlik-tasarimi.md#bilinen-sınırlar) yazıldı. Faz sonu cihaz testleri (entegrasyon, parmak izi, pano, kamera) 2026-11-09'da dört emülatörde (Android 11, 14, 16, 17) geçti. Uzun süreli kullanım (#89) Faz 8'in son sürümüyle başlayacak; dış inceleme paylaşımı (#90) kullanıcıyla yapılır.
 
 **Bitti sayılması için:** Açık `güvenlik` issue'su yok; denetim belgesi tamamlandı; gerçek cihaz testleri geçti.
 
@@ -418,12 +425,13 @@ Telefon denemesi üç sorun buldu ve [#60](https://github.com/aaudraa/KeyKey/pul
 
 - [ ] Uygulama simgesi ve açılış ekranı; kaynak dosyalar `resources/design/` altında
 - [ ] Yayın anahtarı: repoya girmez, yedeği ayrı ve güvenli bir yerde tutulur, CI'da GitHub Secrets ile kullanılır
-- [ ] Yayın otomasyonu: etiket atılınca imzalı APK ve AAB, SHA-256 özetleri, GitHub Release
+- [ ] Yayın otomasyonu: etiket atılınca imzalı APK ve AAB, SHA-256 özetleri, GitHub Release; R8 `mapping.txt` dosyası da sürüme eklenir (yığın izlerini okumak için)
 - [ ] `CHANGELOG.md` ve sürüm numaralandırma
 - [ ] Yeniden üretilebilir derleme denemesi; `sqlite3`'ü hazır dosya yerine kaynaktan derlemek (F-Droid de bunu gerektiriyor)
 - [ ] Dağıtım kararı: GitHub Releases ile başlamak; F-Droid ve Play Store'u değerlendirmek
 - [ ] Kullanım kılavuzu ve ekran görüntüleri (`resources/docs/kullanim.md`, `resources/design/`)
 - [ ] `v0.x` sürümünden 1.0'a yükseltme testi: veri kaybı olmamalı
+- [ ] Gizlilik bildirimi: seçilen mağazaların istediği açıklamalar (Play Store veri güvenliği formu, F-Droid); MASVS-PRIVACY denetiminden
 
 **Bitti sayılması için:** GitHub Release'teki APK dört emülatöre ve gerçek telefona kuruluyor; önceki sürümden yükseltmede veri korunuyor; README son durumu anlatıyor.
 

@@ -231,12 +231,12 @@
   "@changePasswordDone": {
     "description": "Message after the password was changed."
   },
-  "changePasswordWait": "Too many wrong attempts. Try again in {seconds} seconds.",
+  "changePasswordWait": "{seconds, plural, =1{Too many wrong attempts. Try again in 1 second.} other{Too many wrong attempts. Try again in {seconds} seconds.}}",
   "@changePasswordWait": {
     "description": "Error while waiting after wrong passwords.",
     "placeholders": {
       "seconds": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -1313,7 +1313,7 @@
   "@restoreCorrupted": {
     "description": "Error when the backup content fails verification."
   },
-  "restoreSummary": "Backup from {date}: {logins} passwords and {otps} 2FA accounts.",
+  "restoreSummary": "Backup from {date}: {logins, plural, =1{1 password} other{{logins} passwords}} and {otps, plural, =1{1 2FA account} other{{otps} 2FA accounts}}.",
   "@restoreSummary": {
     "description": "Summary of an opened backup.",
     "placeholders": {
@@ -1535,5 +1535,68 @@
   "exportFailed": "The file could not be saved.",
   "@exportFailed": {
     "description": "Snackbar when saving the export fails."
+  },
+  "reportTitle": "Password report",
+  "@reportTitle": {
+    "description": "Screen title and vault menu tooltip."
+  },
+  "reportInfo": "Checked on this device only. Nothing is sent or saved; the report is gone when you leave this screen or the vault locks. Entries in the trash are not counted.",
+  "@reportInfo": {
+    "description": "Explanation at the top of the report."
+  },
+  "reportClean": "No weak or reused passwords.",
+  "@reportClean": {
+    "description": "Shown when the report finds nothing."
+  },
+  "reportWeakTitle": "{count, plural, =1{Weak password (1)} other{Weak passwords ({count})}}",
+  "@reportWeakTitle": {
+    "description": "Section title.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reportWeakShort": "Too short",
+  "@reportWeakShort": {
+    "description": "Reason a password is weak."
+  },
+  "reportWeakGuessable": "Easy to guess",
+  "@reportWeakGuessable": {
+    "description": "Reason a password is weak."
+  },
+  "reportReusedTitle": "{count, plural, =1{Reused password (1)} other{Reused passwords ({count})}}",
+  "@reportReusedTitle": {
+    "description": "Section title; count is the number of distinct passwords used more than once.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reportReusedGroup": "{count, plural, other{Same password in {count} entries}}",
+  "@reportReusedGroup": {
+    "description": "Header of one group of entries sharing a password.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reportOpenHint": "Tap an entry to change its password.",
+  "@reportOpenHint": {
+    "description": "Hint under the sections."
+  },
+  "otpNoCode": "No code yet",
+  "@otpNoCode": {
+    "description": "Screen reader label when a counter-based code has not been generated."
+  },
+  "secretConcealed": "Hidden",
+  "@secretConcealed": {
+    "description": "Screen reader label for a hidden password or field value."
+  },
+  "favoriteMark": "Favorite",
+  "@favoriteMark": {
+    "description": "Screen reader label of the star on favorite items."
   }
 }

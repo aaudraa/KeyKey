@@ -1,0 +1,41 @@
+# Deneme değerleri: logcat-scan.sh bunları logcat'te, storage-scan.sh
+# uygulamanın dosyalarında, memory-scan.sh sürecin belleğinde, check-release-apk.sh
+# yayın APK'sının içinde arar. Hepsi deneme verisidir; testlerde, fixture'larda
+# ve elle yapılan cihaz denemelerinde kullanılır.
+# Yeni bir testte yeni bir deneme parolası kullanılırsa buraya da eklenir.
+
+# Ana parolalar
+yeşil-Fener-83-Liman
+kırmızı-Bisiklet-47-Deniz
+mavi-Tren-58-Orman-Yolu
+dogru-Ana-Parola-47
+yedek-Parolasi-55
+deneme-parolası-ığüşöç
+cihaz-parolası-ığüşöç
+bu-yanlis-bir-parola-99
+deneme-Parola-Uzun-91
+
+# Kayıt parolaları ve elle denemedeki değerler
+kk-deneme-ilk
+kk-deneme-ikinci
+kk-deneme-arka
+kk-deneme-on
+deneme-399
+sahte-Sifre-
+SuperSecretPassword
+deneme-degeri
+OrnekUygulama-Sifre-62
+
+# Kurtarma anahtarı ve 2FA gizli anahtarları
+AZPTX-1VXQ0-AN66H
+JBSWY3DPEHPK3PXP
+
+# Kullanıcı adları ve site adresleri
+kullanici399@example.com
+deneme@example.com
+kullanici@example.com
+ornek.kullanici
+site399.example.com
+tomsmith
+zeynep
+banka.example.com

@@ -743,4 +743,60 @@ void main() {
       expect(find.text('Parolasını güncelle'), findsNothing);
     });
   });
+
+  group('erişilebilirlik', () {
+    const saveTarget = AutofillTarget(
+      packageName: 'io.github.aaudraa.ornekgiris',
+      appLabel: 'Örnek Giriş',
+      certsSha256: [cert],
+      save: AutofillSave(username: 'ayse', password: 'yeni-parola-1'),
+    );
+
+    Future<void> checkGuidelines(WidgetTester tester) async {
+      final handle = tester.ensureSemantics();
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(textContrastGuideline));
+      handle.dispose();
+    }
+
+    for (final (brightness, scale) in [
+      (Brightness.light, 1.0),
+      (Brightness.dark, 1.0),
+      (Brightness.light, 2.0),
+      (Brightness.dark, 2.0),
+    ]) {
+      for (final (name, target) in [
+        ('doldurma', app),
+        ('kaydetme', saveTarget),
+      ]) {
+        testWidgets('$name, ${brightness.name}, yazı x$scale', (tester) async {
+          tester.platformDispatcher
+            ..platformBrightnessTestValue = brightness
+            ..textScaleFactorTestValue = scale;
+          addTearDown(tester.platformDispatcher.clearAllTestValues);
+          tester.view
+            ..physicalSize = const Size(1080, 2400)
+            ..devicePixelRatio = 2.625;
+          addTearDown(tester.view.reset);
+
+          await pumpAutofill(
+            tester,
+            status: VaultLocked(service.header),
+            target: target,
+          );
+          await checkGuidelines(tester);
+
+          await tester.enterText(
+            find.byType(TextField),
+            FakeVaultService.correctPassword,
+          );
+          await tester.testTextInput.receiveAction(TextInputAction.done);
+          await tester.pumpAndSettle();
+          expect(find.byType(TextField), findsWidgets);
+          await checkGuidelines(tester);
+        });
+      }
+    }
+  });
 }

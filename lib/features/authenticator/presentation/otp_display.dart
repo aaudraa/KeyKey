@@ -24,6 +24,10 @@ String formatOtpCode(String code) {
   return '${code.substring(0, split)} ${code.substring(split)}';
 }
 
+/// Ekran okuyucu için kod: rakamlar ayrı ayrı okunsun, "dört yüz yetmiş
+/// yedi bin" gibi sayı olarak değil.
+String spokenOtpCode(String code) => code.split('').join(' ');
+
 /// Hesap kimliğinin adres satırındaki hali.
 String otpIdHex(OtpItem item) => loginIdHex(item.id);
 

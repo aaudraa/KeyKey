@@ -159,34 +159,44 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
 
   Widget _list(AppLocalizations l10n, LoginImportPlan plan) {
     final hasDuplicates = plan.candidates.any((c) => c.duplicate);
+    final notices = [
+      _Notice(
+        icon: Icons.description_outlined,
+        text: l10n.loginImportRead(
+          plan.candidates.length,
+          _sourceName(plan.source),
+        ),
+      ),
+      if (plan.skipped > 0)
+        _Notice(
+          icon: Icons.info_outline,
+          text: l10n.loginImportSkipped(plan.skipped),
+        ),
+      if (plan.skippedOtps > 0)
+        _Notice(
+          icon: Icons.info_outline,
+          text: l10n.loginImportSkippedOtps(plan.skippedOtps),
+        ),
+      if (hasDuplicates)
+        _Notice(
+          icon: Icons.content_copy_outlined,
+          text: l10n.loginImportDuplicatesNote,
+        ),
+    ];
+    // Bilgi kartları listeyle birlikte kayar; büyük yazıda listeye yer kalsın.
     return Column(
       children: [
-        _Notice(
-          icon: Icons.description_outlined,
-          text: l10n.loginImportRead(
-            plan.candidates.length,
-            _sourceName(plan.source),
-          ),
-        ),
-        if (plan.skipped > 0)
-          _Notice(
-            icon: Icons.info_outline,
-            text: l10n.loginImportSkipped(plan.skipped),
-          ),
-        if (plan.skippedOtps > 0)
-          _Notice(
-            icon: Icons.info_outline,
-            text: l10n.loginImportSkippedOtps(plan.skippedOtps),
-          ),
-        if (hasDuplicates)
-          _Notice(
-            icon: Icons.content_copy_outlined,
-            text: l10n.loginImportDuplicatesNote,
-          ),
         Expanded(
-          child: plan.candidates.isEmpty
-              ? Center(child: Text(l10n.loginImportNothing))
-              : ListView.builder(
+          child: CustomScrollView(
+            slivers: [
+              SliverList.list(children: notices),
+              if (plan.candidates.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(child: Text(l10n.loginImportNothing)),
+                )
+              else
+                SliverList.builder(
                   itemCount: plan.candidates.length,
                   itemBuilder: (context, index) {
                     final candidate = plan.candidates[index];
@@ -214,6 +224,8 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
                     );
                   },
                 ),
+            ],
+          ),
         ),
         SafeArea(
           child: Padding(

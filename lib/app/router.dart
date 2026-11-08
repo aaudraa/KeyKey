@@ -23,6 +23,7 @@ import 'package:keykey/features/settings/presentation/change_password_screen.dar
 import 'package:keykey/features/settings/presentation/settings_screen.dart';
 import 'package:keykey/features/vault/presentation/login_detail_screen.dart';
 import 'package:keykey/features/vault/presentation/login_edit_screen.dart';
+import 'package:keykey/features/vault/presentation/password_report_screen.dart';
 import 'package:keykey/features/vault/presentation/trash_screen.dart';
 import 'package:keykey/features/vault/presentation/vault_screen.dart';
 
@@ -30,6 +31,7 @@ abstract final class AppRoutes {
   static const vault = '/kasa';
   static const vaultNew = '/kasa/yeni';
   static const vaultTrash = '/kasa/cop';
+  static const vaultReport = '/kasa/rapor';
   static const authenticator = '/2fa';
   static const authenticatorNew = '/2fa/yeni';
   static const authenticatorTrash = '/2fa/cop';
@@ -143,6 +145,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'cop',
                     builder: (context, state) => const TrashScreen(),
+                  ),
+                  GoRoute(
+                    path: 'rapor',
+                    builder: (context, state) => const PasswordReportScreen(),
                   ),
                   GoRoute(
                     path: 'kayit/:id',

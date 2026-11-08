@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="autofill_fill_with_keykey">KeyKey ile doldur</string>
+    <string name="touch_blocked_overlay">Başka bir uygulama KeyKey\'in üstünde görünüyor, dokunuşun yok sayıldı. O uygulamanın yüzen penceresini veya ekran filtresini kapatıp yeniden dene.</string>
 </resources>

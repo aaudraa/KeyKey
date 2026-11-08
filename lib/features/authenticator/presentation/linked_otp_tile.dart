@@ -99,12 +99,16 @@ class _LinkedOtpTileState extends ConsumerState<LinkedOtpTile> {
             : null;
         return ListTile(
           title: Text(l10n.loginOtpCode, style: theme.textTheme.labelMedium),
-          subtitle: Text(
-            formatOtpCode(code ?? '•' * parameters.digits),
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontFamily: 'monospace',
-              letterSpacing: 2,
-              color: code == null ? null : theme.colorScheme.primary,
+          subtitle: Semantics(
+            label: code == null ? l10n.otpNoCode : spokenOtpCode(code),
+            excludeSemantics: true,
+            child: Text(
+              formatOtpCode(code ?? '•' * parameters.digits),
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontFamily: 'monospace',
+                letterSpacing: 2,
+                color: code == null ? null : theme.colorScheme.primary,
+              ),
             ),
           ),
           onTap: code == null ? null : () => _copy(code),

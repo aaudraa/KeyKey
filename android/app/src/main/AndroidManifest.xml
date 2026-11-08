@@ -13,6 +13,10 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove" />
+    <!-- KeyKey ekrandayken başka uygulamaların bindirme pencereleri gizlenir
+         (dokunma korsanlığı koruması, Android 12+). Kullanıcıya sorulmayan
+         normal bir izin. -->
+    <uses-permission android:name="android.permission.HIDE_OVERLAY_WINDOWS" />
     <application
         android:label="KeyKey"
         android:allowBackup="false"
@@ -37,6 +41,12 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+            <!-- KeyKey bağlantıyla açılmaz. Flutter'ın derin bağlantısı açık
+                 kalsaydı, herhangi bir uygulama adres taşıyan bir niyetle kasa
+                 açıkken KeyKey'i istediği ekrana götürebilirdi. -->
+            <meta-data
+              android:name="flutter_deeplinking_enabled"
+              android:value="false" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -71,6 +81,9 @@
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme" />
+            <meta-data
+                android:name="flutter_deeplinking_enabled"
+                android:value="false" />
         </activity>
         <!-- Pano temizliği: uygulama arka plandayken alarmla çalışır, dışarıya açık değil. -->
         <receiver

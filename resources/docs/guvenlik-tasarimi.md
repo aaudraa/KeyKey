@@ -6,7 +6,7 @@ Bu belge KeyKey'in verileri nasıl şifrelediğini bayt düzeyinde anlatır. Kod
 
 ## Hedefler
 
-**Korumak istediklerimiz** (tam liste [yol haritasındaki tehdit modelinde](../yol-haritasi.md#tehdit-modeli)):
+**Korumak istediklerimiz** (tam liste [tehdit modelinde](#tehdit-modeli)):
 
 - Kasa dosyası veya yedek ele geçse bile, ana parola güçlüyse içerik okunamamalı.
 - Dosyayı ele geçiren hangi sitelerde hesabın olduğunu görememeli.
@@ -15,6 +15,42 @@ Bu belge KeyKey'in verileri nasıl şifrelediğini bayt düzeyinde anlatır. Kod
 **Korumadıklarımız:** Kasa açıkken root yetkili veya zararlı yazılım bulaşmış cihaz; zayıf ana parola; ana parola ve kurtarma anahtarının birlikte kaybı.
 
 **İlke:** Kendi kriptomuzu yazmıyoruz. Bütün temel işlemler [libsodium](https://libsodium.org) 1.0.22'den gelir, biz yalnızca onları birleştiririz.
+
+## Tehdit modeli
+
+### Korunan varlıklar
+
+| Varlık | Nerede durur |
+|---|---|
+| Kayıtlar: parolalar, kullanıcı adları, notlar, 2FA gizli anahtarları, adresler | Diskte şifreli; kasa açıkken çözülmüş halde bellekte |
+| Ana parola | Hiçbir yerde saklanmaz; yazılırken klavyeden ve bellekten geçer |
+| Kurtarma anahtarı | Kullanıcının kâğıdında; uygulamada saklanmaz |
+| Kasa anahtarı | Diskte yalnızca sarılmış halde; kasa açıkken korumalı bellekte |
+| Kopyalanan değer | Panoda en fazla 30 saniye ([Pano](#pano)) |
+| Yedek dosyası | Kullanıcının seçtiği konumda (Drive gibi), şifreli |
+| Hangi sitelerde hesap olduğu | Kayıtların içinde şifreli; kayıt sayısı ve zamanları görünür ([bilinen sınırlar](#bilinen-sınırlar)) |
+
+### Saldırganlar
+
+| Saldırgan | Ne yapabilir | KeyKey'in koruması | Sonuç |
+|---|---|---|---|
+| Kilitli telefonu bulan veya çalan | Ekran kilidini aşamaz; adli araçlarla diski kopyalayabilir | Android dosya şifrelemesinin üstüne kasa şifrelemesi; anahtar ana paroladan türetilir, diskte durmaz | Korunur |
+| Kilidi açık telefonu kısa süre eline geçiren, KeyKey kilitli | Uygulamayı açar, parola dener, yeni parmak izi ekleyebilir | Ana parola veya parmak izi gerekir; hatalı denemede artan bekleme; yeni parmak izi eklenince parmak iziyle açma kapanır | Korunur, parola güçlüyse |
+| Kilidi açık telefonu eline geçiren, KeyKey açık | Ekrandaki kayıtları ve parolaları görür, kopyalar | Arka plana geçince hemen, 5 dakika dokunulmazsa kilitlenir. Ana parolayı değiştirmek mevcut parolayı, şifresiz dışa aktarma kimlik doğrulamayı ister; 2FA kodları için ek onay isteğe bağlıdır | Kısmen: açık kasadaki parolalar görülebilir |
+| Yedek dosyasını ele geçiren (ör. Drive hesabı ele geçmiş) | Dosyayı kendi bilgisayarında sınırsız deneyebilir | Argon2id; kayıtlar dosyanın içinde de ayrıca şifreli; kayıt sayısı ve türleri gizli | Korunur, parola güçlüyse. Eski yedekler eski parolayla açılır |
+| Diskteki kasa dosyasına yazabilen | Dosyayı okur, değiştirir, eskisiyle değiştirir | Her kayıt kimliğine ve türüne bağlı şifreli; değiştirilen kayıt açılmaz | Okuyamaz; ama geri alma ve silme fark edilmez ([bilinen sınırlar](#bilinen-sınırlar)) |
+| Cihazdaki izinsiz zararlı uygulama | Kendi alanında çalışır, araya girmeye çalışır | Android uygulama yalıtımı; kasa dosyası uygulamanın özel klasöründe; `INTERNET` izni yok; dışa açık bileşen yalnızca ana ekran ve sistemin bağlandığı doldurma servisi | Korunur |
+| Panoyu okuyan uygulama | Kopyalanan parolayı okumaya çalışır | Android 10'dan beri arka plandaki uygulamalar panoyu okuyamaz; değer hassas işaretli, 30 saniye sonra silinir | Kısmen: etkin klavye ve o an öndeki uygulama görebilir |
+| Kötü niyetli doldurma hedefi: sahte uygulama, sahte site, WebView içeren uygulama | Kayıtlı parolayı kendine doldurtmaya çalışır | Uygulamada paket adı ve imza, web'de Public Suffix List ile alan adı; `webDomain` yalnızca güvenilen tarayıcılardan; şüpheli durumda uyarı ve ek onay ([Otomatik doldurma](#otomatik-doldurma)) | Büyük ölçüde korunur |
+| Ekran görüntüsü, ekran kaydı, son uygulamalar önizlemesi | Ekranı kaydeder | `FLAG_SECURE`; son uygulamalarda önizleme kapalı | Korunur |
+| Bindirme (overlay) izni olan uygulama | Saydam pencereyle kullanıcıya istemediği bir şeye dokundurur (tapjacking) | Android 12+: KeyKey ekrandayken bindirmeler gizlenir. Android 11: örtülü noktadaki dokunuş düşürülür ([Arayüz koruması](#arayüz-koruması)) | Korunur |
+| Erişilebilirlik izni olan zararlı uygulama | Ekrandaki metni okur, dokunuş üretir; `FLAG_SECURE` bunu engellemez | Android 14+: pencere hassas işaretli, yalnızca erişilebilirlik araçları okuyabilir ([Arayüz koruması](#arayüz-koruması)) | Android 14+ korunur; **11-13 korunmaz** |
+| Kötü niyetli klavye | Yazılan her şeyi, ana parola dahil, görür | Gizli alanlarda öneri ve öğrenme kapalı; bu yalnızca dürüst klavyeleri etkiler | **Korunmuyor** |
+| Root yetkili veya zararlı yazılım bulaşmış cihaz, kasa açık | Belleği okur | Anahtarlar korumalı bellekte, ama çözülmüş kayıtlar Dart belleğinde ([Bellek](#bellek)) | **Korunmuyor** |
+| Ana parola ve kurtarma anahtarı birlikte kayboldu | — | Bilinçli olarak arka kapı yok | Veri geri gelmez |
+| Bağımlılık veya derleme ortamı ele geçmiş (tedarik zinciri) | Uygulamaya kötü kod sokar | Kilitli bağımlılık sürümleri; `sqlite3` hazır kütüphanesi sabit özetle denetlenir; CI'da gizli bilgi taraması; denetim [#86](https://github.com/aaudraa/KeyKey/issues/86), yeniden üretilebilir derleme Faz 9 | Kısmen |
+
+**Kapsam dışı:** Zorla parola söyletme, omuz üstünden bakma, işletim sistemindeki açıklar ve donanım saldırıları. Uygulamanın internet izni olmadığı için ağ üzerinden bir saldırı yüzeyi yoktur; bu da veriyi dışarı gönderemeyeceğinin güvencesidir.
 
 ## Algoritmalar
 
@@ -74,10 +110,10 @@ Taban parametrelerle (64 MiB, 3 geçiş) cihaz başına üç ölçüm yapıldı.
 | Emülatör `KeyKey_API_36` | 16 | 102, 106, 114 | 12 |
 | Emülatör `Medium_Phone_API_37.0` | 17 | 97, 102, 98 | 12 |
 
-- S20 FE'de 12 geçişin yaklaşık 0,9 saniye sürmesi beklenir. Bu değer ölçülmedi, sürenin geçiş sayısıyla doğru orantılı olduğu varsayılarak 233 ms'den hesaplandı.
+- S20 FE'de kalibrasyonun seçtiği 12 geçiş 864 ms sürdü ([denetim belgesi](guvenlik-denetimi.md#gerçek-telefon)); hedef 1 saniyenin altında.
 - Emülatörler bilgisayarın `x86_64` işlemcisinde çalıştığı için telefon süresini göstermez.
 - Gerçek telefon ölçümü tek bir cihazdan geliyor. Bu cihaz 2020'nin üst seviye çipini taşıyor ve test debug derlemesiyle çalıştı. Düşük donanımlı telefonlar ölçülmedi. Kalibrasyon tabanın altına inmediği için çok yavaş cihazlarda kasa açmak hedef süreyi aşabilir.
-- Bu ölçüm yalnızca Argon2id süresini kapsar. Android Keystore ve biyometri davranışı için Faz 8'deki gerçek telefon testi yine gereklidir.
+- Bu ölçüm yalnızca Argon2id süresini kapsar. Android Keystore ve biyometrinin gerçek telefondaki davranışı [denetim belgesinde](guvenlik-denetimi.md#gerçek-telefon).
 
 ### Kurtarma anahtarı
 
@@ -294,6 +330,28 @@ Parmak izi üçüncü kapıdır ve isteğe bağlıdır. Yuvası üst bilgide de�
 
 **Katman istisnası:** Kasa anahtarının ham bayta döndüğü tek yer bu köprüdür. Dart ile Kotlin arasında geçerken Dart ve JVM belleğinde kopyalar oluşur. Sarmalarken Kotlin aldığı diziyi, Dart da gönderdiği kopyayı sıfırlar. Açarken ise kopyalar sıfırlanamaz: Kotlin'in çözdüğü diziyi köprü fonksiyon döndükten sonra kodlar, Dart'a gelen kanal tamponu da salt okunurdur. Bu kopyalar çöp toplayıcı silene kadar JVM ve Dart belleğinde kalabilir. Yalnızca kasa açılırken veya açıkken oluşurlar; o sırada anahtar zaten bellektedir ve root yetkili cihaz tehdit modelinin dışındadır.
 
+## Arayüz koruması
+
+Ana uygulama ve doldurma ekranı aynı korumayı kullanır (`WindowProtection`).
+
+| Tehdit | Koruma | Android sürümü |
+|---|---|---|
+| Ekran görüntüsü, ekran kaydı | `FLAG_SECURE` | Hepsi |
+| Son uygulamalar önizlemesi | `FLAG_SECURE`, ayrıca `setRecentsScreenshotEnabled(false)` | Hepsi; ikincisi 13+ |
+| Bindirme penceresiyle dokunma korsanlığı (tapjacking) | KeyKey ekrandayken başka uygulamaların bindirme pencereleri gizlenir (`setHideOverlayWindows`, `HIDE_OVERLAY_WINDOWS` izni). Sistemin kendi pencereleri etkilenmez | 12+ |
+| Aynı saldırı, gizleme olmadan | Dokunulan noktanın üstünde başka bir uygulamanın penceresi varsa (`FLAG_WINDOW_IS_OBSCURED`) dokunuş düşürülür ve kullanıcıya nedeni söylenir | 11 |
+| Erişilebilirlik servisinin ekranı okuması | Pencere erişilebilirlik için hassas işaretlenir (`setAccessibilityDataSensitive`). Ekranı yalnızca kendini erişilebilirlik aracı olarak bildiren servisler (TalkBack, Switch Access gibi) okuyabilir ve kullanabilir | 14+ |
+
+**Android 11'in bedeli:** Ekran filtresi (mavi ışık, karartma) gibi ekranın tamamını kaplayan bir uygulama açıkken KeyKey'e dokunulamaz; kullanıcı her denemede "başka bir uygulama KeyKey'in üstünde görünüyor" uyarısını görür. Yalnızca dokunulan noktayı örten pencereler sayılır; ekranın başka bir yerindeki yüzen pencere dokunuşu engellemez. Android 12 ve sonrasında pencereler zaten gizlendiği için dokunuş süzülmez; böylece sistemin büyüteci gibi kendi pencereleri KeyKey'i kullanılmaz hale getirmez. Android 12 ayrıca, opaklığı 0,8'den yüksek başka uygulama pencerelerinden geçen dokunuşları kendisi engeller.
+
+**Sınırlar:**
+
+1. Android 11-13'te erişilebilirlik izni verilmiş zararlı bir uygulama ekrandaki metni okuyabilir. Bu sürümlerde bunu önleyecek bir platform özelliği yok.
+2. Kendini erişilebilirlik aracı olarak bildiren bir servis Android 14+'ta da okuyabilir. Google Play bu bildirimi gerçek erişilebilirlik araçlarına sınırlar; başka kaynaktan kurulan uygulamalar için böyle bir denetim yok.
+3. Erişilebilirlik izni ve bindirme izni kullanıcının kendisinin vermesi gereken izinlerdir; KeyKey bu izinleri kimin aldığını göremez.
+
+**Deneme:** [`tapjacking-device-test.sh`](../scripts/tapjacking-device-test.sh), [`resources/test-apps/saldirgan`](../test-apps/saldirgan) uygulamasıyla dener: ekranı kaplayan, dokunuşları geçiren 0,5 opaklıkta bir bindirme penceresi (Android 12'nin kendi engelinden geçen en zor durum) ve kendini araç olarak bildirmeyen bir erişilebilirlik servisi. Korumadan önceki sürümde bindirme KeyKey'in üstünde görünüyordu ve servis kilit ekranındaki metinleri okuyabiliyordu. Sonuçlar [denetim belgesinde](guvenlik-denetimi.md#arayüz-koruması).
+
 ## Pano
 
 - Kopyalanan parola hassas olarak işaretlenir (`EXTRA_IS_SENSITIVE`, Android 13+), böylece sistem önizlemede göstermez. Android 11 ve 12'de bu işaret yoktur.
@@ -306,7 +364,7 @@ Parmak izi üçüncü kapıdır ve isteğe bağlıdır. Yuvası üst bilgide de�
 
 1. Android arka plandaki uygulamaya panoyu okutmaz. Kullanıcı bu sürede başka bir şey kopyaladıysa onu da silebiliriz.
 2. Alarm tam zamanında çalışmayabilir. Android, kesin alarm izni olmadan onu geciktirebilir. Cihaz testi, süreç ayaktayken arka planda temizlendiğini doğruluyor; sürecin kapatıldığı durum yalnızca alarma dayanıyor ve otomatik test edilmedi. Bu izni almıyoruz, çünkü parolanın panoda birkaç dakika daha kalması, izin listesini büyütmeye değmez.
-3. O sürede panoyu okuyan etkin klavye veya kötü amaçlı uygulama parolayı görebilir. Bu, [tehdit modelinde](../yol-haritasi.md#tehdit-modeli) "kısmen" olarak yazıyor.
+3. O sürede panoyu okuyan etkin klavye veya kötü amaçlı uygulama parolayı görebilir. Bu, [tehdit modelinde](#tehdit-modeli) "kısmen" olarak yazıyor.
 
 ## Parola üretici ve güç tahmini
 
@@ -314,6 +372,16 @@ Parmak izi üçüncü kapıdır ve isteğe bağlıdır. Yuvası üst bilgide de�
 - **Rastgele parola:** Seçilen her karakter sınıfından en az bir karakter bulunur. Bu, sonucu çok az daraltır, gösterilen entropi hesabı bunu göz ardı eder.
 - **Parola cümlesi:** [EFF büyük sözcük listesi](https://www.eff.org/dice) (7776 İngilizce sözcük, CC BY 3.0), sözcük başına yaklaşık 12,9 bit. Varsayılan 6 sözcük, yaklaşık 77 bit. Denetlenmiş bir Türkçe liste bulamadığımız için Türkçe seçenek yok.
 - **Güç tahmini:** Uzunluk ve karakter çeşitliliğinden kaba bir entropi hesaplanır. Yaygın parola listesi, klavye dizileri, ardışık karakterler, tekrarlar ve tarihler bunu düşürür. Yaygın parola listesi [SecLists](https://github.com/danielmiessler/SecLists) (MIT) kaynaklıdır. Bu yine bir tahmindir, gerçek gücü ölçmez.
+
+### Parola raporu
+
+Kasa ekranındaki "Parola raporu" zayıf ve birden çok kayıtta kullanılan parolaları gösterir.
+
+- **Zayıf:** Kayıt düzenleme ekranındaki güç göstergesiyle aynı kural (`PasswordPolicy.strengthOf`, yaygın parola listesiyle). "Çok kısa" (10 karakterden az) ve "zayıf" çıkanlar rapora girer. Parola üreticisi eşik değil, bit sayısı gösterir; ürettiği parola düzenleme ekranında aynı göstergeden geçer.
+- **Tekrar eden:** Parolası birebir aynı olan kayıtlar gruplanır.
+- **Kapsam:** Çöp kutusundaki ve parolası boş kayıtlar sayılmaz.
+- **Gizlilik:** Rapor, kasa açıkken zaten bellekte duran çözülmüş kayıtlardan hesaplanır. İnternete çıkmaz; sızıntı listelerine (ör. Have I Been Pwned) sorulmaz, çünkü KeyKey'in internet izni yok. Sonuç kasaya ve diske yazılmaz. Ekranda parolalar gösterilmez, yalnızca kayıt adları ve kullanıcı adları. Rapor ekranı kapanınca hesaplanan rapor atılır (`autoDispose`); kasa kilitlenince kayıtlarla birlikte bellekten çıkar.
+- **Kayda gitme:** Kayda dokununca düzenleme ekranı açılır; parola değişince rapor kendiliğinden güncellenir.
 
 ## 2FA kodları
 
@@ -471,7 +539,7 @@ Ana uygulama ve doldurma ekranı aynı süreçte, aynı veritabanı dosyasına i
 ### Sınırlar
 
 1. Doldurulan değer hedef uygulamaya verildikten sonra onu korumak bizim elimizde değildir.
-2. Kötü amaçlı bir erişilebilirlik servisi veya klavye, doldurulan alanı okuyabilir. Bu, [tehdit modelinin](../yol-haritasi.md#tehdit-modeli) dışındadır.
+2. Kötü amaçlı bir erişilebilirlik servisi veya klavye, doldurulan alanı okuyabilir. [Tehdit modelinde](#tehdit-modeli) bunlar korunmayanlar arasında.
 3. Güvenilen tarayıcıların kendileri doğru alan adını bildirmek zorundadır; bir tarayıcı açığı burada da açık olur.
 4. İlk bağlamada kullanıcı onay verir: sahte bir uygulamayı gerçek uygulama sanıp kayda bağlarsa, sonraki doldurmalar o sahte uygulamaya da eşleşir. Uyarı bunu önlemeye çalışır, garanti edemez.
 
@@ -603,7 +671,7 @@ Kasa açıkken arama yapılabilsin diye kayıtların tamamı çözülüp bellekt
 
 2FA gizli anahtarları da çözülmüş kayıtla birlikte Dart belleğinde durur; kod her hesaplandığında kullanılır. HMAC `package:crypto` ile hesaplandığı için anahtar korumalı belleğe alınamaz. İçe aktarmada türetilen anahtarlar ve çözülen düz metin, işi bitince sıfırlanır. Pigeon'un Android'den getirdiği baytlar değiştirilemez olduğu için önce kopyalanır.
 
-**Sınır:** Düz metne çözülen kayıtlar ve metin kutusundan gelen ana parola Dart `String` olarak bellekte kalır. Dart `String`'leri değiştirilemez ve çöp toplayıcı ne zaman sileceğini garanti etmez. Ömürlerini kısa tutarız, ama silindiklerini garanti edemeyiz.
+**Sınır:** Düz metne çözülen kayıtlar ve metin kutusundan gelen ana parola Dart `String` olarak bellekte kalır. Dart `String`'leri değiştirilemez ve çöp toplayıcı ne zaman sileceğini garanti etmez. Ömürlerini kısa tutarız, ama silindiklerini garanti edemeyiz. Güvenlik denetiminde bu [ölçüldü](guvenlik-denetimi.md#bellek): kilitten dakikalar sonra da bulunuyorlar ([bilinen sınır 7](#bilinen-sınırlar)).
 
 ## Bilinen sınırlar
 
@@ -613,6 +681,7 @@ Kasa açıkken arama yapılabilsin diye kayıtların tamamı çözülüp bellekt
 4. **Parola gücü esastır.** Argon2id denemeyi yavaşlatır, ama zayıf bir parolayı güçlendiremez. Yedek dosyası da aynı sınıra tabidir.
 5. **Sarmalama anahtarı dönmez.** Parola değişse de kasa anahtarı aynı kalır. Eski parolayı ve o zamanki üst bilgiyi birlikte ele geçiren biri kasa anahtarına ulaşabilir, eski yedekler de eski parolayla açılmaya devam eder.
 6. **Hatalı deneme beklemesi yalnızca uygulamanın kuralıdır.** Sayaç şifresizdir ve kopyalanmış bir kasa dosyası üzerindeki denemeleri sınırlamaz. Ayrıntılar [Kilit](#kilit) bölümünde.
+7. **Kilitten sonra bellekte kalan dizeler.** Yazılan ana parola ve ekranda gösterilmiş değerler (parola, kullanıcı adı) kilitten sonra da Dart'ın henüz toplanmamış dizelerinde kalabilir; denetimde kilitten 2,5 dakika sonra bile bulundular ([ölçüm](guvenlik-denetimi.md#bellek)). Anahtarlar, kurtarma anahtarı ve 2FA anahtarları bulunmadı. Bu belleği okumak root ya da süreçte kod çalıştırmayı gerektirir; böyle bir saldırgan ana parolayı yazılırken de görebileceği için risk kabul edildi. Ayrıntılar [Bellek](#bellek) bölümünde.
 
 ## Test yaklaşımı
 

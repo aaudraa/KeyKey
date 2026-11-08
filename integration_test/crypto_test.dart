@@ -132,9 +132,22 @@ void main() {
     }
     final opsLimit = await kdf.calibrateOpsLimit();
 
+    // Kalibrasyonun seçtiği geçiş sayısıyla bir ölçüm: bu cihazda yeni
+    // oluşturulan bir kasanın açılış süresi.
+    final calibrated = Stopwatch()..start();
+    final key = await kdf.deriveKey(
+      PasswordKdf.encodePassword('ölçüm-parolası'),
+      kdf.newParams(opsLimit: opsLimit),
+    );
+    calibrated.stop();
+    key.dispose();
+
     // Bu satır ölçüm betiği tarafından okunuyor.
     // ignore: avoid_print
-    print('KKOLCUM ms=${samples.join(",")} kalibrasyon_ops=$opsLimit');
+    print(
+      'KKOLCUM ms=${samples.join(",")} kalibrasyon_ops=$opsLimit '
+      'kalibre_ms=${calibrated.elapsedMilliseconds}',
+    );
     expect(
       opsLimit,
       inInclusiveRange(
