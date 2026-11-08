@@ -2,7 +2,7 @@
 
 KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-07 · **Şu anki faz:** Faz 7
+**Son güncelleme:** 2026-11-08 · **Şu anki faz:** Faz 8
 
 > [!IMPORTANT]
 > **Gerçek parolalarını Faz 8 bitene kadar KeyKey'e koyma.** Kasa biçimi o zamana kadar değişebilir ve güvenlik denetimi henüz yapılmadı.
@@ -20,8 +20,8 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 | 4 | Parola kasası | L | 3 | `faz/4-parola-kasasi` | Tamamlandı |
 | 5 | 2FA doğrulayıcı | M | 3 | `faz/5-2fa-dogrulayici` | Tamamlandı |
 | 6 | Otomatik doldurma | XL | 4 | `faz/6-otomatik-doldurma` | Tamamlandı |
-| 7 | Yedekleme, içe ve dışa aktarma | L | 4, 5 | `faz/7-yedekleme` | Sürüyor |
-| 8 | Güvenlik sertleştirme ve denetim | L | 6, 7 | `faz/8-guvenlik-denetimi` | Bekliyor |
+| 7 | Yedekleme, içe ve dışa aktarma | L | 4, 5 | `faz/7-yedekleme` | Tamamlandı |
+| 8 | Güvenlik sertleştirme ve denetim | L | 6, 7 | `faz/8-guvenlik-denetimi` | Sürüyor |
 | 9 | 1.0 yayını | M | 8 | `faz/9-yayin` | Bekliyor |
 
 Büyüklük göreli iş miktarını gösterir, takvim sözü değildir. Faz 4 ve 5 aynı anda ilerleyebilir. İlerlemeyi [milestone'lardan](https://github.com/aaudraa/KeyKey/milestones) da izleyebilirsin.
@@ -382,16 +382,16 @@ Telefon denemesi üç sorun buldu ve [#60](https://github.com/aaudraa/KeyKey/pul
 
 **Amaç:** Telefon kaybolsa bile verinin kurtarılabilmesi ve başka uygulamalardan kolay geçiş.
 
-- [ ] Sürümlü `.keykey` biçimi: Argon2id ve libsodium `secretstream`
-- [ ] Android dosya seçicisiyle kaydetme: Drive gibi konumlar internet izni olmadan çalışır
-- [ ] Geri yükleme: önce doğrulama, sonra birleştirme veya değiştirme seçeneği; hata olursa mevcut kasaya dokunulmaz
-- [ ] Yedek hatırlatıcısı ve "son yedek" bilgisi
-- [ ] İçe aktarma: Bitwarden (JSON, CSV), Chrome (CSV), KeePassXC (CSV), Aegis ve 2FAS
-- [ ] Düz metin kaynak dosyasını silmeyi hatırlatma
-- [ ] Çift onaylı ve uyarılı düz metin dışa aktarma
-- [ ] Biçim uyumluluğu testleri
+- [x] Sürümlü `.keykey` biçimi: Argon2id ve libsodium `secretstream`
+- [x] Android dosya seçicisiyle kaydetme: Drive gibi konumlar internet izni olmadan çalışır
+- [x] Geri yükleme: önce doğrulama, sonra birleştirme veya değiştirme seçeneği; hata olursa mevcut kasaya dokunulmaz
+- [x] Yedek hatırlatıcısı ve "son yedek" bilgisi
+- [x] İçe aktarma: Bitwarden (JSON, CSV), Chrome (CSV), KeePassXC (CSV), Aegis ve 2FAS
+- [x] Düz metin kaynak dosyasını silmeyi hatırlatma
+- [x] Çift onaylı ve uyarılı düz metin dışa aktarma
+- [x] Biçim uyumluluğu testleri
 
-**Durum (2026-11-07):** Faz başladı, görevler #73-#79. Yedek ayrı bir parola istemez: alındığı andaki ana parola veya kurtarma anahtarıyla açılır.
+**Durum (2026-11-08):** Tamamlandı ([#81](https://github.com/aaudraa/KeyKey/pull/81), `v0.7.0`). Yedek ayrı bir parola istemez: alındığı andaki ana parola veya kurtarma anahtarıyla açılır. API 36'da alınan yedek API 30'da aynen açıldı; bozuk dosya ve yanlış parola kasaya dokunmadan reddedildi; cihaz testleri dört emülatörde geçti. Bitwarden, Chrome 145 ve KeePassXC 2.8'in gerçek dışa aktarmaları testlere girdi. Telefonda (Samsung Galaxy S20 FE, Android 13) yedek Google Drive'a alındı, uygulama kaldırılıp yedek Drive'dan geri yüklendi. Bu deneme, ayarları hiç değiştirilmemiş bir kasanın yedeğinde son yedek saatinin boş kaldığı bir hatayı buldu; düzeltildi.
 
 **Bitti sayılması için:** API 36'da alınan yedek API 30'da aynen açılıyor; bozuk dosya temiz bir hata veriyor ve veri kaybettirmiyor; yanlış parola dosyayı açmıyor.
 
@@ -409,6 +409,8 @@ Telefon denemesi üç sorun buldu ve [#60](https://github.com/aaudraa/KeyKey/pul
 - [ ] Erişilebilirlik: TalkBack, büyük yazı boyutu, kontrast
 - [ ] Deneme verisiyle uzun süreli günlük kullanım
 - [ ] Dışarıdan inceleme çağrısı: tasarım belgesini güvenlik topluluklarıyla paylaşmak
+
+**Durum (2026-11-08):** Faz başladı, görevler #82-#91 ve Faz 6'dan kalan #71. Gerçek telefon denemesi (#88), uzun süreli kullanım (#89) ve dış inceleme paylaşımı (#90) kullanıcıyla yapılır.
 
 **Bitti sayılması için:** Açık `güvenlik` issue'su yok; denetim belgesi tamamlandı; gerçek cihaz testleri geçti.
 
