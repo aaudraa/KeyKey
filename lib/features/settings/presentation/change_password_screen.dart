@@ -64,9 +64,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
           _current.clear();
           setState(() => _error = l10n.lockWrongPassword);
         case PasswordMustWait(:final wait):
-          setState(
-            () => _error = l10n.changePasswordWait(wait.inSeconds.toString()),
-          );
+          setState(() => _error = l10n.changePasswordWait(wait.inSeconds));
       }
     } on Exception {
       if (mounted) setState(() => _error = l10n.setupFailed);

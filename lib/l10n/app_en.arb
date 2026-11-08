@@ -231,12 +231,12 @@
   "@changePasswordDone": {
     "description": "Message after the password was changed."
   },
-  "changePasswordWait": "Too many wrong attempts. Try again in {seconds} seconds.",
+  "changePasswordWait": "{seconds, plural, =1{Too many wrong attempts. Try again in 1 second.} other{Too many wrong attempts. Try again in {seconds} seconds.}}",
   "@changePasswordWait": {
     "description": "Error while waiting after wrong passwords.",
     "placeholders": {
       "seconds": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -1313,7 +1313,7 @@
   "@restoreCorrupted": {
     "description": "Error when the backup content fails verification."
   },
-  "restoreSummary": "Backup from {date}: {logins} passwords and {otps} 2FA accounts.",
+  "restoreSummary": "Backup from {date}: {logins, plural, =1{1 password} other{{logins} passwords}} and {otps, plural, =1{1 2FA account} other{{otps} 2FA accounts}}.",
   "@restoreSummary": {
     "description": "Summary of an opened backup.",
     "placeholders": {
