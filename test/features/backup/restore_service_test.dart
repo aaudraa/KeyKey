@@ -226,7 +226,15 @@ void main() {
       final outcome = await service.unlockWithPassword(header, passwordA);
       expect(outcome.attempt, isA<PasswordAccepted>());
       final records = await store.allRecords();
-      expect(records, hasLength(2));
+      // Yedekte ayar kaydı yoktu; son yedek zamanı için biri eklendi.
+      expect(
+        records.map((r) => r.type),
+        unorderedEquals(<String>[
+          'login',
+          'otp',
+          SettingsRepository.recordType,
+        ]),
+      );
       final login = records.singleWhere((r) => r.type == 'login');
       expect(
         utf8.decode(
@@ -261,7 +269,8 @@ void main() {
           a.session.header.toJsonString(),
         );
         final records = await b.store.allRecords();
-        expect(records.map((r) => r.id.last), [1]);
+        // 0: yeni eklenen ayar kaydı.
+        expect(records.map((r) => r.id.last), unorderedEquals(<int>[0, 1]));
         expect(await b.store.readBiometricSlot(), isNull);
         expect((await b.store.readUnlockAttempts()).failedAttempts, 0);
       },
@@ -284,6 +293,27 @@ void main() {
       expect(settings.lastBackupAt, DateTime.utc(2026, 11, 7));
       // Diğer ayarlar olduğu gibi kaldı.
       expect(settings.otpRequireAuth, isTrue);
+    });
+
+    test('ayar kaydı olmayan yedekte son yedek zamanı yazılıyor', () async {
+      // Ayarları hiç değiştirilmemiş kasanın ilk yedeği: ayar kaydı yok.
+      // Telefonda Drive'dan geri yüklemede bulundu.
+      await put(a, 1);
+      final opened = await openA();
+      expect(
+        opened.records.where((r) => r.type == SettingsRepository.recordType),
+        isEmpty,
+      );
+      await RestoreService(sodium: sodium, store: b.store).replace(opened);
+      opened.dispose();
+
+      final settings = await SettingsRepository(
+        store: b.store,
+        session: a.session,
+      ).load();
+      expect(settings.lastBackupAt, DateTime.utc(2026, 11, 7));
+      expect(settings.otpRequireAuth, AppSettings.defaults.otpRequireAuth);
+      expect(settings.autofillCopyOtp, AppSettings.defaults.autofillCopyOtp);
     });
 
     test('daha yeni son yedek zamanı korunuyor', () async {

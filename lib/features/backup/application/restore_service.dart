@@ -106,17 +106,27 @@ class RestoreService {
   /// Son yedek zamanı yedeğin içinde değildir, çünkü dosya kaydedildikten
   /// sonra yazılır. Geri yüklenen kasa bu yedeğin kendisi olduğu için ayar
   /// kaydındaki zaman en az yedeğin alındığı an yapılır; yoksa hatırlatıcı
-  /// "hiç yedek yok" derdi.
+  /// "hiç yedek yok" derdi. Ayarları hiç değiştirilmemiş bir kasanın ayar
+  /// kaydı yoktur; o zaman varsayılan ayarlarla yeni bir kayıt eklenir.
   Future<void> replace(OpenedBackup backup) async {
     final cipher = _cipherFor(backup);
     final List<StoredRecord> records;
     try {
+      final settingsId = SettingsRepository.recordId;
       records = [
         for (final record in backup.records)
           if (record.type == SettingsRepository.recordType)
             _withBackupTime(record, cipher, backup.createdAt)
           else
             record,
+        if (!backup.records.any((record) => listEquals(record.id, settingsId)))
+          _settingsRecord(
+            cipher,
+            AppSettings.defaults.copyWith(lastBackupAt: backup.createdAt),
+            id: settingsId,
+            createdAt: backup.createdAt,
+            updatedAt: backup.createdAt,
+          ),
       ];
     } finally {
       cipher.dispose();
@@ -144,21 +154,37 @@ class RestoreService {
     if (settings == null) return record;
     final last = settings.lastBackupAt;
     if (last != null && !last.isBefore(createdAt)) return record;
-    final updated = settings.copyWith(lastBackupAt: createdAt).toJsonBytes();
+    return _settingsRecord(
+      cipher,
+      settings.copyWith(lastBackupAt: createdAt),
+      id: record.id,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
+    );
+  }
+
+  StoredRecord _settingsRecord(
+    RecordCipher cipher,
+    AppSettings settings, {
+    required Uint8List id,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+  }) {
+    final plain = settings.toJsonBytes();
     try {
       return StoredRecord(
-        id: record.id,
-        type: record.type,
+        id: id,
+        type: SettingsRepository.recordType,
         blob: cipher.encrypt(
-          recordId: record.id,
-          type: record.type,
-          plainText: updated,
+          recordId: id,
+          type: SettingsRepository.recordType,
+          plainText: plain,
         ),
-        createdAt: record.createdAt,
-        updatedAt: record.updatedAt,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
       );
     } finally {
-      updated.fillRange(0, updated.length, 0);
+      plain.fillRange(0, plain.length, 0);
     }
   }
 

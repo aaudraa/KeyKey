@@ -543,7 +543,7 @@ parça   = uzunluk (4 bayt, büyük uçlu) || şifreli parça
 
 Geri yükleme bir yedeğin parolasını denemek için kullanılsa da kasanın hatalı deneme sayacına eklenmez: dosyayı ele geçiren biri onu zaten uygulama dışında deneyebilir.
 
-Son yedek zamanı dosya kaydedildikten sonra yazıldığı için yedeğin içindeki ayar kaydında eski kalır. İlk kurulumda ve değiştirmede ayar kaydındaki bu zaman, daha yeni değilse yedeğin alındığı an yapılır; kasa o yedeğin kendisidir, hatırlatıcı "hiç yedek yok" dememelidir.
+Son yedek zamanı dosya kaydedildikten sonra yazıldığı için yedeğin içindeki ayar kaydında eski kalır. İlk kurulumda ve değiştirmede ayar kaydındaki bu zaman, daha yeni değilse yedeğin alındığı an yapılır; kasa o yedeğin kendisidir, hatırlatıcı "hiç yedek yok" dememelidir. Ayarları hiç değiştirilmemiş bir kasanın ilk yedeğinde ayar kaydı yoktur; o zaman varsayılan ayarlarla ve bu zamanla yeni bir ayar kaydı eklenir.
 
 ### Yedek hatırlatıcısı
 
