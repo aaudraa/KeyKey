@@ -150,4 +150,17 @@ Ekran okuyucu davranışları ayrıca testle sabitlendi (`ekran okuyucu` grubu).
 
 **Android 14+ hassas işaretli pencere.** KeyKey'in pencereleri `accessibilityDataSensitive` ile işaretli ([Arayüz koruması](#arayüz-koruması)). Android bu pencereleri yalnızca kendini erişilebilirlik aracı olarak bildiren servislere açar; TalkBack böyle bir servis. Android 17 emülatöründe TalkBack açıkken erişilebilirlik odağı KeyKey penceresinin içindeydi (`dumpsys accessibility`: "Accessibility Focused Window" KeyKey). Saldırgan deneme servisi ise aynı pencereden hiçbir şey okuyamadı.
 
-**Elle deneme.** TalkBack'in konuşmasını adb ile süremedim ve dinleyemedim. Kaydırma ve klavye kısayolları odağı ilerletmedi, konuşma çıktısı katmanı da güncellenmedi. TalkBack'in okuduğu ağaç, testlerde dökülen ve `uiautomator`'ın gördüğü anlam ağacıyla aynı. Ama ana akışların kulakla denenmesi kullanıcıyla yapılacak.
+**Elle deneme.** Emülatörde TalkBack adb ile sürülemedi. Kaydırma, klavye kısayolları ve dokunuşlar odağı ilerletmedi, konuşma çıktısı da okunamadı. Bu yüzden ana akışlar gerçek telefonda kullanıcıyla kulakla denendi: Samsung Galaxy S20 FE, Android 13, Samsung TalkBack, sürüm derlemesi 5484def.
+
+| Adım | Duyulan | Sonuç |
+|---|---|---|
+| Kilit ekranı | Parola kutusu "Ana parola"; parolayla açıldı | Tamam |
+| Kasa listesi | "Posta, ali@example.com"; baş harf yok | Tamam |
+| Kayıt ayrıntısı | "Parola, Gizli"; "Göster"den sonra parolanın kendisi | Tamam |
+| 2FA | "GitHub, ali", kod rakam rakam, kalan süre, "Kodu kopyala"; sürekli konuşmadı | Tamam |
+
+Telefonun metin okuma dili İngilizce olduğu için TalkBack'in kendi sözleri ve rakamlar İngilizce okundu. KeyKey'in metinleri Türkçe okundu.
+
+Telefon Android 13 olduğu için hassas işaretli pencere orada yok. Android 14+ için kanıt yukarıdaki emülatör gözlemi: TalkBack'in odağı KeyKey penceresindeydi, araç olmayan servis ise hiçbir şey okuyamadı. Bu pencerede TalkBack ayrıca kulakla denenmedi.
+
+**Gözlem (Android 13).** Denemedeki telefonda TalkBack dışında iki erişilebilirlik servisi daha açıktı: bir uzaktan kontrol uygulaması ve bir otomatik tıklayıcı. Android 13'te KeyKey bu servislere kendini kapatamaz ([Arayüz koruması](#arayüz-koruması)). Kullanıcıya, gerçek veriyle kullanmadan önce gerekmeyenleri kapatması önerildi. Bu, tehdit modelindeki "erişilebilirlik izni almış uygulama" satırının gerçek bir örneği.
