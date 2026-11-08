@@ -110,10 +110,10 @@ Taban parametrelerle (64 MiB, 3 geçiş) cihaz başına üç ölçüm yapıldı.
 | Emülatör `KeyKey_API_36` | 16 | 102, 106, 114 | 12 |
 | Emülatör `Medium_Phone_API_37.0` | 17 | 97, 102, 98 | 12 |
 
-- S20 FE'de 12 geçişin yaklaşık 0,9 saniye sürmesi beklenir. Bu değer ölçülmedi, sürenin geçiş sayısıyla doğru orantılı olduğu varsayılarak 233 ms'den hesaplandı.
+- S20 FE'de kalibrasyonun seçtiği 12 geçiş 864 ms sürdü ([denetim belgesi](guvenlik-denetimi.md#gerçek-telefon)); hedef 1 saniyenin altında.
 - Emülatörler bilgisayarın `x86_64` işlemcisinde çalıştığı için telefon süresini göstermez.
 - Gerçek telefon ölçümü tek bir cihazdan geliyor. Bu cihaz 2020'nin üst seviye çipini taşıyor ve test debug derlemesiyle çalıştı. Düşük donanımlı telefonlar ölçülmedi. Kalibrasyon tabanın altına inmediği için çok yavaş cihazlarda kasa açmak hedef süreyi aşabilir.
-- Bu ölçüm yalnızca Argon2id süresini kapsar. Android Keystore ve biyometri davranışı için Faz 8'deki gerçek telefon testi yine gereklidir.
+- Bu ölçüm yalnızca Argon2id süresini kapsar. Android Keystore ve biyometrinin gerçek telefondaki davranışı [denetim belgesinde](guvenlik-denetimi.md#gerçek-telefon).
 
 ### Kurtarma anahtarı
 

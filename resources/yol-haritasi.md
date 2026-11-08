@@ -405,17 +405,17 @@ Telefon denemesi üç sorun buldu ve [#60](https://github.com/aaudraa/KeyKey/pul
 **Amaç:** 1.0 öncesi son güvenlik ve kalite geçişi. Gerçek veriyle kullanım ancak bu fazdan sonra düşünülebilir.
 
 - [ ] [OWASP MASVS](https://mas.owasp.org/MASVS/) maddelerini tek tek denetlemek ve sonucu `resources/docs/guvenlik-denetimi.md` dosyasına yazmak
-- [ ] Tehdit modeli ve tüm kayıt (log) çıktılarının gözden geçirilmesi
-- [ ] Dokunma korsanlığı koruması: `setHideOverlayWindows` ve gizlenmiş dokunuşları filtreleme
-- [ ] R8 ayarları ve yayın derlemesi testi (`debuggable` kapalı, gizli sembol yok)
+- [x] Tehdit modeli ve tüm kayıt (log) çıktılarının gözden geçirilmesi
+- [x] Dokunma korsanlığı koruması: `setHideOverlayWindows` ve gizlenmiş dokunuşları filtreleme
+- [x] R8 ayarları ve yayın derlemesi testi (`debuggable` kapalı, gizli sembol yok)
 - [ ] Çevrimdışı parola raporu: zayıf ve tekrar eden parolalar
 - [ ] Bağımlılık ve lisans denetimi; gereksiz paketlerin çıkarılması
-- [ ] Gerçek ARM telefonda test: StrongBox, biyometri, performans
+- [x] Gerçek ARM telefonda test: StrongBox, biyometri, performans
 - [ ] Erişilebilirlik: TalkBack, büyük yazı boyutu, kontrast
 - [ ] Deneme verisiyle uzun süreli günlük kullanım
 - [ ] Dışarıdan inceleme çağrısı: tasarım belgesini güvenlik topluluklarıyla paylaşmak
 
-**Durum (2026-11-08):** Faz başladı, görevler #82-#91 ve Faz 6'dan kalan #71. Gerçek telefon denemesi (#88), uzun süreli kullanım (#89) ve dış inceleme paylaşımı (#90) kullanıcıyla yapılır.
+**Durum (2026-11-08):** Faz başladı, görevler #82-#91 ve Faz 6'dan kalan #71. Biten: kayıtlar ve tehdit modeli (#82), arayüz koruması (#83), yayın derlemesi (#84), gerçek telefon (#88; StrongBox, parmak izi, süreler [denetim belgesinde](docs/guvenlik-denetimi.md#gerçek-telefon)). Uzun süreli kullanım (#89) Faz 8'in son sürümüyle başlayacak; dış inceleme paylaşımı (#90) kullanıcıyla yapılır.
 
 **Bitti sayılması için:** Açık `güvenlik` issue'su yok; denetim belgesi tamamlandı; gerçek cihaz testleri geçti.
 
