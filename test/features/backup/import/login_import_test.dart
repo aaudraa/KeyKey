@@ -112,6 +112,28 @@ void main() {
   });
 
   group('Bitwarden', () {
+    test('2026-11 sürümüyle alınmış gerçek JSON dışa aktarma', () {
+      // Kullanıcının hesabından alınan şifresiz dışa aktarma. Ad, kullanıcı
+      // adı ve parola sahte değerlerle değiştirildi; geri kalan baytlar
+      // Bitwarden'ın yazdığı gibi (adres yok, fido2Credentials boş, sonda
+      // satır sonu yok, kullanıcı adının sonunda boşluk var).
+      final export = read('bitwarden_gercek.json');
+      expect(export.source, LoginExportSource.bitwardenJson);
+      expect(export.skipped, 0);
+      expect(export.logins.map((login) => login.name), [
+        'ornek.com',
+        'Örnek Sosyal',
+      ]);
+      final first = export.logins[0];
+      expect(first.username, 'deneme@example.com');
+      expect(first.password, 'sahte-Sifre-4');
+      expect(first.urls, isEmpty);
+      expect(first.folder, isNull);
+      expect(first.fields, isEmpty);
+      expect(first.totp, isNull);
+      expect(export.logins[1].password, 'sahte-Sifre-5');
+    });
+
     test('CSV: birden çok adres, özel alanlar, favori ve klasör', () {
       final export = read('bitwarden.csv');
       expect(export.source, LoginExportSource.bitwardenCsv);
