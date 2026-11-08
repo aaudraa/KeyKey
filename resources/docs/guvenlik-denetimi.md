@@ -24,7 +24,7 @@ Bu, projenin kendi denetimidir; bağımsız bir denetim değildir.
 | MASVS-PLATFORM-3 | Arayüzün güvenliği | Kısmen değerlendirildi | [Arayüz koruması](#arayüz-koruması); geri kalanı #91 |
 | MASVS-CODE-1 | Güncel platform sürümü | Bekliyor | #91 |
 | MASVS-CODE-2 | Güncelleme zorunluluğu | Bekliyor | #91 |
-| MASVS-CODE-3 | Bilinen açığı olmayan bileşenler | Bekliyor | Bağımlılık denetimi [#86](https://github.com/aaudraa/KeyKey/issues/86) |
+| MASVS-CODE-3 | Bilinen açığı olmayan bileşenler | Kısmen değerlendirildi | [Bağımlılıklar](bagimliliklar.md#bilinen-açıklar): OSV taraması temiz; sürekli denetim #91 |
 | MASVS-CODE-4 | Güvenilmeyen girdinin doğrulanması | Bekliyor | #91 |
 | MASVS-RESILIENCE-1..4 | Platform bütünlüğü, kurcalama, analiz | Kısmen değerlendirildi | [Yayın derlemesi](#yayın-derlemesi): karartma bilinçli olarak yok; geri kalanı #91 |
 | MASVS-PRIVACY-1..4 | Gizlilik | Bekliyor | #91 |

@@ -35,8 +35,38 @@ void registerDataLicenses() {
         name,
       ], await rootBundle.loadString(path));
     }
+    yield const LicenseEntryWithLineBreaks(
+      ['SQLite'],
+      'SQLite, https://sqlite.org/\n\n'
+      'The SQLite source code is in the public domain '
+      '(https://sqlite.org/copyright.html). The sqlite3 package bundles a '
+      'build of it as the database engine.',
+    );
+    final apache = await rootBundle.loadString(_apacheLicense);
+    yield LicenseEntryWithLineBreaks([
+      'Android libraries',
+    ], '$_androidLibraries\n\n$apache');
   });
 }
+
+const _apacheLicense = 'resources/assets/licenses/apache-2.0.txt';
+
+/// Gradle'dan gelen Android kütüphaneleri. Flutter yalnızca Dart
+/// paketlerinin lisanslarını toplar; bunlar elle eklenir. Liste ve
+/// lisansları resources/docs/bagimliliklar.md'de.
+const _androidLibraries = '''
+The Android part of KeyKey and its Flutter plugins use these libraries, all
+licensed under the Apache License, Version 2.0:
+
+AndroidX (Android Jetpack), The Android Open Source Project
+Kotlin standard library and kotlinx.coroutines, kotlinx.atomicfu, JetBrains
+Guava, Dagger, Error Prone annotations, AutoValue annotations, Google
+J2ObjC annotations, Google
+JetBrains Java annotations, JetBrains
+JSpecify annotations, The JSpecify Authors
+javax.inject, The JSR-330 Expert Group
+Jakarta Dependency Injection, Eclipse Foundation
+ReLinker, KeepSafe Software''';
 
 /// QR okuyucunun derlenen C++ kitaplıkları ve lisans metinleri.
 const _embeddedNative = [

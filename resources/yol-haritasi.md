@@ -409,13 +409,13 @@ Telefon denemesi üç sorun buldu ve [#60](https://github.com/aaudraa/KeyKey/pul
 - [x] Dokunma korsanlığı koruması: `setHideOverlayWindows` ve gizlenmiş dokunuşları filtreleme
 - [x] R8 ayarları ve yayın derlemesi testi (`debuggable` kapalı, gizli sembol yok)
 - [ ] Çevrimdışı parola raporu: zayıf ve tekrar eden parolalar
-- [ ] Bağımlılık ve lisans denetimi; gereksiz paketlerin çıkarılması
+- [x] Bağımlılık ve lisans denetimi; gereksiz paketlerin çıkarılması
 - [x] Gerçek ARM telefonda test: StrongBox, biyometri, performans
 - [ ] Erişilebilirlik: TalkBack, büyük yazı boyutu, kontrast
 - [ ] Deneme verisiyle uzun süreli günlük kullanım
 - [ ] Dışarıdan inceleme çağrısı: tasarım belgesini güvenlik topluluklarıyla paylaşmak
 
-**Durum (2026-11-08):** Faz başladı, görevler #82-#91 ve Faz 6'dan kalan #71. Biten: kayıtlar ve tehdit modeli (#82), arayüz koruması (#83), yayın derlemesi (#84), gerçek telefon (#88; StrongBox, parmak izi, süreler [denetim belgesinde](docs/guvenlik-denetimi.md#gerçek-telefon)). Uzun süreli kullanım (#89) Faz 8'in son sürümüyle başlayacak; dış inceleme paylaşımı (#90) kullanıcıyla yapılır.
+**Durum (2026-11-08):** Faz başladı, görevler #82-#91 ve Faz 6'dan kalan #71. Biten: kayıtlar ve tehdit modeli (#82), arayüz koruması (#83), yayın derlemesi (#84), bağımlılık ve lisans denetimi (#86, [bağımlılık belgesi](docs/bagimliliklar.md)), gerçek telefon (#88; StrongBox, parmak izi, süreler [denetim belgesinde](docs/guvenlik-denetimi.md#gerçek-telefon)). Uzun süreli kullanım (#89) Faz 8'in son sürümüyle başlayacak; dış inceleme paylaşımı (#90) kullanıcıyla yapılır.
 
 **Bitti sayılması için:** Açık `güvenlik` issue'su yok; denetim belgesi tamamlandı; gerçek cihaz testleri geçti.
 

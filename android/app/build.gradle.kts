@@ -59,7 +59,14 @@ dependencies {
     // pigeon'un ürettiği köprü coroutine kullanıyor.
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
     // Otomatik doldurmanın klavye şeridindeki (satır içi) öneri görünümü.
-    implementation("androidx.autofill:autofill:1.1.0")
+    implementation("androidx.autofill:autofill:1.3.0")
+
+    constraints {
+        // CameraX eklentisi 33.5.0'ı getiriyor; GHSA-xxph-c9ww-hj94 33.7.2'de
+        // düzeltildi. KeyKey Java serileştirmesi kullanmadığı için açık
+        // tetiklenemez, ama düzeltilmiş sürüm kullanılır.
+        implementation("com.google.guava:guava:33.8.0-android")
+    }
 
     // Otomatik doldurmanın saf Kotlin kısımları (alan tespiti, eşleştirme) JVM'de sınanır.
     testImplementation("junit:junit:4.13.2")
