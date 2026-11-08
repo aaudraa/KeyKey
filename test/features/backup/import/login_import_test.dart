@@ -40,6 +40,28 @@ void main() {
       expect(login.name, 'username@example.com');
       expect(login.password, 'Qh6W4Wz55YGFNU');
     });
+
+    test('Android Chrome 145 ile alınmış gerçek dışa aktarma', () {
+      // Google Parola Yöneticisi > Ayarlar > Parolaları dışa aktar. İçe
+      // aktarılan dosyadaki "name" yerine alan adını yazıyor, satır sonu LF.
+      final export = read('chrome_gercek.csv');
+      expect(export.source, LoginExportSource.chromeCsv);
+      expect(export.skipped, 0);
+      expect(export.logins.map((login) => login.name), [
+        'banka.example.com',
+        'basit.example.net',
+        'forum.example.org',
+      ]);
+      final bank = export.logins[0];
+      expect(bank.urls, ['https://banka.example.com/giris']);
+      expect(bank.username, 'ayşe.yılmaz');
+      expect(bank.password, 'sahte-Sifre-1');
+      expect(bank.notes, 'İlk satır, virgüllü\nİkinci satır "tırnaklı"');
+      final simple = export.logins[1];
+      expect(simple.username, isEmpty);
+      expect(simple.notes, 'boş kullanıcı adı');
+      expect(export.logins[2].notes, isEmpty);
+    });
   });
 
   group('KeePassXC', () {

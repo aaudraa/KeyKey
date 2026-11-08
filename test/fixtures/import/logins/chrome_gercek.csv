@@ -1,0 +1,5 @@
+name,url,username,password,note
+banka.example.com,https://banka.example.com/giris,ayşe.yılmaz,sahte-Sifre-1,"İlk satır, virgüllü
+İkinci satır ""tırnaklı"""
+basit.example.net,https://basit.example.net/,,sahte-Sifre-3,boş kullanıcı adı
+forum.example.org,https://forum.example.org/,forum_kullanici,sahte-Sifre-2,
