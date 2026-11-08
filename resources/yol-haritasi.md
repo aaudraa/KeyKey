@@ -425,7 +425,7 @@ Telefon denemesi üç sorun buldu ve [#60](https://github.com/aaudraa/KeyKey/pul
 
 - [ ] Uygulama simgesi ve açılış ekranı; kaynak dosyalar `resources/design/` altında
 - [ ] Yayın anahtarı: repoya girmez, yedeği ayrı ve güvenli bir yerde tutulur, CI'da GitHub Secrets ile kullanılır
-- [ ] Yayın otomasyonu: etiket atılınca imzalı APK ve AAB, SHA-256 özetleri, GitHub Release
+- [ ] Yayın otomasyonu: etiket atılınca imzalı APK ve AAB, SHA-256 özetleri, GitHub Release; R8 `mapping.txt` dosyası da sürüme eklenir (yığın izlerini okumak için)
 - [ ] `CHANGELOG.md` ve sürüm numaralandırma
 - [ ] Yeniden üretilebilir derleme denemesi; `sqlite3`'ü hazır dosya yerine kaynaktan derlemek (F-Droid de bunu gerektiriyor)
 - [ ] Dağıtım kararı: GitHub Releases ile başlamak; F-Droid ve Play Store'u değerlendirmek

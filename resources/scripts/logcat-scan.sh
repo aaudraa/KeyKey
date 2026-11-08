@@ -18,7 +18,7 @@ export MSYS_NO_PATHCONV=1
 cmd="${1:-}"
 serial="${2:-emulator-5554}"
 here="$(cd "$(dirname "$0")" && pwd)"
-needles="${3:-$here/logcat-gizliler.txt}"
+needles="${3:-$here/deneme-degerleri.txt}"
 
 device() { adb -s "$serial" "$@"; }
 

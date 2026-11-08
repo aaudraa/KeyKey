@@ -26,7 +26,7 @@ Bu, projenin kendi denetimidir; bağımsız bir denetim değildir.
 | MASVS-CODE-2 | Güncelleme zorunluluğu | Bekliyor | #91 |
 | MASVS-CODE-3 | Bilinen açığı olmayan bileşenler | Bekliyor | Bağımlılık denetimi [#86](https://github.com/aaudraa/KeyKey/issues/86) |
 | MASVS-CODE-4 | Güvenilmeyen girdinin doğrulanması | Bekliyor | #91 |
-| MASVS-RESILIENCE-1..4 | Platform bütünlüğü, kurcalama, analiz | Bekliyor | #91, R8 [#84](https://github.com/aaudraa/KeyKey/issues/84) |
+| MASVS-RESILIENCE-1..4 | Platform bütünlüğü, kurcalama, analiz | Kısmen değerlendirildi | [Yayın derlemesi](#yayın-derlemesi): karartma bilinçli olarak yok; geri kalanı #91 |
 | MASVS-PRIVACY-1..4 | Gizlilik | Bekliyor | #91 |
 
 ## Kayıtlar (logcat)
@@ -35,7 +35,7 @@ Bu, projenin kendi denetimidir; bağımsız bir denetim değildir.
 
 **Kod taraması.** KeyKey'in Dart kodunda `print`, `debugPrint` veya `log` çağrısı, Kotlin kodunda `Log` veya `println` çağrısı yok. Tek `Log.e` çağrıları Flutter'ın ürettiği eklenti kayıt dosyasında (`GeneratedPluginRegistrant`) ve yalnızca bir eklenti yüklenemezse eklentinin adını yazıyor.
 
-**Cihaz denemesi.** [`logcat-scan.sh`](../scripts/logcat-scan.sh) cihazın bütün kaydını alır (yalnızca KeyKey'inkini değil; otomatik doldurma ve klavye gibi sistem parçaları da kayıt yazar) ve [`logcat-gizliler.txt`](../scripts/logcat-gizliler.txt) dosyasındaki deneme parolalarını, kurtarma anahtarını, 2FA gizli anahtarını, kullanıcı adlarını ve adresleri arar. Betiğin bir değeri gerçekten bulabildiği, kayıtta bilinen bir metinle ayrıca denendi.
+**Cihaz denemesi.** [`logcat-scan.sh`](../scripts/logcat-scan.sh) cihazın bütün kaydını alır (yalnızca KeyKey'inkini değil; otomatik doldurma ve klavye gibi sistem parçaları da kayıt yazar) ve [`deneme-degerleri.txt`](../scripts/deneme-degerleri.txt) dosyasındaki deneme parolalarını, kurtarma anahtarını, 2FA gizli anahtarını, kullanıcı adlarını ve adresleri arar. Betiğin bir değeri gerçekten bulabildiği, kayıtta bilinen bir metinle ayrıca denendi.
 
 | Deneme | Emülatör | Kayıt | Sonuç |
 |---|---|---|---|
@@ -64,3 +64,26 @@ Android 17 emülatöründe otomatik doldurma altyapısı ayrıntılı kayıt tut
 `uiautomator` sistem tarafından araç sayıldığı için korumalı pencereyi okumaya devam ediyor; cihaz test betikleri bu yüzden etkilenmedi. Değişiklikten sonra Android 11'de bütün cihaz testleri (entegrasyon, parmak izi, pano, kamera), Android 16'da parmak izi ve kamera testleri geçti.
 
 **Açık kalan:** TalkBack'in korumalı pencereyi okuyabildiği emülatörde elle denenecek ([#87](https://github.com/aaudraa/KeyKey/issues/87)). Android 11-13'te erişilebilirlik servislerine karşı koruma yok; tasarım belgesinde sınır olarak yazıyor.
+
+## Yayın derlemesi
+
+**İlgili kontroller:** MASVS-RESILIENCE, MASVS-CODE. **Görev:** [#84](https://github.com/aaudraa/KeyKey/issues/84). **Tarih:** 2026-11-08.
+
+[`check-release-apk.sh`](../scripts/check-release-apk.sh) her PR'da CI'da çalışır ve şunları denetler:
+
+| Denetim | Sonuç |
+|---|---|
+| İzinler yalnızca izin listesindekiler; `INTERNET` yok | Tamam |
+| `debuggable` kapalı, `allowBackup` kapalı, `dataExtractionRules` tanımlı | Tamam |
+| R8 açık: kendi paketimizden adı korunan sınıflar yalnızca manifestteki dört bileşen (`MainActivity`, `AutofillActivity`, `KeyKeyAutofillService`, `ClipboardClearReceiver`); geri kalanların adı kısaltılmış | Tamam |
+| Yerel kütüphanelerde (`libapp`, `libflutter`, `libsodium`, `libsqlite3`, `libflutter_zxing` ve diğerleri, 3 mimari, 24 dosya) hata ayıklama bölümü (`.debug_*`) ve tam sembol tablosu (`.symtab`) yok. Kalan dinamik semboller kütüphanenin Dart'tan çağrılabilmesi için gerekli | Tamam |
+| Anahtar deposu, `.env`, `.keykey` yedeği, test fixture'ı veya `DebugProbesKt.bin` yok | `DebugProbesKt.bin` (kotlinx-coroutines'in hata ayıklama dosyası) vardı, paketten çıkarıldı |
+| [Deneme değerlerinden](../scripts/deneme-degerleri.txt) (test parolaları, kurtarma anahtarı, 2FA anahtarı, kullanıcı adları) hiçbiri APK'nın hiçbir dosyasında yok | Tamam |
+
+Ayrıca açılmış APK üzerinde gitleaks (8.30.1, `dir` kipi) çalıştırıldı: bulgu yok. APK'nın varlıkları yalnızca Public Suffix List, parola sözcük listeleri ve lisans metinleri. Android Gradle eklentisinin eklediği `META-INF/version-control-info.textproto` derlemenin git commit'ini taşır; açık kaynak bir projede zararsızdır ve yeniden üretilebilir derlemede işe yarar.
+
+**R8 ayarları.** Derleme dosyasında açıkça yazılı (`isMinifyEnabled`, `isShrinkResources`). Kendi `keep` kuralımız yok; gerekenler kütüphanelerin kendi kurallarından ve Flutter'dan geliyor.
+
+**Kod karartma kararı.** Dart kodu `--obfuscate` ile karartılmıyor. KeyKey açık kaynak; kaynak kod zaten herkese açık olduğu için karartma bir şey gizlemez, yalnızca hata raporlarındaki yığın izlerini sembol dosyası olmadan okunmaz yapar ve yeniden üretilebilir derlemeyi (Faz 9) zorlaştırır. R8'in Kotlin adlarını kısaltması varsayılan olduğu ve APK'yı küçülttüğü için kalıyor; her sürümün `mapping.txt` dosyası Faz 9'da sürümle birlikte yayımlanabilir. MASVS-RESILIENCE'ın tersine mühendisliği zorlaştırma kontrolleri bu yüzden bilinçli olarak kapsam dışı; güvenlik kodun gizliliğine değil, kriptoya ve platform korumalarına dayanır.
+
+**Sürüm derlemesinde denenen akışlar (R8 açık).** Android 17: yedekten kurulum, parolamı unuttum, otomatik doldurmada kaydetme ve doldurma, 2FA kodu kopyalama, parola kopyalama, yedek alma, şifresiz dışa aktarma, Bitwarden içe aktarma ([Kayıtlar](#kayıtlar-logcat)). Android 16: yedekten kurulum ve yedek alma. Android 11, 14, 16 ve 17: açılış, kilit ekranı ve dokunuşlar ([Arayüz koruması](#arayüz-koruması)). Entegrasyon testleri sürüm derlemesinde çalıştırılamıyor: Flutter test eklentisini sürüm derlemesine koymuyor. Parmak izi ve şifreli Aegis içe aktarma sürüm derlemesiyle gerçek telefonda denenecek ([#88](https://github.com/aaudraa/KeyKey/issues/88)).

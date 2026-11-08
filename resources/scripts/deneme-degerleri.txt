@@ -1,5 +1,6 @@
-# logcat-scan.sh'in aradığı değerler. Hepsi deneme verisidir; testlerde,
-# fixture'larda ve elle yapılan cihaz denemelerinde kullanılır.
+# Deneme değerleri: logcat-scan.sh bunları logcat'te, check-release-apk.sh
+# yayın APK'sının içinde arar. Hepsi deneme verisidir; testlerde, fixture'larda
+# ve elle yapılan cihaz denemelerinde kullanılır.
 # Yeni bir testte yeni bir deneme parolası kullanılırsa buraya da eklenir.
 
 # Ana parolalar

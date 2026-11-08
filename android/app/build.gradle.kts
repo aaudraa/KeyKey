@@ -28,8 +28,21 @@ android {
 
     buildTypes {
         release {
+            // R8 kullanılmayan kodu ve kaynakları atar, adları kısaltır. Flutter
+            // eklentisi bunu zaten açıyor; burada açıkça yazılı ki kapanırsa
+            // fark edilsin. check-release-apk.sh de denetler. Gereken keep
+            // kuralları kütüphanelerin kendi kurallarından ve Flutter'dan geliyor.
+            isMinifyEnabled = true
+            isShrinkResources = true
             // Faz 9'a kadar debug anahtarıyla imzalanır. Yayın anahtarı repoya girmez.
             signingConfig = signingConfigs.getByName("debug")
+        }
+    }
+
+    packaging {
+        resources {
+            // kotlinx-coroutines'in hata ayıklama aracı dosyası; uygulamada işe yaramaz.
+            excludes += "DebugProbesKt.bin"
         }
     }
 }
