@@ -1,4 +1,5 @@
-# Deneme değerleri: logcat-scan.sh bunları logcat'te, check-release-apk.sh
+# Deneme değerleri: logcat-scan.sh bunları logcat'te, storage-scan.sh
+# uygulamanın dosyalarında, memory-scan.sh sürecin belleğinde, check-release-apk.sh
 # yayın APK'sının içinde arar. Hepsi deneme verisidir; testlerde, fixture'larda
 # ve elle yapılan cihaz denemelerinde kullanılır.
 # Yeni bir testte yeni bir deneme parolası kullanılırsa buraya da eklenir.

@@ -4,30 +4,34 @@ KeyKey'in [OWASP MASVS](https://mas.owasp.org/MASVS/) v2 kontrolleriyle karşıl
 
 Bu, projenin kendi denetimidir; bağımsız bir denetim değildir.
 
-**Durum:** Sürüyor. Değerlendirilmeyen kontroller "Bekliyor" olarak duruyor.
+**Durum:** Tamamlandı (2026-11-09, [#91](https://github.com/aaudraa/KeyKey/issues/91)). Bütün kontroller değerlendirildi. Karşılanmayan kısımlar ya bilinçli olarak kapsam dışı ya da [güvenlik tasarımındaki bilinen sınırlarda](guvenlik-tasarimi.md#bilinen-sınırlar) kabul edilen risk olarak yazılı. Denetimde bulunan tek açık (deep link ile ekran açtırma) düzeltildi.
+
+**Durumlar:** *Karşılanıyor*: kontrolün istediği yapılıyor ve kanıtı var. *Kısmen*: yapılıyor, ama kabul edilmiş bir sınırı var. *Kapsam dışı*: kontrol KeyKey'e uymuyor ya da bilinçli olarak uygulanmıyor; gerekçe yanında.
+
+**Deneme ortamı.** Cihaz denemeleri sürüm derlemesiyle yapıldı (R8 açık, `debuggable` kapalı). Uygulama verisini ve belleğini okumak root gerektirdiği için depolama ve bellek taramaları Google API'li (Play Store'suz) Android 16 emülatöründe `adb root` ile yapıldı. Bu, telefonu çalınmış ve kilidi kırılmış ya da root'lanmış bir cihazdaki saldırganın göreceğini gösterir.
 
 ## Özet
 
-| Kontrol | Konu | Durum | Ayrıntı |
+| Kontrol | Konu | Durum | Gerekçe ve kanıt |
 |---|---|---|---|
-| MASVS-STORAGE-1 | Hassas verinin güvenli saklanması | Bekliyor | [#91](https://github.com/aaudraa/KeyKey/issues/91) |
-| MASVS-STORAGE-2 | Hassas verinin sızmasının önlenmesi | Kısmen değerlendirildi | [Kayıtlar](#kayıtlar-logcat); geri kalanı #91 |
-| MASVS-CRYPTO-1 | Güncel ve güçlü kriptografi | Bekliyor | #91 |
-| MASVS-CRYPTO-2 | Anahtar yönetimi | Bekliyor | #91 |
+| MASVS-STORAGE-1 | Hassas verinin güvenli saklanması | Karşılanıyor | Kayıtlar tek tek şifreli; diskte düz metin yok. [Depolama](#depolama) |
+| MASVS-STORAGE-2 | Hassas verinin sızmasının önlenmesi | Kısmen | Kayıt, yedekleme, pano, ekran görüntüsü ve klavye kapalı ya da sınırlı. Sınır: kilitten sonra bellekte kalan dizeler. [Kayıtlar](#kayıtlar-logcat), [Bellek](#bellek), [Sızıntı yolları](#sızıntı-yolları) |
+| MASVS-CRYPTO-1 | Güncel ve güçlü kriptografi | Karşılanıyor | libsodium: Argon2id, XChaCha20-Poly1305, HKDF-SHA256. Bütün rastgelelik işletim sisteminin güvenli kaynağından. [Kriptografi](#kriptografi) |
+| MASVS-CRYPTO-2 | Anahtar yönetimi | Karşılanıyor | Anahtar hiyerarşisi, korumalı bellek, parmak izi anahtarı Keystore'da (telefonda StrongBox). [Kriptografi](#kriptografi), [Gerçek telefon](#gerçek-telefon) |
 | MASVS-AUTH-1 | Uzak kimlik doğrulama | Kapsam dışı | Sunucu ve hesap yok |
-| MASVS-AUTH-2 | Yerel kimlik doğrulama | Kısmen değerlendirildi | [Gerçek telefon](#gerçek-telefon); geri kalanı #91 |
-| MASVS-AUTH-3 | Hassas işlemlerde ek doğrulama | Bekliyor | #91 |
-| MASVS-NETWORK-1 | Güvenli ağ trafiği | Bekliyor | #91; `INTERNET` izni yok |
-| MASVS-NETWORK-2 | Kimlik sabitleme | Bekliyor | #91 |
-| MASVS-PLATFORM-1 | Süreçler arası iletişim | Bekliyor | #91 |
-| MASVS-PLATFORM-2 | WebView | Bekliyor | #91 |
-| MASVS-PLATFORM-3 | Arayüzün güvenliği | Kısmen değerlendirildi | [Arayüz koruması](#arayüz-koruması); geri kalanı #91 |
-| MASVS-CODE-1 | Güncel platform sürümü | Bekliyor | #91 |
-| MASVS-CODE-2 | Güncelleme zorunluluğu | Bekliyor | #91 |
-| MASVS-CODE-3 | Bilinen açığı olmayan bileşenler | Kısmen değerlendirildi | [Bağımlılıklar](bagimliliklar.md#bilinen-açıklar): OSV taraması temiz; sürekli denetim #91 |
-| MASVS-CODE-4 | Güvenilmeyen girdinin doğrulanması | Bekliyor | #91 |
-| MASVS-RESILIENCE-1..4 | Platform bütünlüğü, kurcalama, analiz | Kısmen değerlendirildi | [Yayın derlemesi](#yayın-derlemesi): karartma bilinçli olarak yok; geri kalanı #91 |
-| MASVS-PRIVACY-1..4 | Gizlilik | Bekliyor | #91 |
+| MASVS-AUTH-2 | Yerel kimlik doğrulama | Karşılanıyor | Ana parola kasayı kriptografik olarak açar; parmak izi bir olay değil, Keystore anahtarıyla bağlı. [Kimlik doğrulama](#kimlik-doğrulama) |
+| MASVS-AUTH-3 | Hassas işlemlerde ek doğrulama | Karşılanıyor | Şifresiz dışa aktarma, 2FA kodlarını gösterme (ayar açıksa), ek onayı kapatma ve parola değiştirme yeniden doğrulama ister. [Kimlik doğrulama](#kimlik-doğrulama) |
+| MASVS-NETWORK-1 | Güvenli ağ trafiği | Kapsam dışı | `INTERNET` izni yok; uygulama ağa çıkamaz. CI'da denetleniyor. [Ağ](#ağ) |
+| MASVS-NETWORK-2 | Kimlik sabitleme | Kapsam dışı | Bağlanılan sunucu yok. [Ağ](#ağ) |
+| MASVS-PLATFORM-1 | Süreçler arası iletişim | Karşılanıyor | Dışa açık bileşenler korumalı. Denetimde deep link ile ekran açtırma bulundu, düzeltildi. [Süreçler arası iletişim](#süreçler-arası-iletişim) |
+| MASVS-PLATFORM-2 | WebView | Kapsam dışı | WebView kullanılmıyor. [WebView](#webview) |
+| MASVS-PLATFORM-3 | Arayüzün güvenliği | Kısmen | `FLAG_SECURE`, bindirme gizleme, gizli dokunuş filtresi, Android 14+ hassas pencere. Sınır: Android 11-13'te erişilebilirlik servisleri. [Arayüz koruması](#arayüz-koruması), [Erişilebilirlik](#erişilebilirlik) |
+| MASVS-CODE-1 | Güncel platform sürümü | Karşılanıyor | `targetSdk` 36, `minSdk` 30 (Android 11). [Kod ve platform](#kod-ve-platform) |
+| MASVS-CODE-2 | Güncelleme zorunluluğu | Kapsam dışı | Ağ olmadığı için sunucudan zorunlu güncelleme yapılamaz; bilinçli. [Kod ve platform](#kod-ve-platform) |
+| MASVS-CODE-3 | Bilinen açığı olmayan bileşenler | Karşılanıyor | OSV taraması temiz (Guava açığı kapatıldı); Dependabot haftalık. [Bağımlılıklar](bagimliliklar.md#bilinen-açıklar) |
+| MASVS-CODE-4 | Güvenilmeyen girdinin doğrulanması | Karşılanıyor | Bütün dosya ve bağlantı okuyucuları sınırlı, kendi hata türleriyle; rastgele bozulmuş girdiyle sınanıyor. [Güvenilmeyen girdi](#güvenilmeyen-girdi) |
+| MASVS-RESILIENCE-1..4 | Platform bütünlüğü, kurcalama, analiz | Kapsam dışı | Bilinçli: açık kaynak; güvenlik kodun gizliliğine değil kriptoya dayanıyor. [Yayın derlemesi](#yayın-derlemesi), [Dayanıklılık](#dayanıklılık) |
+| MASVS-PRIVACY-1..4 | Gizlilik | Karşılanıyor | Veri cihazdan çıkmaz; izleme, reklam, kimlik yok. Gizlilik bildirimi Faz 9'da. [Gizlilik](#gizlilik) |
 
 ## Kayıtlar (logcat)
 
@@ -63,7 +67,7 @@ Android 17 emülatöründe otomatik doldurma altyapısı ayrıntılı kayıt tut
 
 `uiautomator` sistem tarafından araç sayıldığı için korumalı pencereyi okumaya devam ediyor; cihaz test betikleri bu yüzden etkilenmedi. Değişiklikten sonra Android 11'de bütün cihaz testleri (entegrasyon, parmak izi, pano, kamera), Android 16'da parmak izi ve kamera testleri geçti.
 
-**Açık kalan:** TalkBack'in korumalı pencereyi okuyabildiği emülatörde elle denenecek ([#87](https://github.com/aaudraa/KeyKey/issues/87)). Android 11-13'te erişilebilirlik servislerine karşı koruma yok; tasarım belgesinde sınır olarak yazıyor.
+TalkBack'in korumalı pencerede çalışmaya devam ettiği [Erişilebilirlik](#erişilebilirlik) bölümünde ([#87](https://github.com/aaudraa/KeyKey/issues/87)). Android 11-13'te erişilebilirlik servislerine karşı koruma yok; tasarım belgesinde sınır olarak yazıyor.
 
 ## Yayın derlemesi
 
@@ -164,3 +168,150 @@ Telefonun metin okuma dili İngilizce olduğu için TalkBack'in kendi sözleri v
 Telefon Android 13 olduğu için hassas işaretli pencere orada yok. Android 14+ için kanıt yukarıdaki emülatör gözlemi: TalkBack'in odağı KeyKey penceresindeydi, araç olmayan servis ise hiçbir şey okuyamadı. Bu pencerede TalkBack ayrıca kulakla denenmedi.
 
 **Gözlem (Android 13).** Denemedeki telefonda TalkBack dışında iki erişilebilirlik servisi daha açıktı: bir uzaktan kontrol uygulaması ve bir otomatik tıklayıcı. Android 13'te KeyKey bu servislere kendini kapatamaz ([Arayüz koruması](#arayüz-koruması)). Kullanıcıya, gerçek veriyle kullanmadan önce gerekmeyenleri kapatması önerildi. Bu, tehdit modelindeki "erişilebilirlik izni almış uygulama" satırının gerçek bir örneği.
+
+## Depolama
+
+**İlgili kontroller:** MASVS-STORAGE-1, MASVS-STORAGE-2. **Görev:** [#91](https://github.com/aaudraa/KeyKey/issues/91). **Tarih:** 2026-11-09. **Tasarım:** [Depolama](guvenlik-tasarimi.md#depolama).
+
+[`storage-scan.sh`](../scripts/storage-scan.sh) root'lu emülatörde uygulamanın üç klasörünü bilgisayara alır: iç klasör (`/data/data`), cihaz kilidi açılmadan erişilebilen klasör (`/data/user_de`) ve dış klasör (`/sdcard/Android/data`). Her dosyada [deneme değerlerini](../scripts/deneme-degerleri.txt) UTF-8 ve UTF-16 olarak, büyük küçük harf ayırmadan arar. Betiğin gerçekten bulabildiği, veritabanı şemasındaki bilinen sözcüklerle ayrıca denendi.
+
+**Deneme.** Sürüm derlemesi, Android 16. Kasa kuruldu; parola kaydı, 2FA hesabı ve otomatik doldurmayla kaydedilmiş kayıtla kullanıldı. Tarama kasa açıkken ve kilitliyken yapıldı.
+
+| Bulgu | Sonuç |
+|---|---|
+| Dosyalar | `keykey.db` ve Android'in derleme profili dosyaları. Dış klasör ve `user_de` boş; `shared_prefs` yok; önbellekte içe aktarma veya yedek kopyası kalmamış |
+| `keykey.db` | SQLite; şema ve şifresiz alanlar ([tasarımdaki liste](guvenlik-tasarimi.md#depolama)) okunuyor, kayıtların içeriği şifreli |
+| Deneme değerleri (ana parola, kayıt parolaları, kurtarma anahtarı, 2FA anahtarı, kullanıcı adları, adresler) | Hiçbiri yok |
+
+**Android yedeklemesi.** `allowBackup` kapalı ve `dataExtractionRules` bulut yedeğini ve cihaz aktarımını dışarıda bırakıyor ([Yayın derlemesi](#yayın-derlemesi)). Emülatörde `bmgr backupnow` KeyKey için "Backup is not allowed" döndü.
+
+## Bellek
+
+**İlgili kontrol:** MASVS-STORAGE-2. **Görev:** [#91](https://github.com/aaudraa/KeyKey/issues/91). **Tarih:** 2026-11-09. **Tasarım:** [Bellek](guvenlik-tasarimi.md#bellek).
+
+[`memory-scan.sh`](../scripts/memory-scan.sh) çalışan sürecin yazılabilir bellek bölgelerini `/proc/<pid>/mem` üzerinden döker (yaklaşık 450 MB) ve [`memory-search.mjs`](../scripts/memory-search.mjs) ile deneme değerlerini UTF-8 ve UTF-16 olarak arar. Değerin kendisi yazılmaz, deneme değerleri dosyasındaki satırı yazılır.
+
+**Deneme.** Sürüm derlemesi, Android 16. Kasa ana parolayla açıldı, bir kaydın parolası gösterildi, 2FA ekranı açıldı. Sonra kasa kilitlendi ve uygulama açık bırakıldı. Sayılar UTF-8 ve UTF-16 kopyaların toplamıdır.
+
+| An | Ana parola | Gösterilen kayıt parolası | Kullanıcı adları ve adresler | Kurtarma anahtarı, 2FA anahtarı, gösterilmeyen parolalar |
+|---|---|---|---|---|
+| Kasa açık | 14 kopya | 1 kopya | 3 değer, 7 kopya | Yok |
+| Kilitten 15 saniye sonra | 4 kopya | 1 kopya | Var | Yok |
+| Kilitten 2,5 dakika sonra | 4 kopya | 1 kopya | 2 değer, birer kopya | Yok |
+
+**Sonuç.** Anahtarlar libsodium'un korumalı belleğinde durduğu için kurtarma anahtarı ve 2FA anahtarı düz metin olarak bulunmadı. Ama metin kutusundan gelen ana parola ve ekranda gösterilmiş değerler kilitten sonra da Dart'ın henüz toplanmamış dizelerinde kalıyor. Bu, tasarımda yazılı olan sınırın ölçülmüş halidir: Dart `String`'leri silinemez. Belleği okumak root ya da aynı süreçte kod çalıştırmayı gerektirir; böyle bir saldırgan ana parolayı yazılırken de görebilir. Kabul edilen risk olarak [bilinen sınırlara](guvenlik-tasarimi.md#bilinen-sınırlar) eklendi.
+
+## Sızıntı yolları
+
+**İlgili kontrol:** MASVS-STORAGE-2. **Görev:** [#91](https://github.com/aaudraa/KeyKey/issues/91).
+
+| Yol | Durum | Kanıt |
+|---|---|---|
+| Sistem kaydı (logcat) | Kayıt yazılmıyor | [Kayıtlar](#kayıtlar-logcat) |
+| Android yedeği ve cihaz aktarımı | Kapalı | [Depolama](#depolama) |
+| Ekran görüntüsü, son uygulamalar önizlemesi, ekran kaydı | `FLAG_SECURE` | [Arayüz koruması](#arayüz-koruması) |
+| Pano | Hassas işaretli, 30 saniyede temizleniyor | [Pano](guvenlik-tasarimi.md#pano), pano cihaz testi |
+| Klavyenin öğrenmesi | Gizli alanlarda öneri ve kişiselleştirilmiş öğrenme kapalı | `secret_field.dart`; kötü niyetli klavyeye karşı koruma yok ([tehdit modeli](guvenlik-tasarimi.md#tehdit-modeli)) |
+| Şifresiz dışa aktarma ve içe aktarma dosyaları | Kullanıcının isteğiyle; dışa aktarma ek doğrulama ister, içe aktarmadan sonra kaynak dosyayı silmesi hatırlatılır | [Düz metin dışa aktarma](guvenlik-tasarimi.md#düz-metin-dışa-aktarma) |
+| Bildirimler | KeyKey bildirim göndermiyor; bildirim izni yok | `check-release-apk.sh` izin listesi |
+
+## Kriptografi
+
+**İlgili kontroller:** MASVS-CRYPTO-1, MASVS-CRYPTO-2. **Görev:** [#91](https://github.com/aaudraa/KeyKey/issues/91). **Tasarım:** [Algoritmalar](guvenlik-tasarimi.md#algoritmalar), [Anahtar hiyerarşisi](guvenlik-tasarimi.md#anahtar-hiyerarşisi).
+
+- **Algoritmalar.** Kasanın bütün kriptografisi libsodium'da: Argon2id, XChaCha20-Poly1305, HKDF-SHA256 (yalnızca expand), BLAKE2b. Kendi şifreleme ilkelimiz yok. Kendi kodumuz olan scrypt ve PBKDF2 yalnızca başka uygulamaların dosyalarını içe aktarırken çalışır ve RFC vektörleriyle sınanır.
+- **Rastgelelik.** Kod taraması: Dart'ta bütün tuz, nonce, anahtar, kayıt kimliği ve parola üretici rastgeleliği libsodium'un `randombytes` ve `secureRandom` işlevlerinden geliyor; `dart:math`'in `Random`'u hiç kullanılmıyor. Kotlin'de IV'leri Keystore ve Android'in şifreleme kitaplığı üretiyor.
+- **Android tarafı.** Parmak izi anahtarı AES-256-GCM; Keystore'da üretilir ve dışarı çıkmaz: kullanıcı doğrulaması zorunlu, yalnızca güçlü biyometri, yeni parmak izinde geçersizleşme, varsa StrongBox (`BiometricVault.kt`). İçe aktarmadaki AES-GCM Android'in kendi kitaplığıyla (`ImportCrypto.kt`). SHA-256 yalnızca karşılaştırma için özet çıkarır (pano, uygulama imzası).
+- **Anahtar ömrü.** Kasa anahtarı ve alt anahtarlar korumalı bellekte, kilitte silinir. Parola baytları türetmeden sonra sıfırlanır; metin kutusundan gelen `String` için [Bellek](#bellek) bölümündeki sınır geçerli.
+- **Kanıt.** Bağımsız test vektörleri, olumsuz testler ve sabit biçim dosyaları ([Test yaklaşımı](guvenlik-tasarimi.md#test-yaklaşımı)); Argon2id parametreleri telefonda ölçüldü ([Gerçek telefon](#gerçek-telefon)).
+
+## Kimlik doğrulama
+
+**İlgili kontroller:** MASVS-AUTH-2, MASVS-AUTH-3. **Görev:** [#91](https://github.com/aaudraa/KeyKey/issues/91). **Tasarım:** [Kilit](guvenlik-tasarimi.md#kilit), [Biyometri](guvenlik-tasarimi.md#biyometri).
+
+- **Ana parola** bir karşılaştırma değil: kasa anahtarı ancak paroladan türetilen anahtarla açılır. Hatalı denemelerde bekleme uygulanır; sayaç şifresiz olduğu için bu yalnızca uygulamanın kuralıdır (bilinen sınır 6).
+- **Parmak izi** bir "başarılı" olayına güvenmez. Kasa anahtarının bir kopyası Keystore anahtarıyla sarılır; o anahtar yalnızca parmak iziyle kullanılabilir ve yeni parmak izi eklenince geçersizleşir. Telefonda denendi ([Gerçek telefon](#gerçek-telefon)).
+- **Otomatik kilit.** Uygulama arka plana geçince kasa kilitlenir; otomatik doldurma ekranı kendi kilidini ister.
+- **Ek doğrulama isteyen işlemler:** şifresiz dışa aktarma, 2FA kodlarını gösterme (ayar açıksa), bu ayarı kapatma (açmak istemez) ve parola değiştirme (mevcut parola). Kasa açıkken kayıt parolasını göstermek ve yedek almak ek doğrulama istemez: kasa zaten açıktır ve arka plana geçince kilitlenir; yedek ana parolayla şifrelidir.
+
+## Ağ
+
+**İlgili kontroller:** MASVS-NETWORK-1, MASVS-NETWORK-2. **Görev:** [#91](https://github.com/aaudraa/KeyKey/issues/91).
+
+KeyKey'in `INTERNET` izni yok; Android bu izin olmadan soket açtırmaz. [`check-release-apk.sh`](../scripts/check-release-apk.sh) birleştirilmiş manifestteki izinleri izin listesiyle karşılaştırır ve her PR'da CI'da çalışır; bir bağımlılık bu izni eklerse derleme düşer. Bu yüzden ağ trafiğinin güvenliği ve sertifika sabitleme kontrolleri uygulanamaz. Otomatik senkron gibi internet isteyen özellikler [1.0 sonrası](../yol-haritasi.md#10-sonrası) ayrı bir karar olarak duruyor; o zaman bu iki kontrol yeniden değerlendirilmeli.
+
+## Süreçler arası iletişim
+
+**İlgili kontrol:** MASVS-PLATFORM-1. **Görev:** [#91](https://github.com/aaudraa/KeyKey/issues/91). **Tarih:** 2026-11-09.
+
+**Bileşenler** (sürüm APK'sının birleştirilmiş manifesti):
+
+| Bileşen | Dışa açık | Koruma |
+|---|---|---|
+| `MainActivity` | Evet (başlatıcı) | Yalnızca `MAIN`/`LAUNCHER` filtresi; aşağıdaki deep link düzeltmesi |
+| `KeyKeyAutofillService` | Evet | `BIND_AUTOFILL_SERVICE` izni: yalnızca sistem bağlanabilir |
+| `AutofillActivity` | Hayır | Yalnızca servisin `PendingIntent`'iyle açılır |
+| `ClipboardClearReceiver` | Hayır | Yalnızca kendi alarmımız; yaptığı tek şey panoda hâlâ bizim kopyamız varsa silmek |
+| `androidx.profileinstaller.ProfileInstallReceiver` | Evet | `DUMP` izni: yalnızca adb ve sistem |
+
+İçerik sağlayıcı (`provider`) yok. Emülatörde kabuk kullanıcısıyla denendi: `AutofillActivity` "Permission Denial ... not exported" ile reddedildi.
+
+**Bulgu: deep link ile ekran açtırma (düzeltildi).** Flutter, `MainActivity`'ye gelen niyetteki adresin yolunu uygulamanın yönlendiricisine verir (`flutter_deeplinking_enabled` varsayılan olarak açık). Niyet filtresi olmasa da açık bir niyet bunu tetikliyordu: `am start -n .../.MainActivity -a android.intent.action.VIEW -d https://ornek.example/ayarlar/parola` ile kasa açıkken KeyKey parola değiştirme ekranına gitti. Herhangi bir uygulama aynı niyeti gönderebilir. Etkisi sınırlıydı: ekranlar yine kilit yönlendirmesinin arkasında ve hassas işlemler ek doğrulama istiyor. Ama kullanıcıyı beklemediği bir ekrana götürmek arayüz aldatmacasına kapı açar.
+
+- **Düzeltme:** `MainActivity` ve `AutofillActivity`'de `flutter_deeplinking_enabled` kapalı. `check-release-apk.sh` her etkinlikte bu ayarın kapalı olduğunu denetler.
+- **Doğrulama (sürüm derlemesi, Android 16):** Kasa açıkken iki adresle (`https://...` ve `keykey:///...`) gönderilen niyet ekranı değiştirmedi. Uygulama kapalıyken aynı niyetle açılınca kilit ekranı geldi, kilit açılınca kasaya gidildi.
+
+**Otomatik doldurma.** Doldurma isteğindeki uygulama ve alan adı başka bir uygulamadan gelen güvenilmeyen veridir; eşleştirme imza sertifikası ve güvenilen tarayıcı listesiyle yapılır ([Eşleştirme](guvenlik-tasarimi.md#eşleştirme)). Saldırı denemeleri Faz 6'da dört emülatörde yapıldı.
+
+## WebView
+
+**İlgili kontrol:** MASVS-PLATFORM-2. **Görev:** [#91](https://github.com/aaudraa/KeyKey/issues/91).
+
+KeyKey WebView kullanmıyor. Sürüm APK'sının dex dosyalarında `android.webkit` paketinden yalnızca `MimeTypeMap` (dosya türü tablosu) geçiyor; `WebView` sınıfına başvuru yok. Lisanslar Flutter'ın kendi ekranlarında gösteriliyor.
+
+## Kod ve platform
+
+**İlgili kontroller:** MASVS-CODE-1, MASVS-CODE-2, MASVS-CODE-3. **Görev:** [#91](https://github.com/aaudraa/KeyKey/issues/91).
+
+- **Platform sürümü.** `targetSdk` 36 (Flutter'ın varsayılanı, Android 16), `minSdk` 30 (Android 11). Android 11 öncesi bilinçli olarak desteklenmiyor. Cihaz testleri Android 11, 14, 16 ve 17'de çalışıyor.
+- **Güncelleme zorunluluğu.** KeyKey ağa çıkmadığı için sunucudan zorunlu güncelleme yapılamaz; bu, "internete çıkmaz" kararının sonucudur. Güncellemeler GitHub Releases (ileride belki F-Droid ya da Play Store) üzerinden dağıtılacak; güvenlik düzeltmeleri sürüm notlarında duyurulacak (Faz 9). Açık bildirme yolu [`SECURITY.md`](../../.github/SECURITY.md).
+- **Bileşenler.** [Bağımlılık belgesi](bagimliliklar.md): 104 Dart paketi ve Gradle kütüphaneleri OSV'de tarandı; bulunan tek açık (Guava) kapatıldı. Dependabot pub, Gradle ve GitHub Actions bağımlılıklarını haftalık denetliyor.
+- **Sürüm numarası.** Şu an `0.1.0+1`; sürüm numaralandırma Faz 9'da.
+
+## Güvenilmeyen girdi
+
+**İlgili kontrol:** MASVS-CODE-4. **Görev:** [#91](https://github.com/aaudraa/KeyKey/issues/91).
+
+| Girdi | Kaynak | Koruma |
+|---|---|---|
+| `otpauth://` bağlantısı, QR | Kamera, kullanıcı | Sıkı ayrıştırıcı; desteklenmeyen değerler reddedilir ([`otpauth://` bağlantıları](guvenlik-tasarimi.md#otpauth-bağlantıları)) |
+| Google Authenticator dışa aktarması | QR | Kendi protobuf okuyucumuz; rastgele bozulmuş girdiyle sınanıyor |
+| Aegis, 2FAS dosyaları | Belge seçici | En fazla 10 MB; scrypt bellek ve iş sınırları; bozuk hesap atlanır ([İçe aktarma](guvenlik-tasarimi.md#içe-aktarma)) |
+| Bitwarden, Chrome, KeePassXC dosyaları | Belge seçici | RFC 4180 CSV okuyucu; bilinmeyen alanlar yok sayılır, bozuk satır atlanır ([Parola içe aktarma](guvenlik-tasarimi.md#parola-içe-aktarma)) |
+| `.keykey` yedeği | Belge seçici | Yapı denetlenir; her kayıt çözülüp doğrulanmadan hiçbir şey yazılmaz ([Geri yükleme](guvenlik-tasarimi.md#geri-yükleme)) |
+| Kasa dosyası | Disk | Her kayıt kimliği ve türüyle bağlı (AD); değiştirilmiş kayıt açılmaz |
+| Doldurma isteği | Başka uygulama, tarayıcı | İmza ve güvenilen tarayıcı denetimi, şüpheli durumda uyarı ([Şüpheli durumlar](guvenlik-tasarimi.md#şüpheli-durumlar)) |
+| Niyetler | Başka uygulama | [Deep link düzeltmesi](#süreçler-arası-iletişim) |
+
+Okuyucular yalnızca kendi hata türlerini fırlatır; bozuk dosyanın uygulamayı düşürmediği testlerle sabit. Veritabanı sorguları drift ile parametreli; metinden SQL ya da kod üreten bir yol yok.
+
+## Dayanıklılık
+
+**İlgili kontroller:** MASVS-RESILIENCE-1..4. **Görev:** [#91](https://github.com/aaudraa/KeyKey/issues/91).
+
+Bilinçli olarak kapsam dışı: root ve emülatör tespiti, kurcalama denetimi, hata ayıklayıcı tespiti ve karartma yok. Gerekçe:
+
+- KeyKey açık kaynak; tersine mühendisliği zorlaştırmak, gizlenecek bir şey olmadığı için koruma sağlamaz ([Yayın derlemesi](#yayın-derlemesi)).
+- Root tespiti root'lu cihazdaki saldırganı durdurmaz; atlatılabilir ve yalnızca kendi cihazını root'layan kullanıcıyı cezalandırır. Root'lu cihazda kilitli kasa yine şifrelidir; açık kasanın belleği ise korunamaz ([Bellek](#bellek)).
+- Verinin bütünlüğü kasanın kriptografisinden gelir: değiştirilmiş kayıt ve üst bilgi açılmaz. APK'nın bütünlüğü Android'in imza doğrulamasından, Faz 9'da ayrıca SHA-256 özetlerinden ve yeniden üretilebilir derlemeden gelecek.
+
+`debuggable` kapalı ve hata ayıklama sembolü yok; bunlar CI'da denetleniyor.
+
+## Gizlilik
+
+**İlgili kontroller:** MASVS-PRIVACY-1..4. **Görev:** [#91](https://github.com/aaudraa/KeyKey/issues/91).
+
+- **En az veri.** KeyKey yalnızca kullanıcının girdiği kayıtları tutar; hesap, kimlik, reklam kimliği, analitik ve hata raporu gönderimi yok. Ağ izni olmadığı için hiçbir veri cihazdan çıkamaz ([Ağ](#ağ)).
+- **İzinler.** Kamera (yalnızca QR taramada istenir), biyometri ve bindirme gizleme. Bütün paketleri görme izni (`QUERY_ALL_PACKAGES`) istenmez; yalnızca ana ekranda simgesi olan uygulamalar görünür. İzin listesi CI'da denetleniyor.
+- **Kullanıcının denetimi.** Kullanıcı bütün verisini şifreli yedek ya da şifresiz dosya olarak dışa aktarabilir; kayıtları kalıcı olarak silebilir; uygulama kaldırılınca bütün veri silinir (bulut yedeği kapalı).
+- **Şeffaflık.** README "internete çıkmaz" diyor; bu, manifestten doğrulanabilir. Mağaza için gizlilik bildirimi (Play Store veri güvenliği formu, F-Droid açıklaması) Faz 9'daki dağıtım kararıyla birlikte yazılacak.

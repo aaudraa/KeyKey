@@ -64,6 +64,14 @@ if ! grep -q 'android:dataExtractionRules' <<< "$manifest"; then
   fail "dataExtractionRules tanımlı değil."
 fi
 
+# Flutter'ın derin bağlantısı iki etkinlikte de kapalı olmalı; yoksa başka bir
+# uygulama adres taşıyan niyetle KeyKey'i istediği ekrana götürebilir.
+deeplink_off=$(awk '/E: activity /{n++} /flutter_deeplinking_enabled/{f=1; next} f && /:value[(]/{if ($0 ~ /=false|0x0/) c++; f=0} END {print c+0}' <<< "$manifest")
+activities=$(grep -c 'E: activity ' <<< "$manifest")
+if [[ "$deeplink_off" != "$activities" ]]; then
+  fail "flutter_deeplinking_enabled her etkinlikte false değil ($deeplink_off/$activities)."
+fi
+
 # İçerik denetimleri açılmış APK üzerinde yapılır.
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
@@ -93,7 +101,10 @@ else
   libs=0
   while IFS= read -r so; do
     libs=$((libs + 1))
-    if "$readelf" -S -W "$so" | grep -qE '\.(debug_[a-z_]+|symtab)\b'; then
+    # Okunamayan dosya geçmiş sayılmasın.
+    if ! sections="$("$readelf" -S -W "$so")"; then
+      fail "okunamayan yerel kütüphane: ${so#"$work"/}"
+    elif grep -qE '\.(debug_[a-z_]+|symtab)\b' <<<"$sections"; then
       fail "hata ayıklama bilgisi içeren kütüphane: ${so#"$work"/}"
     fi
   done < <(find "$work/lib" -name '*.so')
