@@ -6,7 +6,7 @@ Bu belge KeyKey'in verileri nasıl şifrelediğini bayt düzeyinde anlatır. Kod
 
 ## Hedefler
 
-**Korumak istediklerimiz** (tam liste [yol haritasındaki tehdit modelinde](../yol-haritasi.md#tehdit-modeli)):
+**Korumak istediklerimiz** (tam liste [tehdit modelinde](#tehdit-modeli)):
 
 - Kasa dosyası veya yedek ele geçse bile, ana parola güçlüyse içerik okunamamalı.
 - Dosyayı ele geçiren hangi sitelerde hesabın olduğunu görememeli.
@@ -15,6 +15,42 @@ Bu belge KeyKey'in verileri nasıl şifrelediğini bayt düzeyinde anlatır. Kod
 **Korumadıklarımız:** Kasa açıkken root yetkili veya zararlı yazılım bulaşmış cihaz; zayıf ana parola; ana parola ve kurtarma anahtarının birlikte kaybı.
 
 **İlke:** Kendi kriptomuzu yazmıyoruz. Bütün temel işlemler [libsodium](https://libsodium.org) 1.0.22'den gelir, biz yalnızca onları birleştiririz.
+
+## Tehdit modeli
+
+### Korunan varlıklar
+
+| Varlık | Nerede durur |
+|---|---|
+| Kayıtlar: parolalar, kullanıcı adları, notlar, 2FA gizli anahtarları, adresler | Diskte şifreli; kasa açıkken çözülmüş halde bellekte |
+| Ana parola | Hiçbir yerde saklanmaz; yazılırken klavyeden ve bellekten geçer |
+| Kurtarma anahtarı | Kullanıcının kâğıdında; uygulamada saklanmaz |
+| Kasa anahtarı | Diskte yalnızca sarılmış halde; kasa açıkken korumalı bellekte |
+| Kopyalanan değer | Panoda en fazla 30 saniye ([Pano](#pano)) |
+| Yedek dosyası | Kullanıcının seçtiği konumda (Drive gibi), şifreli |
+| Hangi sitelerde hesap olduğu | Kayıtların içinde şifreli; kayıt sayısı ve zamanları görünür ([bilinen sınırlar](#bilinen-sınırlar)) |
+
+### Saldırganlar
+
+| Saldırgan | Ne yapabilir | KeyKey'in koruması | Sonuç |
+|---|---|---|---|
+| Kilitli telefonu bulan veya çalan | Ekran kilidini aşamaz; adli araçlarla diski kopyalayabilir | Android dosya şifrelemesinin üstüne kasa şifrelemesi; anahtar ana paroladan türetilir, diskte durmaz | Korunur |
+| Kilidi açık telefonu kısa süre eline geçiren, KeyKey kilitli | Uygulamayı açar, parola dener, yeni parmak izi ekleyebilir | Ana parola veya parmak izi gerekir; hatalı denemede artan bekleme; yeni parmak izi eklenince parmak iziyle açma kapanır | Korunur, parola güçlüyse |
+| Kilidi açık telefonu eline geçiren, KeyKey açık | Ekrandaki kayıtları ve parolaları görür, kopyalar | Arka plana geçince hemen, 5 dakika dokunulmazsa kilitlenir. Ana parolayı değiştirmek mevcut parolayı, şifresiz dışa aktarma kimlik doğrulamayı ister; 2FA kodları için ek onay isteğe bağlıdır | Kısmen: açık kasadaki parolalar görülebilir |
+| Yedek dosyasını ele geçiren (ör. Drive hesabı ele geçmiş) | Dosyayı kendi bilgisayarında sınırsız deneyebilir | Argon2id; kayıtlar dosyanın içinde de ayrıca şifreli; kayıt sayısı ve türleri gizli | Korunur, parola güçlüyse. Eski yedekler eski parolayla açılır |
+| Diskteki kasa dosyasına yazabilen | Dosyayı okur, değiştirir, eskisiyle değiştirir | Her kayıt kimliğine ve türüne bağlı şifreli; değiştirilen kayıt açılmaz | Okuyamaz; ama geri alma ve silme fark edilmez ([bilinen sınırlar](#bilinen-sınırlar)) |
+| Cihazdaki izinsiz zararlı uygulama | Kendi alanında çalışır, araya girmeye çalışır | Android uygulama yalıtımı; kasa dosyası uygulamanın özel klasöründe; `INTERNET` izni yok; dışa açık bileşen yalnızca ana ekran ve sistemin bağlandığı doldurma servisi | Korunur |
+| Panoyu okuyan uygulama | Kopyalanan parolayı okumaya çalışır | Android 10'dan beri arka plandaki uygulamalar panoyu okuyamaz; değer hassas işaretli, 30 saniye sonra silinir | Kısmen: etkin klavye ve o an öndeki uygulama görebilir |
+| Kötü niyetli doldurma hedefi: sahte uygulama, sahte site, WebView içeren uygulama | Kayıtlı parolayı kendine doldurtmaya çalışır | Uygulamada paket adı ve imza, web'de Public Suffix List ile alan adı; `webDomain` yalnızca güvenilen tarayıcılardan; şüpheli durumda uyarı ve ek onay ([Otomatik doldurma](#otomatik-doldurma)) | Büyük ölçüde korunur |
+| Ekran görüntüsü, ekran kaydı, son uygulamalar önizlemesi | Ekranı kaydeder | `FLAG_SECURE`; son uygulamalarda önizleme kapalı | Korunur |
+| Bindirme (overlay) izni olan uygulama | Saydam pencereyle kullanıcıya istemediği bir şeye dokundurur (tapjacking) | Henüz yok, [#83](https://github.com/aaudraa/KeyKey/issues/83) | **Henüz korunmuyor** |
+| Erişilebilirlik izni olan zararlı uygulama | Ekrandaki metni okur, dokunuş üretir; `FLAG_SECURE` bunu engellemez | Henüz yok; Android 14+ için hassas pencere işareti [#83](https://github.com/aaudraa/KeyKey/issues/83) kapsamında | **Korunmuyor** |
+| Kötü niyetli klavye | Yazılan her şeyi, ana parola dahil, görür | Gizli alanlarda öneri ve öğrenme kapalı; bu yalnızca dürüst klavyeleri etkiler | **Korunmuyor** |
+| Root yetkili veya zararlı yazılım bulaşmış cihaz, kasa açık | Belleği okur | Anahtarlar korumalı bellekte, ama çözülmüş kayıtlar Dart belleğinde ([Bellek](#bellek)) | **Korunmuyor** |
+| Ana parola ve kurtarma anahtarı birlikte kayboldu | — | Bilinçli olarak arka kapı yok | Veri geri gelmez |
+| Bağımlılık veya derleme ortamı ele geçmiş (tedarik zinciri) | Uygulamaya kötü kod sokar | Kilitli bağımlılık sürümleri; `sqlite3` hazır kütüphanesi sabit özetle denetlenir; CI'da gizli bilgi taraması; denetim [#86](https://github.com/aaudraa/KeyKey/issues/86), yeniden üretilebilir derleme Faz 9 | Kısmen |
+
+**Kapsam dışı:** Zorla parola söyletme, omuz üstünden bakma, işletim sistemindeki açıklar ve donanım saldırıları. Uygulamanın internet izni olmadığı için ağ üzerinden bir saldırı yüzeyi yoktur; bu da veriyi dışarı gönderemeyeceğinin güvencesidir.
 
 ## Algoritmalar
 
@@ -306,7 +342,7 @@ Parmak izi üçüncü kapıdır ve isteğe bağlıdır. Yuvası üst bilgide de�
 
 1. Android arka plandaki uygulamaya panoyu okutmaz. Kullanıcı bu sürede başka bir şey kopyaladıysa onu da silebiliriz.
 2. Alarm tam zamanında çalışmayabilir. Android, kesin alarm izni olmadan onu geciktirebilir. Cihaz testi, süreç ayaktayken arka planda temizlendiğini doğruluyor; sürecin kapatıldığı durum yalnızca alarma dayanıyor ve otomatik test edilmedi. Bu izni almıyoruz, çünkü parolanın panoda birkaç dakika daha kalması, izin listesini büyütmeye değmez.
-3. O sürede panoyu okuyan etkin klavye veya kötü amaçlı uygulama parolayı görebilir. Bu, [tehdit modelinde](../yol-haritasi.md#tehdit-modeli) "kısmen" olarak yazıyor.
+3. O sürede panoyu okuyan etkin klavye veya kötü amaçlı uygulama parolayı görebilir. Bu, [tehdit modelinde](#tehdit-modeli) "kısmen" olarak yazıyor.
 
 ## Parola üretici ve güç tahmini
 
@@ -471,7 +507,7 @@ Ana uygulama ve doldurma ekranı aynı süreçte, aynı veritabanı dosyasına i
 ### Sınırlar
 
 1. Doldurulan değer hedef uygulamaya verildikten sonra onu korumak bizim elimizde değildir.
-2. Kötü amaçlı bir erişilebilirlik servisi veya klavye, doldurulan alanı okuyabilir. Bu, [tehdit modelinin](../yol-haritasi.md#tehdit-modeli) dışındadır.
+2. Kötü amaçlı bir erişilebilirlik servisi veya klavye, doldurulan alanı okuyabilir. [Tehdit modelinde](#tehdit-modeli) bunlar korunmayanlar arasında.
 3. Güvenilen tarayıcıların kendileri doğru alan adını bildirmek zorundadır; bir tarayıcı açığı burada da açık olur.
 4. İlk bağlamada kullanıcı onay verir: sahte bir uygulamayı gerçek uygulama sanıp kayda bağlarsa, sonraki doldurmalar o sahte uygulamaya da eşleşir. Uyarı bunu önlemeye çalışır, garanti edemez.
 
