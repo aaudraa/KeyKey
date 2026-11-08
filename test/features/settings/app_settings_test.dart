@@ -131,6 +131,57 @@ void main() {
     }
   });
 
+  group('yedek bilgileri (sürüm 3)', () {
+    test('sürüm 2 kaydı okunuyor, yedek bilgisi yok sayılıyor', () async {
+      await putRaw(
+        encrypt('{"version":2,"otpRequireAuth":false,"autofillCopyOtp":false}'),
+      );
+      final settings = await repository.load();
+      expect(settings.autofillCopyOtp, isFalse);
+      expect(settings.otpRequireAuth, isFalse);
+      expect(settings.lastBackupAt, isNull);
+      expect(settings.backupReminderSnoozedUntil, isNull);
+    });
+
+    test('yedek zamanları yazılıp okunuyor', () async {
+      final backup = DateTime.utc(2026, 11, 7, 18, 30);
+      final snooze = DateTime.utc(2026, 11, 14);
+      await repository.save(
+        AppSettings.defaults.copyWith(
+          lastBackupAt: backup,
+          backupReminderSnoozedUntil: snooze,
+        ),
+      );
+      final settings = await repository.load();
+      expect(settings.lastBackupAt, backup);
+      expect(settings.backupReminderSnoozedUntil, snooze);
+      expect(settings.autofillCopyOtp, isTrue);
+    });
+
+    test('copyWith yedek zamanını silmiyor', () {
+      final backup = DateTime.utc(2026, 11, 7);
+      final settings = AppSettings.defaults
+          .copyWith(lastBackupAt: backup)
+          .copyWith(otpRequireAuth: true);
+      expect(settings.lastBackupAt, backup);
+    });
+
+    test('geçersiz zaman kaydı okunamaz yapıyor', () async {
+      const head = '"version":3,"otpRequireAuth":false,"autofillCopyOtp":true';
+      for (final json in [
+        '{$head,"lastBackupAt":-1,"backupReminderSnoozedUntil":null}',
+        '{$head,"lastBackupAt":"dün","backupReminderSnoozedUntil":null}',
+        '{$head,"lastBackupAt":null,"backupReminderSnoozedUntil":1.5}',
+        '{$head,"lastBackupAt":null}',
+      ]) {
+        await putRaw(encrypt(json));
+        final settings = await repository.load();
+        expect(settings.otpRequireAuth, isTrue, reason: json);
+        expect(settings.lastBackupAt, isNull, reason: json);
+      }
+    });
+  });
+
   test('aynı kimlikte başka türden kayıt okunamaz sayılıyor', () async {
     await putRaw(Uint8List(64), type: 'login');
     expect((await repository.load()).otpRequireAuth, isTrue);

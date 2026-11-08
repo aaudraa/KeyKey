@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/app_shell.dart';
+import 'package:keykey/core/backup/backup_codec.dart';
 import 'package:keykey/features/authenticator/application/otp_import.dart';
 import 'package:keykey/features/authenticator/data/otpauth_uri.dart';
 import 'package:keykey/features/authenticator/presentation/authenticator_screen.dart';
@@ -9,6 +10,9 @@ import 'package:keykey/features/authenticator/presentation/otp_edit_screen.dart'
 import 'package:keykey/features/authenticator/presentation/otp_import_screen.dart';
 import 'package:keykey/features/authenticator/presentation/otp_trash_screen.dart';
 import 'package:keykey/features/authenticator/presentation/qr_scan_screen.dart';
+import 'package:keykey/features/backup/data/import/login_import.dart';
+import 'package:keykey/features/backup/presentation/login_import_screen.dart';
+import 'package:keykey/features/backup/presentation/restore_screen.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/lock_screen.dart';
 import 'package:keykey/features/lock/presentation/new_password_screen.dart';
@@ -33,7 +37,9 @@ abstract final class AppRoutes {
   static const authenticatorImport = '/2fa/ice-aktar';
   static const settings = '/ayarlar';
   static const changePassword = '/ayarlar/parola';
+  static const loginImport = '/ayarlar/ice-aktar';
   static const setup = '/kurulum';
+  static const restore = '/geri-yukle';
   static const lock = '/kilit';
   static const recovery = '/kilit/kurtarma';
   static const newPassword = '/yeni-parola';
@@ -52,7 +58,11 @@ abstract final class AppRoutes {
 /// Kasa açık değilken kasa ekranlarına hiçbir yoldan ulaşılamaz.
 String? vaultRedirect(VaultStatus status, String location) {
   return switch (status) {
-    VaultNotSetUp() => location == AppRoutes.setup ? null : AppRoutes.setup,
+    // Yeni telefonda kasa yedekten de kurulabilir.
+    VaultNotSetUp() =>
+      location == AppRoutes.setup || location == AppRoutes.restore
+          ? null
+          : AppRoutes.setup,
     VaultLocked() =>
       location == AppRoutes.lock || location == AppRoutes.recovery
           ? null
@@ -88,6 +98,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.setup,
         builder: (context, state) => const OnboardingScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.restore,
+        // Yedek yalnızca seçiciden gelir; uygulama yeniden kurulurken
+        // yol kalırsa kuruluma dönülür.
+        redirect: (context, state) =>
+            state.extra is BackupFile ? null : AppRoutes.setup,
+        builder: (context, state) =>
+            RestoreScreen(file: state.extra! as BackupFile),
       ),
       GoRoute(
         path: AppRoutes.lock,
@@ -194,6 +213,16 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'parola',
                     builder: (context, state) => const ChangePasswordScreen(),
+                  ),
+                  GoRoute(
+                    path: 'ice-aktar',
+                    // Okunan dosya yalnızca bellekte, ekrana doğrudan verilir.
+                    // Yoksa, örneğin uygulama yeniden açıldıysa, ayarlara
+                    // dönülür.
+                    redirect: (context, state) =>
+                        state.extra is LoginExport ? null : AppRoutes.settings,
+                    builder: (context, state) =>
+                        LoginImportScreen(export: state.extra! as LoginExport),
                   ),
                 ],
               ),

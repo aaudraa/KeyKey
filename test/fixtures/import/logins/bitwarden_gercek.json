@@ -1,0 +1,42 @@
+{
+  "encrypted": false,
+  "folders": [],
+  "items": [
+    {
+      "type": 1,
+      "favorite": false,
+      "reprompt": 0,
+      "id": "2907a6d8-8021-4172-ba29-b4fc00e06f3b",
+      "collectionIds": null,
+      "name": "ornek.com",
+      "fields": [],
+      "login": {
+        "uris": [],
+        "fido2Credentials": [],
+        "username": "deneme@example.com ",
+        "password": "sahte-Sifre-4"
+      },
+      "passwordHistory": [],
+      "creationDate": "2026-11-08T13:37:08.453Z",
+      "revisionDate": "2026-11-08T13:37:08.453Z"
+    },
+    {
+      "type": 1,
+      "favorite": false,
+      "reprompt": 0,
+      "id": "9031cdb5-077c-4a79-8b76-b4fc00e014a4",
+      "collectionIds": null,
+      "name": "Örnek Sosyal",
+      "fields": [],
+      "login": {
+        "uris": [],
+        "fido2Credentials": [],
+        "username": "ornek_kullanici",
+        "password": "sahte-Sifre-5"
+      },
+      "passwordHistory": [],
+      "creationDate": "2026-11-08T13:35:51.150Z",
+      "revisionDate": "2026-11-08T13:35:51.150Z"
+    }
+  ]
+}

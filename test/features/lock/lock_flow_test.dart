@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
+import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/lock_screen.dart';
 import 'package:sodium/sodium_sumo.dart';
@@ -292,6 +296,60 @@ void main() {
       await tester.pumpAndSettle();
       await enterPassword(tester, FakeVaultService.correctPassword);
       expect(find.text(vaultText), findsOneWidget);
+    });
+
+    group("KeyKey'in açtığı dosya seçicisi", () {
+      ExternalActivityGate gate(WidgetTester tester) =>
+          ProviderScope.containerOf(tester.element(find.text(vaultText)))
+              .read(externalActivityGateProvider.notifier);
+
+      testWidgets('açıkken arka plan kilitlemiyor, kapanınca yine kilitliyor', (
+        tester,
+      ) async {
+        await pumpOpen(tester);
+        final picker = Completer<String>();
+        final result = gate(tester).run(() => picker.future);
+
+        setLifecycle(tester, AppLifecycleState.paused);
+        await tester.pump(const Duration(minutes: 2));
+        picker.complete('dosya');
+        setLifecycle(tester, AppLifecycleState.resumed);
+        await tester.pumpAndSettle();
+        expect(await result, 'dosya');
+        expect(find.text(vaultText), findsOneWidget);
+
+        // Seçici kapandıktan sonra arka plan yine kilitliyor.
+        setLifecycle(tester, AppLifecycleState.hidden);
+        setLifecycle(tester, AppLifecycleState.resumed);
+        await tester.pumpAndSettle();
+        expect(find.text(lockedTitle), findsOneWidget);
+      });
+
+      testWidgets('3 dakikayı geçerse kasa kilitleniyor', (tester) async {
+        await pumpOpen(tester);
+        final picker = Completer<String>();
+        final result = gate(tester).run(() => picker.future);
+
+        setLifecycle(tester, AppLifecycleState.paused);
+        await tester.pump(const Duration(minutes: 3, seconds: 1));
+        picker.complete('dosya');
+        await result;
+        setLifecycle(tester, AppLifecycleState.resumed);
+        await tester.pumpAndSettle();
+        expect(find.text(lockedTitle), findsOneWidget);
+      });
+
+      testWidgets('işlem hata verse de erteleme bitiyor', (tester) async {
+        await pumpOpen(tester);
+        final failing = gate(tester)
+            .run<void>(() => Future.error(StateError('seçici açılmadı')));
+        await expectLater(failing, throwsStateError);
+
+        setLifecycle(tester, AppLifecycleState.hidden);
+        setLifecycle(tester, AppLifecycleState.resumed);
+        await tester.pumpAndSettle();
+        expect(find.text(lockedTitle), findsOneWidget);
+      });
     });
 
     testWidgets('sistem penceresi kilitlemiyor', (tester) async {

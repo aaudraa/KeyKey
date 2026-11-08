@@ -286,6 +286,25 @@ class VaultController extends Notifier<VaultStatus> {
     }
   }
 
+  /// Yedekten kurulan kasayı açık hale getirir. Yalnızca kasa kurulu değilken
+  /// çağrılır; değilse oturumu siler ve [StateError] fırlatır.
+  void openRestored(VaultSession session) {
+    if (state is! VaultNotSetUp) {
+      session.dispose();
+      throw StateError('Kasa zaten kurulu.');
+    }
+    cancelSetup();
+    _session = session;
+    state = VaultOpen(session);
+  }
+
+  /// Kasa yedekle değiştirildikten sonra kilitler. Kasa artık yedeğin üst
+  /// bilgisiyle, yani yedeğin ana parolasıyla açılır.
+  void lockReplaced(VaultHeader header) {
+    lock();
+    state = VaultLocked(header);
+  }
+
   /// Anahtarları bellekten siler. Kasa zaten kilitliyse de sürmekte olan bir
   /// açma işleminin sonucunu geçersiz kılar.
   void lock() {

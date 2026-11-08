@@ -43,7 +43,9 @@ final class FileSelectorExportPicker implements ExportFilePicker {
     if (file == null) return const ExportFileCancelled();
     try {
       if (await file.length() > maxSize) return const ExportFileTooLarge();
-      return ExportFileRead(await file.readAsBytes());
+      // Android'da gelen dizi değiştirilemez; okuyan taraf işi bitince
+      // sıfırlayabilsin diye kopyalanır.
+      return ExportFileRead(Uint8List.fromList(await file.readAsBytes()));
     } finally {
       await _delete(file.path);
     }

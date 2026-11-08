@@ -25,6 +25,12 @@ final class InvalidVaultHeaderException extends CryptoException {
   const new(super.message);
 }
 
+/// Dosya bir KeyKey yedeği değil, desteklenmeyen bir sürümde veya yapısı
+/// bozuk. Parola sorulmadan önce anlaşılır.
+final class InvalidBackupException extends CryptoException {
+  const new(super.message);
+}
+
 /// Kayıt bozulmuş, değiştirilmiş veya yanlış bağlamda açılmaya çalışılmış.
 final class CorruptedDataException extends CryptoException {
   const new() : super('Şifreli veri doğrulanamadı.');

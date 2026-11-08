@@ -3,12 +3,13 @@
 useDefault = true
 
 # Biçim uyumluluğu testleri bilerek sabit deneme anahtarları içeriyor. Bunlar
-# gerçek bir kasaya ait değil. Liste yalnızca bu iki dosyayla sınırlı kalmalı.
+# gerçek bir kasaya ait değil. Liste yalnızca bu dosyalarla sınırlı kalmalı.
 [[allowlists]]
 description = "Yalnızca deneme verisi içeren biçim uyumluluğu dosyaları"
 paths = [
   '''^test/fixtures/crypto/vault-v1\.json$''',
   '''^integration_test/vault_v1_fixture\.dart$''',
+  '''^test/fixtures/backup/backup-v1\.json$''',
 ]
 
 # İçe aktarma testlerinin örnek dosyaları. Aegis ve 2FAS örnekleri Aegis
@@ -23,6 +24,9 @@ paths = [
   '''^test/fixtures/import/2fas_(plain|encrypted)_v[0-9]+\.2fas$''',
   '''^test/fixtures/import/aes_gcm_vectors\.json$''',
   '''^integration_test/import_fixtures\.dart$''',
+  # Parola içe aktarma örnekleri: bir kısmı Bitwarden'ın içe aktarma
+  # testlerinden (bitwarden/clients, GPL-3.0), diğerleri deneme verisi.
+  '''^test/fixtures/import/logins/[a-z_]+\.(csv|json)$''',
 ]
 
 # Testlerdeki sabit deneme parolaları yanlış alarm veriyor. Dosyalara değil,
@@ -34,4 +38,11 @@ regexes = [
   '''^dogru-Ana-Parola-47$''',
   '''^ikinci-Ana-Parola-58$''',
   '''^yepyeni-Ana-Parola-58$''',
+  '''^yedek-Parolasi-55$''',
+  '''^yedek-Alan-Parola-61$''',
+  '''^yeni-Telefon-Parola-73$''',
+  # Bitwarden'ın içe aktarma testlerindeki herkese açık deneme değerleri.
+  '''^wpC9qFvsbWQK5Z$''',
+  '''^Qh6W4Wz55YGFNU$''',
+  '''^ABCD1234EFGH5678$''',
 ]

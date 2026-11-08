@@ -1231,5 +1231,309 @@
   "autofillWarnWebViewUnknown": "This app shows a web page inside it. KeyKey cannot verify who the page belongs to, and the app can read the password that is filled.",
   "@autofillWarnWebViewUnknown": {
     "description": "WebView warning when the page did not report its address."
+  },
+  "backupCreate": "Back up now",
+  "@backupCreate": {
+    "description": "Settings tile that saves an encrypted backup file."
+  },
+  "backupLast": "Last backup: {time}",
+  "@backupLast": {
+    "description": "Subtitle with the time of the last backup.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "backupNever": "No backup yet.",
+  "@backupNever": {
+    "description": "Subtitle when no backup was taken."
+  },
+  "backupHelp": "The backup file is encrypted. It opens with your current master password or your recovery key. If you lose this phone, it is the only way to get your data back.",
+  "@backupHelp": {
+    "description": "Explains what a backup is and how it opens."
+  },
+  "backupSaved": "Backup saved.",
+  "@backupSaved": {
+    "description": "Snackbar after a backup is saved."
+  },
+  "backupFailed": "The backup could not be saved. Try another location.",
+  "@backupFailed": {
+    "description": "Snackbar when writing the backup file fails."
+  },
+  "restoreTitle": "Restore from backup",
+  "@restoreTitle": {
+    "description": "Title and button for restoring a .keykey backup."
+  },
+  "restoreHelp": "Open a KeyKey backup file (.keykey).",
+  "@restoreHelp": {
+    "description": "Subtitle of the restore tile in settings."
+  },
+  "restoreNotBackup": "This file is not a KeyKey backup, or it is damaged.",
+  "@restoreNotBackup": {
+    "description": "Error when the picked file is not a valid backup."
+  },
+  "restoreTooLarge": "This file is too large to be a KeyKey backup.",
+  "@restoreTooLarge": {
+    "description": "Error when the picked file exceeds the size limit."
+  },
+  "restoreOpenFailed": "The file could not be read.",
+  "@restoreOpenFailed": {
+    "description": "Error when reading the picked file fails."
+  },
+  "restoreUnlockIntro": "The backup opens with the master password you had when you took it, or with your recovery key.",
+  "@restoreUnlockIntro": {
+    "description": "Explains which secret opens a backup."
+  },
+  "restoreUseRecoveryKey": "Use recovery key instead",
+  "@restoreUseRecoveryKey": {
+    "description": "Switches the restore form to the recovery key."
+  },
+  "restoreUsePassword": "Use master password instead",
+  "@restoreUsePassword": {
+    "description": "Switches the restore form back to the master password."
+  },
+  "restoreOpen": "Open backup",
+  "@restoreOpen": {
+    "description": "Button that opens the backup with the typed secret."
+  },
+  "restoreOpening": "Opening…",
+  "@restoreOpening": {
+    "description": "Button text while the backup is being opened."
+  },
+  "restoreWrongPassword": "This password does not open the backup. Try the master password you had when you took it.",
+  "@restoreWrongPassword": {
+    "description": "Error for a wrong backup password."
+  },
+  "restoreWrongRecoveryKey": "This recovery key does not belong to the vault in this backup.",
+  "@restoreWrongRecoveryKey": {
+    "description": "Error for a recovery key from another vault."
+  },
+  "restoreCorrupted": "The backup is damaged or was changed. Nothing was restored.",
+  "@restoreCorrupted": {
+    "description": "Error when the backup content fails verification."
+  },
+  "restoreSummary": "Backup from {date}: {logins} passwords and {otps} 2FA accounts.",
+  "@restoreSummary": {
+    "description": "Summary of an opened backup.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "logins": {
+        "type": "int"
+      },
+      "otps": {
+        "type": "int"
+      }
+    }
+  },
+  "restoreRestore": "Restore",
+  "@restoreRestore": {
+    "description": "Button that restores the backup on a new phone."
+  },
+  "restoreMerge": "Merge into my vault",
+  "@restoreMerge": {
+    "description": "Button that merges the backup into the open vault."
+  },
+  "restoreMergeHelp": "Adds the entries that are missing. If an entry is in both, the newer version stays. Your settings stay as they are.",
+  "@restoreMergeHelp": {
+    "description": "Explains merging."
+  },
+  "restoreReplace": "Replace my vault",
+  "@restoreReplace": {
+    "description": "Button that replaces the open vault with the backup."
+  },
+  "restoreReplaceHelp": "Deletes everything in your vault and puts the backup in its place. Afterwards the vault opens with the backup's master password.",
+  "@restoreReplaceHelp": {
+    "description": "Explains replacing."
+  },
+  "restoreReplaceConfirmTitle": "Replace your vault?",
+  "@restoreReplaceConfirmTitle": {
+    "description": "Title of the replace confirmation dialog."
+  },
+  "restoreReplaceConfirmBody": "Every password and 2FA account in this vault will be deleted and replaced with the backup. Fingerprint unlock is turned off. This cannot be undone.",
+  "@restoreReplaceConfirmBody": {
+    "description": "Body of the replace confirmation dialog."
+  },
+  "restoreReplaceConfirm": "Replace",
+  "@restoreReplaceConfirm": {
+    "description": "Confirm button of the replace dialog."
+  },
+  "restoreCancel": "Cancel",
+  "@restoreCancel": {
+    "description": "Cancel button of the replace dialog."
+  },
+  "restoreMerged": "{added} added, {updated} updated.",
+  "@restoreMerged": {
+    "description": "Snackbar after merging a backup.",
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "updated": {
+        "type": "int"
+      }
+    }
+  },
+  "restoreDone": "Backup restored.",
+  "@restoreDone": {
+    "description": "Snackbar after restoring on a new phone."
+  },
+  "restoreFailed": "Restoring failed. Your vault was not changed.",
+  "@restoreFailed": {
+    "description": "Error when writing the restored data fails."
+  },
+  "backupReminderNever": "You have no backup yet. If you lose this phone, everything in your vault is lost with it.",
+  "@backupReminderNever": {
+    "description": "Backup reminder when no backup was ever taken."
+  },
+  "backupReminderStale": "Your vault changed since your last backup, and that backup is more than two weeks old.",
+  "@backupReminderStale": {
+    "description": "Backup reminder when the last backup is old and there are changes."
+  },
+  "backupReminderLater": "Later",
+  "@backupReminderLater": {
+    "description": "Snoozes the backup reminder for a week."
+  },
+  "loginImportTitle": "Import passwords",
+  "@loginImportTitle": {
+    "description": "Settings tile and screen title for importing passwords."
+  },
+  "loginImportHelp": "Bitwarden, Chrome or KeePassXC export file",
+  "@loginImportHelp": {
+    "description": "Subtitle of the password import tile."
+  },
+  "otpImportSettingsTitle": "Import 2FA accounts",
+  "@otpImportSettingsTitle": {
+    "description": "Settings tile for importing 2FA accounts."
+  },
+  "otpImportSettingsHelp": "Aegis or 2FAS export file",
+  "@otpImportSettingsHelp": {
+    "description": "Subtitle of the 2FA import tile in settings."
+  },
+  "loginImportUnknown": "This file was not recognised. Choose a Bitwarden (JSON or CSV), Chrome (CSV) or KeePassXC (CSV) export.",
+  "@loginImportUnknown": {
+    "description": "Error when the import file format is unknown."
+  },
+  "loginImportEncrypted": "This Bitwarden file is encrypted with a password, and KeyKey cannot open it. Export an unencrypted .json or .csv file from Bitwarden.",
+  "@loginImportEncrypted": {
+    "description": "Error for encrypted Bitwarden exports."
+  },
+  "loginImportTooLarge": "The file is too large.",
+  "@loginImportTooLarge": {
+    "description": "Error when the import file is over the size limit."
+  },
+  "loginImportRead": "{count, plural, =1{1 entry read from the {source} file.} other{{count} entries read from the {source} file.}}",
+  "@loginImportRead": {
+    "description": "Summary at the top of the import list.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "loginImportSkipped": "{count, plural, =1{1 row was skipped because it is not supported or is damaged.} other{{count} rows were skipped because they are not supported or are damaged.}}",
+  "@loginImportSkipped": {
+    "description": "How many rows were skipped.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "loginImportSkippedOtps": "{count, plural, =1{1 2FA key could not be read; its entry is still added.} other{{count} 2FA keys could not be read; their entries are still added.}}",
+  "@loginImportSkippedOtps": {
+    "description": "How many 2FA keys could not be read.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "loginImportDuplicatesNote": "Entries that are already in your vault are not selected.",
+  "@loginImportDuplicatesNote": {
+    "description": "Explains why some entries are unchecked."
+  },
+  "loginImportDuplicate": "Already in your vault",
+  "@loginImportDuplicate": {
+    "description": "Marks an entry that already exists."
+  },
+  "loginImportWithOtp": "with 2FA",
+  "@loginImportWithOtp": {
+    "description": "Marks an entry that brings a 2FA key."
+  },
+  "loginImportNothing": "There is nothing to import in this file.",
+  "@loginImportNothing": {
+    "description": "Shown when the file has no importable entries."
+  },
+  "loginImportAdd": "{count, plural, =0{Add} =1{Add 1 entry} other{Add {count} entries}}",
+  "@loginImportAdd": {
+    "description": "Button that saves the selected entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "loginImportDone": "{count, plural, =1{1 entry added.} other{{count} entries added.}}",
+  "@loginImportDone": {
+    "description": "Snackbar after importing.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "loginImportDeleteTitle": "Delete the source file",
+  "@loginImportDeleteTitle": {
+    "description": "Title of the dialog after importing."
+  },
+  "loginImportDeleteBody": "The file you imported is not encrypted: all your passwords are in it as plain text. KeyKey cannot delete it. Delete it yourself in your Files app or in Drive.",
+  "@loginImportDeleteBody": {
+    "description": "Reminds the user to delete the plaintext export."
+  },
+  "loginImportDeleteOk": "OK",
+  "@loginImportDeleteOk": {
+    "description": "Closes the delete reminder."
+  },
+  "exportTitle": "Export unencrypted",
+  "@exportTitle": {
+    "description": "Settings tile for the plaintext export."
+  },
+  "exportHelp": "CSV file for moving to another password manager",
+  "@exportHelp": {
+    "description": "Subtitle of the plaintext export tile."
+  },
+  "exportWarningTitle": "This file is not encrypted",
+  "@exportWarningTitle": {
+    "description": "Title of the warning before exporting."
+  },
+  "exportWarningBody": "All your passwords, notes and 2FA keys are written into the file as plain text. Any app or person that can reach the file can read them, including the cloud it syncs to.\n\nUse it only to move to another password manager, and delete it right after importing. To keep a backup, use \"Back up now\" instead; backups are encrypted.",
+  "@exportWarningBody": {
+    "description": "Explains the risk of the plaintext export."
+  },
+  "exportWarningContinue": "Continue",
+  "@exportWarningContinue": {
+    "description": "Continues past the export warning."
+  },
+  "exportWarningCancel": "Cancel",
+  "@exportWarningCancel": {
+    "description": "Cancels the export."
+  },
+  "exportConfirmTitle": "Export unencrypted",
+  "@exportConfirmTitle": {
+    "description": "Fingerprint prompt title before exporting."
+  },
+  "exportSaved": "Export saved. Delete the file once you have imported it.",
+  "@exportSaved": {
+    "description": "Snackbar after the export is saved."
+  },
+  "exportFailed": "The file could not be saved.",
+  "@exportFailed": {
+    "description": "Snackbar when saving the export fails."
   }
 }

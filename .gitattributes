@@ -13,3 +13,7 @@
 *.jar binary
 *.ttf binary
 *.otf binary
+*.keykey binary
+
+# İçe aktarma örnekleri bayt bayt korunur; Chrome örneği CRLF kullanıyor.
+test/fixtures/import/logins/*.csv -text

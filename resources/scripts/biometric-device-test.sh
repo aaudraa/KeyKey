@@ -110,6 +110,15 @@ device shell input keyevent KEYCODE_WAKEUP
 device shell wm dismiss-keyguard
 sleep 2
 device shell locksettings set-pin "$pin" >/dev/null
+# Her çalıştırma iki parmak izi ekler. Android 11 emülatöründe PIN'i
+# kaldırmak parmak izlerini silmiyor, ayarlardan silme de bitmiyor; beş
+# sınırına gelince ikinci parmak izi eklenemez ve test yanlış yerde düşer.
+existing=$(fingerprint_count)
+if (( existing > 3 )); then
+  echo "HATA: emülatörde $existing parmak izi kayıtlı, yenisi eklenemez." \
+    "Emülatörü -wipe-data ile yeniden başlat."
+  exit 2
+fi
 enroll 1 || exit 2
 echo "Hazır: PIN ve birinci parmak izi kayıtlı."
 

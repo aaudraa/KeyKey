@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 
 /// Kasayı arka plana geçince ve kullanılmadığında kilitler.
@@ -52,9 +53,12 @@ class _AutoLockScopeState extends ConsumerState<AutoLockScope>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
-      case AppLifecycleState.hidden ||
-          AppLifecycleState.paused ||
-          AppLifecycleState.detached:
+      case AppLifecycleState.hidden || AppLifecycleState.paused:
+        // KeyKey'in açtığı bir dosya seçicisi sürüyorsa kilit, seçicinin
+        // kendi süre sınırına bırakılır.
+        if (ref.read(externalActivityGateProvider)) return;
+        ref.read(vaultControllerProvider.notifier).lock();
+      case AppLifecycleState.detached:
         ref.read(vaultControllerProvider.notifier).lock();
       case AppLifecycleState.resumed || AppLifecycleState.inactive:
         break;

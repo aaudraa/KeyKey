@@ -1,0 +1,5 @@
+"Group","Title","Username","Password","URL","Notes","TOTP","Icon","Last Modified","Created"
+"Parolalar","Örnek Banka","ayse","deneme-Banka-1","https://banka.example.com","İki satırlı
+not, ""tırnaklı""","otpauth://totp/%C3%96rnek%20Banka:ayse?secret=JBSWY3DPEHPK3PXP&period=30&digits=6&issuer=%C3%96rnek%20Banka","0","2026-11-07T17:35:48Z","2026-11-07T17:35:48Z"
+"Parolalar/E-posta","Posta","ayse@example.com","deneme-Posta-2","mail.example.com","","","0","2026-11-07T17:35:48Z","2026-11-07T17:35:48Z"
+"Parolalar/E-posta/İş","Şirket","veli","deneme-Is-3","","","","0","2026-11-07T17:35:48Z","2026-11-07T17:35:48Z"

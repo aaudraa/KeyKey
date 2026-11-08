@@ -20,6 +20,7 @@ import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
+import 'package:keykey/features/settings/presentation/settings_screen.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:path_provider/path_provider.dart';
@@ -222,15 +223,21 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
 
       // Ek onay açıkken 2FA kodları parmak iziyle açılıyor. Doğrulama
-      // Keystore anahtarının kasa anahtarını açmasıyla yapılır.
-      await OtpRepository(store: store, session: session, sodium: sodium).add(
-        OtpContent(
-          parameters: OtpParameters.totp(
-            secret: utf8.encode('parmak-anahtari'),
-          ),
-          issuer: 'Parmak hesabı',
-        ),
-      );
+      // Keystore anahtarının kasa anahtarını açmasıyla yapılır. Hesap
+      // denetleyiciden eklenir: yedek hatırlatıcısı listeyi kasa açılınca
+      // yüklediği için doğrudan depoya yazılan kayıt görünmezdi.
+      await ProviderScope.containerOf(
+            tester.element(find.byType(Scaffold).first),
+          )
+          .read(otpsControllerProvider.notifier)
+          .add(
+            OtpContent(
+              parameters: OtpParameters.totp(
+                secret: utf8.encode('parmak-anahtari'),
+              ),
+              issuer: 'Parmak hesabı',
+            ),
+          );
       await tester.tap(find.text('2FA kodlarını göstermeden önce doğrula'));
       await tester.pump(const Duration(milliseconds: 500));
       await tester.tap(_otpTab());
@@ -250,6 +257,19 @@ void main() {
       expect(session.isDisposed, isFalse, reason: 'Kasa açık kalmalı');
       await tester.tap(find.byIcon(Icons.settings_outlined));
       await tester.pump(const Duration(seconds: 1));
+      // Ayarlar listesi uzun ve tembel kurulur; kilit düğmesi aşağıdadır.
+      await tester.scrollUntilVisible(
+        find.text('Şimdi kilitle'),
+        300,
+        scrollable: find
+            .descendant(
+              of: find.byType(SettingsScreen),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      await tester.ensureVisible(find.text('Şimdi kilitle'));
+      await tester.pump(const Duration(milliseconds: 500));
 
       await tester.tap(find.text('Şimdi kilitle'));
       await tester.pump();

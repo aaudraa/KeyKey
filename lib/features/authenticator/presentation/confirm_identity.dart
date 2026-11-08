@@ -9,14 +9,20 @@ import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Kasa açıkken kimliği yeniden doğrular: parmak izi açıksa önce o, sonra
 /// ana parola. Doğrulandıysa `true`.
-Future<bool> confirmIdentity(BuildContext context, WidgetRef ref) async {
+///
+/// [title] verilmezse 2FA kodlarını gösterme başlığı kullanılır.
+Future<bool> confirmIdentity(
+  BuildContext context,
+  WidgetRef ref, {
+  String? title,
+}) async {
   final l10n = AppLocalizations.of(context);
   final vault = ref.read(vaultControllerProvider.notifier);
   try {
     if (await vault.isBiometricUsable()) {
       final outcome = await vault.confirmBiometric(
         BiometricTexts(
-          title: l10n.otpConfirmTitle,
+          title: title ?? l10n.otpConfirmTitle,
           negativeButton: l10n.biometricUseMasterPassword,
         ),
       );
@@ -29,13 +35,15 @@ Future<bool> confirmIdentity(BuildContext context, WidgetRef ref) async {
   if (!context.mounted) return false;
   final confirmed = await showDialog<bool>(
     context: context,
-    builder: (context) => const _PasswordDialog(),
+    builder: (context) => _PasswordDialog(title: title),
   );
   return confirmed ?? false;
 }
 
 class _PasswordDialog extends ConsumerStatefulWidget {
-  const new();
+  const new({this.title});
+
+  final String? title;
 
   @override
   ConsumerState<_PasswordDialog> createState() => _PasswordDialogState();
@@ -99,7 +107,7 @@ class _PasswordDialogState extends ConsumerState<_PasswordDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return AlertDialog(
-      title: Text(l10n.otpConfirmTitle),
+      title: Text(widget.title ?? l10n.otpConfirmTitle),
       content: SecretField(
         controller: _password,
         label: l10n.lockPasswordLabel,

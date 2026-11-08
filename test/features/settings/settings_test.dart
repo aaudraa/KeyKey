@@ -121,6 +121,9 @@ void main() {
   testWidgets('şimdi kilitle kasayı kilitliyor', (tester) async {
     await pumpSettings(tester);
 
+    await tester.scrollUntilVisible(find.text('Şimdi kilitle'), 100);
+    await tester.ensureVisible(find.text('Şimdi kilitle'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Şimdi kilitle'));
     await tester.pumpAndSettle();
 
@@ -134,7 +137,8 @@ void main() {
 
     expect(service.changedPassword, newPassword);
     expect(find.text('Ana parola değiştirildi.'), findsOneWidget);
-    expect(find.text('Şimdi kilitle'), findsOneWidget);
+    // Ayarlar ekranına dönüldü.
+    expect(find.text('Ana parolayı değiştir'), findsOneWidget);
   });
 
   testWidgets('mevcut parola yanlışsa değişmiyor', (tester) async {
@@ -175,6 +179,9 @@ void main() {
         autofillSetup: setup,
       );
       await tester.tap(find.byIcon(Icons.settings_outlined));
+      await tester.pumpAndSettle();
+      // Bölüm yedekleme girişlerinin altında; ekrana kaydırılır.
+      await tester.scrollUntilVisible(find.text('Otomatik doldurma'), 300);
       await tester.pumpAndSettle();
       return setup;
     }
@@ -247,6 +254,8 @@ void main() {
       );
       await tester.tap(find.byIcon(Icons.settings_outlined));
       await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text('Otomatik doldurma'), 300);
+      await tester.pumpAndSettle();
 
       await tester.tap(find.text('Otomatik doldurma'));
       await tester.pump();
@@ -284,6 +293,8 @@ void main() {
       'Doldurduktan sonra 2FA kodunu kopyala',
     );
     await tester.scrollUntilVisible(copySwitch, 100);
+    await tester.ensureVisible(copySwitch);
+    await tester.pumpAndSettle();
     expect(tester.widget<SwitchListTile>(copySwitch).value, isTrue);
     await tester.tap(copySwitch);
     await tester.pumpAndSettle();

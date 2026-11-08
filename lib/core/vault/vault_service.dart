@@ -329,6 +329,10 @@ class VaultService {
     session.header = header;
   }
 
+  /// Yedekten kurulan kasa için oturum açar. [vaultKey] oturuma geçer.
+  VaultSession openRestoredSession(VaultHeader header, SecureKey vaultKey) =>
+      _openSession(header, vaultKey);
+
   VaultSession _openSession(VaultHeader header, SecureKey vaultKey) {
     return VaultSession(
       header: header,

@@ -55,7 +55,12 @@ class LoginsController extends Notifier<LoginsState> {
     _generation++;
     final vault = ref.read(vaultControllerProvider.notifier)
       ..addLockListener(_wipe);
-    ref.onDispose(() => vault.removeLockListener(_wipe));
+    ref.onDispose(() {
+      vault.removeLockListener(_wipe);
+      // Süren yükleme atılmış denetleyiciye yazmasın; uygulama kapanırken
+      // oturum kilit dinleyicisi çağrılmadan kapanabilir.
+      _generation++;
+    });
 
     final status = ref.watch(vaultControllerProvider);
     if (status is! VaultOpen) {
@@ -100,6 +105,21 @@ class LoginsController extends Notifier<LoginsState> {
     final item = await _openRepository.add(content);
     _replaceItems((items) => [...items, item]);
     return item;
+  }
+
+  /// İçe aktarılan kayıtları sırayla ekler. Yarıda kilitlenirse o ana kadar
+  /// yazılanlar kalır.
+  Future<List<LoginItem>> addAll(List<LoginContent> contents) async {
+    final repository = _openRepository;
+    final added = <LoginItem>[];
+    try {
+      for (final content in contents) {
+        added.add(await repository.add(content));
+      }
+    } finally {
+      _replaceItems((items) => [...items, ...added]);
+    }
+    return added;
   }
 
   /// Parola değiştiyse eskisi geçmişe eklenir.

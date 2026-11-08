@@ -45,6 +45,25 @@ void main() {
     fail('Bulunamadı: $finder | Ekranda: $visible');
   }
 
+  /// Ayarlar listesi uzun ve tembel kurulur; kilit düğmesi aşağıdadır.
+  Future<void> tapLockNow(WidgetTester tester) async {
+    final lockNow = find.text('Şimdi kilitle');
+    await tester.scrollUntilVisible(
+      lockNow,
+      300,
+      scrollable: find
+          .ancestor(
+            of: find.text('Ana parolayı değiştir'),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    // Öğe alt çubuğun altında kalmasın.
+    await tester.ensureVisible(lockNow);
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.tap(lockNow);
+  }
+
   Future<void> tapButton(WidgetTester tester, String label) async {
     final button = find.widgetWithText(FilledButton, label);
     await tester.ensureVisible(button);
@@ -177,7 +196,7 @@ void main() {
     // Parola değiştirme.
     debugPrint('KKADIM Parola değiştirme.');
     await tester.tap(find.byIcon(Icons.settings_outlined));
-    await pumpUntilFound(tester, find.text('Şimdi kilitle'));
+    await pumpUntilFound(tester, find.text('Ana parolayı değiştir'));
     await tester.tap(find.text('Ana parolayı değiştir'));
     await pumpUntilFound(tester, find.text('Mevcut ana parola'));
     final changeFields = find.byType(TextField);
@@ -186,11 +205,14 @@ void main() {
     await tester.enterText(changeFields.at(2), secondPassword);
     await tester.pump();
     await tapButton(tester, 'Parolayı değiştir');
-    await pumpUntilFound(tester, find.text('Şimdi kilitle'));
+    // Ekranın başlığı da "Ana parolayı değiştir"; Argon2id bitene kadar
+    // onay mesajı beklenir.
+    await pumpUntilFound(tester, find.text('Ana parola değiştirildi.'));
+    await pumpUntilFound(tester, find.text('Ana parolayı değiştir'));
 
     // Eski parola artık çalışmıyor, yenisi çalışıyor.
     debugPrint('KKADIM Eski parola artık çalışmıyor, yenisi çalışıyor.');
-    await tester.tap(find.text('Şimdi kilitle'));
+    await tapLockNow(tester);
     await pumpUntilFound(tester, find.text(lockedTitle));
     await unlock(tester, firstPassword, expecting: find.text('Parola yanlış.'));
     await unlock(tester, secondPassword, expecting: find.text(vaultText));

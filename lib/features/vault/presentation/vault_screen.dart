@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/secret_field.dart';
+import 'package:keykey/features/backup/presentation/backup_reminder_banner.dart';
 import 'package:keykey/features/vault/application/login_search.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
@@ -86,6 +87,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
 
     return Column(
       children: [
+        const BackupReminderBanner(),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
           child: SecretField(

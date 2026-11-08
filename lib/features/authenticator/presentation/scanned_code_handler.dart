@@ -9,6 +9,7 @@ import 'package:keykey/features/authenticator/application/scanned_code.dart';
 import 'package:keykey/features/authenticator/data/import/import_result.dart';
 import 'package:keykey/features/authenticator/data/import/platform_aes_gcm.dart';
 import 'package:keykey/features/authenticator/data/otpauth_uri.dart';
+import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Okunan QR'ı işler: hesapsa onay ekranını, Google Authenticator dışa
@@ -71,7 +72,10 @@ Future<void> readQrFromImage(
 }) async {
   final l10n = AppLocalizations.of(context);
   final messenger = ScaffoldMessenger.of(context);
-  final result = await ref.read(qrImageReaderProvider).pickAndRead();
+  final reader = ref.read(qrImageReaderProvider);
+  final result = await ref
+      .read(externalActivityGateProvider.notifier)
+      .run(reader.pickAndRead);
   if (!context.mounted) return;
   switch (result) {
     case QrImageCancelled():
@@ -98,7 +102,10 @@ Future<void> importFromFile(BuildContext context, WidgetRef ref) async {
     ..hideCurrentSnackBar()
     ..showSnackBar(SnackBar(content: Text(message)));
 
-  final result = await ref.read(exportFilePickerProvider).pickAndRead();
+  final picker = ref.read(exportFilePickerProvider);
+  final result = await ref
+      .read(externalActivityGateProvider.notifier)
+      .run(picker.pickAndRead);
   if (!context.mounted) return;
   switch (result) {
     case ExportFileCancelled():

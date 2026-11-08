@@ -28,5 +28,6 @@ class MainActivity : FlutterFragmentActivity() {
         ClipboardApi.setUp(messenger, SecureClipboard(this))
         ImportCryptoApi.setUp(messenger, ImportCrypto())
         AutofillSetupApi.setUp(messenger, AutofillSetup(this))
+        DocumentApi.setUp(messenger, DocumentFiles(this))
     }
 }

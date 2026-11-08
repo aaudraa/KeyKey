@@ -28,6 +28,20 @@ final class StoredBiometricSlot {
   final Uint8List cipherText;
 }
 
+/// Birleştirmenin sonucu.
+final class MergeCounts {
+  const new({required this.added, required this.updated, required this.kept});
+
+  /// Kasada olmayan, eklenen kayıtlar.
+  final int added;
+
+  /// Yedekteki daha yeni olduğu için güncellenen kayıtlar.
+  final int updated;
+
+  /// Kasadaki aynı veya daha yeni olduğu için dokunulmayanlar.
+  final int kept;
+}
+
 /// Art arda yapılmış hatalı parola denemeleri.
 final class UnlockAttempts {
   const new({required this.failedAttempts, required this.lastFailedAt});
@@ -82,20 +96,68 @@ final class VaultStore {
     if (changed == 0) throw const VaultNotFoundException();
   }
 
+  /// Kasayı tek işlemde [header] ve [records] ile değiştirir.
+  ///
+  /// Kasa yoksa kurar. Var olan bütün kayıtlar, parmak izi yuvası ve hatalı
+  /// deneme sayacı silinir. Yarıda kalırsa hiçbir şey değişmez.
+  Future<void> replaceVault(VaultHeader header, List<StoredRecord> records) {
+    return _database.transaction(() async {
+      await _database.delete(_database.records).go();
+      await _database.delete(_database.biometricSlot).go();
+      await _database.delete(_database.unlockState).go();
+      await _database
+          .into(_database.vaultMeta)
+          .insertOnConflictUpdate(
+            VaultMetaCompanion.insert(
+              id: const Value(_singleRowId),
+              header: header.toJsonString(),
+            ),
+          );
+      for (final record in records) {
+        await _database.into(_database.records).insert(_companion(record));
+      }
+    });
+  }
+
+  /// Kayıtları tek işlemde ekler. Aynı kimlikte kayıt varsa `updatedAt`
+  /// değeri yeni olan kalır; türü farklıysa var olana dokunulmaz.
+  Future<MergeCounts> mergeRecords(List<StoredRecord> records) {
+    return _database.transaction(() async {
+      var added = 0;
+      var updated = 0;
+      var kept = 0;
+      for (final record in records) {
+        final existing = await getRecord(record.id);
+        if (existing == null) {
+          await _database.into(_database.records).insert(_companion(record));
+          added++;
+        } else if (existing.type == record.type &&
+            record.updatedAt.isAfter(existing.updatedAt)) {
+          await putRecord(record);
+          updated++;
+        } else {
+          kept++;
+        }
+      }
+      return MergeCounts(added: added, updated: updated, kept: kept);
+    });
+  }
+
   /// Aynı kimlikte kayıt varsa üzerine yazar.
   Future<void> putRecord(StoredRecord record) {
     return _database
         .into(_database.records)
-        .insertOnConflictUpdate(
-          RecordsCompanion.insert(
-            id: record.id,
-            type: record.type,
-            payload: record.blob,
-            createdAt: record.createdAt.millisecondsSinceEpoch,
-            updatedAt: record.updatedAt.millisecondsSinceEpoch,
-          ),
-        );
+        .insertOnConflictUpdate(_companion(record));
   }
+
+  static RecordsCompanion _companion(StoredRecord record) =>
+      RecordsCompanion.insert(
+        id: record.id,
+        type: record.type,
+        payload: record.blob,
+        createdAt: record.createdAt.millisecondsSinceEpoch,
+        updatedAt: record.updatedAt.millisecondsSinceEpoch,
+      );
 
   Future<StoredRecord?> getRecord(Uint8List id) async {
     final query = _database.select(_database.records)
@@ -114,6 +176,20 @@ final class VaultStore {
       ..where((row) => row.type.equals(type));
     final rows = await query.get();
     return rows.map(_toRecord).toList();
+  }
+
+  /// Verilen türlerdeki kayıtların en son değiştiği an; kayıt yoksa `null`.
+  ///
+  /// Zaman damgaları şifresiz olduğu için kasa anahtarı gerekmez.
+  Future<DateTime?> latestUpdate(Set<String> types) async {
+    final latest = _database.records.updatedAt.max();
+    final query = _database.selectOnly(_database.records)
+      ..addColumns([latest])
+      ..where(_database.records.type.isIn(types));
+    final value = await query.map((row) => row.read(latest)).getSingle();
+    return value == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(value, isUtc: true);
   }
 
   Future<void> deleteRecord(Uint8List id) async {

@@ -2,7 +2,7 @@
 
 KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-07 · **Şu anki faz:** Faz 6
+**Son güncelleme:** 2026-11-07 · **Şu anki faz:** Faz 7
 
 > [!IMPORTANT]
 > **Gerçek parolalarını Faz 8 bitene kadar KeyKey'e koyma.** Kasa biçimi o zamana kadar değişebilir ve güvenlik denetimi henüz yapılmadı.
@@ -19,8 +19,8 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 | 3 | Kasa, kilit ve biyometri | L | 2 | `faz/3-kasa-ve-kilit` | Tamamlandı |
 | 4 | Parola kasası | L | 3 | `faz/4-parola-kasasi` | Tamamlandı |
 | 5 | 2FA doğrulayıcı | M | 3 | `faz/5-2fa-dogrulayici` | Tamamlandı |
-| 6 | Otomatik doldurma | XL | 4 | `faz/6-otomatik-doldurma` | Sürüyor |
-| 7 | Yedekleme, içe ve dışa aktarma | L | 4, 5 | `faz/7-yedekleme` | Bekliyor |
+| 6 | Otomatik doldurma | XL | 4 | `faz/6-otomatik-doldurma` | Tamamlandı |
+| 7 | Yedekleme, içe ve dışa aktarma | L | 4, 5 | `faz/7-yedekleme` | Sürüyor |
 | 8 | Güvenlik sertleştirme ve denetim | L | 6, 7 | `faz/8-guvenlik-denetimi` | Bekliyor |
 | 9 | 1.0 yayını | M | 8 | `faz/9-yayin` | Bekliyor |
 
@@ -390,6 +390,8 @@ Telefon denemesi üç sorun buldu ve [#60](https://github.com/aaudraa/KeyKey/pul
 - [ ] Düz metin kaynak dosyasını silmeyi hatırlatma
 - [ ] Çift onaylı ve uyarılı düz metin dışa aktarma
 - [ ] Biçim uyumluluğu testleri
+
+**Durum (2026-11-07):** Faz başladı, görevler #73-#79. Yedek ayrı bir parola istemez: alındığı andaki ana parola veya kurtarma anahtarıyla açılır.
 
 **Bitti sayılması için:** API 36'da alınan yedek API 30'da aynen açılıyor; bozuk dosya temiz bir hata veriyor ve veri kaybettirmiyor; yanlış parola dosyayı açmıyor.
 

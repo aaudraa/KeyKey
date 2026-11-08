@@ -1,0 +1,5 @@
+folder,favorite,type,name,notes,fields,reprompt,login_uri,login_username,login_password,login_totp
+Sosyal,1,login,Forum,,"PIN: 1234
+Soru: Evcil: kedi",0,"https://forum.example.com,https://m.forum.example.com",ali,deneme-Forum-3,JBSWY3DPEHPK3PXP
+,,note,Gizli not,Not içeriği,,0,,,,
+,,login,Uygulama,,,0,androidapp://com.example.app,ali,deneme-Uyg-4,

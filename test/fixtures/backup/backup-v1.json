@@ -1,0 +1,29 @@
+{
+  "note": "Yalnızca deneme verisi. Biçim uyumluluğu testi için üretildi, değiştirilmemeli.",
+  "password": "deneme-parolası-ığüşöç",
+  "recoveryKey": "AZPTX-1VXQ0-AN66H-N8YP7-QBDJ8-VKH44-N5STW-97J79-4TC2Z-VV7PF-0VFER",
+  "createdAt": 1794052800000,
+  "records": [
+    {
+      "id": "000102030405060708090a0b0c0d0e0f",
+      "type": "login",
+      "createdAt": 1793491200000,
+      "updatedAt": 1793577600000,
+      "plainText": "{\"version\":2,\"name\":\"Örnek\",\"username\":\"kullanici@example.com\",\"password\":\"deneme-degeri\",\"urls\":[\"https://example.com\"],\"apps\":[{\"package\":\"com.example.app\",\"certsSha256\":[\"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\"]}],\"notes\":\"Not\",\"customFields\":[{\"name\":\"PIN\",\"value\":\"deneme\",\"hidden\":true}],\"favorite\":true,\"folder\":\"İş\",\"trashedAt\":null,\"passwordHistory\":[{\"password\":\"eski-deger\",\"changedAt\":1730000000000}]}"
+    },
+    {
+      "id": "101112131415161718191a1b1c1d1e1f",
+      "type": "otp",
+      "createdAt": 1793494800000,
+      "updatedAt": 1793581200000,
+      "plainText": "{\"version\":1,\"kind\":\"totp\",\"issuer\":\"Örnek\",\"account\":\"kullanici@example.com\",\"secret\":\"JBSWY3DPEHPK3PXP\",\"algorithm\":\"SHA256\",\"digits\":8,\"period\":60,\"counter\":null,\"loginId\":\"000102030405060708090a0b0c0d0e0f\",\"notes\":\"Not\",\"favorite\":true,\"trashedAt\":null}"
+    },
+    {
+      "id": "00000000000000000000000000000000",
+      "type": "settings",
+      "createdAt": 1793498400000,
+      "updatedAt": 1793584800000,
+      "plainText": "{\"version\":2,\"otpRequireAuth\":false,\"autofillCopyOtp\":true}"
+    }
+  ]
+}
