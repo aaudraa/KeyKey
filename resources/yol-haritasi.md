@@ -417,6 +417,8 @@ Telefon denemesi üç sorun buldu ve [#60](https://github.com/aaudraa/KeyKey/pul
 
 **Durum (2026-11-08):** Faz başladı, görevler #82-#91 ve Faz 6'dan kalan #71. Biten: kayıtlar ve tehdit modeli (#82), arayüz koruması (#83), yayın derlemesi (#84), bağımlılık ve lisans denetimi (#86, [bağımlılık belgesi](docs/bagimliliklar.md)), çevrimdışı parola raporu (#85), erişilebilirlik (#87), gerçek telefon (#88; StrongBox, parmak izi, süreler [denetim belgesinde](docs/guvenlik-denetimi.md#gerçek-telefon)), MASVS denetimi (#91, 2026-11-09, [özet](docs/guvenlik-denetimi.md#özet)). Denetim bir açık buldu ve düzeltildi: başka bir uygulama, adres taşıyan bir niyetle KeyKey'i istediği ekrana götürebiliyordu. Kilitten sonra bellekte kalan dizeler kabul edilen risk olarak [bilinen sınırlara](docs/guvenlik-tasarimi.md#bilinen-sınırlar) yazıldı. Faz sonu cihaz testleri (entegrasyon, parmak izi, pano, kamera) 2026-11-09'da dört emülatörde (Android 11, 14, 16, 17) geçti. Bu iş [#92](https://github.com/aaudraa/KeyKey/pull/92) ile `main`'e birleşti (`v0.8.0`). Faz, #89 ve #90 bitene kadar sürüyor. Uzun süreli kullanım (#89) Faz 8'in son sürümüyle başlayacak; dış inceleme paylaşımı (#90) kullanıcıyla yapılır.
 
+**Deneme (#89, 2026-11-09 - 2026-11-23):** Telefona `v0.8.0` kuruldu. İlk bulgu #94: HoYoLAB'ın giriş ekranı kutularını doldurma sistemine bildirmiyor, bu yüzden ne doldurma ne kaydetme önerisi çıkıyor. Sebep uygulamada; [bilinen sınır](docs/guvenlik-tasarimi.md#doldurma-sistemine-katılmayan-ekranlar) olarak yazıldı, KeyKey klavyesi fikri [1.0 sonrasına](#10-sonrası) eklendi.
+
 **Bitti sayılması için:** Açık `güvenlik` issue'su yok; denetim belgesi tamamlandı; gerçek cihaz testleri geçti.
 
 ### Faz 9 — 1.0 yayını
@@ -446,6 +448,7 @@ Bu fikirlerin hiçbiri henüz planlanmış değil. Sırası kullanıma göre bel
 | Passkey ve Credential Manager sağlayıcısı | Android 14 ve üstü. |
 | Kart ve güvenli not kayıtları | Kayıt modeli türlere açık tasarlanacak. |
 | Steam Guard kodları, Wear OS | 2FA tarafı için. |
+| KeyKey klavyesi | Giriş kutularını doldurma sistemine bildirmeyen uygulamalarda da doldurmak için kendi klavyesi (KeePassDX'teki gibi). Erişilebilirlik servisi kullanmadan her uygulamada çalışır, ama büyük bir iş ve klavyenin kendisi de güvenlik incelemesi ister. Çıkış noktası: [#94](https://github.com/aaudraa/KeyKey/issues/94), [doldurma sistemine katılmayan ekranlar](docs/guvenlik-tasarimi.md#doldurma-sistemine-katılmayan-ekranlar). |
 | Windows, iOS, tarayıcı eklentisi | Windows derlemesi için araçlar hazır, iOS için Mac gerekir. |
 
 ## Riskler

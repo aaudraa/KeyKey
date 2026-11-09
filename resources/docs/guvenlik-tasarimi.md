@@ -532,6 +532,14 @@ Samsung Internet 30 (Samsung Galaxy S20 FE, Android 13) KeyKey'i seçili doldurm
 
 Ayarlar ekranı KeyKey'in seçili servis olup olmadığını da gösterir (`AutofillManager.hasEnabledAutofillServices`). Dokununca sistemin servis seçimi açılır (`ACTION_REQUEST_SET_AUTOFILL_SERVICE`). Sistem, niyetteki paketin isteyen uygulama olduğunu `getCallingPackage` ile denetler ve bu yalnızca sonuç beklenen başlatmada dolu olduğu için niyet `startActivityForResult` ile açılır. Ayara gitmek uygulamayı arka plana aldığı için kasa kilitlenir; dönüşte durum yeniden okunur. Eski uyumluluk modu (`compatibilityPackages`) kullanılmaz; Chrome onu 2025'te kaldırdı.
 
+### Doldurma sistemine katılmayan ekranlar
+
+Bazı uygulamalar giriş kutularını Android'in doldurma sistemine bildirmiyor. Kutuya dokunulunca klavye açılıyor ama sistem doldurma oturumu açmıyor ve hiçbir servise istek göndermiyor. Bu ekranlarda KeyKey'in yanında Google Otomatik Doldurma ya da Samsung Pass da çalışmaz. Doldurma önerisi gelmediği gibi kaydetme önerisi de gelmez, çünkü ikisi de aynı yanıtla verilir.
+
+Örnek: HoYoLAB 4.21.0'ın giriş ekranı (Samsung Galaxy S20 FE, Android 13, 2026-11-09, #94). Ekran Jetpack Compose ile yazılmış, iki kutuya dokununca da `dumpsys autofill` oturum göstermedi. Aynı uygulamanın klasik View'larla yazılmış parola değiştirme ekranı ise KeyKey'e istek gönderiyor ve orada kaydetme önerisi çıkıyor.
+
+Bu ekranlarda kullanıcı adı ve parola KeyKey'den kopyalanarak girilir; pano kısa süre sonra kendiliğinden temizlenir. Erişilebilirlik servisiyle doldurma bilerek yapılmaz: böyle bir servis her uygulamanın ekranını okuyabilir ve KeyKey bu servisleri [tehdit modelinde](#tehdit-modeli) korunmayanlar arasında sayıyor. KeyKey'in kendi klavyesi 1.0 sonrası fikirler arasında.
+
 ### Eşzamanlılık
 
 Ana uygulama ve doldurma ekranı aynı süreçte, aynı veritabanı dosyasına iki ayrı bağlantıyla erişebilir. SQLite dosya kilidini kullanır. Aynı anda yazma olursa bağlantı hemen hata vermesin diye `busy_timeout` beş saniyedir. Ana uygulamanın bellekteki listesi, doldurma ekranının yaptığı değişikliği kasa yeniden açılınca görür; ana uygulama arka plana geçince zaten kilitlenir.
