@@ -14,12 +14,32 @@ KeyKey sürümleri GitHub Actions'ta, `v` ile başlayan bir etiket gönderilince
   | `KEYKEY_KEY_PASSWORD` | Anahtarın parolası |
 
 - `yayin` ortamı yalnızca `v*` etiketlerine açıktır. Bir dal ya da PR'daki iş akışı anahtara erişemez.
+- Ortamın onaylayıcısı proje sahibidir (`aaudraa`). Etiket gönderilince iş akışı GitHub'da onay bekler; GitHub hesabı ele geçirilip sahte bir etiket atılsa bile onaysız imzalı sürüm çıkmaz.
 - Gradle anahtarı yalnızca `KEYKEY_KEYSTORE` ve yanındaki ortam değişkenlerinden okur ([`android/app/build.gradle.kts`](../../android/app/build.gradle.kts)). Değişkenler yoksa yerel yayın derlemesi debug anahtarıyla imzalanır; iş akışı debug anahtarıyla imzalı bir APK'yı kabul etmez.
 - İş akışı anahtar dosyasını derlemeden hemen sonra siler. Önbellek kullanmaz, böylece yayın derlemesine başka işlerin yazdığı bir önbellek karışmaz.
 
-Kalıcı anahtar henüz oluşturulmadı (#97). O zamana kadar ortamdaki değerler yalnızca iş akışını sınamak için kullanılan bir deneme anahtarıdır (sertifika özeti `baa13a57…af3f9`, `CN=KeyKey Deneme Anahtari`). Bu anahtarla imzalı bir APK yayımlanmaz.
+### Kalıcı anahtar
 
-İş akışı 2026-11-09'da hiçbir dala girmeyen bir deneme commit'inde (`v1.0.0-deneme.1`) sınandı: taslak ön sürüm dört dosyayla oluştu, özetler ve imza yerelde `sha256sum -c` ve `apksigner` ile doğrulandı. Deneme etiketi ve taslak sonra silindi.
+| | |
+|---|---|
+| Sertifika SHA-256 | `66ff7b5c0c009a8530d0a55dd1d80a3af35de48bd0667c456a0cf86a6d1129a0` |
+| Anahtar | RSA 4096, `CN=KeyKey`, 30 yıl geçerli (2026-11-09) |
+| Takma ad | `keykey` |
+
+Anahtar 2026-11-09'da [`yayin-anahtari-olustur.sh`](../scripts/yayin-anahtari-olustur.sh) ile proje sahibinin bilgisayarında oluşturuldu. Betik anahtarın parolasını rastgele üretir ve ekrana yazmaz; anahtarı ve parolasını AES-256 şifreli bir 7z arşivine koyar, arşivi doğrulayıp kopyalar, GitHub'a yükler ve şifresiz dosyayı siler. Parolalar bu çalışmada kullanılan yapay zekâ asistanından da geçmedi.
+
+Yedekler (3-2-1 kuralı: üç kopya, iki farklı ortam, biri evden uzakta):
+
+- Şifreli arşiv bir USB bellekte, bilgisayarın ikinci diskinde, Google Drive'da ve proje sahibinin telefonunda.
+- Arşivin parolası kâğıtta, arşivlerden ayrı yerde. Arşiv parolası olmadan yedekler açılamaz, anahtar ancak GitHub'daki kopyayla kullanılabilir ama oradan geri okunamaz.
+
+Anahtar sızarsa ya da kaybolursa: [Anahtar Döndürme](https://source.android.com/docs/security/features/apksigning/v3#key-rotation) (APK İmza Şeması v3) yalnızca eski anahtar elde varken yapılabilir. Kaybolursa kullanıcılar şifreli yedek alıp uygulamayı silmeli ve yeni imzalı sürümü kurmalıdır; bu README'de ve sürüm notlarında duyurulur.
+
+Deneme: iş akışı önce bir deneme anahtarıyla (sertifika `baa13a57…af3f9`, `CN=KeyKey Deneme Anahtari`, artık kullanılmıyor), hiçbir dala girmeyen bir deneme commit'inde (`v1.0.0-deneme.1`) sınandı: taslak ön sürüm dört dosyayla oluştu, özetler ve imza yerelde `sha256sum -c` ve `apksigner` ile doğrulandı. Deneme etiketi ve taslak sonra silindi.
+
+### Eski sürümlerden geçiş
+
+`v0.x` sürümleri hata ayıklama anahtarıyla imzalıydı. Android farklı imzalı bir APK'yı üstüne kurmaz; 1.0'a geçmek için KeyKey'den şifreli yedek al, eski uygulamayı kaldır, 1.0'ı kur ve yedeği geri yükle. Kaldırma bütün veriyi siler, yedeği önce başka bir yere kopyala.
 
 ## Sürüm numarası
 
@@ -36,7 +56,7 @@ Kalıcı anahtar henüz oluşturulmadı (#97). O zamana kadar ortamdaki değerle
 
 1. `pubspec.yaml`'daki `version` satırını güncelle ve değişiklik günlüğündeki "Yayımlanmamış" başlığını sürümün adıyla değiştir. Etiket, bu satırdaki sürümün başına `v` eklenmiş hali olmalı: `version: 1.0.0+3` için `v1.0.0`. Uyuşmazsa iş akışı durur.
 2. Değişikliği `main`'e birleştir.
-3. Etiketi at ve gönder: `git tag v1.0.0 && git push origin v1.0.0`.
+3. Etiketi at ve gönder: `git tag v1.0.0 && git push origin v1.0.0`. İş akışını GitHub'da onayla (Actions → çalışma → "Review deployments").
 4. İş akışı bitince GitHub'daki taslağı gözden geçir ve yayımla. Sürüm adında `-` varsa (`v1.1.0-beta.1` gibi) taslak ön sürüm olarak işaretlenir.
 
 İş akışının yaptıkları:
@@ -50,9 +70,9 @@ Kalıcı anahtar henüz oluşturulmadı (#97). O zamana kadar ortamdaki değerle
 ## İndirilen APK'yı doğrulamak
 
 1. Özeti karşılaştır: `sha256sum keykey-1.0.0.apk` çıktısı, sürüm notlarındaki ve `SHA256SUMS` dosyasındaki değerle aynı olmalı.
-2. İmzayı denetle: `apksigner verify --print-certs keykey-1.0.0.apk` çıktısındaki "certificate SHA-256 digest" değeri, README'de yayımlanan sertifika özetiyle aynı olmalı. Telefonda kurulu uygulama için [AppVerifier](https://github.com/soupslurpr/AppVerifier) gibi bir araç aynı özeti gösterir.
+2. İmzayı denetle: `apksigner verify --print-certs keykey-1.0.0.apk` çıktısındaki "certificate SHA-256 digest" değeri şu olmalı: `66ff7b5c0c009a8530d0a55dd1d80a3af35de48bd0667c456a0cf86a6d1129a0`. Telefonda kurulu uygulama için [AppVerifier](https://github.com/soupslurpr/AppVerifier) gibi bir araç aynı özeti gösterir.
 
-Sertifika özeti kalıcı anahtar oluşturulunca README'ye ve [güvenlik tasarımına](guvenlik-tasarimi.md) yazılacak (#97).
+Aynı özet README'de ve [güvenlik özetinde](security-summary.md#release-signing) de yayımlıdır; üçü birbirini tutmalı.
 
 ## Yeniden üretilebilir derleme
 

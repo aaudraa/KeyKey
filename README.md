@@ -37,6 +37,12 @@ Ayrıntılar [güvenlik tasarımı belgesinde](resources/docs/guvenlik-tasarimi.
 
 KeyKey hiçbir veri toplamaz ve internet izni yoktur; ayrıntılar [gizlilik bildiriminde](resources/docs/gizlilik.md).
 
+Yayınlanan APK'lar tek bir anahtarla imzalanır. İmza sertifikasının SHA-256 özeti (APK'yı [doğrulamak](resources/docs/yayin.md) için):
+
+```
+66ff7b5c0c009a8530d0a55dd1d80a3af35de48bd0667c456a0cf86a6d1129a0
+```
+
 Bir güvenlik açığı bulursan lütfen [güvenlik politikasındaki](.github/SECURITY.md) adımları izle, herkese açık issue açma.
 
 ## Teknoloji
