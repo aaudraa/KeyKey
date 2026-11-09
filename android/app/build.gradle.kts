@@ -26,6 +26,22 @@ android {
         versionName = flutter.versionName
     }
 
+    // Yayın anahtarı repoya girmez; yalnızca ortam değişkenlerinden gelir (CI'da
+    // GitHub Secrets, bkz. .github/workflows/yayin.yml). Değişken yoksa yerel
+    // derleme debug anahtarıyla imzalanır; yayın iş akışı böyle bir APK'yı
+    // kabul etmez.
+    val releaseKeystore = System.getenv("KEYKEY_KEYSTORE")
+    if (releaseKeystore != null) {
+        signingConfigs {
+            create("release") {
+                storeFile = file(releaseKeystore)
+                storePassword = System.getenv("KEYKEY_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEYKEY_KEY_ALIAS")
+                keyPassword = System.getenv("KEYKEY_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
             // R8 kullanılmayan kodu ve kaynakları atar, adları kısaltır. Flutter
@@ -34,8 +50,7 @@ android {
             // kuralları kütüphanelerin kendi kurallarından ve Flutter'dan geliyor.
             isMinifyEnabled = true
             isShrinkResources = true
-            // Faz 9'a kadar debug anahtarıyla imzalanır. Yayın anahtarı repoya girmez.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName(if (releaseKeystore != null) "release" else "debug")
         }
     }
 

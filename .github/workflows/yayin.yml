@@ -1,0 +1,138 @@
+name: Yayın
+
+# v ile başlayan bir etiket gönderilince imzalı APK ve AAB üretir, denetler ve
+# taslak bir GitHub Release oluşturur. Taslağı yayımlamak elle yapılır.
+# Ayrıntılar: resources/docs/yayin.md
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: yayin-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  FLUTTER_VERSION: "3.47.9"
+
+jobs:
+  yayin:
+    name: İmzalı yayın
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    # Anahtar bu ortamın gizli değerlerinde. Ortam yalnızca v* etiketlerine
+    # açık; başka bir dal ya da PR anahtara erişemez.
+    environment: yayin
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: "21"
+      # Önbellek bilerek kullanılmıyor: yayın derlemesine başka işlerin yazdığı
+      # bir önbellek karışmasın.
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Sürüm denetimi
+        run: |
+          version="$(sed -n 's/^version: *\([^+ ]*\).*$/\1/p' pubspec.yaml)"
+          if [[ "v${version}" != "${TAG}" ]]; then
+            echo "HATA: etiket ${TAG}, pubspec.yaml sürümü ${version}." >&2
+            exit 1
+          fi
+          echo "VERSION=${version}" >> "$GITHUB_ENV"
+
+      - name: Anahtarı hazırla
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYKEY_KEYSTORE_BASE64 }}
+        run: |
+          if [[ -z "${KEYSTORE_BASE64}" ]]; then
+            echo "HATA: yayin ortamında KEYKEY_KEYSTORE_BASE64 yok." >&2
+            exit 1
+          fi
+          umask 077
+          printf '%s' "${KEYSTORE_BASE64}" | base64 --decode > "${RUNNER_TEMP}/keykey.jks"
+          echo "KEYKEY_KEYSTORE=${RUNNER_TEMP}/keykey.jks" >> "$GITHUB_ENV"
+
+      - run: flutter pub get
+
+      - name: APK ve AAB
+        env:
+          KEYKEY_KEYSTORE_PASSWORD: ${{ secrets.KEYKEY_KEYSTORE_PASSWORD }}
+          KEYKEY_KEY_ALIAS: ${{ secrets.KEYKEY_KEY_ALIAS }}
+          KEYKEY_KEY_PASSWORD: ${{ secrets.KEYKEY_KEY_PASSWORD }}
+        run: |
+          flutter build apk --release
+          flutter build appbundle --release
+
+      - name: Anahtarı sil
+        if: always()
+        run: rm -f "${RUNNER_TEMP}/keykey.jks"
+
+      - name: APK güvenlik denetimi
+        run: bash resources/scripts/check-release-apk.sh
+
+      - name: İmza denetimi
+        run: |
+          apksigner="$(find "$ANDROID_HOME/build-tools" -name apksigner | sort -V | tail -n 1)"
+          "$apksigner" verify --verbose --print-certs build/app/outputs/flutter-apk/app-release.apk | tee imza.txt
+          if grep -q "CN=Android Debug" imza.txt; then
+            echo "HATA: APK debug anahtarıyla imzalanmış." >&2
+            exit 1
+          fi
+          cert="$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' imza.txt)"
+          if [[ -z "$cert" ]]; then
+            echo "HATA: sertifika özeti okunamadı." >&2
+            exit 1
+          fi
+          echo "CERT_SHA256=${cert}" >> "$GITHUB_ENV"
+
+      - name: Dosyaları topla
+        run: |
+          mkdir dist
+          cp build/app/outputs/flutter-apk/app-release.apk "dist/keykey-${VERSION}.apk"
+          cp build/app/outputs/bundle/release/app-release.aab "dist/keykey-${VERSION}.aab"
+          cp build/app/outputs/mapping/release/mapping.txt "dist/keykey-${VERSION}-mapping.txt"
+          (cd dist && sha256sum -- * > SHA256SUMS)
+          cat dist/SHA256SUMS
+
+      - name: Taslak GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          prerelease=()
+          [[ "$VERSION" == *-* ]] && prerelease=(--prerelease)
+          apk_sha="$(sed -n "s/  keykey-${VERSION}\.apk$//p" dist/SHA256SUMS)"
+          cat > notlar.md <<EOF
+          ## Doğrulama
+
+          APK'nın SHA-256 özeti:
+
+          \`\`\`
+          ${apk_sha}
+          \`\`\`
+
+          İmza sertifikasının SHA-256 özeti:
+
+          \`\`\`
+          ${CERT_SHA256}
+          \`\`\`
+
+          Bu sürümü yayın iş akışı (\`.github/workflows/yayin.yml\`) \`${GITHUB_SHA}\` commit'inden derledi. \`mapping.txt\` yalnızca hata raporlarındaki yığın izlerini okumak içindir, kurulmaz.
+          EOF
+          gh release create "$TAG" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --draft --verify-tag "${prerelease[@]}" \
+            --title "KeyKey ${VERSION}" \
+            --notes-file notlar.md
