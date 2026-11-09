@@ -54,6 +54,16 @@ android {
         }
     }
 
+    // AGP, bağımlılık listesini Google'ın açık anahtarıyla şifreleyip APK'nın
+    // imza bloğuna ve AAB'ye gömüyor. Şifreleme her derlemede farklı olduğu için
+    // aynı koddan iki derleme aynı APK'yı vermiyordu; içeriği de yalnızca Google
+    // okuyabiliyor. F-Droid bu bloğu kabul etmiyor. Yeniden üretilebilir
+    // derleme: resources/docs/yayin.md
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
     packaging {
         resources {
             // kotlinx-coroutines'in hata ayıklama aracı dosyası; uygulamada işe yaramaz.
