@@ -427,7 +427,7 @@ Telefon denemesi üç sorun buldu ve [#60](https://github.com/aaudraa/KeyKey/pul
 - [x] Yayın otomasyonu: etiket atılınca imzalı APK ve AAB, SHA-256 özetleri, GitHub Release; R8 `mapping.txt` dosyası da sürüme eklenir (yığın izlerini okumak için)
 - [x] `CHANGELOG.md` ve sürüm numaralandırma
 - [x] Yeniden üretilebilir derleme denemesi; `sqlite3`'ü hazır dosya yerine kaynaktan derlemek (F-Droid de bunu gerektiriyor)
-- [ ] Dağıtım kararı: GitHub Releases ile başlamak; F-Droid ve Play Store'u değerlendirmek
+- [x] Dağıtım kararı (2026-11-09): 1.0 GitHub Releases'ta; ardından IzzyOnDroid, sonra F-Droid ana deposu (bizim imzamızla); Play Store şimdilik yok
 - [ ] `v0.x` sürümünden 1.0'a yükseltme testi: veri kaybı olmamalı
 - [ ] Gizlilik bildirimi: seçilen mağazaların istediği açıklamalar (Play Store veri güvenliği formu, F-Droid); MASVS-PRIVACY denetiminden
 - [ ] Tasarım incelemesi: bütün ekranların baştan gözden geçirilmesi, uygulama simgesi ve açılış ekranı; kaynak dosyalar `resources/design/` altında. Deneme (#89) boyunca biriken arayüz notları ve ertelenen fikirler (örneğin otomatik doldurma ekranının yarım yükseklikte açılması) buraya girer.
@@ -450,6 +450,10 @@ Bu fikirlerin hiçbiri henüz planlanmış değil. Sırası kullanıma göre bel
 | Passkey ve Credential Manager sağlayıcısı | Android 14 ve üstü. |
 | Kart ve güvenli not kayıtları | Kayıt modeli türlere açık tasarlanacak. |
 | Steam Guard kodları, Wear OS | 2FA tarafı için. |
+| IzzyOnDroid | 1.0'dan hemen sonra. GitHub'daki imzalı APK'yı F-Droid uygulamasında listeler; imza bizim anahtarımız kalır. |
+| F-Droid ana deposu | IzzyOnDroid'den sonra. F-Droid kaynaktan derler, derleme bizimkiyle birebir aynıysa bizim imzamızla yayımlar. Bunun için CI'ın F-Droid'in derleme yolunda (`/home/vagrant/build/io.github.aaudraa.keykey`) derlemesi gerekiyor; yol farkı `libapp.so`'yu değiştiriyor ([yeniden üretilebilir derleme](docs/yayin.md#yeniden-üretilebilir-derleme)). |
+| Play Store | Şimdilik yok (2026-11-09 kararı). 25 $ ücret ve kimlik, yeni hesaplarda 12 kişilik 14 günlük kapalı test; Google kendi imza anahtarını kullandığı için Play sürümü GitHub sürümünün üstüne kurulamaz. |
+| Google'ın geliştirici doğrulaması | 30 Eylül 2026'da dört ülkede başladı, 2027'den sonra yayılacak; Türkiye henüz kapsamda değil. Kapsama girince kayıtsız geliştiricinin uygulaması Play dışında yalnızca "gelişmiş kurulum" adımlarıyla kurulabilecek. O zaman yeniden değerlendirilecek. |
 | Windows, iOS, tarayıcı eklentisi | Windows derlemesi için araçlar hazır, iOS için Mac gerekir. |
 
 ## Riskler
