@@ -633,6 +633,7 @@ Son yedek zamanı dosya kaydedildikten sonra yazıldığı için yedeğin içind
 |---|---|---|
 | Bitwarden | Şifresiz JSON ve CSV dışa aktarma | Yalnızca giriş kayıtları alınır. `totp` alanı 2FA hesabı olarak eklenir ve kayda bağlanır. Metin ve gizli özel alanlar alınır. CSV'deki `login_uri` alanı, Bitwarden'ın okuyucusundaki gibi kendi içinde bir CSV satırıdır. Parola korumalı veya hesaba bağlı şifreli JSON desteklenmez; kullanıcıya şifresiz dışa aktarması söylenir. Örneklerden biri 2026-11'de alınmış gerçek bir JSON dışa aktarmasıdır; kişisel değerleri sahteleriyle değiştirildi. |
 | Chrome | Parolalar CSV'si (`name,url,username,password,note`) | Android'de Chrome'un parola yöneticisi `name` sütununa kayıt adı yerine alan adını yazar. Örneklerden biri Android Chrome 145'in gerçek dışa aktarmasıdır. |
+| Firefox | Parolalar CSV'si (`url,username,password,httpRealm,formActionOrigin,guid,timeCreated,timeLastUsed,timePasswordChanged`) | Kayıt adı yoktur, ad adresin alan adından gelir. Yalnızca adres, kullanıcı adı ve parola alınır; `httpRealm`, `formActionOrigin`, `guid` ve zaman sütunları yok sayılır. Biçim, Chrome'dan ayrılması için `httpRealm` ve `formActionOrigin` sütunlarından tanınır. |
 | KeePassXC | CSV dışa aktarma | `TOTP` sütunu 2FA hesabı olarak eklenir. Grubun yolu, kök grup atılarak klasör olur; kök grubun adı KeePassXC'in arayüz diline göre değişir. Örnek, KeePassXC 2.8.0'ın kendi komut satırı aracıyla alınmış gerçek bir dışa aktarmadır. |
 
 - Biçim, dosyanın ilk satırındaki sütun adlarından veya JSON yapısından anlaşılır.

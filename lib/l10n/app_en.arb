@@ -1400,7 +1400,7 @@
   "@loginImportTitle": {
     "description": "Settings tile and screen title for importing passwords."
   },
-  "loginImportHelp": "Bitwarden, Chrome or KeePassXC export file",
+  "loginImportHelp": "Bitwarden, Chrome, Firefox or KeePassXC export file",
   "@loginImportHelp": {
     "description": "Subtitle of the password import tile."
   },
@@ -1412,7 +1412,7 @@
   "@otpImportSettingsHelp": {
     "description": "Subtitle of the 2FA import tile in settings."
   },
-  "loginImportUnknown": "This file was not recognised. Choose a Bitwarden (JSON or CSV), Chrome (CSV) or KeePassXC (CSV) export.",
+  "loginImportUnknown": "This file was not recognised. Choose a Bitwarden (JSON or CSV), Chrome (CSV), Firefox (CSV) or KeePassXC (CSV) export.",
   "@loginImportUnknown": {
     "description": "Error when the import file format is unknown."
   },

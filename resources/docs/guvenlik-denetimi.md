@@ -287,7 +287,7 @@ KeyKey WebView kullanmıyor. Sürüm APK'sının dex dosyalarında `android.webk
 | `otpauth://` bağlantısı, QR | Kamera, kullanıcı | Sıkı ayrıştırıcı; desteklenmeyen değerler reddedilir ([`otpauth://` bağlantıları](guvenlik-tasarimi.md#otpauth-bağlantıları)) |
 | Google Authenticator dışa aktarması | QR | Kendi protobuf okuyucumuz; rastgele bozulmuş girdiyle sınanıyor |
 | Aegis, 2FAS dosyaları | Belge seçici | En fazla 10 MB; scrypt bellek ve iş sınırları; bozuk hesap atlanır ([İçe aktarma](guvenlik-tasarimi.md#içe-aktarma)) |
-| Bitwarden, Chrome, KeePassXC dosyaları | Belge seçici | RFC 4180 CSV okuyucu; bilinmeyen alanlar yok sayılır, bozuk satır atlanır ([Parola içe aktarma](guvenlik-tasarimi.md#parola-içe-aktarma)) |
+| Bitwarden, Chrome, Firefox, KeePassXC dosyaları | Belge seçici | RFC 4180 CSV okuyucu; bilinmeyen alanlar yok sayılır, bozuk satır atlanır ([Parola içe aktarma](guvenlik-tasarimi.md#parola-içe-aktarma)) |
 | `.keykey` yedeği | Belge seçici | Yapı denetlenir; her kayıt çözülüp doğrulanmadan hiçbir şey yazılmaz ([Geri yükleme](guvenlik-tasarimi.md#geri-yükleme)) |
 | Kasa dosyası | Disk | Her kayıt kimliği ve türüyle bağlı (AD); değiştirilmiş kayıt açılmaz |
 | Doldurma isteği | Başka uygulama, tarayıcı | İmza ve güvenilen tarayıcı denetimi, şüpheli durumda uyarı ([Şüpheli durumlar](guvenlik-tasarimi.md#şüpheli-durumlar)) |

@@ -255,6 +255,7 @@ String _sourceName(LoginExportSource source) => switch (source) {
   LoginExportSource.bitwardenJson => 'Bitwarden (JSON)',
   LoginExportSource.bitwardenCsv => 'Bitwarden (CSV)',
   LoginExportSource.chromeCsv => 'Chrome (CSV)',
+  LoginExportSource.firefoxCsv => 'Firefox (CSV)',
   LoginExportSource.keepassxcCsv => 'KeePassXC (CSV)',
 };
 
