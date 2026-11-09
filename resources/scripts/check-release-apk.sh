@@ -123,6 +123,14 @@ values="$(dirname "$0")/deneme-degerleri.txt"
 leaks="$(grep -vE '^\s*(#|$)' "$values" | grep -rlaiF -f - "$work" | sed "s|^$work/||" || true)"
 [[ -z "$leaks" ]] || fail "deneme değeri içeren dosyalar: $(tr '\n' ' ' <<< "$leaks")"
 
+# İmza bloğunda yalnızca imzalar ve dolgu olmalı. Şifreli bağımlılık listesi
+# APK'yı yeniden üretilemez yapıyor.
+if ! command -v node >/dev/null; then
+  fail "imza bloğu denetimi için node gerekli."
+elif ! node "$(dirname "$0")/imza-blogu.mjs" "$apk"; then
+  fail "imza bloğunda istenmeyen parça var."
+fi
+
 if [[ "$failed" != 0 ]]; then
   echo "Sonuç: BAŞARISIZ"
   exit 1
