@@ -91,7 +91,9 @@ jobs:
             echo "HATA: APK debug anahtarıyla imzalanmış." >&2
             exit 1
           fi
-          cert="$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' imza.txt)"
+          # --verbose ile satır "V2 Signer: certificate SHA-256 digest: ...", onsuz
+          # "Signer #1 certificate SHA-256 digest: ..." biçiminde.
+          cert="$(sed -n -E 's/^(V2 Signer:|Signer #1) certificate SHA-256 digest: //p' imza.txt | head -n 1)"
           if [[ -z "$cert" ]]; then
             echo "HATA: sertifika özeti okunamadı." >&2
             exit 1
