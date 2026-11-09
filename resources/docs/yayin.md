@@ -17,7 +17,9 @@ KeyKey sürümleri GitHub Actions'ta, `v` ile başlayan bir etiket gönderilince
 - Gradle anahtarı yalnızca `KEYKEY_KEYSTORE` ve yanındaki ortam değişkenlerinden okur ([`android/app/build.gradle.kts`](../../android/app/build.gradle.kts)). Değişkenler yoksa yerel yayın derlemesi debug anahtarıyla imzalanır; iş akışı debug anahtarıyla imzalı bir APK'yı kabul etmez.
 - İş akışı anahtar dosyasını derlemeden hemen sonra siler. Önbellek kullanmaz, böylece yayın derlemesine başka işlerin yazdığı bir önbellek karışmaz.
 
-Kalıcı anahtar henüz oluşturulmadı (#97). O zamana kadar ortamdaki değerler yalnızca iş akışını sınamak için kullanılan bir deneme anahtarıdır.
+Kalıcı anahtar henüz oluşturulmadı (#97). O zamana kadar ortamdaki değerler yalnızca iş akışını sınamak için kullanılan bir deneme anahtarıdır (sertifika özeti `baa13a57…af3f9`, `CN=KeyKey Deneme Anahtari`). Bu anahtarla imzalı bir APK yayımlanmaz.
+
+İş akışı 2026-11-09'da hiçbir dala girmeyen bir deneme commit'inde (`v1.0.0-deneme.1`) sınandı: taslak ön sürüm dört dosyayla oluştu, özetler ve imza yerelde `sha256sum -c` ve `apksigner` ile doğrulandı. Deneme etiketi ve taslak sonra silindi.
 
 ## Sürüm numarası
 
@@ -60,6 +62,7 @@ Amaç: herkes aynı koddan aynı APK'yı derleyip yayındaki APK'nın gerçekten
 |---|---|
 | Aynı klasörde iki temiz derleme (`flutter clean` arasında) | Zip içeriği ve v2 imzası aynı. Tek fark, Android Gradle eklentisinin APK'nın imza bloğuna gömdüğü şifreli bağımlılık listesiydi; her derlemede farklı şifreleniyor. Kapatıldı (`dependenciesInfo`), sonra iki derleme bayt bayt aynı. |
 | Farklı klasörde temiz klon (`C:\KeyKey` ve `C:\KK2`) | 460 dosyadan 6'sı farklı: üç işlemci türü için `libapp.so` ve `libdartjni.so`. |
+| Yayın iş akışında aynı commit'ten iki derleme (GitHub, Ubuntu 24.04, deneme etiketi `v1.0.0-deneme.1`) | APK, AAB ve `mapping.txt` bayt bayt aynı; imzalar da aynı (RSA imzası belirlenimci). |
 
 Klasöre bağlı farkların nedenleri:
 
@@ -71,7 +74,5 @@ Sonuç: **Aynı kod, aynı araç sürümleri ve aynı klasör yolu aynı APK'yı
 1. Yayının commit'ini, yayın iş akışının kullandığı yola klonla. GitHub'ın Ubuntu makinesinde bu yol `/home/runner/work/KeyKey/KeyKey`.
 2. İş akışındaki sürümlerle derle: Flutter 3.47.9, Temurin JDK 21, NDK'yı Flutter seçer. Komut: `flutter build apk --release`.
 3. İmzalar farklı anahtarla atıldığı için APK'nın tamamı değil, içindeki dosyalar karşılaştırılır: `unzip -v` çıktısındaki CRC'ler ya da [apksigcopier](https://github.com/obfusk/apksigcopier) ile yayındaki imzayı kendi derlemene kopyalayıp özeti karşılaştırmak.
-
-Henüz denenmeyen: Linux'taki CI derlemesinin aynı yolda yapılan ikinci bir derlemeyle bayt bayt aynı çıkması. Yayın iş akışı ilk kez çalışınca (#96) aynı commit'ten iki derleme karşılaştırılacak.
 
 [`check-release-apk.sh`](../scripts/check-release-apk.sh) imza bloğunda imzalar ve dolgu dışında bir şey bulursa durur ([`imza-blogu.mjs`](../scripts/imza-blogu.mjs)); şifreli bağımlılık listesi yanlışlıkla geri gelirse yakalanır.
