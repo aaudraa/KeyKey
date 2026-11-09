@@ -19,9 +19,20 @@ KeyKey sürümleri GitHub Actions'ta, `v` ile başlayan bir etiket gönderilince
 
 Kalıcı anahtar henüz oluşturulmadı (#97). O zamana kadar ortamdaki değerler yalnızca iş akışını sınamak için kullanılan bir deneme anahtarıdır.
 
+## Sürüm numarası
+
+`pubspec.yaml`'daki `version: <ad>+<derleme numarası>` satırı iki şey belirler:
+
+- **Ad** (`versionName`) [anlamsal sürümdür](https://semver.org/lang/tr/): `BÜYÜK.KÜÇÜK.YAMA`. Kasa veya yedek biçimini eskisiyle açılamayacak şekilde değiştiren sürüm büyük numarayı artırır, yeni özellik küçük numarayı, yalnızca düzeltme yama numarasını. `1.0.0`'dan önce her faz küçük numarayı artırdı.
+- **Derleme numarası** (`versionCode`) her yayında 1 artar ve hiç azalmaz. Android daha küçük numaralı bir APK'yı üstüne kurmaz. Telefon denemesine verilen etiketsiz derlemeler de numara alabilir; numara yalnızca ileri gider.
+- Fazın ortasında ad, gidilen sürümün `-dev` ekli halidir (`1.0.0-dev`). Yayın commit'i eki kaldırır. Sürüm adında `-` olan etiketler ön sürüm sayılır.
+- Değişiklikler [değişiklik günlüğüne](../CHANGELOG.md) "Yayımlanmamış" başlığı altında yazılır; yayında başlık sürümün adını ve tarihini alır.
+
+`v0.8.0`'a kadar `pubspec.yaml` `0.1.0+1`'de kaldı; etiketler fazları işaretledi. Faz 9'da `1.0.0-dev+2` oldu.
+
 ## Sürüm çıkarmak
 
-1. `pubspec.yaml`'daki `version` satırını güncelle. Etiket, bu satırdaki sürümün başına `v` eklenmiş hali olmalı: `version: 1.0.0+<derleme numarası>` için `v1.0.0` (derleme numarası kuralı #98). Uyuşmazsa iş akışı durur.
+1. `pubspec.yaml`'daki `version` satırını güncelle ve değişiklik günlüğündeki "Yayımlanmamış" başlığını sürümün adıyla değiştir. Etiket, bu satırdaki sürümün başına `v` eklenmiş hali olmalı: `version: 1.0.0+3` için `v1.0.0`. Uyuşmazsa iş akışı durur.
 2. Değişikliği `main`'e birleştir.
 3. Etiketi at ve gönder: `git tag v1.0.0 && git push origin v1.0.0`.
 4. İş akışı bitince GitHub'daki taslağı gözden geçir ve yayımla. Sürüm adında `-` varsa (`v1.1.0-beta.1` gibi) taslak ön sürüm olarak işaretlenir.
