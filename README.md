@@ -2,7 +2,7 @@
 
 Android için çevrimdışı, açık kaynak parola yöneticisi ve 2FA doğrulama uygulaması.
 
-*English: see the [security design summary](resources/docs/security-summary.md) and the [security policy](.github/SECURITY.md#security-policy).*
+*English: see the [security design summary](resources/docs/security-summary.md), the [privacy policy](resources/docs/privacy.md) and the [security policy](.github/SECURITY.md#security-policy).*
 
 > [!WARNING]
 > **KeyKey henüz yayımlanmadı.** Kurulabilir bir sürümü yok ve bağımsız bir güvenlik denetiminden geçmedi; projenin kendi güvenlik denetimi tamamlandı. İlk sürüme kadar gerçek parolalarını emanet etme.
@@ -34,6 +34,8 @@ Bu özelliklerin hepsi geliştirme sürümünde çalışıyor. Her faz sonunda c
 - Ana parola hiçbir yerde saklanmaz. Onu ve kurtarma anahtarını birlikte kaybedersen verilerin geri getirilemez; bunu yapabilecek bir sunucu ya da arka kapı yok.
 
 Ayrıntılar [güvenlik tasarımı belgesinde](resources/docs/guvenlik-tasarimi.md); neyin korunduğu ve neyin korunmadığı da orada, "Tehdit modeli" ve "Bilinen sınırlar" bölümlerinde. Projenin OWASP MASVS'e göre yaptığı kendi denetiminin sonuçları [denetim belgesinde](resources/docs/guvenlik-denetimi.md).
+
+KeyKey hiçbir veri toplamaz ve internet izni yoktur; ayrıntılar [gizlilik bildiriminde](resources/docs/gizlilik.md).
 
 Bir güvenlik açığı bulursan lütfen [güvenlik politikasındaki](.github/SECURITY.md) adımları izle, herkese açık issue açma.
 
