@@ -10,6 +10,12 @@ Faz 9 (1.0 yayını) sürüyor.
 
 - Firefox'un parola dışa aktarmasını (CSV) içe aktarma (#95).
 - Etiketten imzalı APK, AAB ve taslak GitHub Release üreten yayın iş akışı (#96).
+- Türkçe ve İngilizce gizlilik bildirimi (#102).
+
+### Değişenler
+
+- SQLite hazır kütüphane olarak indirilmiyor, repodaki 3.54.1 kaynağından derleniyor (#99).
+- Aynı koddan aynı yolda yapılan iki derleme aynı APK'yı veriyor: Android Gradle eklentisinin APK'ya gömdüğü şifreli bağımlılık listesi kaldırıldı (#99).
 
 ### Belgeler
 

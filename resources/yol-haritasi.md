@@ -425,7 +425,7 @@ Telefon denemesi üç sorun buldu ve [#60](https://github.com/aaudraa/KeyKey/pul
 
 - [ ] Yayın anahtarı: repoya girmez, yedeği ayrı ve güvenli bir yerde tutulur, CI'da GitHub Secrets ile kullanılır
 - [ ] Yayın otomasyonu: etiket atılınca imzalı APK ve AAB, SHA-256 özetleri, GitHub Release; R8 `mapping.txt` dosyası da sürüme eklenir (yığın izlerini okumak için)
-- [ ] `CHANGELOG.md` ve sürüm numaralandırma
+- [x] `CHANGELOG.md` ve sürüm numaralandırma
 - [ ] Yeniden üretilebilir derleme denemesi; `sqlite3`'ü hazır dosya yerine kaynaktan derlemek (F-Droid de bunu gerektiriyor)
 - [ ] Dağıtım kararı: GitHub Releases ile başlamak; F-Droid ve Play Store'u değerlendirmek
 - [ ] `v0.x` sürümünden 1.0'a yükseltme testi: veri kaybı olmamalı
@@ -435,7 +435,7 @@ Telefon denemesi üç sorun buldu ve [#60](https://github.com/aaudraa/KeyKey/pul
 
 **Sıra:** Önce görünümü değiştirmeyen işler (yayın otomasyonu, derleme, sürüm, yükseltme testi). Tasarım incelemesi fazın sonunda yapılır, çünkü deneme bitmeden arayüzü değiştirmek denenen sürümü değiştirir. Kılavuz ve ekran görüntüleri tasarımdan sonra gelir; önce çekilirse tasarım değişince yeniden çekmek gerekir. Kullanıcının kararı (2026-11-09).
 
-**Durum (2026-11-09):** Faz başladı. İlk iş yayın otomasyonu; gerçek yayın anahtarı hazır olana kadar akış deneme anahtarıyla sınanır.
+**Durum (2026-11-09):** Faz başladı, görevler #96-#104. Biten: sürüm kuralı ve [değişiklik günlüğü](CHANGELOG.md) (#98), [gizlilik bildirimi](docs/gizlilik.md) (#102, mağaza yanıtları dağıtım kararını bekliyor). Yayın iş akışı yazıldı (#96, [yayın belgesi](docs/yayin.md)); GitHub'da deneme anahtarıyla sınanması `yayin` ortamının kurulmasını bekliyor. SQLite artık repodaki kaynaktan derleniyor; aynı yolda yapılan iki derleme bayt bayt aynı, farklı yolda Flutter'ın gömdüğü mutlak yol yüzünden ayrılıyor (#99, [ayrıntılar](docs/yayin.md#yeniden-üretilebilir-derleme)). Yükseltme denemesi (#101) fazın son derlemesiyle yapılacak.
 
 **Bitti sayılması için:** GitHub Release'teki APK dört emülatöre ve gerçek telefona kuruluyor; önceki sürümden yükseltmede veri korunuyor; README son durumu anlatıyor.
 
