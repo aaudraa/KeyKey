@@ -2,27 +2,29 @@
 
 Android için çevrimdışı, açık kaynak parola yöneticisi ve 2FA doğrulama uygulaması.
 
+*English: see the [security design summary](resources/docs/security-summary.md) and the [security policy](.github/SECURITY.md#security-policy).*
+
 > [!WARNING]
-> **KeyKey henüz geliştirme aşamasında ve kullanıma hazır değil.** Kurulabilir bir sürümü yok, bağımsız bir güvenlik denetiminden de geçmedi. Şimdilik gerçek parolalarını emanet etme.
+> **KeyKey henüz yayımlanmadı.** Kurulabilir bir sürümü yok ve bağımsız bir güvenlik denetiminden geçmedi; projenin kendi güvenlik denetimi tamamlandı. İlk sürüme kadar gerçek parolalarını emanet etme.
 
 ## Neden KeyKey?
 
 - **Verilerin sende kalır.** Sunucu ve hesap yok; her şey telefonunda şifreli olarak durur.
-- **İnternete çıkmaz.** Yayın sürümünde internet izni olmayacak, yani uygulama verini dışarı gönderemeyecek.
+- **İnternete çıkmaz.** Uygulamanın internet izni yok, yani verini dışarı gönderemez. Bu her derlemede otomatik olarak denetleniyor.
 - **Yedeğin senin kontrolünde.** Şifreli yedek dosyanı istediğin yere kendin kaydedersin.
 - **Kodu açık.** Uygulamanın ne yaptığını herkes inceleyebilir.
 
-## Planlanan özellikler
+## Özellikler
 
 | Alan | Özellikler |
 |---|---|
-| **Parola kasası** | Kayıt ekleme ve düzenleme, arama, klasörler, parola üretici, güç ölçer |
-| **2FA doğrulama** | TOTP ve HOTP kodları, QR ile ekleme, Google Authenticator, Aegis ve 2FAS'tan aktarım |
-| **Otomatik doldurma** | Android uygulamalarında ve tarayıcılarda parola doldurma ve kaydetme |
-| **Kilit** | Ana parola, parmak izi ile açma, otomatik kilitlenme, kurtarma anahtarı |
-| **Yedekleme** | Şifreli yedek ve geri yükleme, Bitwarden ve Chrome'dan içe aktarma |
+| **Parola kasası** | Kayıt ekleme ve düzenleme, arama, klasörler, çöp kutusu, parola üretici, güç ölçer; zayıf ve tekrar eden parolaları gösteren çevrimdışı parola raporu |
+| **2FA doğrulama** | TOTP ve HOTP kodları, QR ile ekleme, Google Authenticator, Aegis ve 2FAS'tan aktarım, kodları göstermek için isteğe bağlı ek onay |
+| **Otomatik doldurma** | Android uygulamalarında ve Chrome'da parola doldurma ve kaydetme; uygulamalar imza sertifikasıyla eşleşir, şüpheli durumlarda uyarı verilir |
+| **Kilit** | Ana parola, parmak iziyle açma, otomatik kilitlenme, kurtarma anahtarı |
+| **Yedekleme** | Şifreli yedek ve geri yükleme; Bitwarden, Chrome ve KeePassXC'den içe aktarma; başka bir parola yöneticisine geçmek için şifresiz dışa aktarma |
 
-Kilit, parola kasası ve 2FA bölümleri geliştirme sürümünde çalışıyor; otomatik doldurma ve yedekleme sırada. Hiçbiri henüz yayımlanmadı. İlerlemeyi [yol haritasından](resources/yol-haritasi.md) ve [milestone'lardan](https://github.com/aaudraa/KeyKey/milestones) takip edebilirsin.
+Bu özelliklerin hepsi geliştirme sürümünde çalışıyor. Her faz sonunda cihaz testleri dört Android sürümünde (11, 14, 16, 17) emülatörlerde çalışıyor, büyük değişiklikler gerçek bir telefonda da deneniyor. İlk sürüm Faz 9'da çıkacak. İlerlemeyi [yol haritasından](resources/yol-haritasi.md) ve [milestone'lardan](https://github.com/aaudraa/KeyKey/milestones) takip edebilirsin.
 
 ## Güvenlik yaklaşımı
 
@@ -31,11 +33,13 @@ Kilit, parola kasası ve 2FA bölümleri geliştirme sürümünde çalışıyor;
 - 2FA kodları (TOTP, HOTP) ve başka uygulamaların şifreli dışa aktarmalarını açmak için gereken birkaç standart algoritmayı biz uyguluyoruz; hepsi RFC test vektörleriyle doğrulanıyor.
 - Ana parola hiçbir yerde saklanmaz. Onu ve kurtarma anahtarını birlikte kaybedersen verilerin geri getirilemez; bunu yapabilecek bir sunucu ya da arka kapı yok.
 
+Ayrıntılar [güvenlik tasarımı belgesinde](resources/docs/guvenlik-tasarimi.md); neyin korunduğu ve neyin korunmadığı da orada, "Tehdit modeli" ve "Bilinen sınırlar" bölümlerinde. Projenin OWASP MASVS'e göre yaptığı kendi denetiminin sonuçları [denetim belgesinde](resources/docs/guvenlik-denetimi.md).
+
 Bir güvenlik açığı bulursan lütfen [güvenlik politikasındaki](.github/SECURITY.md) adımları izle, herkese açık issue açma.
 
 ## Teknoloji
 
-[Flutter](https://flutter.dev) ve Dart, Android'e özgü bölümler için Kotlin. En düşük Android sürümü Android 11 (API 30) olacak.
+[Flutter](https://flutter.dev) ve Dart, Android'e özgü bölümler için Kotlin. Android 11 (API 30) ve üstünde çalışır.
 
 ## Geliştirme
 
