@@ -2,7 +2,7 @@
 
 KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-09 · **Şu anki faz:** Faz 8
+**Son güncelleme:** 2026-11-09 · **Şu anki faz:** Faz 9 (Faz 8'in denemesi sürüyor)
 
 > [!IMPORTANT]
 > **Gerçek parolalarını Faz 8 bitene kadar KeyKey'e koyma.** Kasa biçimi o zamana kadar değişebilir ve güvenlik denetimi henüz yapılmadı.
@@ -22,7 +22,7 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 | 6 | Otomatik doldurma | XL | 4 | `faz/6-otomatik-doldurma` | Tamamlandı |
 | 7 | Yedekleme, içe ve dışa aktarma | L | 4, 5 | `faz/7-yedekleme` | Tamamlandı |
 | 8 | Güvenlik sertleştirme ve denetim | L | 6, 7 | `faz/8-guvenlik-denetimi` | Sürüyor |
-| 9 | 1.0 yayını | M | 8 | `faz/9-yayin` | Bekliyor |
+| 9 | 1.0 yayını | M | 8 | `faz/9-yayin` | Sürüyor |
 
 Büyüklük göreli iş miktarını gösterir, takvim sözü değildir. Faz 4 ve 5 aynı anda ilerleyebilir. İlerlemeyi [milestone'lardan](https://github.com/aaudraa/KeyKey/milestones) da izleyebilirsin.
 
@@ -423,15 +423,19 @@ Telefon denemesi üç sorun buldu ve [#60](https://github.com/aaudraa/KeyKey/pul
 
 **Amaç:** İlk kararlı sürümü imzalı ve doğrulanabilir şekilde yayımlamak.
 
-- [ ] Uygulama simgesi ve açılış ekranı; kaynak dosyalar `resources/design/` altında
 - [ ] Yayın anahtarı: repoya girmez, yedeği ayrı ve güvenli bir yerde tutulur, CI'da GitHub Secrets ile kullanılır
 - [ ] Yayın otomasyonu: etiket atılınca imzalı APK ve AAB, SHA-256 özetleri, GitHub Release; R8 `mapping.txt` dosyası da sürüme eklenir (yığın izlerini okumak için)
 - [ ] `CHANGELOG.md` ve sürüm numaralandırma
 - [ ] Yeniden üretilebilir derleme denemesi; `sqlite3`'ü hazır dosya yerine kaynaktan derlemek (F-Droid de bunu gerektiriyor)
 - [ ] Dağıtım kararı: GitHub Releases ile başlamak; F-Droid ve Play Store'u değerlendirmek
-- [ ] Kullanım kılavuzu ve ekran görüntüleri (`resources/docs/kullanim.md`, `resources/design/`)
 - [ ] `v0.x` sürümünden 1.0'a yükseltme testi: veri kaybı olmamalı
 - [ ] Gizlilik bildirimi: seçilen mağazaların istediği açıklamalar (Play Store veri güvenliği formu, F-Droid); MASVS-PRIVACY denetiminden
+- [ ] Tasarım incelemesi: bütün ekranların baştan gözden geçirilmesi, uygulama simgesi ve açılış ekranı; kaynak dosyalar `resources/design/` altında. Deneme (#89) boyunca biriken arayüz notları ve ertelenen fikirler (örneğin otomatik doldurma ekranının yarım yükseklikte açılması) buraya girer.
+- [ ] Kullanım kılavuzu ve ekran görüntüleri (`resources/docs/kullanim.md`, `resources/design/`)
+
+**Sıra:** Önce görünümü değiştirmeyen işler (yayın otomasyonu, derleme, sürüm, yükseltme testi). Tasarım incelemesi fazın sonunda yapılır, çünkü deneme bitmeden arayüzü değiştirmek denenen sürümü değiştirir. Kılavuz ve ekran görüntüleri tasarımdan sonra gelir; önce çekilirse tasarım değişince yeniden çekmek gerekir. Kullanıcının kararı (2026-11-09).
+
+**Durum (2026-11-09):** Faz başladı. İlk iş yayın otomasyonu; gerçek yayın anahtarı hazır olana kadar akış deneme anahtarıyla sınanır.
 
 **Bitti sayılması için:** GitHub Release'teki APK dört emülatöre ve gerçek telefona kuruluyor; önceki sürümden yükseltmede veri korunuyor; README son durumu anlatıyor.
 
