@@ -75,7 +75,7 @@ Sürümler ve lisanslar 2026-11-05 tarihinde pub.dev'den kontrol edildi. Faz ba�
 | `zxcvbn` | Dart 3 ile uyumlu değil (`sdk <3.0.0`). |
 | `sodium_libs` | Kullanımdan kalktı, yerini `sodium` aldı. |
 | `pointycastle` | Şifreli Aegis ve 2FAS dosyalarını açmak için yalnızca scrypt, PBKDF2 ve AES-GCM gerekiyor. Büyük bir saf Dart kripto kütüphanesi yerine AES-GCM için Android'in kitaplığını, scrypt ve PBKDF2 için RFC 7914 vektörleriyle doğrulanan kısa kendi kodumuzu kullanıyoruz. |
-| `sqlite3_flutter_libs` | Kullanım ömrü bitti, `sqlite3` paketi yerel kütüphaneyi artık kendisi sağlıyor. Derlemede GitHub'dan hazır dosya indiriyor ve paketin içindeki SHA-256 ile doğruluyor. Aynı yayıncının Dart kodu zaten uygulamanın içinde çalıştığı için bu, güvenmemiz gereken kişiyi değiştirmiyor. Kaynaktan derlemeye Faz 9'da geçilecek. |
+| `sqlite3_flutter_libs` | Kullanım ömrü bitti, `sqlite3` paketi yerel kütüphaneyi artık kendisi sağlıyor. Derlemede GitHub'dan hazır dosya indiriyor ve paketin içindeki SHA-256 ile doğruluyor. Aynı yayıncının Dart kodu zaten uygulamanın içinde çalıştığı için bu, güvenmemiz gereken kişiyi değiştirmiyor. Faz 9'dan beri uygulamadaki SQLite repodaki kaynaktan derleniyor (#99); hazır dosya yalnızca bilgisayardaki testlerde kullanılıyor. |
 
 ### libsodium doğrulaması
 

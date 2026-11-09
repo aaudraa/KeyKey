@@ -44,3 +44,15 @@ flutter:
     - resources/assets/licenses/apache-2.0.txt
     - resources/assets/autofill/public_suffix_list.dat
   generate: true
+
+# Uygulamadaki SQLite hazır kütüphane olarak indirilmez, repodaki kaynaktan
+# derlenir (paketin varsayılan derleme seçenekleriyle). Kaynak ve güncelleme:
+# android/third_party/sqlite/README.md. Bilgisayardaki testler paketin hazır
+# kütüphanesini kullanır; uygulamaya girmez.
+hooks:
+  user_defines:
+    sqlite3:
+      source:
+        android: source
+        default: sqlite3
+      path: android/third_party/sqlite/sqlite3.c
