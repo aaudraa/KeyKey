@@ -580,6 +580,34 @@ void main() {
       expect(find.text('Banka'), findsOneWidget);
     });
 
+    testWidgets('geri tuşu uyarıdan listeye döner, pencereyi kapatmaz', (
+      tester,
+    ) async {
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+      );
+
+      await searchFor(tester, 'banka');
+      await tester.tap(find.text('Banka'));
+      await tester.pumpAndSettle();
+      expect(find.text('Doldurmadan önce'), findsOneWidget);
+
+      final handled = await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+
+      expect(handled, isTrue, reason: 'geri tuşu etkinliği kapatmamalı');
+      expect(find.text('Doldurmadan önce'), findsNothing);
+      expect(find.text('Banka'), findsOneWidget);
+      expect(bridge.filled, isNull);
+      expect(bridge.cancelled, isFalse);
+
+      // Listeden yeniden seçilebiliyor.
+      await tester.tap(find.text('Banka'));
+      await tester.pumpAndSettle();
+      expect(find.text('Doldurmadan önce'), findsOneWidget);
+    });
+
     testWidgets('onaylanınca dolduruluyor, bağlanmadan', (tester) async {
       final bridge = await pumpAutofill(
         tester,

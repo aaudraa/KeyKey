@@ -53,6 +53,9 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
   /// Gösterilen uyarı; varken liste yerine bu çizilir.
   Widget? _confirming;
 
+  /// Uyarıdan vazgeçer; geri tuşu bununla listeye döner.
+  VoidCallback? _cancelConfirm;
+
   @override
   void initState() {
     super.initState();
@@ -119,11 +122,13 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
   Future<({bool bind})?> _confirm(LoginItem item, Set<FillWarning> warnings) {
     final completer = Completer<({bool bind})?>();
     void finish(({bool bind})? answer) {
+      _cancelConfirm = null;
       if (mounted) setState(() => _confirming = null);
       if (!completer.isCompleted) completer.complete(answer);
     }
 
     FocusManager.instance.primaryFocus?.unfocus();
+    _cancelConfirm = () => finish(null);
     setState(
       () => _confirming = FillConfirmContent(
         target: widget.target,
@@ -220,17 +225,25 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
         (_searchFocused ||
             _query.text.trim().isNotEmpty ||
             matches.matches.isEmpty);
-    return AutofillSheetFrame(
-      onDismiss: cancel,
-      expanded: expanded,
-      child: switch (confirming) {
-        final Widget confirm => confirm,
-        null when ready => _picker(context, l10n, state, matches, cancel),
-        null => const Padding(
-          padding: EdgeInsets.all(32),
-          child: Center(child: CircularProgressIndicator()),
-        ),
+    // Uyarı açıkken geri tuşu yalnızca uyarıyı kapatır, listeye döner;
+    // listedeyken pencere kapanır ve hiçbir şey doldurulmaz.
+    return PopScope(
+      canPop: confirming == null,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _cancelConfirm?.call();
       },
+      child: AutofillSheetFrame(
+        onDismiss: cancel,
+        expanded: expanded,
+        child: switch (confirming) {
+          final Widget confirm => confirm,
+          null when ready => _picker(context, l10n, state, matches, cancel),
+          null => const Padding(
+            padding: EdgeInsets.all(32),
+            child: Center(child: CircularProgressIndicator()),
+          ),
+        },
+      ),
     );
   }
 
