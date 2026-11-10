@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
@@ -31,25 +32,14 @@ String plaintextExportFileName(DateTime time) {
 Future<void> exportPlaintext(BuildContext context, WidgetRef ref) async {
   final l10n = AppLocalizations.of(context);
   final messenger = ScaffoldMessenger.of(context);
-  final warned = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      icon: const Icon(Icons.warning_amber_outlined),
-      title: Text(l10n.exportWarningTitle),
-      content: Text(l10n.exportWarningBody),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: Text(l10n.exportWarningCancel),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(context, true),
-          child: Text(l10n.exportWarningContinue),
-        ),
-      ],
-    ),
+  final warned = await showKkConfirm(
+    context,
+    title: l10n.exportWarningTitle,
+    message: l10n.exportWarningBody,
+    confirmLabel: l10n.exportWarningContinue,
+    cancelLabel: l10n.exportWarningCancel,
   );
-  if (warned != true || !context.mounted) return;
+  if (!warned || !context.mounted) return;
   if (!await confirmIdentity(context, ref, title: l10n.exportConfirmTitle)) {
     return;
   }

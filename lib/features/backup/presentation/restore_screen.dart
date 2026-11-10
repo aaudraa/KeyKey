@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/secret_field.dart';
+import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/core/backup/backup_codec.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/crypto/recovery_key.dart';
@@ -171,27 +172,15 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
 
   Future<void> _replace(OpenedBackup backup) async {
     final l10n = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.restoreReplaceConfirmTitle),
-        content: Text(l10n.restoreReplaceConfirmBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.restoreCancel),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-            ),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.restoreReplaceConfirm),
-          ),
-        ],
-      ),
+    final confirmed = await showKkConfirm(
+      context,
+      title: l10n.restoreReplaceConfirmTitle,
+      message: l10n.restoreReplaceConfirmBody,
+      confirmLabel: l10n.restoreReplaceConfirm,
+      cancelLabel: l10n.restoreCancel,
+      destructive: true,
     );
-    if (confirmed != true || !mounted) return;
+    if (!confirmed || !mounted) return;
     final controller = ref.read(vaultControllerProvider.notifier);
     setState(() => _busy = true);
     try {

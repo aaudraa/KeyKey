@@ -57,6 +57,87 @@ void main() {
     'Parmak iziyle aç',
   );
 
+  group('düzen', () {
+    testWidgets('ayarlar dört grup başlığını gösterir', (tester) async {
+      await pumpSettings(tester);
+
+      for (final title in [
+        'Güvenlik',
+        'Yedek ve aktarım',
+        'Otomatik doldurma',
+        'Hakkında',
+      ]) {
+        final header = find.text(title);
+        await tester.scrollUntilVisible(header, 200);
+        expect(header, findsOneWidget);
+        expect(
+          tester.getSemantics(header).flagsCollection.isHeader,
+          isTrue,
+          reason: title,
+        );
+      }
+    });
+
+    testWidgets('parmak izi satırında açıklama satırda değil, (i) ile '
+        'açılan pencerede', (tester) async {
+      service.biometricSupportValue = BiometricSupport.available;
+      await pumpSettings(tester);
+      const hint =
+          'Telefona yeni parmak izi eklenirse bu kapanır ve ana parola '
+          'istenir.';
+
+      expect(find.text(hint), findsNothing);
+      await tester.tap(
+        find.descendant(
+          of: find.ancestor(of: biometricSwitch, matching: find.byType(Row)),
+          matching: find.byTooltip('Açıklama'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text(hint), findsOneWidget);
+      expect(find.byType(BottomSheet), findsOneWidget);
+    });
+
+    testWidgets("sürüm satırı sahte API'nin döndürdüğü sürümü gösterir", (
+      tester,
+    ) async {
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        packages: FakeAppPackages(version: '1.2.3'),
+      );
+      await tester.tap(find.byIcon(Icons.settings_outlined));
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(find.text('1.2.3'), 200);
+      expect(find.text('1.2.3'), findsOneWidget);
+      expect(find.text('Sürüm'), findsOneWidget);
+    });
+
+    testWidgets('satırlar aynı boyda', (tester) async {
+      service.biometricSupportValue = BiometricSupport.available;
+      await pumpSettings(tester);
+
+      final heights = <double>{
+        for (final text in [
+          'Ana parolayı değiştir',
+          'Parmak iziyle aç',
+          'Şimdi kilitle',
+        ])
+          tester
+              .getSize(
+                find.ancestor(
+                  of: find.text(text),
+                  matching: find.byType(ListTile),
+                ),
+              )
+              .height,
+      };
+      expect(heights, hasLength(1));
+    });
+  });
+
   group('parmak izi', () {
     testWidgets('cihazda yoksa ayar görünmüyor', (tester) async {
       service.biometricSupportValue = BiometricSupport.noHardware;
@@ -181,7 +262,7 @@ void main() {
       await tester.tap(find.byIcon(Icons.settings_outlined));
       await tester.pumpAndSettle();
       // Bölüm yedekleme girişlerinin altında; ekrana kaydırılır.
-      await tester.scrollUntilVisible(find.text('Otomatik doldurma'), 300);
+      await tester.scrollUntilVisible(find.text('Doldurma servisi'), 300);
       await tester.pumpAndSettle();
       return setup;
     }
@@ -194,7 +275,7 @@ void main() {
 
       expect(find.text("Kapalı. Dokun ve KeyKey'i seç."), findsOneWidget);
       expect(find.text("Chrome'da otomatik doldurma"), findsNothing);
-      await tester.tap(find.text('Otomatik doldurma'));
+      await tester.tap(find.text('Doldurma servisi'));
       await tester.pump();
       expect(setup.opened, ['autofill']);
     });
@@ -254,10 +335,10 @@ void main() {
       );
       await tester.tap(find.byIcon(Icons.settings_outlined));
       await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(find.text('Otomatik doldurma'), 300);
+      await tester.scrollUntilVisible(find.text('Doldurma servisi'), 300);
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Otomatik doldurma'));
+      await tester.tap(find.text('Doldurma servisi'));
       await tester.pump();
       expect(find.text('Ayar açılamadı.'), findsOneWidget);
     });

@@ -184,6 +184,7 @@ void main() {
       await tester.tap(find.text('Kasamı yedekle değiştir'));
       await tester.pumpAndSettle();
       expect(find.text('Kasan değiştirilsin mi?'), findsOneWidget);
+      expect(find.byType(BottomSheet), findsOneWidget);
 
       await tester.tap(find.text('Vazgeç'));
       await tester.pumpAndSettle();

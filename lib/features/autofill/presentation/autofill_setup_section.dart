@@ -2,15 +2,20 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:keykey/app/ui/kk_section.dart';
 import 'package:keykey/features/autofill/application/autofill_setup.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
-/// Ayarlar ekranında otomatik doldurmanın durumu ve kurulum bağlantıları.
+/// Ayarlardaki "Otomatik doldurma" grubu: servisin durumu, kurulum
+/// bağlantıları ve sonda [children].
 ///
 /// Durum ekran açılınca ve uygulamaya dönülünce yeniden okunur. Okunamazsa
-/// bölüm görünmez.
+/// durum satırları görünmez, [children] kalır.
 class AutofillSetupSection extends ConsumerStatefulWidget {
-  const new({super.key});
+  const new({this.children = const [], super.key});
+
+  /// Durum satırlarının altına eklenen satırlar.
+  final List<Widget> children;
 
   @override
   ConsumerState<AutofillSetupSection> createState() =>
@@ -63,42 +68,51 @@ class _AutofillSetupSectionState extends ConsumerState<AutofillSetupSection> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    return KkSection(
+      title: l10n.settingsGroupAutofill,
+      children: [..._statusRows(l10n), ...widget.children],
+    );
+  }
+
+  List<Widget> _statusRows(AppLocalizations l10n) {
     final status = _status;
-    if (status == null) return const SizedBox.shrink();
+    if (status == null) return const [];
     if (!status.supported) {
-      return ListTile(
-        enabled: false,
-        leading: const Icon(Icons.edit_note),
-        title: Text(l10n.autofillSetupTitle),
-        subtitle: Text(l10n.autofillSetupUnsupported),
-      );
-    }
-    final chromeVersion = status.chromeMajorVersion;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
+      return [
         ListTile(
+          enabled: false,
           leading: const Icon(Icons.edit_note),
           title: Text(l10n.autofillSetupTitle),
-          subtitle: Text(
-            status.enabled
-                ? l10n.autofillSetupEnabled
-                : l10n.autofillSetupDisabled,
-          ),
-          trailing: Icon(
-            status.enabled ? Icons.check_circle : Icons.open_in_new,
-          ),
-          onTap: () => unawaited(_open((b) => b.openAutofillSettings())),
+          subtitle: KkRowSubtitle(l10n.autofillSetupUnsupported),
         ),
-        if (chromeVersion != null)
-          ListTile(
+      ];
+    }
+    final chromeVersion = status.chromeMajorVersion;
+    final chromeHelp = chromeVersion == null
+        ? null
+        : status.chromeTooOld
+        ? l10n.autofillSetupChromeUpdate(chromeVersion)
+        : l10n.autofillSetupChrome;
+    return [
+      ListTile(
+        leading: const Icon(Icons.edit_note),
+        title: Text(l10n.autofillSetupTitle),
+        subtitle: KkRowSubtitle(
+          status.enabled
+              ? l10n.autofillSetupEnabled
+              : l10n.autofillSetupDisabled,
+        ),
+        trailing: Icon(status.enabled ? Icons.check_circle : Icons.open_in_new),
+        onTap: () => unawaited(_open((b) => b.openAutofillSettings())),
+      ),
+      if (chromeHelp != null)
+        KkInfoRow(
+          infoTitle: l10n.autofillSetupChromeTitle,
+          info: chromeHelp,
+          child: ListTile(
             leading: const Icon(Icons.public),
             title: Text(l10n.autofillSetupChromeTitle),
-            subtitle: Text(
-              status.chromeTooOld
-                  ? l10n.autofillSetupChromeUpdate(chromeVersion)
-                  : l10n.autofillSetupChrome,
-            ),
+            subtitle: KkRowSubtitle(chromeHelp),
             trailing: status.chromeTooOld
                 ? null
                 : const Icon(Icons.open_in_new),
@@ -106,7 +120,7 @@ class _AutofillSetupSectionState extends ConsumerState<AutofillSetupSection> {
                 ? null
                 : () => unawaited(_open((b) => b.openChromeAutofillSettings())),
           ),
-      ],
-    );
+        ),
+    ];
   }
 }

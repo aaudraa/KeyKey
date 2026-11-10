@@ -80,6 +80,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Kaynak dosyayı sil'), findsOneWidget);
+    expect(find.byType(BottomSheet), findsOneWidget);
+    expect(find.textContaining('KeyKey bu dosyayı silemez'), findsOneWidget);
     expect(find.text('2 kayıt eklendi.'), findsOneWidget);
     await tester.tap(find.text('Tamam'));
     await tester.pumpAndSettle();

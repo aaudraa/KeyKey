@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
+import 'package:keykey/app/ui/glass_nav_bar.dart';
+import 'package:keykey/app/ui/kk_section.dart';
+import 'package:keykey/core/platform/app_packages.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/core/vault/vault_session.dart';
@@ -113,64 +116,97 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final settings = ref.watch(settingsControllerProvider);
+    final version = ref.watch(appVersionProvider).value;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.navSettings)),
       body: ListView(
+        // Altta: yüzen menü.
+        padding: const EdgeInsets.only(bottom: kNavClearance),
         children: [
-          ListTile(
-            leading: const Icon(Icons.password_outlined),
-            title: Text(l10n.changePasswordTitle),
-            onTap: () => context.push(AppRoutes.changePassword),
-          ),
-          if (_support == BiometricSupport.available)
-            SwitchListTile(
-              secondary: const Icon(Icons.fingerprint),
-              title: Text(l10n.settingsBiometric),
-              subtitle: Text(l10n.settingsBiometricHint),
-              value: _biometricEnabled,
-              onChanged: _busy ? null : (value) => _setBiometric(enable: value),
-            ),
-          if (_support == BiometricSupport.notEnrolled)
-            ListTile(
-              enabled: false,
-              leading: const Icon(Icons.fingerprint),
-              title: Text(l10n.settingsBiometric),
-              subtitle: Text(l10n.settingsBiometricNotEnrolled),
-            ),
-          SwitchListTile(
-            secondary: const Icon(Icons.shield_outlined),
-            title: Text(l10n.settingsOtpRequireAuth),
-            subtitle: Text(l10n.settingsOtpRequireAuthHelp),
-            value: settings?.otpRequireAuth ?? false,
-            onChanged: settings == null
-                ? null
-                : (value) => _setOtpRequireAuth(value: value),
+          KkSection(
+            title: l10n.settingsGroupSecurity,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.password_outlined),
+                title: Text(l10n.changePasswordTitle),
+                onTap: () => context.push(AppRoutes.changePassword),
+              ),
+              if (_support == BiometricSupport.available)
+                KkInfoRow(
+                  infoTitle: l10n.settingsBiometric,
+                  info: l10n.settingsBiometricHint,
+                  child: SwitchListTile(
+                    secondary: const Icon(Icons.fingerprint),
+                    title: Text(l10n.settingsBiometric),
+                    value: _biometricEnabled,
+                    onChanged: _busy
+                        ? null
+                        : (value) => _setBiometric(enable: value),
+                  ),
+                ),
+              if (_support == BiometricSupport.notEnrolled)
+                ListTile(
+                  enabled: false,
+                  leading: const Icon(Icons.fingerprint),
+                  title: Text(l10n.settingsBiometric),
+                  subtitle: KkRowSubtitle(l10n.settingsBiometricNotEnrolled),
+                ),
+              KkInfoRow(
+                infoTitle: l10n.settingsOtpRequireAuth,
+                info: l10n.settingsOtpRequireAuthHelp,
+                child: SwitchListTile(
+                  secondary: const Icon(Icons.shield_outlined),
+                  title: Text(l10n.settingsOtpRequireAuth),
+                  value: settings?.otpRequireAuth ?? false,
+                  onChanged: settings == null
+                      ? null
+                      : (value) => _setOtpRequireAuth(value: value),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.lock_outline),
+                title: Text(l10n.settingsLockNow),
+                onTap: () => ref.read(vaultControllerProvider.notifier).lock(),
+              ),
+            ],
           ),
           const BackupSection(),
-          const AutofillSetupSection(),
-          SwitchListTile(
-            secondary: const Icon(Icons.content_paste_go),
-            title: Text(l10n.settingsAutofillCopyOtp),
-            subtitle: Text(
-              l10n.settingsAutofillCopyOtpHelp(
-                SensitiveClipboard.clearAfter.inSeconds,
+          AutofillSetupSection(
+            children: [
+              KkInfoRow(
+                infoTitle: l10n.settingsAutofillCopyOtp,
+                info: l10n.settingsAutofillCopyOtpHelp(
+                  SensitiveClipboard.clearAfter.inSeconds,
+                ),
+                child: SwitchListTile(
+                  secondary: const Icon(Icons.content_paste_go),
+                  title: Text(l10n.settingsAutofillCopyOtp),
+                  value: settings?.autofillCopyOtp ?? false,
+                  onChanged: settings == null
+                      ? null
+                      : (value) => unawaited(_setAutofillCopyOtp(value: value)),
+                ),
               ),
-            ),
-            value: settings?.autofillCopyOtp ?? false,
-            onChanged: settings == null
-                ? null
-                : (value) => unawaited(_setAutofillCopyOtp(value: value)),
+            ],
           ),
-          ListTile(
-            leading: const Icon(Icons.lock_outline),
-            title: Text(l10n.settingsLockNow),
-            onTap: () => ref.read(vaultControllerProvider.notifier).lock(),
-          ),
-          ListTile(
-            leading: const Icon(Icons.description_outlined),
-            title: Text(l10n.settingsLicenses),
-            onTap: () =>
-                showLicensePage(context: context, applicationName: 'KeyKey'),
+          KkSection(
+            title: l10n.settingsGroupAbout,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.info_outline),
+                title: Text(l10n.settingsVersion),
+                trailing: Text(version ?? ''),
+              ),
+              ListTile(
+                leading: const Icon(Icons.description_outlined),
+                title: Text(l10n.settingsLicenses),
+                onTap: () => showLicensePage(
+                  context: context,
+                  applicationName: 'KeyKey',
+                  applicationVersion: version,
+                ),
+              ),
+            ],
           ),
         ],
       ),

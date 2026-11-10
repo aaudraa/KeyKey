@@ -73,6 +73,7 @@ void main() {
   testWidgets('uyarı, parola ve kayıt', (tester) async {
     await openExport(tester);
     expect(find.text('Bu dosya şifresiz'), findsOneWidget);
+    expect(find.byType(BottomSheet), findsOneWidget);
 
     await tester.tap(find.text('Devam et'));
     await tester.pumpAndSettle();

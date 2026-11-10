@@ -175,10 +175,10 @@ void main() {
     await pumpUntilFound(tester, find.text('Kodlar gizli'));
     expect(anyCurrentCode(), findsNothing);
     await tapText(tester, 'Kodları göster');
-    await pumpUntilFound(tester, find.byType(AlertDialog));
+    await pumpUntilFound(tester, find.byType(BottomSheet));
     await tester.enterText(
       find.descendant(
-        of: find.byType(AlertDialog),
+        of: find.byType(BottomSheet),
         matching: find.byType(TextField),
       ),
       password,

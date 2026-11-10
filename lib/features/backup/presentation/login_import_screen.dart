@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
+import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
@@ -112,18 +113,17 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
     }
   }
 
-  Future<void> _remindToDelete(AppLocalizations l10n) => showDialog<void>(
-    context: context,
-    builder: (context) => AlertDialog(
-      icon: const Icon(Icons.delete_outline),
-      title: Text(l10n.loginImportDeleteTitle),
-      content: Text(l10n.loginImportDeleteBody),
+  Future<void> _remindToDelete(AppLocalizations l10n) => showKkSheet<void>(
+    context,
+    builder: (context) => KkSheetContent(
+      title: l10n.loginImportDeleteTitle,
       actions: [
         FilledButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(l10n.loginImportDeleteOk),
         ),
       ],
+      child: Text(l10n.loginImportDeleteBody),
     ),
   );
 

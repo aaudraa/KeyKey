@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:keykey/app/ui/kk_section.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/presentation/scanned_code_handler.dart';
@@ -58,7 +59,8 @@ Future<void> backUpVault(BuildContext context, WidgetRef ref) async {
   }
 }
 
-/// Ayarlar ekranında yedek alma ve son yedeğin zamanı.
+/// Ayarlardaki "Yedek ve aktarım" grubu: yedek alma ve son yedeğin zamanı,
+/// geri yükleme, içe ve dışa aktarma.
 class BackupSection extends ConsumerStatefulWidget {
   const new({super.key});
 
@@ -82,67 +84,61 @@ class _BackupSectionState extends ConsumerState<BackupSection> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
     final settings = ref.watch(settingsControllerProvider);
     final last = settings?.lastBackupAt;
     final locale = Localizations.localeOf(context).toLanguageTag();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return KkSection(
+      title: l10n.settingsGroupBackup,
       children: [
-        ListTile(
-          leading: _busy
-              ? const SizedBox.square(
-                  dimension: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Icons.save_alt),
-          title: Text(l10n.backupCreate),
-          subtitle: Text(
-            last == null
-                ? l10n.backupNever
-                : l10n.backupLast(
-                    DateFormat.yMMMd(locale).add_Hm().format(last.toLocal()),
-                  ),
+        KkInfoRow(
+          infoTitle: l10n.backupCreate,
+          info: l10n.backupHelp,
+          child: ListTile(
+            leading: _busy
+                ? const SizedBox.square(
+                    dimension: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.save_alt),
+            title: Text(l10n.backupCreate),
+            subtitle: KkRowSubtitle(
+              last == null
+                  ? l10n.backupNever
+                  : l10n.backupLast(
+                      DateFormat.yMMMd(locale).add_Hm().format(last.toLocal()),
+                    ),
+            ),
+            enabled: !_busy,
+            onTap: () => unawaited(_backUp()),
           ),
-          enabled: !_busy,
-          onTap: () => unawaited(_backUp()),
         ),
         ListTile(
           leading: const Icon(Icons.settings_backup_restore),
           title: Text(l10n.restoreTitle),
-          subtitle: Text(l10n.restoreHelp),
+          subtitle: KkRowSubtitle(l10n.restoreHelp),
           enabled: !_busy,
           onTap: () => unawaited(pickBackupToRestore(context, ref)),
         ),
         ListTile(
           leading: const Icon(Icons.input),
           title: Text(l10n.loginImportTitle),
-          subtitle: Text(l10n.loginImportHelp),
+          subtitle: KkRowSubtitle(l10n.loginImportHelp),
           enabled: !_busy,
           onTap: () => unawaited(pickLoginExport(context, ref)),
         ),
         ListTile(
           leading: const Icon(Icons.phonelink_lock_outlined),
           title: Text(l10n.otpImportSettingsTitle),
-          subtitle: Text(l10n.otpImportSettingsHelp),
+          subtitle: KkRowSubtitle(l10n.otpImportSettingsHelp),
           enabled: !_busy,
           onTap: () => unawaited(importFromFile(context, ref)),
         ),
         ListTile(
           leading: const Icon(Icons.output),
           title: Text(l10n.exportTitle),
-          subtitle: Text(l10n.exportHelp),
+          subtitle: KkRowSubtitle(l10n.exportHelp),
           enabled: !_busy,
           onTap: () => unawaited(exportPlaintext(context, ref)),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(72, 0, 16, 8),
-          child: Text(
-            l10n.backupHelp,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
         ),
       ],
     );
