@@ -46,3 +46,13 @@ regexes = [
   '''^Qh6W4Wz55YGFNU$''',
   '''^ABCD1234EFGH5678$''',
 ]
+
+# SQLite'ın değiştirilmemiş kaynağı. "sqlite3_api->xxx" ve "iKey==xxx" gibi C
+# kodları genel anahtar kuralına takılıyor. Dosya sqlite.org'un yayımladığı
+# özetle doğrulanır (resources/scripts/sqlite-guncelle.sh --denetle); izin
+# yalnızca bu dosyayı kapsar.
+[[allowlists]]
+description = "SQLite'ın değiştirilmemiş kaynak dosyası"
+paths = [
+  '''^android/third_party/sqlite/sqlite3\.c$''',
+]
