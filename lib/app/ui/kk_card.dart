@@ -7,7 +7,7 @@ enum WatermarkSide { start, end }
 /// başlık ve alt yazı tek satırda kesilir. Telefonun yazı boyutu büyüyünce
 /// kart da büyür, yoksa metin kesilir (erişilebilirlik).
 class KkCard extends StatelessWidget {
-  const KkCard({
+  const new({
     required this.title,
     this.subtitle,
     this.leading,
@@ -47,7 +47,7 @@ class KkCard extends StatelessWidget {
         const BorderRadius.all(Radius.circular(14));
     final start = watermarkSide == WatermarkSide.start;
 
-    Widget texts = Column(
+    final Widget texts = Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -98,7 +98,6 @@ class KkCard extends StatelessWidget {
               constraints: const BoxConstraints(minHeight: minHeight),
               child: Stack(
                 alignment: AlignmentDirectional.centerStart,
-                clipBehavior: Clip.hardEdge,
                 children: [
                   if (watermark != null)
                     PositionedDirectional(

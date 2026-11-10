@@ -22,7 +22,6 @@ Future<T?> showKkSheet<T>(
       }
       return DraggableScrollableSheet(
         expand: false,
-        initialChildSize: 0.5,
         minChildSize: 0.3,
         maxChildSize: 0.95,
         builder: (context, controller) => PrimaryScrollController(

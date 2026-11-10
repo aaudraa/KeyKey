@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/theme.dart';
@@ -19,13 +21,15 @@ Future<bool? Function()> _openConfirm(WidgetTester tester) async {
     ),
   );
   bool? result;
-  showKkConfirm(
-    ctx,
-    title: 'Silinsin mi?',
-    message: 'Kayıt çöp kutusuna gider.',
-    confirmLabel: 'Sil',
-    cancelLabel: 'Vazgeç',
-  ).then((value) => result = value);
+  unawaited(
+    showKkConfirm(
+      ctx,
+      title: 'Silinsin mi?',
+      message: 'Kayıt çöp kutusuna gider.',
+      confirmLabel: 'Sil',
+      cancelLabel: 'Vazgeç',
+    ).then((value) => result = value),
+  );
   await tester.pumpAndSettle();
   return () => result;
 }
@@ -45,13 +49,15 @@ void main() {
         ),
       ),
     );
-    showKkConfirm(
-      ctx,
-      title: 'Silinsin mi?',
-      message: 'Kayıt çöp kutusuna gider.',
-      confirmLabel: 'Sil',
-      cancelLabel: 'Vazgeç',
-    ).then((value) => result = value);
+    unawaited(
+      showKkConfirm(
+        ctx,
+        title: 'Silinsin mi?',
+        message: 'Kayıt çöp kutusuna gider.',
+        confirmLabel: 'Sil',
+        cancelLabel: 'Vazgeç',
+      ).then((value) => result = value),
+    );
     await tester.pumpAndSettle();
 
     expect(find.byType(BottomSheet), findsOneWidget);
@@ -75,13 +81,15 @@ void main() {
         ),
       ),
     );
-    showKkConfirm(
-      ctx,
-      title: 'Silinsin mi?',
-      message: 'm',
-      confirmLabel: 'Sil',
-      cancelLabel: 'Vazgeç',
-    ).then((value) => result = value);
+    unawaited(
+      showKkConfirm(
+        ctx,
+        title: 'Silinsin mi?',
+        message: 'm',
+        confirmLabel: 'Sil',
+        cancelLabel: 'Vazgeç',
+      ).then((value) => result = value),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Vazgeç'));
     await tester.pumpAndSettle();
@@ -100,10 +108,10 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.light,
-        home: Scaffold(
+        home: const Scaffold(
           body: KkSection(
             title: 'Güvenlik',
-            children: const [Text('Bir'), Text('İki')],
+            children: [Text('Bir'), Text('İki')],
           ),
         ),
       ),

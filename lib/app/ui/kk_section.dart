@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 /// Ayarlardaki grup: başlık ve altında, aralarında ince çizgi olan
 /// satırlar tek bir kartta.
 class KkSection extends StatelessWidget {
-  const KkSection({required this.title, required this.children, super.key});
+  const new({required this.title, required this.children, super.key});
 
   final String title;
   final List<Widget> children;
