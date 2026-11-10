@@ -164,19 +164,23 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
         : l10n.autofillFilledNotice(name);
     final username = item.content.username;
     final password = item.content.password;
+    // markDone ekranı bir sonraki karede kapatır; kapanmış ekranda `ref`
+    // kullanılamaz. Sonradan gerekenler beklemeden önce alınır.
+    final done = ref.read(autofillDoneProvider.notifier);
+    final vault = ref.read(vaultControllerProvider.notifier);
+    final clipboard = ref.read(sensitiveClipboardProvider);
+    final bridge = ref.read(autofillBridgeProvider);
     final code = await _linkedOtpCode(item);
-    ref.read(autofillDoneProvider.notifier).markDone();
-    ref.read(vaultControllerProvider.notifier).lock();
+    done.markDone();
+    vault.lock();
     if (code != null) {
       try {
-        await ref.read(sensitiveClipboardProvider).copy(code);
+        await clipboard.copy(code);
       } on Exception {
         // Kopyalanamazsa doldurma yine yapılır.
       }
     }
-    await ref
-        .read(autofillBridgeProvider)
-        .fill(username: username, password: password, notice: notice);
+    await bridge.fill(username: username, password: password, notice: notice);
   }
 
   /// Ayar açıksa kayda bağlı TOTP hesabının güncel kodu. Hata doldurmayı

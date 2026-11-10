@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/features/autofill/application/autofill_setup.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
@@ -114,6 +115,35 @@ void main() {
       expect(find.text('1.2.3'), findsOneWidget);
       expect(find.text('Sürüm'), findsOneWidget);
     });
+
+    for (final (name, inset) in [
+      ('hareketle gezinme', 24.0),
+      ('üç düğmeli gezinme', 48.0),
+    ]) {
+      testWidgets('$name: son satır yüzen menünün üstünde kalıyor', (
+        tester,
+      ) async {
+        // Android 15+ uygulamayı kenardan kenara çizer; sistem çubuğu kadar
+        // boşluk alttan gelir.
+        tester.view.padding = FakeViewPadding(
+          bottom: inset * tester.view.devicePixelRatio,
+        );
+        addTearDown(tester.view.reset);
+        await pumpSettings(tester);
+
+        await tester.drag(find.byType(ListView).first, const Offset(0, -3000));
+        await tester.pumpAndSettle();
+
+        final last = tester.getRect(
+          find.ancestor(
+            of: find.text('Lisanslar'),
+            matching: find.byType(ListTile),
+          ),
+        );
+        final pill = tester.getRect(find.byKey(GlassNavBar.pillKey));
+        expect(last.bottom, lessThanOrEqualTo(pill.top));
+      });
+    }
 
     testWidgets('satırlar aynı boyda', (tester) async {
       service.biometricSupportValue = BiometricSupport.available;

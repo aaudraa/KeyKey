@@ -146,6 +146,20 @@ void main() {
       expect(result, isNull);
     });
 
+    test('tarayıcı bağlantı türünü bildirmezse liste açılır', () {
+      // Güvenlik tasarımı: yalnızca https olan kayıt sorulmadan doldurulur.
+      const unknown = AutofillTarget(
+        packageName: 'com.android.chrome',
+        certsSha256: [cert],
+        webDomain: 'github.com',
+      );
+      final result = directFillCandidate(
+        target: unknown,
+        matches: only(matched, LoginMatchKind.exactHost),
+      );
+      expect(result, isNull);
+    });
+
     test('web sayfası gösteren uygulamada liste açılır', () {
       const webView = AutofillTarget(
         packageName: 'com.banka.mobil',

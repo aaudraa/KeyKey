@@ -141,7 +141,7 @@ class _CardList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, kNavClearance),
+      padding: EdgeInsets.fromLTRB(16, 8, 16, navClearance(context)),
       itemCount: children.length,
       separatorBuilder: (_, _) => const SizedBox(height: 8),
       itemBuilder: (context, index) =>

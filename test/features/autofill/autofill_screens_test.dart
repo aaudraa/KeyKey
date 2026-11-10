@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -59,6 +60,19 @@ class FakeAutofillBridge implements AutofillBridge {
 
   @override
   Future<void> cancel() async => cancelled = true;
+}
+
+/// Kopyalamayı [release] çağrılana kadar bekletir.
+class SlowClipboard extends RecordingClipboard {
+  final _gate = Completer<void>();
+
+  void release() => _gate.complete();
+
+  @override
+  Future<void> copy(String text) async {
+    await _gate.future;
+    await super.copy(text);
+  }
 }
 
 void main() {
@@ -368,6 +382,32 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(clipboard.copied, [OtpGenerator.codeFor(parameters, now)]);
+      expect(bridge.filled?.username, 'veli');
+    });
+
+    testWidgets('pano yavaş yanıt verse de doldurma kaybolmuyor', (
+      tester,
+    ) async {
+      // Gerçek panoda kopyalama bir kanal yanıtı bekler; arada kare çizilir
+      // ve doldurma ekranı kapanmış olur.
+      final slow = SlowClipboard();
+      clipboard = slow;
+      otps.items.add(
+        FakeOtpRepository.item(
+          OtpContent(parameters: parameters, loginId: loginId),
+        ),
+      );
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+      );
+
+      await tester.tap(find.text('Örnek hesap'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      slow.release();
+      await tester.pumpAndSettle();
+
       expect(bridge.filled?.username, 'veli');
     });
 

@@ -122,7 +122,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       appBar: AppBar(title: Text(l10n.navSettings)),
       body: ListView(
         // Altta: yüzen menü.
-        padding: const EdgeInsets.only(bottom: kNavClearance),
+        padding: EdgeInsets.only(bottom: navClearance(context)),
         children: [
           KkSection(
             title: l10n.settingsGroupSecurity,

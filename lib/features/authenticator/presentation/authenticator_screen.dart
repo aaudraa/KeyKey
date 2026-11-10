@@ -262,11 +262,11 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
                   ),
                   builder: (context, now) => ListView.separated(
                     // Altta: yüzen menü ve "Ekle" düğmesi.
-                    padding: const EdgeInsets.fromLTRB(
+                    padding: EdgeInsets.fromLTRB(
                       16,
                       4,
                       16,
-                      kNavClearance + 72,
+                      navClearance(context) + 72,
                     ),
                     itemCount: visible.length,
                     separatorBuilder: (context, index) =>

@@ -162,11 +162,11 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
                 )
               : ListView.separated(
                   // Altta: yüzen menü ve "Ekle" düğmesi.
-                  padding: const EdgeInsets.fromLTRB(
+                  padding: EdgeInsets.fromLTRB(
                     16,
                     4,
                     16,
-                    kNavClearance + 72,
+                    navClearance(context) + 72,
                   ),
                   itemCount: visible.length,
                   separatorBuilder: (_, _) => const SizedBox(height: 8),

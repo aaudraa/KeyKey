@@ -161,3 +161,9 @@ class _NavButton extends StatelessWidget {
 
 /// Listelerin sonunda bırakılacak boşluk; son satır menünün altında kalmasın.
 const double kNavClearance = GlassNavBar.height + GlassNavBar.bottomGap * 2;
+
+/// Listelerin sonunda bırakılacak bütün boşluk: menü ve altındaki sistem
+/// gezinme çubuğu. Android 15+ uygulamayı kenardan kenara çizer; menü
+/// çubuğun üstünde durduğu için liste de o kadar yukarıda bitmeli.
+double navClearance(BuildContext context) =>
+    kNavClearance + MediaQueryData.fromView(View.of(context)).padding.bottom;

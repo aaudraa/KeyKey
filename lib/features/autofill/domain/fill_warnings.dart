@@ -69,6 +69,9 @@ LoginItem? directFillCandidate({
   if (matches.matches.length != 1) return null;
   if (matches.signatureMismatches.isNotEmpty) return null;
   if (target.showsWebPage) return null;
+  // Sitede yalnızca https sorulmadan doldurulur; bildirilmeyen bağlantı türü
+  // http sayılmaz ama kesin de değildir, liste açılır.
+  if (target.isWeb && target.webScheme?.toLowerCase() != 'https') return null;
   final single = matches.matches.single.item;
   final warnings = fillWarnings(target: target, item: single, matches: matches);
   return warnings.isEmpty ? single : null;
