@@ -6,6 +6,7 @@ import 'package:keykey/app/theme.dart';
 import 'package:keykey/features/autofill/application/autofill_bridge.dart';
 import 'package:keykey/features/autofill/presentation/autofill_pick_screen.dart';
 import 'package:keykey/features/autofill/presentation/autofill_save_screen.dart';
+import 'package:keykey/features/autofill/presentation/autofill_sheet_frame.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/lock_screen.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
@@ -49,12 +50,19 @@ class AutofillHome extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    if (ref.watch(autofillDoneProvider)) return const Scaffold();
+    // Kapanırken saydam kalır; kilit ekranı yeniden çizilmez.
+    if (ref.watch(autofillDoneProvider)) return const SizedBox.shrink();
+    void cancel() => unawaited(ref.read(autofillBridgeProvider).cancel());
     return ref
         .watch(autofillTargetProvider)
         .when(
-          loading: () =>
-              const Scaffold(body: Center(child: CircularProgressIndicator())),
+          loading: () => AutofillSheetFrame(
+            onDismiss: cancel,
+            child: const Padding(
+              padding: EdgeInsets.all(32),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          ),
           error: (_, _) => _Message(l10n.autofillNoRequest),
           data: (target) {
             if (target == null) return _Message(l10n.autofillNoRequest);
@@ -64,11 +72,15 @@ class AutofillHome extends ConsumerWidget {
               VaultNotSetUp() => _Message(l10n.autofillNoVault),
               VaultUnavailable() ||
               VaultRecovering() => _Message(l10n.autofillVaultUnavailable),
-              VaultLocked() => LockScreen(
-                allowRecovery: false,
-                subtitle: save == null
-                    ? l10n.autofillFor(name)
-                    : l10n.autofillSaveFor(name),
+              VaultLocked() => AutofillSheetFrame(
+                onDismiss: cancel,
+                child: LockScreen(
+                  allowRecovery: false,
+                  compact: true,
+                  subtitle: save == null
+                      ? l10n.autofillFor(name)
+                      : l10n.autofillSaveFor(name),
+                ),
               ),
               VaultOpen() when save != null => AutofillSaveScreen(
                 target: target,
@@ -93,24 +105,19 @@ class _Message extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(text, textAlign: TextAlign.center),
-                const SizedBox(height: 16),
-                FilledButton(
-                  onPressed: () =>
-                      unawaited(ref.read(autofillBridgeProvider).cancel()),
-                  child: Text(l10n.autofillClose),
-                ),
-              ],
-            ),
-          ),
+    void cancel() => unawaited(ref.read(autofillBridgeProvider).cancel());
+    return AutofillSheetFrame(
+      onDismiss: cancel,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(text, textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            FilledButton(onPressed: cancel, child: Text(l10n.autofillClose)),
+          ],
         ),
       ),
     );

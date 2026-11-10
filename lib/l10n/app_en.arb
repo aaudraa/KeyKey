@@ -1015,6 +1015,10 @@
   "@autofillClose": {
     "description": "Closes the autofill screen without filling."
   },
+  "autofillSearchOther": "Search another login",
+  "@autofillSearchOther": {
+    "description": "Search field under the matching logins in the autofill sheet; focusing it expands the sheet and searches all logins."
+  },
   "autofillFilledNotice": "{name} filled",
   "@autofillFilledNotice": {
     "description": "Short system toast after autofill. Carries only the login's name, never the username or password.",

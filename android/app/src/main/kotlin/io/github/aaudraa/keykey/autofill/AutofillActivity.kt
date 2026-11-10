@@ -10,6 +10,7 @@ import android.view.autofill.AutofillManager
 import android.view.autofill.AutofillValue
 import android.widget.RemoteViews
 import android.widget.Toast
+import io.flutter.embedding.android.FlutterActivityLaunchConfigs.BackgroundMode
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.github.aaudraa.keykey.AppPackages
@@ -52,6 +53,9 @@ class AutofillActivity : FlutterFragmentActivity(), AutofillApi {
     }
 
     override fun getDartEntrypointFunctionName(): String = "autofillMain"
+
+    /** Pencere saydam; karartmayı ve yarım pencereyi Flutter çizer. */
+    override fun getBackgroundMode(): BackgroundMode = BackgroundMode.transparent
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)

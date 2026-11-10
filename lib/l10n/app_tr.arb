@@ -219,6 +219,7 @@
   "autofillVaultUnavailable": "Kasa burada açılamıyor. Durumu görmek için KeyKey'i aç.",
   "autofillEmpty": "Kasada henüz parola yok.",
   "autofillClose": "Kapat",
+  "autofillSearchOther": "Başka bir kayıt ara",
   "autofillFilledNotice": "{name} dolduruldu",
   "autofillFilledNoticeUnnamed": "Kayıt dolduruldu",
   "autofillMatching": "Eşleşen kayıtlar",

@@ -14,6 +14,7 @@ import 'package:keykey/features/autofill/application/autofill_bridge.dart';
 import 'package:keykey/features/autofill/application/autofill_matches.dart';
 import 'package:keykey/features/autofill/domain/public_suffix_list.dart';
 import 'package:keykey/features/autofill/presentation/autofill_app.dart';
+import 'package:keykey/features/autofill/presentation/autofill_sheet_frame.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
@@ -146,6 +147,15 @@ void main() {
   void keepSingleAppMatch() =>
       logins.items.removeWhere((item) => item.content.name == 'Yedek hesap');
 
+  /// Pencerede önce yalnızca eşleşenler var; ötekiler aranarak bulunur.
+  Future<void> searchFor(WidgetTester tester, String query) async {
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Başka bir kayıt ara'),
+      query,
+    );
+    await tester.pumpAndSettle();
+  }
+
   Future<FakeAutofillBridge> pumpAutofill(
     WidgetTester tester, {
     required VaultStatus status,
@@ -216,8 +226,10 @@ void main() {
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();
 
-    expect(find.text('Banka'), findsOneWidget);
-    expect(find.text('Posta'), findsOneWidget);
+    // Önce yalnızca eşleşenler.
+    expect(find.text('Örnek hesap'), findsOneWidget);
+    expect(find.text('Yedek hesap'), findsOneWidget);
+    expect(find.text('Banka'), findsNothing);
   });
 
   testWidgets('eşleşen kayıt sormadan dolduruluyor ve kasa kilitleniyor', (
@@ -321,7 +333,10 @@ void main() {
   testWidgets('arama süzüyor', (tester) async {
     await pumpAutofill(tester, status: VaultOpen(service.newSession()));
 
-    await tester.enterText(find.widgetWithText(TextField, 'Ara'), 'posta');
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Başka bir kayıt ara'),
+      'posta',
+    );
     await tester.pump();
 
     expect(find.text('Posta'), findsOneWidget);
@@ -407,6 +422,8 @@ void main() {
 
   testWidgets('uygulamaya bağlı kayıt üstte, diğerleri altta', (tester) async {
     await pumpAutofill(tester, status: VaultOpen(service.newSession()));
+    await tester.tap(find.widgetWithText(TextField, 'Başka bir kayıt ara'));
+    await tester.pumpAndSettle();
 
     expect(find.text('Eşleşen kayıtlar'), findsOneWidget);
     expect(find.text('Diğer kayıtlar'), findsOneWidget);
@@ -465,6 +482,8 @@ void main() {
     );
 
     expect(find.text('giris.banka.example.com için'), findsOneWidget);
+    await tester.tap(find.widgetWithText(TextField, 'Başka bir kayıt ara'));
+    await tester.pumpAndSettle();
     expect(find.text('Eşleşen kayıtlar'), findsOneWidget);
     final header = tester.getTopLeft(find.text('Diğer kayıtlar')).dy;
     expect(tester.getTopLeft(find.text('Banka')).dy, lessThan(header));
@@ -480,7 +499,10 @@ void main() {
   testWidgets('arama eşleşmeyenleri de buluyor', (tester) async {
     await pumpAutofill(tester, status: VaultOpen(service.newSession()));
 
-    await tester.enterText(find.widgetWithText(TextField, 'Ara'), 'banka');
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Başka bir kayıt ara'),
+      'banka',
+    );
     await tester.pump();
 
     expect(find.text('Banka'), findsOneWidget);
@@ -497,6 +519,7 @@ void main() {
         status: VaultOpen(service.newSession()),
       );
 
+      await searchFor(tester, 'banka');
       await tester.tap(find.text('Banka'));
       await tester.pumpAndSettle();
 
@@ -523,6 +546,7 @@ void main() {
         status: VaultOpen(service.newSession()),
       );
 
+      await searchFor(tester, 'banka');
       await tester.tap(find.text('Banka'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Yine de doldur'));
@@ -539,6 +563,7 @@ void main() {
         status: VaultOpen(service.newSession()),
       );
 
+      await searchFor(tester, 'banka');
       await tester.tap(find.text('Banka'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Uygulamayı bu kayda bağla'));
@@ -589,6 +614,7 @@ void main() {
         ),
       );
 
+      await searchFor(tester, 'banka');
       await tester.tap(find.text('Banka'));
       await tester.pumpAndSettle();
       expect(
@@ -609,6 +635,7 @@ void main() {
         ),
       );
 
+      await searchFor(tester, 'banka');
       await tester.tap(find.text('Banka'));
       await tester.pumpAndSettle();
       expect(
@@ -633,6 +660,94 @@ void main() {
       expect(find.textContaining('Bağlantı şifresiz (http)'), findsOneWidget);
       expect(find.textContaining('kaydedilmemiş'), findsNothing);
       expect(find.textContaining('Paket:'), findsNothing);
+    });
+  });
+
+  group('yarım pencere', () {
+    Finder inFrame(Finder finder) =>
+        find.descendant(of: find.byType(AutofillSheetFrame), matching: finder);
+
+    testWidgets('kilit ekranı pencerenin içinde', (tester) async {
+      await pumpAutofill(tester, status: VaultLocked(service.header));
+
+      expect(inFrame(find.byType(TextField)), findsOneWidget);
+      expect(inFrame(find.text('Aç')), findsOneWidget);
+    });
+
+    testWidgets('seçim penceresi yalnızca eşleşenleri ve arama kutusunu '
+        'gösterir; aramaya dokununca bütün kayıtlarda arar', (tester) async {
+      await pumpAutofill(tester, status: VaultOpen(service.newSession()));
+
+      expect(inFrame(find.text('Örnek hesap')), findsOneWidget);
+      expect(inFrame(find.text('Yedek hesap')), findsOneWidget);
+      expect(find.text('Banka'), findsNothing);
+      expect(find.text('Posta'), findsNothing);
+
+      await tester.tap(find.widgetWithText(TextField, 'Başka bir kayıt ara'));
+      await tester.pumpAndSettle();
+      expect(inFrame(find.text('Banka')), findsOneWidget);
+      expect(inFrame(find.text('Posta')), findsOneWidget);
+    });
+
+    testWidgets('zemine dokunmak iptal eder', (tester) async {
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+      );
+
+      await tester.tapAt(const Offset(10, 10));
+      await tester.pump();
+
+      expect(bridge.cancelled, isTrue);
+      expect(bridge.filled, isNull);
+    });
+
+    testWidgets('aşağı kaydırmak iptal eder', (tester) async {
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+      );
+
+      await tester.fling(
+        find.byKey(AutofillSheetFrame.handleKey),
+        const Offset(0, 300),
+        1000,
+      );
+      await tester.pump();
+
+      expect(bridge.cancelled, isTrue);
+      expect(bridge.filled, isNull);
+    });
+
+    testWidgets('uyarı ve onay pencerenin içinde', (tester) async {
+      await pumpAutofill(tester, status: VaultOpen(service.newSession()));
+
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Başka bir kayıt ara'),
+        'banka',
+      );
+      await tester.pump();
+      await tester.tap(find.text('Banka'));
+      await tester.pumpAndSettle();
+
+      expect(inFrame(find.text('Doldurmadan önce')), findsOneWidget);
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(find.byType(Dialog), findsNothing);
+    });
+
+    testWidgets('kaydetme ekranı da pencerenin içinde', (tester) async {
+      await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: const AutofillTarget(
+          packageName: 'io.github.aaudraa.ornekgiris',
+          appLabel: 'Örnek Giriş',
+          certsSha256: [cert],
+          save: AutofillSave(username: 'ayse', password: 'yeni-parola-1'),
+        ),
+      );
+
+      expect(inFrame(find.widgetWithText(FilledButton, 'Kaydet')), findsOne);
     });
   });
 

@@ -13,11 +13,20 @@ import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Kasa kilitliyken açılan ekran.
 class LockScreen extends ConsumerStatefulWidget {
-  const new({this.allowRecovery = true, this.subtitle, super.key});
+  const new({
+    this.allowRecovery = true,
+    this.subtitle,
+    this.compact = false,
+    super.key,
+  });
 
   /// `false` ise "Parolamı unuttum" gösterilmez. Doldurma ekranında
   /// kurtarma yapılmaz, kullanıcı ana uygulamaya yönlendirilir.
   final bool allowRecovery;
+
+  /// `true` ise ekran değil, doldurmanın yarım penceresine giren içerik
+  /// çizilir: küçük logo, kendi sayfası yok.
+  final bool compact;
 
   /// Başlığın altında gösterilen açıklama, örneğin neyin doldurulacağı.
   final String? subtitle;
@@ -154,66 +163,68 @@ class _LockScreenState extends ConsumerState<LockScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final content = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Center(child: KeyKeyLogo(size: widget.compact ? 56 : 88)),
+        const SizedBox(height: 16),
+        Text(
+          l10n.lockTitle,
+          textAlign: TextAlign.center,
+          style: theme.textTheme.headlineSmall,
+        ),
+        if (widget.subtitle != null) ...[
+          const SizedBox(height: 8),
+          Text(widget.subtitle!, textAlign: TextAlign.center),
+        ],
+        const SizedBox(height: 24),
+        SecretField(
+          controller: _password,
+          label: l10n.lockPasswordLabel,
+          autofocus: true,
+          enabled: !_busy,
+          errorText: _error,
+          onSubmitted: (_) => _submit(),
+        ),
+        if (_wait > Duration.zero) ...[
+          const SizedBox(height: 12),
+          Text(l10n.lockWait(_formatWait(_wait)), textAlign: TextAlign.center),
+        ],
+        const SizedBox(height: 16),
+        FilledButton(
+          onPressed: _canSubmit ? _submit : null,
+          child: Text(_busy ? l10n.lockOpening : l10n.lockOpen),
+        ),
+        if (_biometricReady) ...[
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: _busy ? null : _unlockWithBiometric,
+            icon: const Icon(Icons.fingerprint),
+            label: Text(l10n.lockUseBiometric),
+          ),
+        ],
+        if (widget.allowRecovery) ...[
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: _busy ? null : () => context.push(AppRoutes.recovery),
+            child: Text(l10n.lockForgot),
+          ),
+        ],
+      ],
+    );
+    if (widget.compact) {
+      return SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+        child: content,
+      );
+    }
     return Scaffold(
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Center(child: KeyKeyLogo(size: 88)),
-                const SizedBox(height: 16),
-                Text(
-                  l10n.lockTitle,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.headlineSmall,
-                ),
-                if (widget.subtitle != null) ...[
-                  const SizedBox(height: 8),
-                  Text(widget.subtitle!, textAlign: TextAlign.center),
-                ],
-                const SizedBox(height: 24),
-                SecretField(
-                  controller: _password,
-                  label: l10n.lockPasswordLabel,
-                  autofocus: true,
-                  enabled: !_busy,
-                  errorText: _error,
-                  onSubmitted: (_) => _submit(),
-                ),
-                if (_wait > Duration.zero) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    l10n.lockWait(_formatWait(_wait)),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-                const SizedBox(height: 16),
-                FilledButton(
-                  onPressed: _canSubmit ? _submit : null,
-                  child: Text(_busy ? l10n.lockOpening : l10n.lockOpen),
-                ),
-                if (_biometricReady) ...[
-                  const SizedBox(height: 8),
-                  OutlinedButton.icon(
-                    onPressed: _busy ? null : _unlockWithBiometric,
-                    icon: const Icon(Icons.fingerprint),
-                    label: Text(l10n.lockUseBiometric),
-                  ),
-                ],
-                if (widget.allowRecovery) ...[
-                  const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: _busy
-                        ? null
-                        : () => context.push(AppRoutes.recovery),
-                    child: Text(l10n.lockForgot),
-                  ),
-                ],
-              ],
-            ),
+            child: content,
           ),
         ),
       ),

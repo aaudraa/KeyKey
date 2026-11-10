@@ -9,6 +9,7 @@ import 'package:keykey/features/autofill/application/autofill_matches.dart';
 import 'package:keykey/features/autofill/domain/login_matcher.dart';
 import 'package:keykey/features/autofill/domain/save_draft.dart';
 import 'package:keykey/features/autofill/presentation/autofill_app.dart';
+import 'package:keykey/features/autofill/presentation/autofill_sheet_frame.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
@@ -107,90 +108,105 @@ class _AutofillSaveScreenState extends ConsumerState<AutofillSaveScreen> {
     final existing = existingLoginFor(matches, widget.save);
     final app = _binding.app;
     final url = _binding.url;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.autofillSaveTitle),
-        leading: IconButton(
-          tooltip: l10n.autofillClose,
-          icon: const Icon(Icons.close),
-          onPressed: () => unawaited(ref.read(autofillBridgeProvider).cancel()),
-        ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+    void cancel() => unawaited(ref.read(autofillBridgeProvider).cancel());
+    return AutofillSheetFrame(
+      onDismiss: cancel,
+      // Form klavyeyle doldurulur; bağlanacak uygulama da görünmeli.
+      expanded: true,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            l10n.autofillFor(autofillTargetName(widget.target)),
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 16),
-          if (existing != null) ...[
-            _ExistingCard(
-              item: existing,
-              samePassword: existing.content.password == widget.save.password,
-              busy: _busy,
-              onUpdate: () => unawaited(_updateExisting(existing)),
-              onClose: _close,
-            ),
-            const SizedBox(height: 16),
-          ],
-          SecretField(
-            controller: _name,
-            label: l10n.loginName,
-            obscure: false,
-            textInputAction: TextInputAction.next,
-            onChanged: (_) => setState(() {}),
-          ),
-          const SizedBox(height: 12),
-          SecretField(
-            controller: _username,
-            label: l10n.loginUsername,
-            obscure: false,
-            textInputAction: TextInputAction.next,
-          ),
-          const SizedBox(height: 12),
-          SecretField(controller: _password, label: l10n.loginPassword),
-          const SizedBox(height: 8),
-          if (url != null)
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.link),
-              title: Text(l10n.autofillSaveSite(url)),
-            ),
-          if (app != null)
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.android),
-              title: Text(
-                l10n.autofillSaveApp(widget.target.appLabel ?? app.packageName),
-              ),
-              subtitle: Text(
-                l10n.loginAppSignature(
-                  formatCertFingerprint(app.certsSha256.first, short: true),
+          AutofillSheetHeader(title: l10n.autofillSaveTitle, onClose: cancel),
+          Flexible(
+            child: ListView(
+              shrinkWrap: true,
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              children: [
+                Text(
+                  l10n.autofillFor(autofillTargetName(widget.target)),
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
-                style: const TextStyle(fontFamily: 'monospace'),
-              ),
+                const SizedBox(height: 16),
+                if (existing != null) ...[
+                  _ExistingCard(
+                    item: existing,
+                    samePassword:
+                        existing.content.password == widget.save.password,
+                    busy: _busy,
+                    onUpdate: () => unawaited(_updateExisting(existing)),
+                    onClose: _close,
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                SecretField(
+                  controller: _name,
+                  label: l10n.loginName,
+                  obscure: false,
+                  textInputAction: TextInputAction.next,
+                  onChanged: (_) => setState(() {}),
+                ),
+                const SizedBox(height: 12),
+                SecretField(
+                  controller: _username,
+                  label: l10n.loginUsername,
+                  obscure: false,
+                  textInputAction: TextInputAction.next,
+                ),
+                const SizedBox(height: 12),
+                SecretField(controller: _password, label: l10n.loginPassword),
+                const SizedBox(height: 8),
+                if (url != null)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.link),
+                    title: Text(l10n.autofillSaveSite(url)),
+                  ),
+                if (app != null)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.android),
+                    title: Text(
+                      l10n.autofillSaveApp(
+                        widget.target.appLabel ?? app.packageName,
+                      ),
+                    ),
+                    subtitle: Text(
+                      l10n.loginAppSignature(
+                        formatCertFingerprint(
+                          app.certsSha256.first,
+                          short: true,
+                        ),
+                      ),
+                      style: const TextStyle(fontFamily: 'monospace'),
+                    ),
+                  ),
+                // Uygulama görünmüyorsa (Android imzayı vermediyse) bağlanmaz;
+                // kullanıcı ilk doldurmada bağlayabilir.
+                if (!widget.target.isWeb && app == null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      l10n.autofillSaveNoApp(autofillTargetName(widget.target)),
+                    ),
+                  )
+                else if (widget.target.showsWebPage)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(l10n.autofillSaveWebView),
+                  ),
+              ],
             ),
-          // Uygulama görünmüyorsa (Android imzayı vermediyse) bağlanmaz;
-          // kullanıcı ilk doldurmada bağlayabilir.
-          if (!widget.target.isWeb && app == null)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                l10n.autofillSaveNoApp(autofillTargetName(widget.target)),
-              ),
-            )
-          else if (widget.target.showsWebPage)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(l10n.autofillSaveWebView),
+          ),
+          // Düğme pencerenin altında sabit: form uzun olsa da görünür.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: FilledButton(
+              onPressed: _busy || _name.text.trim().isEmpty
+                  ? null
+                  : () => unawaited(_addNew()),
+              child: Text(l10n.loginSave),
             ),
-          const SizedBox(height: 16),
-          FilledButton(
-            onPressed: _busy || _name.text.trim().isEmpty
-                ? null
-                : () => unawaited(_addNew()),
-            child: Text(l10n.loginSave),
           ),
         ],
       ),
