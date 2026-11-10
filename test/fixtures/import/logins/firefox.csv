@@ -1,0 +1,4 @@
+"url","username","password","httpRealm","formActionOrigin","guid","timeCreated","timeLastUsed","timePasswordChanged"
+"https://forum.example.org","ayşe.yılmaz","sahte-Sifre-1",,"https://forum.example.org","{5ec0d12f-9a6b-4c1e-8f3a-1d2e3f4a5b6c}","1730000000000","1730000500000","1730000000000"
+"https://router.example.net","admin","sahte, ""Sifre"" 2","Yönetim paneli",,"{0b1c2d3e-4f50-4617-8293-a4b5c6d7e8f9}","1730000000000","1730000000000","1730000000000"
+"https://basit.example.com","","sahte-Sifre-3",,"","{11111111-2222-4333-8444-555555555555}","1730000000000","1730000000000","1730000000000"

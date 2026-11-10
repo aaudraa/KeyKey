@@ -14,7 +14,13 @@ final class EncryptedBitwardenExportException implements Exception {
 }
 
 /// Desteklenen kaynaklar.
-enum LoginExportSource { bitwardenJson, bitwardenCsv, chromeCsv, keepassxcCsv }
+enum LoginExportSource {
+  bitwardenJson,
+  bitwardenCsv,
+  chromeCsv,
+  firefoxCsv,
+  keepassxcCsv,
+}
 
 /// Başka bir uygulamadan okunan bir giriş kaydı.
 final class ImportedLogin {
@@ -58,8 +64,8 @@ final class LoginExport {
   final int skipped;
 }
 
-/// Bitwarden (JSON, CSV), Chrome (CSV) ve KeePassXC (CSV) dışa aktarmalarını
-/// okur.
+/// Bitwarden (JSON, CSV), Chrome (CSV), Firefox (CSV) ve KeePassXC (CSV) dışa
+/// aktarmalarını okur.
 ///
 /// Dosyalar güvenilmeyen veri sayılır: bilinmeyen alanlar yok sayılır,
 /// bozuk satır atlanır, yalnızca bu dosyadaki hata türleri fırlatılır.
@@ -93,6 +99,9 @@ abstract final class LoginExportReader {
     if (columns.keys.toSet().containsAll(_keepassColumns)) {
       return _rows(LoginExportSource.keepassxcCsv, body, header, _keepassRow);
     }
+    if (columns.keys.toSet().containsAll(_firefoxColumns)) {
+      return _rows(LoginExportSource.firefoxCsv, body, header, _firefoxRow);
+    }
     if (columns.keys.toSet().containsAll(_chromeColumns)) {
       return _rows(LoginExportSource.chromeCsv, body, header, _chromeRow);
     }
@@ -110,6 +119,15 @@ abstract final class LoginExportReader {
   // KeePassX dosyalarında olmayabilir.
   static const _keepassColumns = {'title', 'username', 'password', 'url'};
   static const _chromeColumns = {'name', 'url', 'username', 'password'};
+  // Firefox kayıt adı yazmaz; ad adresten gelir. Başlıklar küçük harfe
+  // çevrilmiş olarak karşılaştırılır.
+  static const _firefoxColumns = {
+    'url',
+    'username',
+    'password',
+    'httprealm',
+    'formactionorigin',
+  };
 
   /// Satır işleyici: kayıt, atlanacaksa `null`.
   static LoginExport _rows(
@@ -169,6 +187,13 @@ abstract final class LoginExportReader {
     password: row['password']!,
     urls: [row['url']!],
     notes: row['note'] ?? '',
+  );
+
+  static ImportedLogin? _firefoxRow(Map<String, String> row) => _login(
+    name: '',
+    username: row['username']!,
+    password: row['password']!,
+    urls: [row['url']!],
   );
 
   static LoginExport _bitwardenJson(String text) {

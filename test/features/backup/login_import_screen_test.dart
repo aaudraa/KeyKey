@@ -160,8 +160,8 @@ void main() {
       await expectMessage(
         tester,
         DocumentOpened(Uint8List.fromList([1, 2, 3])),
-        'Bu dosya tanınmadı. Bitwarden (JSON veya CSV), Chrome (CSV) ya da '
-        'KeePassXC (CSV) dışa aktarması seç.',
+        'Bu dosya tanınmadı. Bitwarden (JSON veya CSV), Chrome (CSV), '
+        'Firefox (CSV) ya da KeePassXC (CSV) dışa aktarması seç.',
       );
     });
 
