@@ -30,6 +30,8 @@ class FakeAutofillBridge implements AutofillBridge {
 
   final AutofillTarget? target;
   ({String username, String password})? filled;
+  String? notice;
+  int fillCount = 0;
   bool cancelled = false;
 
   @override
@@ -47,7 +49,12 @@ class FakeAutofillBridge implements AutofillBridge {
   Future<void> fill({
     required String username,
     required String password,
-  }) async => filled = (username: username, password: password);
+    required String notice,
+  }) async {
+    filled = (username: username, password: password);
+    this.notice = notice;
+    fillCount++;
+  }
 
   @override
   Future<void> cancel() async => cancelled = true;
@@ -115,9 +122,29 @@ void main() {
           ),
           id: 3,
         ),
+        // Aynı uygulamaya bağlı ikinci kayıt: iki eşleşme varken liste
+        // açılır. Tek eşleşmenin doğrudan doldurulması ayrıca sınanır.
+        FakeLoginRepository.item(
+          LoginContent(
+            name: 'Yedek hesap',
+            username: 'zeynep',
+            password: 'yedek-parolasi',
+            apps: [
+              LoginApp(
+                packageName: 'io.github.aaudraa.ornekgiris',
+                certsSha256: const [cert],
+              ),
+            ],
+          ),
+          id: 4,
+        ),
       ],
     );
   });
+
+  /// Uygulamaya bağlı ikinci kaydı çıkarır; geriye tek eşleşme kalır.
+  void keepSingleAppMatch() =>
+      logins.items.removeWhere((item) => item.content.name == 'Yedek hesap');
 
   Future<FakeAutofillBridge> pumpAutofill(
     WidgetTester tester, {
@@ -206,6 +233,8 @@ void main() {
 
     expect(find.text('Doldurmadan önce'), findsNothing);
     expect(bridge.filled, (username: 'veli', password: 'ornek-parolasi'));
+    // Listeden seçilen doldurmada da bildirim çıkar.
+    expect(bridge.notice, 'Örnek hesap dolduruldu');
     final container = ProviderScope.containerOf(
       tester.element(find.byType(AutofillHome)),
     );
@@ -213,6 +242,80 @@ void main() {
     // Ekran kapanırken kilit ekranı ve parmak izi penceresi yeniden açılmaz.
     expect(find.text('KeyKey kilitli'), findsNothing);
     expect(find.text('Örnek hesap'), findsNothing);
+  });
+
+  group('tek kesin eşleşme', () {
+    testWidgets('kilit açılınca liste açılmadan dolduruluyor', (tester) async {
+      keepSingleAppMatch();
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultLocked(service.header),
+      );
+
+      await tester.enterText(
+        find.byType(TextField),
+        FakeVaultService.correctPassword,
+      );
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+
+      expect(bridge.filled, (username: 'veli', password: 'ornek-parolasi'));
+      expect(bridge.notice, 'Örnek hesap dolduruldu');
+      expect(bridge.fillCount, 1);
+      expect(find.text('Eşleşen kayıtlar'), findsNothing);
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(AutofillHome)),
+      );
+      expect(container.read(vaultControllerProvider), isA<VaultLocked>());
+    });
+
+    testWidgets('kasa açıkken de bir kez dolduruluyor', (tester) async {
+      keepSingleAppMatch();
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+      );
+
+      expect(bridge.filled?.username, 'veli');
+      expect(bridge.fillCount, 1);
+    });
+
+    testWidgets('adsız kayıtta bildirim genel', (tester) async {
+      keepSingleAppMatch();
+      final index = logins.items.indexWhere(
+        (item) => item.content.name == 'Örnek hesap',
+      );
+      final item = logins.items[index];
+      logins.items[index] = FakeLoginRepository.item(
+        item.content.copyWith(name: ''),
+        id: 3,
+      );
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+      );
+
+      expect(bridge.notice, 'Kayıt dolduruldu');
+    });
+
+    testWidgets('tarayıcıda aynı sitenin tek kaydı sorulmadan dolduruluyor', (
+      tester,
+    ) async {
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: const AutofillTarget(
+          packageName: 'com.android.chrome',
+          appLabel: 'Chrome',
+          webDomain: 'giris.banka.example.com',
+          webScheme: 'https',
+        ),
+      );
+
+      expect(find.text('Doldurmadan önce'), findsNothing);
+      expect(bridge.filled?.password, 'banka-parolasi');
+      expect(bridge.notice, 'Banka dolduruldu');
+    });
   });
 
   testWidgets('arama süzüyor', (tester) async {
@@ -338,6 +441,18 @@ void main() {
   });
 
   testWidgets('tarayıcıda aynı sitenin kaydı eşleşiyor', (tester) async {
+    // İki eşleşme: liste açılır.
+    logins.items.add(
+      FakeLoginRepository.item(
+        const LoginContent(
+          name: 'Banka iş',
+          username: 'ali.is',
+          password: 'is-parolasi',
+          urls: ['https://banka.example.com/is'],
+        ),
+        id: 5,
+      ),
+    );
     final bridge = await pumpAutofill(
       tester,
       status: VaultOpen(service.newSession()),
@@ -704,7 +819,7 @@ void main() {
       final item = saved('veli')!;
       expect(item.content.password, 'degisen-parola');
       expect(item.content.passwordHistory.single.password, 'ornek-parolasi');
-      expect(logins.items, hasLength(3));
+      expect(logins.items, hasLength(4));
       expect(bridge.cancelled, isTrue);
     });
 

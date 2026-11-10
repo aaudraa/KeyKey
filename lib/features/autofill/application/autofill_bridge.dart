@@ -68,8 +68,13 @@ abstract interface class AutofillBridge {
   /// [packageName] verilen imza özetlerinin hepsiyle imzalanmış mı.
   Future<bool> hasSigningCertificates(String packageName, List<String> certs);
 
-  /// Değerleri forma verir; Android ekranı kapatır.
-  Future<void> fill({required String username, required String password});
+  /// Değerleri forma verir; Android [notice] bildirimini gösterir ve ekranı
+  /// kapatır. Bildirim yalnızca kaydın adını taşır.
+  Future<void> fill({
+    required String username,
+    required String password,
+    required String notice,
+  });
 
   /// Hiçbir şey doldurmadan kapatır. Kaydetme bitince de kullanılır.
   Future<void> cancel();
@@ -107,8 +112,11 @@ final class PigeonAutofillBridge implements AutofillBridge {
       _api.hasSigningCertificates(packageName, certs);
 
   @override
-  Future<void> fill({required String username, required String password}) =>
-      _api.fill(username, password);
+  Future<void> fill({
+    required String username,
+    required String password,
+    required String notice,
+  }) => _api.fill(username, password, notice);
 
   @override
   Future<void> cancel() => _api.cancel();

@@ -1015,6 +1015,20 @@
   "@autofillClose": {
     "description": "Closes the autofill screen without filling."
   },
+  "autofillFilledNotice": "{name} filled",
+  "@autofillFilledNotice": {
+    "description": "Short system toast after autofill. Carries only the login's name, never the username or password.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "GitHub"
+      }
+    }
+  },
+  "autofillFilledNoticeUnnamed": "Login filled",
+  "@autofillFilledNoticeUnnamed": {
+    "description": "Toast after autofill when the login has no name."
+  },
   "autofillMatching": "Matching logins",
   "@autofillMatching": {
     "description": "Header above logins that match the app or website being filled."

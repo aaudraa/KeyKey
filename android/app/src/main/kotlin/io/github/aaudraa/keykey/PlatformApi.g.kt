@@ -912,8 +912,8 @@ interface AutofillApi {
    * kayıttaki özetlerin hepsiyle tutuyor mu. İmza geçmişi de kabul edilir.
    */
   fun hasSigningCertificates(packageName: String, certsSha256: List<String>): Boolean
-  /** Değerleri forma verir ve ekranı kapatır. */
-  fun fill(username: String, password: String)
+  /** Değerleri forma verir, [notice] bildirimini gösterir ve ekranı kapatır. */
+  fun fill(username: String, password: String, notice: String)
   /** Hiçbir şey doldurmadan ekranı kapatır. Kaydetme bitince de kullanılır. */
   fun cancel()
 
@@ -966,8 +966,9 @@ interface AutofillApi {
             val args = message as List<Any?>
             val usernameArg = args[0] as String
             val passwordArg = args[1] as String
+            val noticeArg = args[2] as String
             val wrapped: List<Any?> = try {
-              api.fill(usernameArg, passwordArg)
+              api.fill(usernameArg, passwordArg, noticeArg)
               listOf(null)
             } catch (exception: Throwable) {
               PlatformApiPigeonUtils.wrapError(exception)

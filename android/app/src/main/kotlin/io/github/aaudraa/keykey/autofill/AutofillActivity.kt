@@ -9,6 +9,7 @@ import android.view.MotionEvent
 import android.view.autofill.AutofillManager
 import android.view.autofill.AutofillValue
 import android.widget.RemoteViews
+import android.widget.Toast
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.github.aaudraa.keykey.AppPackages
@@ -90,7 +91,7 @@ class AutofillActivity : FlutterFragmentActivity(), AutofillApi {
     override fun hasSigningCertificates(packageName: String, certsSha256: List<String>): Boolean =
         SigningCerts.hasAll(packageManager, packageName, certsSha256)
 
-    override fun fill(username: String, password: String) {
+    override fun fill(username: String, password: String, notice: String) {
         val form = parsed
         if (form == null) {
             cancel()
@@ -122,6 +123,9 @@ class AutofillActivity : FlutterFragmentActivity(), AutofillApi {
             cancel()
             return
         }
+        // Yalnızca kaydın adı; kullanıcı adı ve parola bildirime girmez. Bu
+        // pencere güvenli değildir, bkz. güvenlik tasarımı "Bilinen ödünler".
+        Toast.makeText(applicationContext, notice, Toast.LENGTH_SHORT).show()
         setResult(
             RESULT_OK,
             Intent().putExtra(AutofillManager.EXTRA_AUTHENTICATION_RESULT, builder.build()),

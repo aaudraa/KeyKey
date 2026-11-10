@@ -88,4 +88,86 @@ void main() {
     expect(warnings, {FillWarning.noMatch, FillWarning.insecure});
     expect(canBindApp(target: web, warnings: warnings), isFalse);
   });
+
+  group('directFillCandidate', () {
+    LoginMatches only(LoginItem single, LoginMatchKind kind) => LoginMatches(
+      matches: [LoginMatch(single, kind)],
+      signatureMismatches: const [],
+    );
+    const browser = AutofillTarget(
+      packageName: 'com.android.chrome',
+      certsSha256: [cert],
+      webDomain: 'github.com',
+      webScheme: 'https',
+    );
+
+    test('uygulama hedefinde imzası tutan tek kayıt doğrudan dolar', () {
+      final result = directFillCandidate(
+        target: app,
+        matches: only(matched, LoginMatchKind.app),
+      );
+      expect(result, same(matched));
+    });
+
+    test('güvenilen tarayıcıda https ve alan adı tutan tek kayıt '
+        'doğrudan dolar', () {
+      final result = directFillCandidate(
+        target: browser,
+        matches: only(matched, LoginMatchKind.sameSite),
+      );
+      expect(result, same(matched));
+    });
+
+    test('iki eşleşmede liste açılır', () {
+      final result = directFillCandidate(
+        target: app,
+        matches: LoginMatches(
+          matches: [
+            LoginMatch(matched, LoginMatchKind.app),
+            LoginMatch(other, LoginMatchKind.app),
+          ],
+          signatureMismatches: const [],
+        ),
+      );
+      expect(result, isNull);
+    });
+
+    test('http sayfada liste açılır', () {
+      const insecure = AutofillTarget(
+        packageName: 'com.android.chrome',
+        certsSha256: [cert],
+        webDomain: 'github.com',
+        webScheme: 'http',
+      );
+      final result = directFillCandidate(
+        target: insecure,
+        matches: only(matched, LoginMatchKind.exactHost),
+      );
+      expect(result, isNull);
+    });
+
+    test('web sayfası gösteren uygulamada liste açılır', () {
+      const webView = AutofillTarget(
+        packageName: 'com.banka.mobil',
+        certsSha256: [cert],
+        inWebView: true,
+      );
+      final result = directFillCandidate(
+        target: webView,
+        matches: only(matched, LoginMatchKind.app),
+      );
+      expect(result, isNull);
+    });
+
+    test('başka bir kayıtta imza tutmuyorsa liste açılır', () {
+      expect(directFillCandidate(target: app, matches: matches), isNull);
+    });
+
+    test('eşleşme yoksa liste açılır', () {
+      expect(
+        directFillCandidate(target: app, matches: LoginMatches.empty),
+        isNull,
+      );
+    });
+  });
 }

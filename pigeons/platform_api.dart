@@ -148,8 +148,8 @@ abstract class AutofillApi {
   /// kayıttaki özetlerin hepsiyle tutuyor mu. İmza geçmişi de kabul edilir.
   bool hasSigningCertificates(String packageName, List<String> certsSha256);
 
-  /// Değerleri forma verir ve ekranı kapatır.
-  void fill(String username, String password);
+  /// Değerleri forma verir, [notice] bildirimini gösterir ve ekranı kapatır.
+  void fill(String username, String password, String notice);
 
   /// Hiçbir şey doldurmadan ekranı kapatır. Kaydetme bitince de kullanılır.
   void cancel();

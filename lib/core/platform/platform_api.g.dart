@@ -862,8 +862,8 @@ class AutofillApi {
     return pigeonVar_replyValue! as bool;
   }
 
-  /// Değerleri forma verir ve ekranı kapatır.
-  Future<void> fill(String username, String password) async {
+  /// Değerleri forma verir, [notice] bildirimini gösterir ve ekranı kapatır.
+  Future<void> fill(String username, String password, String notice) async {
     final pigeonVar_channelName =
         'dev.flutter.pigeon.keykey.AutofillApi.fill$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
@@ -872,7 +872,7 @@ class AutofillApi {
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
-      <Object?>[username, password],
+      <Object?>[username, password, notice],
     );
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 

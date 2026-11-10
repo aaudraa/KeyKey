@@ -37,10 +37,46 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
   final _query = TextEditingController();
   bool _busy = false;
 
+  /// Doğrudan doldurma bir kez denenir; eşleşmeler yeniden hesaplanınca
+  /// ikinci kez doldurulmaz.
+  bool _directChecked = false;
+
+  /// Tek kesin eşleşme dolduruluyor; liste gösterilmez.
+  bool _directFilling = false;
+
+  @override
+  void initState() {
+    super.initState();
+    ref.listenManual(
+      autofillMatchesProvider,
+      (_, next) => _maybeFillDirectly(next),
+      fireImmediately: true,
+    );
+  }
+
   @override
   void dispose() {
     _query.dispose();
     super.dispose();
+  }
+
+  /// Tek bir kesin eşleşme varsa ve hiçbir uyarı yoksa seçme penceresi
+  /// açılmadan doldurur. Kural güvenlik tasarımı belgesinin "Akış"
+  /// bölümünde.
+  void _maybeFillDirectly(AsyncValue<LoginMatches> next) {
+    if (_directChecked || next.isLoading) return;
+    if (next case AsyncData(:final value)) {
+      // Kayıtlar yüklenmeden hesaplanan eşleşme boştur; beklenir.
+      if (ref.read(loginsControllerProvider) is! LoginsLoaded) return;
+      _directChecked = true;
+      final item = directFillCandidate(target: widget.target, matches: value);
+      if (item == null || _busy) return;
+      _busy = true;
+      setState(() => _directFilling = true);
+      unawaited(_fill(item).whenComplete(() => _busy = false));
+    } else if (next is AsyncError) {
+      _directChecked = true;
+    }
   }
 
   /// Şüpheli bir durum varsa önce uyarır ve onay ister, istenirse uygulamayı
@@ -95,6 +131,11 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
   /// anahtarlar silindikten sonra yalnızca seçilen iki değer ve varsa 2FA
   /// kodu kalır. Kod, ekran kapanmadan önce panoya kopyalanır.
   Future<void> _fill(LoginItem item) async {
+    final l10n = AppLocalizations.of(context);
+    final name = item.content.name.trim();
+    final notice = name.isEmpty
+        ? l10n.autofillFilledNoticeUnnamed
+        : l10n.autofillFilledNotice(name);
     final username = item.content.username;
     final password = item.content.password;
     final code = await _linkedOtpCode(item);
@@ -109,7 +150,7 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
     }
     await ref
         .read(autofillBridgeProvider)
-        .fill(username: username, password: password);
+        .fill(username: username, password: password, notice: notice);
   }
 
   /// Ayar açıksa kayda bağlı TOTP hesabının güncel kodu. Hata doldurmayı
@@ -144,6 +185,9 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
         ),
       ),
       body: switch ((state, matches)) {
+        _ when _directFilling => const Center(
+          child: CircularProgressIndicator(),
+        ),
         (LoginsLoaded(), AsyncData(:final value)) => _list(
           context,
           l10n,
