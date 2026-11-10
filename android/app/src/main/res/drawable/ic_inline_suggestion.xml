@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Klavyedeki "KeyKey ile doldur" önerisinin simgesi: yalnızca K. Klavye
+     simgeyi tek renge boyar; beyaz zeminli uygulama simgesi orada dolu bir
+     daireye dönüşüyordu. Yol resources/design/keykey-simge.svg ile aynı. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="80"
+    android:viewportHeight="80">
+    <group
+        android:translateX="-17"
+        android:translateY="-10">
+        <path
+            android:fillColor="#FF000000"
+            android:pathData="M24 14h16v30l28-30h20L57 47l33 39H69L46 58l-6 6v22H24z" />
+    </group>
+</vector>

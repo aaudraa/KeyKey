@@ -12,8 +12,12 @@ void main() {
     expect(d, KeyKeyLogo.pathData);
   });
 
-  test('Android ön katmanı ve tek renkli katman da aynı yolu kullanır', () {
-    for (final name in ['ic_launcher_foreground', 'ic_launcher_monochrome']) {
+  test('Android simge katmanları ve öneri simgesi aynı yolu kullanır', () {
+    for (final name in [
+      'ic_launcher_foreground',
+      'ic_launcher_monochrome',
+      'ic_inline_suggestion',
+    ]) {
       final xml = File('android/app/src/main/res/drawable/$name.xml')
           .readAsStringSync();
       expect(xml, contains('android:pathData="${KeyKeyLogo.pathData}"'));
