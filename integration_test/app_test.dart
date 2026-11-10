@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:keykey/app/app.dart';
+import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
@@ -71,7 +72,7 @@ void main() {
       await tester.pumpWidget(openApp());
       await tester.pumpAndSettle();
 
-      final context = tester.element(find.byType(NavigationBar));
+      final context = tester.element(find.byType(GlassNavBar));
       expect(Theme.of(context).brightness, brightness);
     }
   });
@@ -89,7 +90,8 @@ void main() {
       await tester.pumpWidget(openApp());
       await tester.pumpAndSettle();
 
-      expect(find.text(label), findsOneWidget);
+      // Menüde yazı yok; sekme adı ekran okuyucu etiketinde.
+      expect(find.bySemanticsLabel(RegExp('^$label\n')), findsOneWidget);
     }
   });
 

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:keykey/app/app.dart';
+import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/core/storage/vault_database.dart';
 import 'package:keykey/core/storage/vault_store.dart';
@@ -200,6 +201,6 @@ void main() {
 /// Alt çubuktaki 2FA sekmesi. Ayarlardaki ek onay satırı da aynı simgeyi
 /// kullandığı için yalnızca simgeyle aramak iki sonuç verir.
 Finder _otpTab() => find.descendant(
-  of: find.byType(NavigationBar),
+  of: find.byType(GlassNavBar),
   matching: find.byIcon(Icons.shield_outlined),
 );
