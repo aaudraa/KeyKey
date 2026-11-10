@@ -39,7 +39,16 @@ Deneme: iş akışı önce bir deneme anahtarıyla (sertifika `baa13a57…af3f9`
 
 ### Eski sürümlerden geçiş
 
-`v0.x` sürümleri hata ayıklama anahtarıyla imzalıydı. Android farklı imzalı bir APK'yı üstüne kurmaz; 1.0'a geçmek için KeyKey'den şifreli yedek al, eski uygulamayı kaldır, 1.0'ı kur ve yedeği geri yükle. Kaldırma bütün veriyi siler, yedeği önce başka bir yere kopyala.
+`v0.x` sürümleri hata ayıklama anahtarıyla imzalıydı. Android farklı imzalı bir APK'yı üstüne kurmaz; 1.0'a geçmek için KeyKey'den şifreli yedek al, eski uygulamayı kaldır, 1.0'ı kur ve yedeği geri yükle. Kaldırma bütün veriyi siler, yedeği önce başka bir yere kopyala. Geri yüklenen kasa aynı ana parola ve kurtarma anahtarıyla açılır; parmak iziyle açma kaldırmayla silinir, Ayarlar'dan yeniden açılmalıdır.
+
+**Deneme (2026-11-10, [#101](https://github.com/aaudraa/KeyKey/issues/101)).** Android 16 emülatöründe (`KeyKey_API_36`), `v0.8.0` ile kurulan kasada bir parola kaydı, ona bağlı bir 2FA hesabı (bilinen anahtarla) ve parmak iziyle açma vardı. İki yol denendi:
+
+| Yol | Sonuç |
+|---|---|
+| Aynı imzalı yeni sürüm üstüne kuruldu (`adb install -r`, hata ayıklama anahtarı) | Kasa parmak iziyle ve ana parolayla açıldı. Kayıt, parola, 2FA kodu (bilgisayarda hesaplananla aynı), kayıtla 2FA bağı ve son yedek tarihi korundu. SQLite'ın hazır dosyadan repodaki kaynağa geçmesi ([#99](https://github.com/aaudraa/KeyKey/issues/99)) mevcut veritabanını etkilemedi. |
+| Farklı imzalı yeni sürüm (bir deneme anahtarıyla) | Üstüne kurulum `INSTALL_FAILED_UPDATE_INCOMPATIBLE` ile reddedildi. Yukarıdaki yol izlendi: yedek dosyası kaldırmadan sonra İndirilenler'de kaldı, ilk ekrandan ana parolayla geri yüklendi, bütün veri ve bağ yerindeydi. Parmak iziyle açma kapalı geldi, yeniden açıldı ve çalıştı. |
+
+Gerçek yayın anahtarı yerine deneme anahtarı kullanıldı; Android için ikisi de "farklı imza" olduğundan sonuç aynıdır. Biçim uyumluluğu ayrıca birim testlerinde örnek dosyalarla sınanıyor (`test/fixtures/storage`, `vault`, `backup`). 1.0 etiketinden önce fazın son derlemesiyle aynı-imza yolu kısaca tekrarlanacak.
 
 ## Sürüm numarası
 

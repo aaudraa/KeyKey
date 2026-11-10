@@ -437,7 +437,7 @@ Güvenlik ya da veri kaybı sorunu çıkmadı. Ayrıntılar [denetim belgesinde]
 - [x] `CHANGELOG.md` ve sürüm numaralandırma
 - [x] Yeniden üretilebilir derleme denemesi; `sqlite3`'ü hazır dosya yerine kaynaktan derlemek (F-Droid de bunu gerektiriyor)
 - [x] Dağıtım kararı (2026-11-09): 1.0 GitHub Releases'ta; ardından IzzyOnDroid, sonra F-Droid ana deposu (bizim imzamızla); Play Store şimdilik yok
-- [ ] `v0.x` sürümünden 1.0'a yükseltme testi: veri kaybı olmamalı
+- [x] `v0.x` sürümünden 1.0'a yükseltme testi: veri kaybı olmamalı (1.0 etiketinden önce son derlemeyle kısa tekrar)
 - [ ] Gizlilik bildirimi: seçilen mağazaların istediği açıklamalar (Play Store veri güvenliği formu, F-Droid); MASVS-PRIVACY denetiminden
 - [ ] Tasarım incelemesi: bütün ekranların baştan gözden geçirilmesi, uygulama simgesi ve açılış ekranı; kaynak dosyalar `resources/design/` altında. Deneme (#89) boyunca biriken arayüz notları ve ertelenen fikirler (örneğin otomatik doldurma ekranının yarım yükseklikte açılması) buraya girer.
 - [ ] Kullanım kılavuzu ve ekran görüntüleri (`resources/docs/kullanim.md`, `resources/design/`)
@@ -447,7 +447,7 @@ Güvenlik ya da veri kaybı sorunu çıkmadı. Ayrıntılar [denetim belgesinde]
 
 **Durum (2026-11-09):** Faz başladı, görevler #96-#104. Biten: sürüm kuralı ve [değişiklik günlüğü](CHANGELOG.md) (#98), [gizlilik bildirimi](docs/gizlilik.md) (#102, mağaza yanıtları dağıtım kararını bekliyor). Yayın iş akışı (#96, [yayın belgesi](docs/yayin.md)) deneme anahtarıyla GitHub'da sınandı: etiketten taslak ön sürüm, özetler ve imza doğru. Gerçek anahtar #97'yi bekliyor. SQLite artık repodaki kaynaktan derleniyor; aynı yolda yapılan iki derleme, yayın iş akışındakiler dahil, bayt bayt aynı; farklı yolda Flutter'ın gömdüğü mutlak yol yüzünden ayrılıyor (#99, [ayrıntılar](docs/yayin.md#yeniden-üretilebilir-derleme)). Yükseltme denemesi (#101) fazın son derlemesiyle yapılacak.
 
-**Durum (2026-11-10):** Kalıcı yayın anahtarı oluşturuldu, sertifika özeti README'de ve [yayın belgesinde](docs/yayin.md) (#97). Dağıtım kararı verildi (#100, yukarıda). Faz 8 [#105](https://github.com/aaudraa/KeyKey/pull/105) ile kapandı; dış inceleme çağrısı (#90) bu faza taşındı. Kalan sıra: yükseltme testi (#101), tasarım incelemesi (#103), kullanım kılavuzu (#104), ardından 1.0.
+**Durum (2026-11-10):** Kalıcı yayın anahtarı oluşturuldu, sertifika özeti README'de ve [yayın belgesinde](docs/yayin.md) (#97). Dağıtım kararı verildi (#100, yukarıda). Faz 8 [#105](https://github.com/aaudraa/KeyKey/pull/105) ile kapandı; dış inceleme çağrısı (#90) bu faza taşındı. Yükseltme testi (#101) emülatörde iki yolla geçti: aynı imzayla üstüne kurulum ve farklı imzada yedekle taşıma ([ayrıntılar](docs/yayin.md#eski-sürümlerden-geçiş)). Bilgisayarda Windows Smart App Control, Flutter'ın 32 bit ARM aracını (`gen_snapshot`) engellemeye başladı; yerel derlemeler `--target-platform android-x64,android-arm64` ile yapılıyor, CI etkilenmiyor. Kalan sıra: tasarım incelemesi (#103), kullanım kılavuzu (#104), ardından 1.0.
 
 **Bitti sayılması için:** GitHub Release'teki APK dört emülatöre ve gerçek telefona kuruluyor; önceki sürümden yükseltmede veri korunuyor; README son durumu anlatıyor.
 
