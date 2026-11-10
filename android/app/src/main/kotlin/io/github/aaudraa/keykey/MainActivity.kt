@@ -29,5 +29,6 @@ class MainActivity : FlutterFragmentActivity() {
         ImportCryptoApi.setUp(messenger, ImportCrypto())
         AutofillSetupApi.setUp(messenger, AutofillSetup(this))
         DocumentApi.setUp(messenger, DocumentFiles(this))
+        AppPackagesApi.setUp(messenger, AppPackages(this))
     }
 }

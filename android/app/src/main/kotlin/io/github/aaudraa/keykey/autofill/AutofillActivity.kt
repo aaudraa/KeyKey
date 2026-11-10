@@ -11,6 +11,8 @@ import android.view.autofill.AutofillValue
 import android.widget.RemoteViews
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
+import io.github.aaudraa.keykey.AppPackages
+import io.github.aaudraa.keykey.AppPackagesApi
 import io.github.aaudraa.keykey.AutofillApi
 import io.github.aaudraa.keykey.AutofillRequestInfo
 import io.github.aaudraa.keykey.BiometricApi
@@ -56,6 +58,7 @@ class AutofillActivity : FlutterFragmentActivity(), AutofillApi {
         BiometricApi.setUp(messenger, BiometricVault(this))
         ClipboardApi.setUp(messenger, SecureClipboard(this))
         AutofillApi.setUp(messenger, this)
+        AppPackagesApi.setUp(messenger, AppPackages(this))
     }
 
     private fun readRequest(intent: Intent) {

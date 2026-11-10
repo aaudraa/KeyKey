@@ -507,6 +507,8 @@ Yanıtta bir `SaveInfo` bulunur. Kullanıcı formu gönderince sistem kaydetmeyi
   - Güvenilen tarayıcılar, adıyla. Bu liste `trusted-browsers.mjs` ile tarayıcı listesiyle birlikte üretilir ve bir test ikisinin aynı kaldığını denetler.
 
   Ana ekranda simgesi olmayan bir uygulamanın imzası yine okunamayabilir; o zaman kayıt bağlanmadan kaydedilir ve ekran bunu söyler.
+
+  Aynı görünürlükle kayda bağlı uygulamanın simgesi de okunur ve kartta silik olarak gösterilir. Simge `PackageManager`dan o an alınır, diske yazılmaz ve yalnızca onu gösteren ekran açıkken bellekte durur; görünmeyen uygulamada çizgi simge çıkar.
 - **Var olan kayıt:** Bu hedefle zaten eşleşen ve aynı kullanıcı adını taşıyan bir kayıt varsa, ekran onun parolasını güncellemeyi önerir; eski parola geçmişe girer. Eşleşmeyen bir kaydın parolası önerilmez; böylece sahte bir uygulama başka bir kaydın parolasını değiştirtemez. Parola da aynıysa ekran kaydın zaten var olduğunu söyler.
 
 ### Satır içi öneriler

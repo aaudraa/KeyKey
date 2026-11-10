@@ -903,6 +903,68 @@ class AutofillApi {
   }
 }
 
+/// Telefondaki uygulamalar hakkında görünüşe yönelik bilgiler.
+class AppPackagesApi {
+  /// Constructor for [AppPackagesApi]. The [binaryMessenger] named argument is
+  /// available for dependency injection. If it is left null, the default
+  /// BinaryMessenger will be used which routes to the host platform.
+  AppPackagesApi({
+    BinaryMessenger? binaryMessenger,
+    String messageChannelSuffix = '',
+  }) : pigeonVar_binaryMessenger = binaryMessenger,
+       pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty
+           ? '.$messageChannelSuffix'
+           : '';
+
+  final BinaryMessenger? pigeonVar_binaryMessenger;
+  static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
+
+  final String pigeonVar_messageChannelSuffix;
+
+  /// Uygulamanın simgesi, [sizePx] boyutunda PNG. Uygulama yoksa ya da
+  /// KeyKey onu göremiyorsa (ana ekranda simgesi yok) `null`.
+  Future<Uint8List?> appIcon(String packageName, int sizePx) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.AppPackagesApi.appIcon$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[packageName, sizePx],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
+    return pigeonVar_replyValue as Uint8List?;
+  }
+
+  /// KeyKey'in sürüm adı.
+  Future<String> versionName() async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.AppPackagesApi.versionName$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as String;
+  }
+}
+
 /// Kurulum ekranının Kotlin tarafı: durum ve ayarlara doğrudan geçiş.
 class AutofillSetupApi {
   /// Constructor for [AutofillSetupApi]. The [binaryMessenger] named argument is

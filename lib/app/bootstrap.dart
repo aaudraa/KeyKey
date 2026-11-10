@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/misc.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
+import 'package:keykey/core/platform/app_packages.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/platform/export_file_picker.dart';
 import 'package:keykey/core/platform/pigeon_biometric_bridge.dart';
@@ -54,6 +55,7 @@ Future<List<Override>> bootstrap() async {
     qrImageReaderProvider.overrideWithValue(ZxingQrImageReader()),
     exportFilePickerProvider.overrideWithValue(FileSelectorExportPicker()),
     documentFilesProvider.overrideWithValue(PigeonDocumentFiles()),
+    appPackagesProvider.overrideWithValue(PigeonAppPackages()),
     backupServiceProvider.overrideWithValue(
       BackupService(sodium: sodium, store: store),
     ),

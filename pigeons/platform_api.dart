@@ -155,6 +155,17 @@ abstract class AutofillApi {
   void cancel();
 }
 
+/// Telefondaki uygulamalar hakkında görünüşe yönelik bilgiler.
+@HostApi()
+abstract class AppPackagesApi {
+  /// Uygulamanın simgesi, [sizePx] boyutunda PNG. Uygulama yoksa ya da
+  /// KeyKey onu göremiyorsa (ana ekranda simgesi yok) `null`.
+  Uint8List? appIcon(String packageName, int sizePx);
+
+  /// KeyKey'in sürüm adı.
+  String versionName();
+}
+
 /// Ana uygulamanın otomatik doldurma kurulumu durumu.
 class AutofillSetupStatus {
   AutofillSetupStatus({
