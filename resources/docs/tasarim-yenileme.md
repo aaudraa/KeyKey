@@ -46,8 +46,8 @@ Ana renk turuncudur (proje sahibinin kararı). Simgedeki parlak turuncu `#F26B1D
 | Zemin | krem `#F6F1E7` | sıcak koyu `#1C1A17` |
 | Kart | `#FFFDF8`, ince kenar `#E7DFCF` | `#24211D`, kenar `#34302A` |
 | Yazı | `#2B2A28` | `#EFE8DA` |
-| İkincil yazı | `#7D776A` | `#9B9384` |
-| Vurgu (düğme, seçili sekme, 2FA halkası, anahtarlar) | turuncunun koyusu | turuncunun açığı |
+| İkincil yazı | `#696356` (kremde 5,3:1) | `#9B9384` |
+| Vurgu (düğme, seçili sekme, 2FA halkası, anahtarlar) | `#B4470F`, üstünde beyaz (kremde 4,85:1) | `#FF8A4C`, üstünde `#1C1A17` (7,4:1) |
 | Simge ve büyük yüzeyler | `#F26B1D` | `#F26B1D` |
 | Hata | kırmızı, kontrastı denetlenmiş | aynı |
 
