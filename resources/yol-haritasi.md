@@ -2,10 +2,10 @@
 
 KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-09 · **Şu anki faz:** Faz 9 (Faz 8'in denemesi sürüyor)
+**Son güncelleme:** 2026-11-10 · **Şu anki faz:** Faz 9
 
 > [!IMPORTANT]
-> **Gerçek parolalarını Faz 8 bitene kadar KeyKey'e koyma.** Kasa biçimi o zamana kadar değişebilir ve güvenlik denetimi henüz yapılmadı.
+> **Gerçek parolalarını 1.0'a kadar KeyKey'e koyma.** Projenin kendi güvenlik denetimi tamamlandı, ama yayımlanmış bir sürüm yok ve bağımsız bir denetim yapılmadı.
 
 **Bu belgede:** [Durum](#durum) · [Temel kararlar](#temel-kararlar) · [Teknoloji seçimleri](#teknoloji-seçimleri) · [Mimari](#mimari) · [Güvenlik tasarımı](#güvenlik-tasarımı) · [Çalışma düzeni](#çalışma-düzeni) · [Fazlar](#fazlar) · [1.0 sonrası](#10-sonrası) · [Riskler](#riskler)
 
@@ -21,7 +21,7 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 | 5 | 2FA doğrulayıcı | M | 3 | `faz/5-2fa-dogrulayici` | Tamamlandı |
 | 6 | Otomatik doldurma | XL | 4 | `faz/6-otomatik-doldurma` | Tamamlandı |
 | 7 | Yedekleme, içe ve dışa aktarma | L | 4, 5 | `faz/7-yedekleme` | Tamamlandı |
-| 8 | Güvenlik sertleştirme ve denetim | L | 6, 7 | `faz/8-guvenlik-denetimi` | Sürüyor |
+| 8 | Güvenlik sertleştirme ve denetim | L | 6, 7 | `faz/8-guvenlik-denetimi` | Tamamlandı |
 | 9 | 1.0 yayını | M | 8 | `faz/9-yayin` | Sürüyor |
 
 Büyüklük göreli iş miktarını gösterir, takvim sözü değildir. Faz 4 ve 5 aynı anda ilerleyebilir. İlerlemeyi [milestone'lardan](https://github.com/aaudraa/KeyKey/milestones) da izleyebilirsin.
@@ -412,10 +412,19 @@ Telefon denemesi üç sorun buldu ve [#60](https://github.com/aaudraa/KeyKey/pul
 - [x] Bağımlılık ve lisans denetimi; gereksiz paketlerin çıkarılması
 - [x] Gerçek ARM telefonda test: StrongBox, biyometri, performans
 - [x] Erişilebilirlik: TalkBack, büyük yazı boyutu, kontrast
-- [ ] Deneme verisiyle uzun süreli günlük kullanım
-- [ ] Dışarıdan inceleme çağrısı: tasarım belgesini güvenlik topluluklarıyla paylaşmak
+- [x] Deneme verisiyle günlük kullanım (iki hafta planlanmıştı, kullanıcının kararıyla iki günde bitti; aşağıda)
+- [ ] Dışarıdan inceleme çağrısı: tasarım belgesini güvenlik topluluklarıyla paylaşmak (Faz 9'a taşındı)
 
 **Durum (2026-11-08):** Faz başladı, görevler #82-#91 ve Faz 6'dan kalan #71. Biten: kayıtlar ve tehdit modeli (#82), arayüz koruması (#83), yayın derlemesi (#84), bağımlılık ve lisans denetimi (#86, [bağımlılık belgesi](docs/bagimliliklar.md)), çevrimdışı parola raporu (#85), erişilebilirlik (#87), gerçek telefon (#88; StrongBox, parmak izi, süreler [denetim belgesinde](docs/guvenlik-denetimi.md#gerçek-telefon)), MASVS denetimi (#91, 2026-11-09, [özet](docs/guvenlik-denetimi.md#özet)). Denetim bir açık buldu ve düzeltildi: başka bir uygulama, adres taşıyan bir niyetle KeyKey'i istediği ekrana götürebiliyordu. Kilitten sonra bellekte kalan dizeler kabul edilen risk olarak [bilinen sınırlara](docs/guvenlik-tasarimi.md#bilinen-sınırlar) yazıldı. Faz sonu cihaz testleri (entegrasyon, parmak izi, pano, kamera) 2026-11-09'da dört emülatörde (Android 11, 14, 16, 17) geçti. Bu iş [#92](https://github.com/aaudraa/KeyKey/pull/92) ile `main`'e birleşti (`v0.8.0`). Faz, #89 ve #90 bitene kadar sürüyor. Uzun süreli kullanım (#89) Faz 8'in son sürümüyle başlayacak; dış inceleme paylaşımı (#90) kullanıcıyla yapılır.
+
+**Deneme (#89, 2026-11-09 - 2026-11-10):** Telefona `v0.8.0` kuruldu. İki haftalık plan, kullanıcının kararıyla 2026-11-10'da erken bitti. İki bulgu çıktı, ikisi de bu dalda kapandı:
+
+- #94: HoYoLAB'ın giriş ekranı kutularını doldurma sistemine bildirmiyor, bu yüzden ne doldurma ne kaydetme önerisi çıkıyor. Sebep uygulamada; [bilinen sınır](docs/guvenlik-tasarimi.md#doldurma-sistemine-katılmayan-ekranlar) olarak yazıldı, KeyKey klavyesi fikri [1.0 sonrasına](#10-sonrası) eklendi.
+- #95: Firefox'un parola dışa aktarması içe aktarılamıyordu. Eklendi ve telefonda gerçek bir Firefox dosyasıyla denendi.
+
+Güvenlik ya da veri kaybı sorunu çıkmadı. Ayrıntılar [denetim belgesinde](docs/guvenlik-denetimi.md#günlük-kullanım-denemesi).
+
+**Kapanış (2026-11-10):** Faz tamamlandı. Dış inceleme çağrısı (#90) Faz 9'a taşındı: gönderiyi kullanıcı bu faz `main`'e girince paylaşır, gelen geri bildirimler 1.0'dan önce Faz 9'da toplanır. #71 (simgesi olmayan uygulama) denemede karşımıza çıkmadı; issue açık kalıyor ve [Riskler](#riskler) tablosunda duruyor, 1.0 sonrasında gerçek bir örnek çıkarsa ele alınacak.
 
 **Bitti sayılması için:** Açık `güvenlik` issue'su yok; denetim belgesi tamamlandı; gerçek cihaz testleri geçti.
 
@@ -423,7 +432,7 @@ Telefon denemesi üç sorun buldu ve [#60](https://github.com/aaudraa/KeyKey/pul
 
 **Amaç:** İlk kararlı sürümü imzalı ve doğrulanabilir şekilde yayımlamak.
 
-- [ ] Yayın anahtarı: repoya girmez, yedeği ayrı ve güvenli bir yerde tutulur, CI'da GitHub Secrets ile kullanılır
+- [x] Yayın anahtarı: repoya girmez, yedeği ayrı ve güvenli bir yerde tutulur, CI'da GitHub Secrets ile kullanılır
 - [x] Yayın otomasyonu: etiket atılınca imzalı APK ve AAB, SHA-256 özetleri, GitHub Release; R8 `mapping.txt` dosyası da sürüme eklenir (yığın izlerini okumak için)
 - [x] `CHANGELOG.md` ve sürüm numaralandırma
 - [x] Yeniden üretilebilir derleme denemesi; `sqlite3`'ü hazır dosya yerine kaynaktan derlemek (F-Droid de bunu gerektiriyor)
@@ -432,10 +441,13 @@ Telefon denemesi üç sorun buldu ve [#60](https://github.com/aaudraa/KeyKey/pul
 - [ ] Gizlilik bildirimi: seçilen mağazaların istediği açıklamalar (Play Store veri güvenliği formu, F-Droid); MASVS-PRIVACY denetiminden
 - [ ] Tasarım incelemesi: bütün ekranların baştan gözden geçirilmesi, uygulama simgesi ve açılış ekranı; kaynak dosyalar `resources/design/` altında. Deneme (#89) boyunca biriken arayüz notları ve ertelenen fikirler (örneğin otomatik doldurma ekranının yarım yükseklikte açılması) buraya girer.
 - [ ] Kullanım kılavuzu ve ekran görüntüleri (`resources/docs/kullanim.md`, `resources/design/`)
+- [ ] Dışarıdan inceleme çağrısı (#90, Faz 8'den taşındı): gönderiyi kullanıcı paylaşır; gelen geri bildirimler 1.0 etiketinden önce issue'lara dönüştürülür
 
 **Sıra:** Önce görünümü değiştirmeyen işler (yayın otomasyonu, derleme, sürüm, yükseltme testi). Tasarım incelemesi fazın sonunda yapılır, çünkü deneme bitmeden arayüzü değiştirmek denenen sürümü değiştirir. Kılavuz ve ekran görüntüleri tasarımdan sonra gelir; önce çekilirse tasarım değişince yeniden çekmek gerekir. Kullanıcının kararı (2026-11-09).
 
 **Durum (2026-11-09):** Faz başladı, görevler #96-#104. Biten: sürüm kuralı ve [değişiklik günlüğü](CHANGELOG.md) (#98), [gizlilik bildirimi](docs/gizlilik.md) (#102, mağaza yanıtları dağıtım kararını bekliyor). Yayın iş akışı (#96, [yayın belgesi](docs/yayin.md)) deneme anahtarıyla GitHub'da sınandı: etiketten taslak ön sürüm, özetler ve imza doğru. Gerçek anahtar #97'yi bekliyor. SQLite artık repodaki kaynaktan derleniyor; aynı yolda yapılan iki derleme, yayın iş akışındakiler dahil, bayt bayt aynı; farklı yolda Flutter'ın gömdüğü mutlak yol yüzünden ayrılıyor (#99, [ayrıntılar](docs/yayin.md#yeniden-üretilebilir-derleme)). Yükseltme denemesi (#101) fazın son derlemesiyle yapılacak.
+
+**Durum (2026-11-10):** Kalıcı yayın anahtarı oluşturuldu, sertifika özeti README'de ve [yayın belgesinde](docs/yayin.md) (#97). Dağıtım kararı verildi (#100, yukarıda). Faz 8 [#105](https://github.com/aaudraa/KeyKey/pull/105) ile kapandı; dış inceleme çağrısı (#90) bu faza taşındı. Kalan sıra: yükseltme testi (#101), tasarım incelemesi (#103), kullanım kılavuzu (#104), ardından 1.0.
 
 **Bitti sayılması için:** GitHub Release'teki APK dört emülatöre ve gerçek telefona kuruluyor; önceki sürümden yükseltmede veri korunuyor; README son durumu anlatıyor.
 
@@ -454,6 +466,7 @@ Bu fikirlerin hiçbiri henüz planlanmış değil. Sırası kullanıma göre bel
 | F-Droid ana deposu | IzzyOnDroid'den sonra. F-Droid kaynaktan derler, derleme bizimkiyle birebir aynıysa bizim imzamızla yayımlar. Bunun için CI'ın F-Droid'in derleme yolunda (`/home/vagrant/build/io.github.aaudraa.keykey`) derlemesi gerekiyor; yol farkı `libapp.so`'yu değiştiriyor ([yeniden üretilebilir derleme](docs/yayin.md#yeniden-üretilebilir-derleme)). |
 | Play Store | Şimdilik yok (2026-11-09 kararı). 25 $ ücret ve kimlik, yeni hesaplarda 12 kişilik 14 günlük kapalı test; Google kendi imza anahtarını kullandığı için Play sürümü GitHub sürümünün üstüne kurulamaz. |
 | Google'ın geliştirici doğrulaması | 30 Eylül 2026'da dört ülkede başladı, 2027'den sonra yayılacak; Türkiye henüz kapsamda değil. Kapsama girince kayıtsız geliştiricinin uygulaması Play dışında yalnızca "gelişmiş kurulum" adımlarıyla kurulabilecek. O zaman yeniden değerlendirilecek. |
+| KeyKey klavyesi | Giriş kutularını doldurma sistemine bildirmeyen uygulamalarda da doldurmak için kendi klavyesi (KeePassDX'teki gibi). Erişilebilirlik servisi kullanmadan her uygulamada çalışır, ama büyük bir iş ve klavyenin kendisi de güvenlik incelemesi ister. Çıkış noktası: [#94](https://github.com/aaudraa/KeyKey/issues/94), [doldurma sistemine katılmayan ekranlar](docs/guvenlik-tasarimi.md#doldurma-sistemine-katılmayan-ekranlar). |
 | Windows, iOS, tarayıcı eklentisi | Windows derlemesi için araçlar hazır, iOS için Mac gerekir. |
 
 ## Riskler
@@ -462,7 +475,7 @@ Bu fikirlerin hiçbiri henüz planlanmış değil. Sırası kullanıma göre bel
 |---|---|---|
 | libsodium'un Windows'ta Android için derlenmesi kırılgan olabilir | Derleme bozulur | Bu bilgisayarda doğrulandı, gereken araçlar [belgelendi](#geliştirme-ortamı). CI Linux'ta derler, proje yolu kısa tutulur. |
 | Otomatik doldurma tarayıcıya ve üreticiye göre farklı davranır | Bazı yerlerde doldurmaz | Dört sürümlük test düzeni, saf işlevlerle alan tespiti, Faz 8'de gerçek cihaz. |
-| Android, kaydetme sırasında ana ekranda simgesi olmayan uygulamayı KeyKey'e göstermiyor | O uygulamada ilk kayıt uygulamaya bağlanmaz, ilk doldurmada uyarı çıkar | Kayıt yine kaydedilir ve ekran durumu söyler; uygulama ilk doldurmada bir dokunuşla bağlanır. Gerçek bir örnek çıkarsa çözülecek: [#71](https://github.com/aaudraa/KeyKey/issues/71). |
+| Android, kaydetme sırasında ana ekranda simgesi olmayan uygulamayı KeyKey'e göstermiyor | O uygulamada ilk kayıt uygulamaya bağlanmaz, ilk doldurmada uyarı çıkar | Kayıt yine kaydedilir ve ekran durumu söyler; uygulama ilk doldurmada bir dokunuşla bağlanır. Faz 8'in telefon denemesinde böyle bir uygulama çıkmadı; gerçek bir örnek çıkarsa 1.0 sonrasında çözülecek: [#71](https://github.com/aaudraa/KeyKey/issues/71). |
 | Otomatik doldurma ekranında Flutter'ın yavaş açılması | Kullanım zorlaşır | Ayrı ve hafif giriş noktası, Faz 6 başında süre ölçümü. |
 | Kasa göçü veya biçim hatası | Veri kaybı | Biçim sürümleri, örnek dosyalı uyumluluk testleri, Faz 8'e kadar gerçek veri yok. |
 | Bağımlılık kaynaklı güvenlik sorunu | Tedarik zinciri saldırısı | Az paket, `pubspec.lock`, Dependabot, SHA'ya sabit Action'lar. |

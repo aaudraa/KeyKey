@@ -14,6 +14,30 @@ void main() {
     File('test/fixtures/import/logins/$name').readAsBytesSync(),
   );
 
+  group('Firefox', () {
+    test('ad adresten geliyor, tırnaklı alanlar ve CRLF', () {
+      final export = read('firefox.csv');
+      expect(export.source, LoginExportSource.firefoxCsv);
+      expect(export.skipped, 0);
+      expect(export.logins.map((login) => login.name), [
+        'forum.example.org',
+        'router.example.net',
+        'basit.example.com',
+      ]);
+      final forum = export.logins[0];
+      expect(forum.urls, ['https://forum.example.org']);
+      expect(forum.username, 'ayşe.yılmaz');
+      expect(forum.password, 'sahte-Sifre-1');
+      expect(forum.notes, isEmpty);
+      expect(export.logins[1].password, 'sahte, "Sifre" 2');
+      expect(export.logins[2].username, isEmpty);
+    });
+
+    test('Chrome dosyası Firefox sanılmıyor', () {
+      expect(read('chrome_simple.csv').source, LoginExportSource.chromeCsv);
+    });
+  });
+
   group('Chrome', () {
     test('basit dosya', () {
       final export = read('chrome_simple.csv');
@@ -228,6 +252,7 @@ void main() {
           'bitwarden.csv',
           'keepassxc.csv',
           'chrome_note.csv',
+          'firefox.csv',
         ])
           File('test/fixtures/import/logins/$name').readAsBytesSync(),
       ];

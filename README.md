@@ -22,7 +22,7 @@ Android için çevrimdışı, açık kaynak parola yöneticisi ve 2FA doğrulama
 | **2FA doğrulama** | TOTP ve HOTP kodları, QR ile ekleme, Google Authenticator, Aegis ve 2FAS'tan aktarım, kodları göstermek için isteğe bağlı ek onay |
 | **Otomatik doldurma** | Android uygulamalarında ve Chrome'da parola doldurma ve kaydetme; uygulamalar imza sertifikasıyla eşleşir, şüpheli durumlarda uyarı verilir |
 | **Kilit** | Ana parola, parmak iziyle açma, otomatik kilitlenme, kurtarma anahtarı |
-| **Yedekleme** | Şifreli yedek ve geri yükleme; Bitwarden, Chrome ve KeePassXC'den içe aktarma; başka bir parola yöneticisine geçmek için şifresiz dışa aktarma |
+| **Yedekleme** | Şifreli yedek ve geri yükleme; Bitwarden, Chrome, Firefox ve KeePassXC'den içe aktarma; başka bir parola yöneticisine geçmek için şifresiz dışa aktarma |
 
 Bu özelliklerin hepsi geliştirme sürümünde çalışıyor. Her faz sonunda cihaz testleri dört Android sürümünde (11, 14, 16, 17) emülatörlerde çalışıyor, büyük değişiklikler gerçek bir telefonda da deneniyor. İlk sürüm Faz 9'da çıkacak. İlerlemeyi [yol haritasından](resources/yol-haritasi.md) ve [milestone'lardan](https://github.com/aaudraa/KeyKey/milestones) takip edebilirsin.
 
