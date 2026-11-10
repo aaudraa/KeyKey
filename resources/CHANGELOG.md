@@ -17,6 +17,10 @@ Faz 9 (1.0 yayını) sürüyor.
 - Sürümler kalıcı yayın anahtarıyla imzalanıyor (#97). Hata ayıklama anahtarıyla imzalı `v0.x` sürümlerinin üstüne kurulamaz: yedek al, eski uygulamayı kaldır, yeni sürümü kur ve yedeği geri yükle. Bu yol emülatörde denendi (#101), adımlar [yayın belgesinde](docs/yayin.md#eski-sürümlerden-geçiş).
 - SQLite hazır kütüphane olarak indirilmiyor, repodaki 3.54.1 kaynağından derleniyor (#99).
 - Aynı koddan aynı yolda yapılan iki derleme aynı APK'yı veriyor: Android Gradle eklentisinin APK'ya gömdüğü şifreli bağımlılık listesi kaldırıldı (#99).
+- Yeni görünüm (#103): krem zemin, turuncu ana renk, telefonun koyu temasına uyan koyu tema. Alt menü ekranın üstünde yüzen buzlu cam. Kayıtlar ve 2FA hesapları yazıya göre büyümeyen, aynı boyda küçük kartlarda; bağlı uygulamanın simgesi kartın içinde silik görünür. Ayarlar dört grupta (Güvenlik, Yedek ve aktarım, Otomatik doldurma, Hakkında); uzun açıklamalar (i) düğmesinde, sürüm Hakkında'da. Onay ve uyarı pencereleri alttan açılıyor.
+- Yeni uygulama simgesi ve açılış ekranı: beyaz zeminde turuncu K (#103). Android 13+ temalı simge destekleniyor.
+- Otomatik doldurma yarım pencerede açılıyor (#103): giriş yapılan uygulama arkada karartılmış olarak görünür kalır. Önce yalnızca eşleşen kayıtlar var; "Başka bir kayıt ara" kutusu pencereyi uzatır ve bütün kayıtlarda arar. Kilit açma, uyarılar ve kaydetme de aynı pencerede. Karartılmış alana dokunmak ya da aşağı kaydırmak hiçbir şey doldurmadan kapatır.
+- Tek kesin eşleşme sorulmadan dolduruluyor (#103): tam olarak bir kayıt eşleşiyorsa, eşleşme kesinse (uygulamada imza, güvenilen tarayıcıda alan adı) ve hiçbir uyarı yoksa liste açılmaz. Her doldurmadan sonra kısa bir bildirim kaydın adını gösterir ("GitHub dolduruldu"); kullanıcı adı ve parola bildirime girmez. Bildirimin güvenli pencere dışında görünmesi [bilinen sınır](docs/guvenlik-tasarimi.md#bilinen-sınırlar) olarak yazıldı.
 
 ### Belgeler
 
