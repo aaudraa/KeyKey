@@ -35,6 +35,47 @@ Future<T?> showKkSheet<T>(
   );
 }
 
+/// Alt penceredeki düzen: başlık, içerik ve en altta düğmeler. Eski
+/// `AlertDialog` düzeninin karşılığı.
+class KkSheetContent extends StatelessWidget {
+  const new({
+    required this.title,
+    required this.actions,
+    this.child,
+    super.key,
+  });
+
+  final String title;
+  final Widget? child;
+  final List<Widget> actions;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Semantics(
+            header: true,
+            child: Text(title, style: theme.textTheme.titleLarge),
+          ),
+          if (child != null) ...[const SizedBox(height: 12), child!],
+          const SizedBox(height: 20),
+          Wrap(
+            alignment: WrapAlignment.end,
+            spacing: 8,
+            runSpacing: 8,
+            children: actions,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Onay penceresi; ortada açılan kutunun yerine alttan açılır. Onaylanırsa
 /// `true`, vazgeçilir ya da kapatılırsa `false`.
 Future<bool> showKkConfirm(

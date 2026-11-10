@@ -118,7 +118,7 @@ void main() {
 
     await tester.enterText(
       find.descendant(
-        of: find.byType(AlertDialog),
+        of: find.byType(BottomSheet),
         matching: find.byType(TextField),
       ),
       'post',
@@ -127,7 +127,7 @@ void main() {
 
     expect(
       find.descendant(
-        of: find.byType(AlertDialog),
+        of: find.byType(BottomSheet),
         matching: find.text('GitHub'),
       ),
       findsNothing,

@@ -77,7 +77,7 @@ void main() {
     await tester.tap(find.text('Devam et'));
     await tester.pumpAndSettle();
     // Parola penceresi dışa aktarma başlığıyla açılıyor.
-    expect(find.widgetWithText(AlertDialog, 'Şifresiz dışa aktar'), findsOne);
+    expect(find.widgetWithText(BottomSheet, 'Şifresiz dışa aktar'), findsOne);
     expect(documents.saves, 0);
 
     await enterPassword(tester, FakeVaultService.correctPassword);

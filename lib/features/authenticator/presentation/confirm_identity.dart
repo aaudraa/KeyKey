@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/secret_field.dart';
+import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/core/vault/vault_session.dart';
@@ -33,8 +34,8 @@ Future<bool> confirmIdentity(
     return false;
   }
   if (!context.mounted) return false;
-  final confirmed = await showDialog<bool>(
-    context: context,
+  final confirmed = await showKkSheet<bool>(
+    context,
     builder: (context) => _PasswordDialog(title: title),
   );
   return confirmed ?? false;
@@ -106,16 +107,8 @@ class _PasswordDialogState extends ConsumerState<_PasswordDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return AlertDialog(
-      title: Text(widget.title ?? l10n.otpConfirmTitle),
-      content: SecretField(
-        controller: _password,
-        label: l10n.lockPasswordLabel,
-        autofocus: true,
-        enabled: !_busy,
-        errorText: _error,
-        onSubmitted: (_) => _submit(),
-      ),
+    return KkSheetContent(
+      title: widget.title ?? l10n.otpConfirmTitle,
       actions: [
         TextButton(
           onPressed: _busy ? null : () => Navigator.pop(context, false),
@@ -126,6 +119,14 @@ class _PasswordDialogState extends ConsumerState<_PasswordDialog> {
           child: Text(l10n.otpConfirmButton),
         ),
       ],
+      child: SecretField(
+        controller: _password,
+        label: l10n.lockPasswordLabel,
+        autofocus: true,
+        enabled: !_busy,
+        errorText: _error,
+        onSubmitted: (_) => _submit(),
+      ),
     );
   }
 }

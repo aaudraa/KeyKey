@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:keykey/app/ui/kk_card.dart';
+import 'package:keykey/app/ui/record_watermark.dart';
 import 'package:keykey/features/authenticator/application/otp_generator.dart';
 import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/authenticator/presentation/otp_display.dart';
+import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Listede bir hesabın menüsündeki işler.
@@ -19,6 +22,7 @@ class OtpCodeTile extends StatelessWidget {
     required this.onAction,
     this.hotpCode,
     this.onGenerate,
+    this.linkedLogin,
     super.key,
   });
 
@@ -36,6 +40,9 @@ class OtpCodeTile extends StatelessWidget {
   final ValueChanged<String> onCopy;
   final VoidCallback? onGenerate;
   final ValueChanged<OtpTileAction> onAction;
+
+  /// Bağlı parola kaydı; uygulaması varsa simgesi kartta silik görünür.
+  final LoginContent? linkedLogin;
 
   @override
   Widget build(BuildContext context) {
@@ -59,105 +66,115 @@ class OtpCodeTile extends StatelessWidget {
         code = hotpCode;
     }
 
-    return InkWell(
-      onTap: code == null ? null : () => onCopy(code!),
-      child: Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 4, 8),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          otpTitle(content, l10n),
-                          style: theme.textTheme.titleSmall,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (content.favorite) ...[
-                        const SizedBox(width: 4),
-                        Icon(
-                          Icons.star,
-                          size: 16,
-                          color: theme.colorScheme.primary,
-                          semanticLabel: l10n.favoriteMark,
-                        ),
-                      ],
-                    ],
-                  ),
-                  if (subtitle != null)
-                    Text(
-                      subtitle,
-                      style: theme.textTheme.bodySmall,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  const SizedBox(height: 4),
-                  Semantics(
-                    label: code == null ? l10n.otpNoCode : spokenOtpCode(code),
-                    hint: code == null ? null : l10n.otpCopyCode,
-                    excludeSemantics: true,
-                    child: Text(
-                      code == null
-                          ? formatOtpCode('•' * parameters.digits)
-                          : formatOtpCode(code),
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        fontFamily: 'monospace',
-                        color: code == null
-                            ? theme.colorScheme.onSurfaceVariant
-                            : theme.colorScheme.primary,
-                        letterSpacing: 2,
-                      ),
-                    ),
-                  ),
-                  if (nextCode != null)
-                    Semantics(
-                      label: l10n.otpNext(spokenOtpCode(nextCode)),
-                      excludeSemantics: true,
-                      child: Text(
-                        l10n.otpNext(formatOtpCode(nextCode)),
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontFamily: 'monospace',
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+    final linked = linkedLogin;
+    final codeStyle = theme.textTheme.titleLarge?.copyWith(
+      fontFamily: 'monospace',
+      fontWeight: FontWeight.w600,
+      color: code == null
+          ? theme.colorScheme.onSurfaceVariant
+          : theme.colorScheme.primary,
+      letterSpacing: 1,
+    );
+    final nextStyle = theme.textTheme.labelSmall?.copyWith(
+      fontFamily: 'monospace',
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+
+    // Yazı büyütülmüşse kod sağa sığmaz; adın altına iner.
+    final stacked = MediaQuery.textScalerOf(context).scale(10) > 13;
+    final codeColumn = Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: stacked
+          ? CrossAxisAlignment.start
+          : CrossAxisAlignment.end,
+      children: [
+        Semantics(
+          label: code == null ? l10n.otpNoCode : spokenOtpCode(code),
+          hint: code == null ? null : l10n.otpCopyCode,
+          excludeSemantics: true,
+          child: Text(
+            code == null
+                ? formatOtpCode('•' * parameters.digits)
+                : formatOtpCode(code),
+            style: codeStyle,
+            maxLines: 1,
+          ),
+        ),
+        // Sıradaki kodun yeri hep ayrılı: kart boyu değişmesin.
+        if (nextCode != null)
+          Semantics(
+            label: l10n.otpNext(spokenOtpCode(nextCode)),
+            excludeSemantics: true,
+            child: Text(
+              l10n.otpNext(formatOtpCode(nextCode)),
+              style: nextStyle,
+              maxLines: 1,
             ),
-            if (remaining != null)
-              _Countdown(remaining: remaining, period: parameters.period!)
-            else
-              IconButton(
-                tooltip: l10n.otpGenerate,
-                icon: const Icon(Icons.refresh),
-                onPressed: onGenerate,
-              ),
-            PopupMenuButton<OtpTileAction>(
-              onSelected: onAction,
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: OtpTileAction.edit,
-                  child: Text(l10n.loginEdit),
-                ),
-                PopupMenuItem(
-                  value: OtpTileAction.favorite,
-                  child: Text(
-                    content.favorite
-                        ? l10n.loginUnfavorite
-                        : l10n.loginFavorite,
-                  ),
-                ),
-                PopupMenuItem(
-                  value: OtpTileAction.trash,
-                  child: Text(l10n.loginMoveToTrash),
-                ),
-              ],
+          )
+        else
+          Text('', style: nextStyle),
+      ],
+    );
+
+    return KkCard(
+      title: Row(
+        children: [
+          Flexible(child: Text(otpTitle(content, l10n))),
+          if (content.favorite) ...[
+            const SizedBox(width: 4),
+            Icon(
+              Icons.star,
+              size: 16,
+              color: theme.colorScheme.primary,
+              semanticLabel: l10n.favoriteMark,
             ),
           ],
-        ),
+        ],
+      ),
+      subtitle: stacked
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [?subtitle == null ? null : Text(subtitle), codeColumn],
+            )
+          : (subtitle == null ? null : Text(subtitle)),
+      watermark: linked != null && linked.apps.isNotEmpty
+          ? RecordWatermark(login: linked)
+          : null,
+      watermarkSide: WatermarkSide.start,
+      onTap: code == null ? null : () => onCopy(code!),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!stacked) ...[codeColumn, const SizedBox(width: 8)],
+          if (remaining != null)
+            _Countdown(remaining: remaining, period: parameters.period!)
+          else
+            IconButton(
+              tooltip: l10n.otpGenerate,
+              icon: const Icon(Icons.refresh),
+              onPressed: onGenerate,
+            ),
+          PopupMenuButton<OtpTileAction>(
+            onSelected: onAction,
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: OtpTileAction.edit,
+                child: Text(l10n.loginEdit),
+              ),
+              PopupMenuItem(
+                value: OtpTileAction.favorite,
+                child: Text(
+                  content.favorite ? l10n.loginUnfavorite : l10n.loginFavorite,
+                ),
+              ),
+              PopupMenuItem(
+                value: OtpTileAction.trash,
+                child: Text(l10n.loginMoveToTrash),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -182,7 +199,7 @@ class _Countdown extends StatelessWidget {
       label: l10n.otpSecondsLeft(seconds),
       excludeSemantics: true,
       child: SizedBox.square(
-        dimension: 40,
+        dimension: 32,
         child: Stack(
           alignment: Alignment.center,
           children: [

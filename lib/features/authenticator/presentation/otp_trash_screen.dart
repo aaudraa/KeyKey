@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/authenticator/presentation/otp_display.dart';
@@ -72,11 +73,10 @@ class OtpTrashScreen extends ConsumerWidget {
     OtpItem item,
   ) async {
     final l10n = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.trashDeleteTitle),
-        content: Text(l10n.otpTrashDeleteMessage(otpTitle(item.content, l10n))),
+    final confirmed = await showKkSheet<bool>(
+      context,
+      builder: (context) => KkSheetContent(
+        title: l10n.trashDeleteTitle,
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -87,6 +87,7 @@ class OtpTrashScreen extends ConsumerWidget {
             child: Text(l10n.trashDelete),
           ),
         ],
+        child: Text(l10n.otpTrashDeleteMessage(otpTitle(item.content, l10n))),
       ),
     );
     if (confirmed ?? false) await controller.deletePermanently(item);

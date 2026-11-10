@@ -3,11 +3,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keykey/app/ui/kk_card.dart';
 import 'package:keykey/features/authenticator/data/base32.dart';
 import 'package:keykey/features/authenticator/data/otp_content.dart';
 import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/authenticator/presentation/otp_display.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../../support/fake_vault_service.dart';
@@ -144,6 +146,87 @@ void main() {
       await openAuthenticator(tester);
 
       expect(find.text('Sıradaki: 359 152'), findsOneWidget);
+    });
+
+    testWidgets('kartlar aynı boyda, sıradaki kod çıkınca da büyümüyor', (
+      tester,
+    ) async {
+      Set<double> heights() => {
+        for (final id in [1, 2, 3]) tester.getSize(tileOf(id)).height,
+      };
+
+      await openAuthenticator(tester);
+      expect(heights(), {KkCard.minHeight});
+
+      now = DateTime.fromMillisecondsSinceEpoch(50000, isUtc: true);
+      await settle(tester);
+      // Saat sağlayıcısı yeni zamanı bir sonraki tıkta okur.
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.textContaining('Sıradaki'), findsWidgets);
+      expect(heights(), {KkCard.minHeight});
+    });
+
+    testWidgets('HOTP kartı TOTP kartıyla aynı boyda, kod üret düğmesi var', (
+      tester,
+    ) async {
+      otps.items.add(
+        FakeOtpRepository.item(
+          OtpContent(
+            parameters: OtpParameters.hotp(secret: rfcSecret),
+            issuer: 'Sayaçlı',
+          ),
+          id: 9,
+        ),
+      );
+      await openAuthenticator(tester);
+
+      expect(tester.getSize(tileOf(9)).height, KkCard.minHeight);
+      expect(
+        find.descendant(of: tileOf(9), matching: find.byTooltip('Kod üret')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('bağlı parola kaydının uygulama simgesi kartta', (
+      tester,
+    ) async {
+      final login = FakeLoginRepository.item(
+        LoginContent(
+          name: 'GitHub',
+          apps: [
+            LoginApp(
+              packageName: 'com.github.android',
+              certsSha256: ['c' * 64],
+            ),
+          ],
+        ),
+        id: 7,
+      );
+      otps.items[0] = FakeOtpRepository.item(
+        totp('GitHub', account: 'ali@example.com').copyWith(loginId: login.id),
+        id: 1,
+      );
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        otps: otps,
+        logins: FakeLoginRepository(items: [login]),
+        clock: () => now,
+        clipboard: clipboard,
+        packages: FakeAppPackages(installed: {'com.github.android'}),
+      );
+      await tester.tap(find.byIcon(Icons.shield_outlined));
+      await settle(tester);
+
+      expect(
+        find.descendant(of: tileOf(1), matching: find.byType(Image)),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: tileOf(2), matching: find.byType(Image)),
+        findsNothing,
+      );
     });
 
     testWidgets('arama servis ve hesap adında', (tester) async {

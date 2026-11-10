@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/secret_field.dart';
+import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/data/base32.dart';
@@ -309,10 +310,10 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
 
   Future<bool> _confirmDiscard() async {
     final l10n = AppLocalizations.of(context);
-    final discard = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.loginDiscardTitle),
+    final discard = await showKkSheet<bool>(
+      context,
+      builder: (context) => KkSheetContent(
+        title: l10n.loginDiscardTitle,
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),

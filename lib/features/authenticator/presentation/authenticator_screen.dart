@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/secret_field.dart';
+import 'package:keykey/app/ui/glass_nav_bar.dart';
+import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otp_clock.dart';
@@ -19,6 +21,8 @@ import 'package:keykey/features/authenticator/presentation/otp_code_tile.dart';
 import 'package:keykey/features/authenticator/presentation/otp_display.dart';
 import 'package:keykey/features/authenticator/presentation/otp_gate.dart';
 import 'package:keykey/features/authenticator/presentation/scanned_code_handler.dart';
+import 'package:keykey/features/vault/application/logins_controller.dart';
+import 'package:keykey/features/vault/presentation/login_ids.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 enum _AddOption { scan, image, manual, import }
@@ -257,16 +261,29 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
                     (item) => item.content.parameters.kind == OtpKind.totp,
                   ),
                   builder: (context, now) => ListView.separated(
-                    padding: const EdgeInsets.only(bottom: 88),
+                    // Altta: yüzen menü ve "Ekle" düğmesi.
+                    padding: const EdgeInsets.fromLTRB(
+                      16,
+                      4,
+                      16,
+                      kNavClearance + 72,
+                    ),
                     itemCount: visible.length,
                     separatorBuilder: (context, index) =>
-                        const Divider(height: 1, indent: 16),
+                        const SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final item = visible[index];
+                      final loginId = item.content.loginId;
                       return OtpCodeTile(
                         key: ValueKey(otpIdHex(item)),
                         item: item,
                         now: now,
+                        linkedLogin: loginId == null
+                            ? null
+                            : findLogin(
+                                ref.watch(loginsControllerProvider),
+                                loginIdHex(loginId),
+                              )?.content,
                         hotpCode: _hotpCodes[otpIdHex(item)],
                         onCopy: _copy,
                         onGenerate: () => unawaited(_generate(item)),
@@ -294,11 +311,17 @@ Future<void> showClockHelp(BuildContext context, DateTime now) {
   final time =
       '${DateFormat.yMMMd(locale).add_Hms().format(local)} '
       '(UTC$sign$hours:$minutes)';
-  return showDialog<void>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text(l10n.otpClockHelpTitle),
-      content: Column(
+  return showKkSheet<void>(
+    context,
+    builder: (context) => KkSheetContent(
+      title: l10n.otpClockHelpTitle,
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.otpClose),
+        ),
+      ],
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -310,12 +333,6 @@ Future<void> showClockHelp(BuildContext context, DateTime now) {
           ),
         ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(l10n.otpClose),
-        ),
-      ],
     ),
   );
 }
