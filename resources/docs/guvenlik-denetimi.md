@@ -1,6 +1,6 @@
 # KeyKey Güvenlik Denetimi
 
-KeyKey'in [OWASP MASVS](https://mas.owasp.org/MASVS/) v2 kontrolleriyle karşılaştırılması ve 1.0 öncesi denetimin sonuçları. Faz 8'de ([#20](https://github.com/aaudraa/KeyKey/issues/20)) yazılıyor. Tasarımın kendisi [güvenlik tasarımı belgesinde](guvenlik-tasarimi.md), neyi kimden koruduğumuz [tehdit modelinde](guvenlik-tasarimi.md#tehdit-modeli).
+KeyKey'in [OWASP MASVS](https://mas.owasp.org/MASVS/) v2 kontrolleriyle karşılaştırılması ve 1.0 öncesi denetimin sonuçları. Faz 8'de ([#20](https://github.com/aaudraa/KeyKey/issues/20)) yazıldı. Tasarımın kendisi [güvenlik tasarımı belgesinde](guvenlik-tasarimi.md), neyi kimden koruduğumuz [tehdit modelinde](guvenlik-tasarimi.md#tehdit-modeli).
 
 Bu, projenin kendi denetimidir; bağımsız bir denetim değildir.
 
@@ -130,6 +130,23 @@ Kasa açma hedefi 1 saniye; 864 ms bu aralıkta, parametreler değişmedi. Argon
 - Bu oturumun 38 bin satırlık logcat kaydında hiçbir [deneme değeri](../scripts/deneme-degerleri.txt) yok. Samsung pencereler ve oyun modu hakkında çok kayıt tutuyor, ama içerik yazmıyor.
 
 **Sınır.** Tek bir cihaz ölçüldü; 2020'nin üst seviye çipini taşıyor. Düşük donanımlı telefonlarda kasa açma hedef süreyi aşabilir ([Ölçülen süreler](guvenlik-tasarimi.md#ölçülen-süreler)). StrongBox'ı olmayan telefonlarda anahtar TEE'de tutulur; bu yol gerçek bir cihazda denenmedi (emülatörlerin anahtar deposu yazılımla çalışır).
+
+## Günlük kullanım denemesi
+
+**Görev:** [#89](https://github.com/aaudraa/KeyKey/issues/89). **Tarih:** 2026-11-09 - 2026-11-10.
+
+**Kurulum.** Aynı telefona (Galaxy S20 FE, Android 13) `v0.8.0` sürüm derlemesi sıfırdan kuruldu ve KeyKey otomatik doldurma servisi seçildi. Deneme sırasında güvenlik ya da veri kaybı sorunu çıkarsa hemen düzeltilip yeni sürüm kurulacaktı, küçük sorunlar toplu düzeltilecekti. #95'in düzeltmesi kasa korunarak üstüne kuruldu (`adb install -r`).
+
+**Süre.** İki hafta planlandı (2026-11-23'e kadar); kullanıcı denemeyi 2026-11-10'da bitirdi. Kısa sürdüğü için uzun süreli kullanımda ortaya çıkacak sorunları (birikmiş kayıtlar, sistem güncellemeleri, uzun aralıklı yedekler) kapsamıyor.
+
+**Bulgular.**
+
+| Bulgu | Tür | Sonuç |
+|---|---|---|
+| [#94](https://github.com/aaudraa/KeyKey/issues/94) HoYoLAB'ın giriş ekranında doldurma ve kaydetme önerisi çıkmıyor | Uyumluluk | Ekran giriş kutularını doldurma sistemine bildirmiyor; KeyKey'e hiç istek gelmiyor. [Bilinen sınır](guvenlik-tasarimi.md#doldurma-sistemine-katılmayan-ekranlar) olarak yazıldı. |
+| [#95](https://github.com/aaudraa/KeyKey/issues/95) Firefox'un parola dışa aktarması içe aktarılamıyor | Eksik özellik | Firefox CSV biçimi eklendi, testleri yazıldı. Telefonda Firefox'tan alınmış gerçek bir dosyayla içe aktarma başarılı. |
+
+Güvenlik ya da veri kaybı sorunu çıkmadı.
 
 ## Erişilebilirlik
 
