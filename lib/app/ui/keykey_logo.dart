@@ -17,6 +17,22 @@ class KeyKeyLogo extends StatelessWidget {
 
   final double size;
 
+  /// K'nın dairenin içindeki ölçeği: uygulama simgesindeki oranla aynı
+  /// (108'lik tuvalde 0,64; maskenin görünen dairesi 72).
+  static const double _scale = 0.64 * 100 / 72;
+
+  /// Dairenin ortasına gelen nokta: K'nın sınır kutusunun ortası.
+  static const Offset _center = Offset(57, 50);
+
+  /// 100×100 kutuda, beyaz dairenin içine yerleştirilmiş K.
+  static Path logoPath() {
+    final matrix = Matrix4.identity()
+      ..translateByDouble(50, 50, 0, 1)
+      ..scaleByDouble(_scale, _scale, 1, 1)
+      ..translateByDouble(-_center.dx, -_center.dy, 0, 1);
+    return parsePath(pathData).transform(matrix.storage);
+  }
+
   /// [pathData] gibi bir SVG yolunu çizer. Yalnızca `M h v l H L z`
   /// komutları desteklenir; başka bir komut [FormatException] verir.
   static Path parsePath(String data) {
@@ -79,7 +95,7 @@ class KeyKeyLogo extends StatelessWidget {
 }
 
 class _LogoPainter extends CustomPainter {
-  static final Path _path = KeyKeyLogo.parsePath(KeyKeyLogo.pathData);
+  static final Path _path = KeyKeyLogo.logoPath();
 
   @override
   void paint(Canvas canvas, Size size) {
