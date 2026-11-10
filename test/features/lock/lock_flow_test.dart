@@ -89,6 +89,15 @@ void main() {
       expect(find.text(vaultText), findsNothing);
     });
 
+    testWidgets('kilit ekranında logo ve tek parola kutusu var', (
+      tester,
+    ) async {
+      await pumpLocked(tester);
+
+      expect(find.bySemanticsLabel('KeyKey'), findsOneWidget);
+      expect(find.byType(TextField), findsOneWidget);
+    });
+
     testWidgets('doğru parola kasaya götürüyor', (tester) async {
       await pumpLocked(tester);
 

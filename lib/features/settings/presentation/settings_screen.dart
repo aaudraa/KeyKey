@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
+import 'package:keykey/app/ui/keykey_logo.dart';
 import 'package:keykey/app/ui/kk_section.dart';
 import 'package:keykey/core/platform/app_packages.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
@@ -204,6 +205,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   context: context,
                   applicationName: 'KeyKey',
                   applicationVersion: version,
+                  applicationIcon: const KeyKeyLogo(size: 48),
                 ),
               ),
             ],

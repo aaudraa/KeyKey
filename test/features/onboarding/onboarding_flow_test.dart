@@ -57,6 +57,12 @@ void main() {
   }
 
   group('ana parola adımı', () {
+    testWidgets('kurulumun ilk adımında logo var', (tester) async {
+      await pumpSetup(tester);
+
+      expect(find.bySemanticsLabel('KeyKey'), findsOneWidget);
+    });
+
     testWidgets('geri alınamaz uyarısı görünüyor', (tester) async {
       await pumpSetup(tester);
 

@@ -47,6 +47,9 @@ void main() {
   group('yeni telefonda', () {
     Future<void> openFromSetup(WidgetTester tester) async {
       await pump(tester, const VaultNotSetUp());
+      // Düğme kurulum ekranının altında; ekrana kaydırılır.
+      await tester.ensureVisible(find.text('Yedekten geri yükle'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Yedekten geri yükle'));
       await tester.pumpAndSettle();
     }

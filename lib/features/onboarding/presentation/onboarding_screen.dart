@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/secret_field.dart';
+import 'package:keykey/app/ui/keykey_logo.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/crypto/recovery_key.dart';
 import 'package:keykey/features/backup/presentation/restore_screen.dart';
@@ -140,6 +141,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   List<Widget> _passwordStep(AppLocalizations l10n) {
     return [
+      const Center(child: KeyKeyLogo(size: 72)),
+      const SizedBox(height: 16),
       Text(l10n.setupIntro),
       const SizedBox(height: 12),
       _WarningCard(text: l10n.setupPasswordWarning),

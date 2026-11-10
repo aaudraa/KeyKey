@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/secret_field.dart';
+import 'package:keykey/app/ui/keykey_logo.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
@@ -162,7 +163,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Icon(Icons.lock, size: 56, color: theme.colorScheme.primary),
+                const Center(child: KeyKeyLogo(size: 88)),
                 const SizedBox(height: 16),
                 Text(
                   l10n.lockTitle,
