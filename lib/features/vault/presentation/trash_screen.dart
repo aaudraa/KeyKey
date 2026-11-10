@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
@@ -69,23 +70,14 @@ class TrashScreen extends ConsumerWidget {
     LoginItem item,
   ) async {
     final l10n = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.trashDeleteTitle),
-        content: Text(l10n.trashDeleteMessage(item.content.name)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(l10n.biometricCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(l10n.trashDelete),
-          ),
-        ],
-      ),
+    final confirmed = await showKkConfirm(
+      context,
+      title: l10n.trashDeleteTitle,
+      message: l10n.trashDeleteMessage(item.content.name),
+      confirmLabel: l10n.trashDelete,
+      cancelLabel: l10n.biometricCancel,
+      destructive: true,
     );
-    if (confirmed ?? false) await controller.deletePermanently(item);
+    if (confirmed) await controller.deletePermanently(item);
   }
 }

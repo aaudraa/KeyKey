@@ -11,6 +11,7 @@ import 'package:keykey/core/crypto/record_cipher.dart';
 import 'package:keykey/core/crypto/recovery_key.dart';
 import 'package:keykey/core/crypto/vault_crypto.dart';
 import 'package:keykey/core/crypto/vault_header.dart';
+import 'package:keykey/core/platform/app_packages.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/platform/export_file_picker.dart';
 import 'package:keykey/core/platform/qr_image_reader.dart';
@@ -213,6 +214,32 @@ class FakeVaultService implements VaultService {
       BiometricFailed() => const BiometricFailed(),
     };
   }
+}
+
+/// 1×1 saydam PNG; sahte uygulama simgesi.
+final Uint8List fakeIconPng = Uint8List.fromList(const [
+  0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, //
+  0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+  0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00,
+  0x0D, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
+  0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49,
+  0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+]);
+
+/// Verilen paketlerin simgesini döndürür, diğerlerinde `null`.
+class FakeAppPackages implements AppPackages {
+  new({Set<String> installed = const {}, this.version = '1.0.0'})
+    : installed = {...installed};
+
+  final Set<String> installed;
+  final String version;
+
+  @override
+  Future<Uint8List?> appIcon(String packageName) async =>
+      installed.contains(packageName) ? fakeIconPng : null;
+
+  @override
+  Future<String> versionName() async => version;
 }
 
 /// Kopyalananları kaydeder. Gerçek panoyu cihaz testi sınar.
@@ -589,6 +616,7 @@ Future<void> pumpKeyKey(
   FakeDocumentFiles? documents,
   FakeBackupService? backups,
   FakeRestoreService? restores,
+  AppPackages? packages,
   Locale locale = const Locale('tr'),
 }) async {
   tester.platformDispatcher.localesTestValue = [locale];
@@ -631,6 +659,7 @@ Future<void> pumpKeyKey(
         autofillSetupBridgeProvider.overrideWithValue(
           autofillSetup ?? FakeAutofillSetup(),
         ),
+        appPackagesProvider.overrideWithValue(packages ?? FakeAppPackages()),
         effWordlistProvider.overrideWith((ref) async => _effWords),
         commonPasswordsProvider.overrideWith((ref) async => _commonPasswords),
       ],

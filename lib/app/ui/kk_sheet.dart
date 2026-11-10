@@ -10,6 +10,8 @@ Future<T?> showKkSheet<T>(
   return showModalBottomSheet<T>(
     context: context,
     isScrollControlled: true,
+    // Sekmenin kendi navigatöründe açılırsa yüzen menünün altında kalır.
+    useRootNavigator: true,
     useSafeArea: true,
     builder: (context) {
       if (!expandable) {
@@ -38,9 +40,9 @@ Future<T?> showKkSheet<T>(
 Future<bool> showKkConfirm(
   BuildContext context, {
   required String title,
-  required String message,
   required String confirmLabel,
   required String cancelLabel,
+  String? message,
   bool destructive = false,
 }) async {
   final result = await showKkSheet<bool>(
@@ -58,8 +60,10 @@ Future<bool> showKkConfirm(
               header: true,
               child: Text(title, style: theme.textTheme.titleLarge),
             ),
-            const SizedBox(height: 12),
-            Text(message, style: theme.textTheme.bodyMedium),
+            if (message != null) ...[
+              const SizedBox(height: 12),
+              Text(message, style: theme.textTheme.bodyMedium),
+            ],
             const SizedBox(height: 24),
             FilledButton(
               style: destructive

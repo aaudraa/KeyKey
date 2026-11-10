@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/secret_field.dart';
+import 'package:keykey/app/ui/glass_nav_bar.dart';
+import 'package:keykey/app/ui/kk_card.dart';
+import 'package:keykey/app/ui/record_watermark.dart';
 import 'package:keykey/features/backup/presentation/backup_reminder_banner.dart';
 import 'package:keykey/features/vault/application/login_search.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
@@ -157,9 +160,16 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
                     ),
                   ),
                 )
-              : ListView.builder(
-                  padding: const EdgeInsets.only(bottom: 88),
+              : ListView.separated(
+                  // Altta: yüzen menü ve "Ekle" düğmesi.
+                  padding: const EdgeInsets.fromLTRB(
+                    16,
+                    4,
+                    16,
+                    kNavClearance + 72,
+                  ),
                   itemCount: visible.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 8),
                   itemBuilder: (context, index) =>
                       _LoginTile(item: visible[index]),
                 ),
@@ -179,19 +189,16 @@ class _LoginTile extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final content = item.content;
     final name = content.name.trim();
-    return ListTile(
-      // Baş harf yalnızca görsel; ekran okuyucu adı zaten okuyor.
-      leading: ExcludeSemantics(
-        child: CircleAvatar(
-          child: Text(name.isEmpty ? '?' : name.characters.first.toUpperCase()),
-        ),
-      ),
-      title: Text(name.isEmpty ? '—' : name, overflow: TextOverflow.ellipsis),
-      subtitle: content.username.isEmpty
-          ? null
-          : Text(content.username, overflow: TextOverflow.ellipsis),
+    return KkCard(
+      title: Text(name.isEmpty ? '—' : name),
+      subtitle: content.username.isEmpty ? null : Text(content.username),
+      // Silik simge yalnızca görsel; ekran okuyucu adı zaten okuyor.
+      watermark: RecordWatermark(login: content),
       trailing: content.favorite
-          ? Icon(Icons.star, semanticLabel: l10n.favoriteMark)
+          ? Padding(
+              padding: const EdgeInsetsDirectional.only(end: 10),
+              child: Icon(Icons.star, semanticLabel: l10n.favoriteMark),
+            )
           : null,
       onTap: () => context.push(AppRoutes.vaultItem(loginIdHex(item.id))),
     );

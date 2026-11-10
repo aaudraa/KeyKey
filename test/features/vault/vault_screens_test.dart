@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
+import 'package:keykey/app/ui/glass_nav_bar.dart';
+import 'package:keykey/app/ui/kk_card.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
@@ -58,14 +60,14 @@ void main() {
     logins: logins,
   );
 
+  Finder cards() => find.descendant(
+    of: find.byType(VaultScreen),
+    matching: find.byType(KkCard),
+  );
+
   List<String> visibleNames(WidgetTester tester) => tester
-      .widgetList<ListTile>(
-        find.descendant(
-          of: find.byType(VaultScreen),
-          matching: find.byType(ListTile),
-        ),
-      )
-      .map((tile) => (tile.title! as Text).data!)
+      .widgetList<KkCard>(cards())
+      .map((card) => (card.title as Text).data!)
       .toList();
 
   Future<void> search(WidgetTester tester, String query) async {
@@ -114,6 +116,35 @@ void main() {
       expect(visibleNames(tester), ['Posta']);
     });
 
+    testWidgets('kayıt kartları aynı boyda, kullanıcı adı olmasa da', (
+      tester,
+    ) async {
+      await pumpVault(tester);
+
+      final heights = tester
+          .widgetList(cards())
+          .map((w) => tester.getSize(find.byWidget(w)).height)
+          .toSet();
+      expect(heights, {KkCard.minHeight});
+    });
+
+    testWidgets('son kart alt menünün altında kalmayacak kadar boşluk var', (
+      tester,
+    ) async {
+      await pumpVault(tester);
+
+      final list = tester.widget<ListView>(
+        find.descendant(
+          of: find.byType(VaultScreen),
+          matching: find.byType(ListView),
+        ),
+      );
+      expect(
+        (list.padding! as EdgeInsets).bottom,
+        greaterThanOrEqualTo(kNavClearance),
+      );
+    });
+
     testWidgets('okunamayan kayıt sayısı gösteriliyor', (tester) async {
       logins = FakeLoginRepository(unreadableCount: 2);
       await pumpVault(tester);
@@ -128,6 +159,19 @@ void main() {
       await tester.tap(find.text('Posta'));
       await tester.pumpAndSettle();
     }
+
+    testWidgets('her alan kendi kartında', (tester) async {
+      await openPosta(tester);
+
+      Card cardOf(String label) => tester.widget<Card>(
+        find.ancestor(of: find.text(label), matching: find.byType(Card)).first,
+      );
+      final username = cardOf('Kullanıcı adı');
+      final password = cardOf('Parola');
+      final url = cardOf('https://mail.example.com');
+      expect(identical(username, password), isFalse);
+      expect(identical(password, url), isFalse);
+    });
 
     testWidgets('parola varsayılan olarak gizli', (tester) async {
       await openPosta(tester);
@@ -281,6 +325,7 @@ void main() {
       await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();
       expect(find.text('Değişiklikler silinsin mi?'), findsOneWidget);
+      expect(find.byType(BottomSheet), findsOneWidget);
 
       await tester.tap(find.text('Düzenlemeye devam et'));
       await tester.pumpAndSettle();
@@ -318,6 +363,29 @@ void main() {
       await tester.tap(find.byTooltip('Düzenle'));
       await tester.pumpAndSettle();
     }
+
+    testWidgets('listede bağlı uygulamanın simgesi, diğerlerinde çizgi simge', (
+      tester,
+    ) async {
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        logins: logins,
+        packages: FakeAppPackages(installed: {'com.example.posta'}),
+      );
+
+      Finder inCard(String name, Finder matching) => find.descendant(
+        of: find.widgetWithText(KkCard, name),
+        matching: matching,
+      );
+      expect(inCard('Posta', find.byType(Image)), findsOneWidget);
+      expect(
+        inCard('İş Bankası', find.byIcon(Icons.key_outlined)),
+        findsOneWidget,
+      );
+      expect(inCard('Posta', find.byType(CircleAvatar)), findsNothing);
+    });
 
     testWidgets('ayrıntıda görünüyor', (tester) async {
       await pumpVault(tester);
@@ -403,13 +471,14 @@ void main() {
       await tester.tap(find.byTooltip('Kalıcı olarak sil'));
       await tester.pumpAndSettle();
       expect(find.text('Kalıcı olarak silinsin mi?'), findsOneWidget);
+      expect(find.byType(BottomSheet), findsOneWidget);
       await tester.tap(find.text('Vazgeç'));
       await tester.pumpAndSettle();
       expect(logins.items, hasLength(3));
 
       await tester.tap(find.byTooltip('Kalıcı olarak sil'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(TextButton, 'Kalıcı olarak sil'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Kalıcı olarak sil'));
       await tester.pumpAndSettle();
       expect(logins.items, hasLength(2));
       expect(find.text('Çöp kutusu boş.'), findsOneWidget);

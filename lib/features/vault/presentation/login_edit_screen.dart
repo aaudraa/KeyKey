@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/secret_field.dart';
+import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/generator/presentation/generator_sheet.dart';
 import 'package:keykey/features/generator/presentation/password_strength_meter.dart';
@@ -151,23 +152,13 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
 
   Future<bool> _confirmDiscard() async {
     final l10n = AppLocalizations.of(context);
-    final discard = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.loginDiscardTitle),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(l10n.loginKeepEditing),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(l10n.loginDiscard),
-          ),
-        ],
-      ),
+    return await showKkConfirm(
+      context,
+      title: l10n.loginDiscardTitle,
+      confirmLabel: l10n.loginDiscard,
+      cancelLabel: l10n.loginKeepEditing,
+      destructive: true,
     );
-    return discard ?? false;
   }
 
   void _changed(String _) {

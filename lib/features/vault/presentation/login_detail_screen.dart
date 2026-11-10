@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
+import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/presentation/linked_otp_tile.dart';
@@ -62,8 +63,7 @@ class LoginDetailScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+      body: _CardList(
         children: [
           if (content.username.isNotEmpty)
             _Field(label: l10n.loginUsername, value: content.username),
@@ -128,6 +128,24 @@ class LoginDetailScreen extends ConsumerWidget {
           onPressed: () => unawaited(controller.restoreById(item.id)),
         ),
       ),
+    );
+  }
+}
+
+/// Her satır kendi kartında; aralarında küçük boşluk.
+class _CardList extends StatelessWidget {
+  const new({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, kNavClearance),
+      itemCount: children.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      itemBuilder: (context, index) =>
+          Card(clipBehavior: Clip.antiAlias, child: children[index]),
     );
   }
 }
