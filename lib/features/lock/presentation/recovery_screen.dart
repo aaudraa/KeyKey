@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/secret_field.dart';
+import 'package:keykey/app/ui/kk_backdrop.dart';
+import 'package:keykey/app/ui/kk_bars.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/crypto/recovery_key.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
@@ -50,36 +53,39 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.recoveryTitle)),
+    return KkScaffold(
+      appBar: kkAppBar(context, title: l10n.recoveryTitle),
+      bottomNavigationBar: KkBottomAction(
+        label: l10n.recoverySubmit,
+        onPressed: _submit,
+      ),
       body: SafeArea(
+        bottom: false,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(l10n.recoveryIntro),
               const SizedBox(height: 16),
-              SecretField(
-                controller: _key,
-                label: l10n.recoveryKeyLabel,
-                obscure: false,
-                autofocus: true,
-                errorText: _error,
-                helperText: l10n.recoveryKeyProgress(
-                  RecoveryKeyCodec.symbolsOf(_key.text).length,
-                  RecoveryKeyCodec.textLength,
+              GlassSurface(
+                padding: const EdgeInsets.all(4),
+                child: SecretField(
+                  controller: _key,
+                  label: l10n.recoveryKeyLabel,
+                  obscure: false,
+                  autofocus: true,
+                  errorText: _error,
+                  helperText: l10n.recoveryKeyProgress(
+                    RecoveryKeyCodec.symbolsOf(_key.text).length,
+                    RecoveryKeyCodec.textLength,
+                  ),
+                  inputFormatters: [RecoveryKeyFormatter()],
+                  style: const TextStyle(fontFamily: 'monospace'),
+                  maxLines: 3,
+                  onChanged: (_) => setState(() {}),
+                  onSubmitted: (_) => _submit(),
                 ),
-                inputFormatters: [RecoveryKeyFormatter()],
-                style: const TextStyle(fontFamily: 'monospace'),
-                maxLines: 3,
-                onChanged: (_) => setState(() {}),
-                onSubmitted: (_) => _submit(),
-              ),
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: _submit,
-                child: Text(l10n.recoverySubmit),
               ),
             ],
           ),

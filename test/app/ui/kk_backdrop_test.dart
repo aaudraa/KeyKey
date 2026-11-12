@@ -83,6 +83,27 @@ void main() {
     expect(tester.binding.hasScheduledFrame, isFalse);
   });
 
+  testWidgets('kayan zemin kare istiyor', (tester) async {
+    await tester.pumpWidget(
+      _host(AppTheme.light, const KkBackdrop(drifting: true)),
+    );
+    await tester.pump(const Duration(seconds: 1));
+    expect(tester.binding.hasScheduledFrame, isTrue);
+  });
+
+  testWidgets('görünmeyen (TickerMode kapalı) kayan zemin durur', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        AppTheme.light,
+        const TickerMode(enabled: false, child: KkBackdrop(drifting: true)),
+      ),
+    );
+    await tester.pump(const Duration(seconds: 1));
+    expect(tester.binding.hasScheduledFrame, isFalse);
+  });
+
   testWidgets('animasyonlar kapalıyken kayan zemin de durur', (tester) async {
     await tester.pumpWidget(
       _host(

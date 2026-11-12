@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +7,10 @@ import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/app/ui/keykey_logo.dart';
+import 'package:keykey/app/ui/kk_backdrop.dart';
+import 'package:keykey/app/ui/kk_bars.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
@@ -35,8 +40,15 @@ class LockScreen extends ConsumerStatefulWidget {
   ConsumerState<LockScreen> createState() => _LockScreenState();
 }
 
-class _LockScreenState extends ConsumerState<LockScreen> {
+class _LockScreenState extends ConsumerState<LockScreen>
+    with SingleTickerProviderStateMixin {
   final _password = TextEditingController();
+
+  /// Yanlış parolada kutunun yana titremesi.
+  late final _shake = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 300),
+  );
   Timer? _waitTimer;
   Duration _wait = Duration.zero;
   bool _busy = false;
@@ -100,6 +112,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
   @override
   void dispose() {
     _waitTimer?.cancel();
+    _shake.dispose();
     _password.dispose();
     super.dispose();
   }
@@ -142,6 +155,9 @@ class _LockScreenState extends ConsumerState<LockScreen> {
         case PasswordRejected(:final wait):
           _password.clear();
           setState(() => _error = l10n.lockWrongPassword);
+          if (!MediaQuery.disableAnimationsOf(context)) {
+            _shake.forward(from: 0);
+          }
           _startWait(wait);
         case PasswordMustWait(:final wait):
           _startWait(wait);
@@ -163,23 +179,24 @@ class _LockScreenState extends ConsumerState<LockScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final content = Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Center(child: KeyKeyLogo(size: widget.compact ? 56 : 88)),
-        const SizedBox(height: 16),
-        Text(
-          l10n.lockTitle,
-          textAlign: TextAlign.center,
-          style: theme.textTheme.headlineSmall,
+    final ambient =
+        !widget.compact &&
+        ref.watch(ambientMotionProvider) &&
+        !MediaQuery.disableAnimationsOf(context);
+    final logo = KeyKeyLogo(size: widget.compact ? 56 : 88);
+    final field = AnimatedBuilder(
+      animation: _shake,
+      // Sönen bir sinüs: iki buçuk gidip gelme, 8 dp'den sıfıra.
+      builder: (context, child) => Transform.translate(
+        offset: Offset(
+          math.sin(_shake.value * math.pi * 5) * 8 * (1 - _shake.value),
+          0,
         ),
-        if (widget.subtitle != null) ...[
-          const SizedBox(height: 8),
-          Text(widget.subtitle!, textAlign: TextAlign.center),
-        ],
-        const SizedBox(height: 24),
-        SecretField(
+        child: child,
+      ),
+      child: GlassSurface(
+        padding: const EdgeInsets.all(4),
+        child: SecretField(
           controller: _password,
           label: l10n.lockPasswordLabel,
           autofocus: true,
@@ -187,6 +204,27 @@ class _LockScreenState extends ConsumerState<LockScreen> {
           errorText: _error,
           onSubmitted: (_) => _submit(),
         ),
+      ),
+    );
+    final content = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Center(child: ambient ? _FloatingLogo(child: logo) : logo),
+        const SizedBox(height: 16),
+        Text(
+          l10n.lockTitle,
+          textAlign: TextAlign.center,
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        if (widget.subtitle != null) ...[
+          const SizedBox(height: 8),
+          Text(widget.subtitle!, textAlign: TextAlign.center),
+        ],
+        const SizedBox(height: 24),
+        field,
         if (_wait > Duration.zero) ...[
           const SizedBox(height: 12),
           Text(l10n.lockWait(_formatWait(_wait)), textAlign: TextAlign.center),
@@ -197,11 +235,14 @@ class _LockScreenState extends ConsumerState<LockScreen> {
           child: Text(_busy ? l10n.lockOpening : l10n.lockOpen),
         ),
         if (_biometricReady) ...[
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: _busy ? null : _unlockWithBiometric,
-            icon: const Icon(Icons.fingerprint),
-            label: Text(l10n.lockUseBiometric),
+          const SizedBox(height: 16),
+          Center(
+            child: KkCircleButton(
+              icon: Icons.fingerprint_rounded,
+              tooltip: l10n.lockUseBiometric,
+              size: 56,
+              onPressed: _busy ? null : _unlockWithBiometric,
+            ),
           ),
         ],
         if (widget.allowRecovery) ...[
@@ -219,7 +260,8 @@ class _LockScreenState extends ConsumerState<LockScreen> {
         child: content,
       );
     }
-    return Scaffold(
+    return KkScaffold(
+      driftingBackdrop: ambient,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -230,4 +272,38 @@ class _LockScreenState extends ConsumerState<LockScreen> {
       ),
     );
   }
+}
+
+/// Logonun yavaşça yukarı aşağı süzülmesi (3 saniyede bir tur, 4 dp).
+class _FloatingLogo extends StatefulWidget {
+  const new({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_FloatingLogo> createState() => _FloatingLogoState();
+}
+
+class _FloatingLogoState extends State<_FloatingLogo>
+    with SingleTickerProviderStateMixin {
+  late final _float = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 3),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _float.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: _float,
+    builder: (context, child) => Transform.translate(
+      offset: Offset(0, math.sin(_float.value * 2 * math.pi) * 2),
+      child: child,
+    ),
+    child: widget.child,
+  );
 }

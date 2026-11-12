@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/app/ui/keykey_logo.dart';
+import 'package:keykey/app/ui/kk_backdrop.dart';
+import 'package:keykey/app/ui/kk_bars.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/crypto/recovery_key.dart';
 import 'package:keykey/features/backup/presentation/restore_screen.dart';
@@ -121,11 +124,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.setupTitle)),
+    return KkScaffold(
+      appBar: kkRootAppBar(context, title: l10n.setupTitle),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: switch (_step) {
@@ -147,12 +150,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       const SizedBox(height: 12),
       _WarningCard(text: l10n.setupPasswordWarning),
       const SizedBox(height: 16),
-      NewPasswordFields(
-        password: _password,
-        confirmation: _confirmation,
-        enabled: !_busy,
-        autofocus: true,
-        onSubmitted: _create,
+      GlassSurface(
+        padding: const EdgeInsets.all(12),
+        child: NewPasswordFields(
+          password: _password,
+          confirmation: _confirmation,
+          enabled: !_busy,
+          autofocus: true,
+          onSubmitted: _create,
+        ),
       ),
       if (_error != null) ...[const SizedBox(height: 12), _ErrorText(_error!)],
       const SizedBox(height: 16),
@@ -177,7 +183,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       const SizedBox(height: 12),
       _WarningCard(text: l10n.recoveryShowWarning),
       const SizedBox(height: 16),
-      Card(
+      GlassSurface(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Text(
@@ -203,23 +209,27 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return [
       Text(l10n.recoveryVerifyIntro),
       const SizedBox(height: 16),
-      SecretField(
-        controller: _typedKey,
-        label: l10n.recoveryKeyLabel,
-        obscure: false,
-        autofocus: true,
-        enabled: !_busy,
-        errorText: _error,
-        helperText: l10n.recoveryKeyProgress(
-          RecoveryKeyCodec.symbolsOf(_typedKey.text).length,
-          RecoveryKeyCodec.textLength,
+      GlassSurface(
+        padding: const EdgeInsets.all(4),
+        child: SecretField(
+          controller: _typedKey,
+          label: l10n.recoveryKeyLabel,
+          obscure: false,
+          autofocus: true,
+          enabled: !_busy,
+          errorText: _error,
+          helperText: l10n.recoveryKeyProgress(
+            RecoveryKeyCodec.symbolsOf(_typedKey.text).length,
+            RecoveryKeyCodec.textLength,
+          ),
+          // Tireler kendiliğinden gelir; uzun anahtar satıra sığmazsa alta
+          // geçer.
+          inputFormatters: [RecoveryKeyFormatter()],
+          style: const TextStyle(fontFamily: 'monospace'),
+          maxLines: 3,
+          onChanged: (_) => setState(() {}),
+          onSubmitted: (_) => _verify(),
         ),
-        // Tireler kendiliğinden gelir; uzun anahtar satıra sığmazsa alta geçer.
-        inputFormatters: [RecoveryKeyFormatter()],
-        style: const TextStyle(fontFamily: 'monospace'),
-        maxLines: 3,
-        onChanged: (_) => setState(() {}),
-        onSubmitted: (_) => _verify(),
       ),
       const SizedBox(height: 16),
       FilledButton(
@@ -248,10 +258,14 @@ class _WarningCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    return Card(
-      color: colors.errorContainer,
+    // Opak: uyarının okunurluğu zemine bağlı kalmasın.
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.errorContainer,
+        borderRadius: const BorderRadius.all(Radius.circular(22)),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         child: Text(text, style: TextStyle(color: colors.onErrorContainer)),
       ),
     );

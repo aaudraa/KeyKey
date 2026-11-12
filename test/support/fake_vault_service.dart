@@ -620,6 +620,7 @@ Future<void> pumpKeyKey(
   AppPackages? packages,
   Locale locale = const Locale('tr'),
   bool settle = true,
+  bool ambient = false,
 }) async {
   tester.platformDispatcher.localesTestValue = [locale];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
@@ -628,7 +629,7 @@ Future<void> pumpKeyKey(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        ambientMotionProvider.overrideWithValue(false),
+        ambientMotionProvider.overrideWithValue(ambient),
         vaultServiceProvider.overrideWithValue(service),
         initialVaultStatusProvider.overrideWithValue(status),
         loginRepositoryFactoryProvider.overrideWithValue((_) => repository),

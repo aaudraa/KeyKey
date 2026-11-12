@@ -120,6 +120,80 @@ void main() {
       expect(field.controller?.text, isEmpty);
     });
 
+    testWidgets('yanlış parolada kutu titriyor, sonra yerine dönüyor', (
+      tester,
+    ) async {
+      await pumpLocked(tester);
+      final field = find.byType(TextField);
+      final start = tester.getTopLeft(field).dx;
+
+      await tester.enterText(field, 'yanlis-parola-99');
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Aç'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 40));
+      await tester.pump(const Duration(milliseconds: 40));
+      expect(tester.getTopLeft(field).dx, isNot(start));
+
+      await tester.pumpAndSettle();
+      expect(tester.getTopLeft(field).dx, start);
+      expect(find.text('Parola yanlış.'), findsOneWidget);
+    });
+
+    testWidgets('animasyonlar kapalıyken kutu titremiyor', (tester) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      await pumpLocked(tester);
+      final field = find.byType(TextField);
+      final start = tester.getTopLeft(field).dx;
+
+      await tester.enterText(field, 'yanlis-parola-99');
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Aç'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 40));
+      expect(tester.getTopLeft(field).dx, start);
+    });
+
+    testWidgets('kilit ekranında zemin ve logo yavaşça hareket ediyor', (
+      tester,
+    ) async {
+      await pumpKeyKey(
+        tester,
+        status: VaultLocked(service.header),
+        service: service,
+        ambient: true,
+        settle: false,
+      );
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 1));
+      expect(tester.binding.hasScheduledFrame, isTrue);
+    });
+
+    testWidgets('animasyonlar kapalıyken kilit ekranı kare istemiyor', (
+      tester,
+    ) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      await pumpKeyKey(
+        tester,
+        status: VaultLocked(service.header),
+        service: service,
+        ambient: true,
+        settle: false,
+      );
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.text(lockedTitle), findsOneWidget);
+      expect(tester.binding.hasScheduledFrame, isFalse);
+    });
+
     testWidgets('bekleme sürerken düğme kapalı, süre bitince açılıyor', (
       tester,
     ) async {
@@ -442,7 +516,7 @@ void main() {
     testWidgets('kapalıysa düğme yok ve pencere açılmıyor', (tester) async {
       await pumpLocked(tester);
 
-      expect(find.byIcon(Icons.fingerprint), findsNothing);
+      expect(find.byTooltip('Parmak izi kullan'), findsNothing);
       expect(service.biometricPrompts, 0);
     });
 
@@ -452,7 +526,7 @@ void main() {
       enableFake();
       await pumpLocked(tester);
 
-      expect(find.byIcon(Icons.fingerprint), findsOneWidget);
+      expect(find.byTooltip('Parmak izi kullan'), findsOneWidget);
       expect(service.biometricPrompts, 1);
       expect(find.text(lockedTitle), findsOneWidget);
     });
@@ -479,7 +553,7 @@ void main() {
       await pumpLocked(tester);
 
       service.nextBiometric = const BiometricSuccess(null);
-      await tester.tap(find.byIcon(Icons.fingerprint));
+      await tester.tap(find.byTooltip('Parmak izi kullan'));
       await tester.pumpAndSettle();
 
       expect(service.biometricPrompts, 2);
@@ -494,7 +568,7 @@ void main() {
       await pumpLocked(tester);
 
       expect(find.textContaining('parmak izleri değişti'), findsOneWidget);
-      expect(find.byIcon(Icons.fingerprint), findsNothing);
+      expect(find.byTooltip('Parmak izi kullan'), findsNothing);
       expect(find.text(vaultText), findsNothing);
     });
 

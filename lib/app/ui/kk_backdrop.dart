@@ -1,21 +1,74 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 
 /// Ekranların renkli zemini: düz renk ve üstünde üç büyük, yumuşak kenarlı
 /// leke. Lekeler içerikle birlikte kaymaz. Bulanıklaştırma yerine yumuşak
 /// geçişli boyamayla çizilir (ucuzdur).
-class KkBackdrop extends StatelessWidget {
+class KkBackdrop extends StatefulWidget {
   const new({this.drifting = false, super.key});
 
-  /// Lekeler çok yavaş yer değiştirir (yalnızca kilit ekranı).
+  /// Bir kayma döngüsünün süresi.
+  static const driftPeriod = Duration(seconds: 24);
+
+  /// Lekenin merkezinden en çok kayacağı yol, genişliğin oranı olarak.
+  static const double driftAmount = 0.06;
+
+  /// Lekeler çok yavaş yer değiştirir (yalnızca kilit ekranı). Animasyonlar
+  /// kapalıyken ya da ekran görünmüyorken (`TickerMode`) durur.
   final bool drifting;
+
+  @override
+  State<KkBackdrop> createState() => _KkBackdropState();
+}
+
+class _KkBackdropState extends State<KkBackdrop>
+    with SingleTickerProviderStateMixin {
+  AnimationController? _drift;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _sync();
+  }
+
+  @override
+  void didUpdateWidget(KkBackdrop old) {
+    super.didUpdateWidget(old);
+    _sync();
+  }
+
+  void _sync() {
+    final moving = widget.drifting && !MediaQuery.disableAnimationsOf(context);
+    if (moving && _drift == null) {
+      _drift = AnimationController(
+        vsync: this,
+        duration: KkBackdrop.driftPeriod,
+      )..repeat();
+    } else if (!moving && _drift != null) {
+      _drift!.dispose();
+      _drift = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _drift?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final glass = KkGlass.of(context);
     return RepaintBoundary(
       child: CustomPaint(
-        painter: _BlobPainter(glass.ground, glass.blobs, glass.blobAlpha),
+        painter: _BlobPainter(
+          glass.ground,
+          glass.blobs,
+          glass.blobAlpha,
+          drift: _drift,
+        ),
         child: const SizedBox.expand(),
       ),
     );
@@ -23,11 +76,15 @@ class KkBackdrop extends StatelessWidget {
 }
 
 class _BlobPainter extends CustomPainter {
-  new(this.ground, this.blobs, this.alpha);
+  new(this.ground, this.blobs, this.alpha, {this.drift})
+    : super(repaint: drift);
 
   final Color ground;
   final List<Color> blobs;
   final double alpha;
+
+  /// 0..1 arası döngü; `null` ise lekeler yerinde durur.
+  final Animation<double>? drift;
 
   /// Merkezler ekranın oranı olarak, yarıçaplar genişliğin katı olarak.
   static const _centers = [
@@ -45,11 +102,17 @@ class _BlobPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
     canvas.drawRect(rect, Paint()..color = ground);
+    final turn = (drift?.value ?? 0) * 2 * math.pi;
+    final reach = KkBackdrop.driftAmount * size.width;
     for (var i = 0; i < blobs.length && i < _centers.length; i++) {
-      final center = Offset(
-        _centers[i].dx * size.width,
-        _centers[i].dy * size.height,
-      );
+      // Her leke kendi evresinde küçük bir elips çizer.
+      final phase = turn + i * 2 * math.pi / 3;
+      final shift = drift == null
+          ? Offset.zero
+          : Offset(math.cos(phase) * reach, math.sin(phase) * reach * 0.8);
+      final center =
+          Offset(_centers[i].dx * size.width, _centers[i].dy * size.height) +
+          shift;
       final radius = _radii[i] * size.width;
       final shader = RadialGradient(
         colors: [
@@ -63,7 +126,10 @@ class _BlobPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_BlobPainter old) =>
-      old.ground != ground || old.alpha != alpha || old.blobs != blobs;
+      old.ground != ground ||
+      old.alpha != alpha ||
+      old.blobs != blobs ||
+      old.drift != drift;
 }
 
 /// Zeminini kendisi çizen iskelet. Bütün ekranlar bunu kullanır; içindeki

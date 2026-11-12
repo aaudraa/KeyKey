@@ -6,6 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/secret_field.dart';
+import 'package:keykey/app/ui/kk_backdrop.dart';
+import 'package:keykey/app/ui/kk_bars.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/core/backup/backup_codec.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
@@ -199,11 +202,11 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final opened = _opened;
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.restoreTitle)),
+    return KkScaffold(
+      appBar: kkAppBar(context, title: l10n.restoreTitle),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: opened == null
@@ -219,36 +222,38 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
     return [
       Text(l10n.restoreUnlockIntro),
       const SizedBox(height: 16),
-      if (_useRecoveryKey)
-        SecretField(
-          key: const ValueKey('recovery'),
-          controller: _secret,
-          label: l10n.recoveryKeyLabel,
-          obscure: false,
-          autofocus: true,
-          enabled: !_busy,
-          errorText: _error,
-          helperText: l10n.recoveryKeyProgress(
-            RecoveryKeyCodec.symbolsOf(_secret.text).length,
-            RecoveryKeyCodec.textLength,
-          ),
-          inputFormatters: [RecoveryKeyFormatter()],
-          style: const TextStyle(fontFamily: 'monospace'),
-          maxLines: 3,
-          onChanged: (_) => setState(() {}),
-          onSubmitted: (_) => unawaited(_open()),
-        )
-      else
-        SecretField(
-          key: const ValueKey('password'),
-          controller: _secret,
-          label: l10n.lockPasswordLabel,
-          autofocus: true,
-          enabled: !_busy,
-          errorText: _error,
-          onChanged: (_) => setState(() {}),
-          onSubmitted: (_) => unawaited(_open()),
-        ),
+      GlassSurface(
+        padding: const EdgeInsets.all(4),
+        child: _useRecoveryKey
+            ? SecretField(
+                key: const ValueKey('recovery'),
+                controller: _secret,
+                label: l10n.recoveryKeyLabel,
+                obscure: false,
+                autofocus: true,
+                enabled: !_busy,
+                errorText: _error,
+                helperText: l10n.recoveryKeyProgress(
+                  RecoveryKeyCodec.symbolsOf(_secret.text).length,
+                  RecoveryKeyCodec.textLength,
+                ),
+                inputFormatters: [RecoveryKeyFormatter()],
+                style: const TextStyle(fontFamily: 'monospace'),
+                maxLines: 3,
+                onChanged: (_) => setState(() {}),
+                onSubmitted: (_) => unawaited(_open()),
+              )
+            : SecretField(
+                key: const ValueKey('password'),
+                controller: _secret,
+                label: l10n.lockPasswordLabel,
+                autofocus: true,
+                enabled: !_busy,
+                errorText: _error,
+                onChanged: (_) => setState(() {}),
+                onSubmitted: (_) => unawaited(_open()),
+              ),
+      ),
       const SizedBox(height: 16),
       FilledButton(
         onPressed: _busy || _secret.text.isEmpty
@@ -281,9 +286,12 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
     final status = ref.watch(vaultControllerProvider);
     final theme = Theme.of(context);
     return [
-      Text(
-        l10n.restoreSummary(date, opened.loginCount, opened.otpCount),
-        style: theme.textTheme.titleMedium,
+      GlassSurface(
+        padding: const EdgeInsets.all(16),
+        child: Text(
+          l10n.restoreSummary(date, opened.loginCount, opened.otpCount),
+          style: theme.textTheme.titleMedium,
+        ),
       ),
       if (_error != null) ...[
         const SizedBox(height: 12),
