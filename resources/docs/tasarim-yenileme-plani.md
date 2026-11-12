@@ -1,5 +1,7 @@
 # Tasarım Yenilemesi Uygulama Planı
 
+> **Not (2026-11-13):** Bu planın yerini [cam tasarım planı](tasarim-cam-plani.md) aldı. Bu belge ilk turun kaydı olarak duruyor.
+
 > **Uygulayan için:** Gerekli beceri: superpowers:executing-plans (bu projede tercih edilen; görevleri bu oturumda sırayla uygula). Adımlar `- [ ]` ile işaretlenir.
 
 **Amaç:** KeyKey'i krem zeminli, turuncu ana renkli, aynı boy kartlı, yüzen cam menülü yeni görünüme taşımak; otomatik doldurmayı yarım pencereye almak ve tek kesin eşleşmeyi sorulmadan doldurmak.

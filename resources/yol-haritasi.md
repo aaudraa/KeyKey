@@ -2,7 +2,7 @@
 
 KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-10 · **Şu anki faz:** Faz 9
+**Son güncelleme:** 2026-11-13 · **Şu anki faz:** Faz 9
 
 > [!IMPORTANT]
 > **Gerçek parolalarını 1.0'a kadar KeyKey'e koyma.** Projenin kendi güvenlik denetimi tamamlandı, ama yayımlanmış bir sürüm yok ve bağımsız bir denetim yapılmadı.
@@ -452,6 +452,10 @@ Güvenlik ya da veri kaybı sorunu çıkmadı. Ayrıntılar [denetim belgesinde]
 **Durum (2026-11-11):** Tasarım yenilemesi (#103) kodda bitti: yeni tema ve renkler, aynı boy kartlar, yüzen alt menü, gruplu ayarlar, alttan açılan pencereler, yeni simge ve açılış ekranı, yarım pencerede otomatik doldurma ve tek kesin eşleşmenin sorulmadan doldurulması. Entegrasyon testleri Android 11, 14 ve 17 emülatörlerinde geçti; Android 16 emülatörü bozuk durumda (hiçbir KeyKey sürümü açılmıyor, tasarımdan önceki sürüm de), yeniden kurulacak. Kalan: telefonda kullanıcıyla deneme, kılavuz (#104), dış inceleme çağrısı (#90).
 
 **Durum (2026-11-12):** Kullanıcı ilk turun görünümünü telefonda birkaç gün kullandıktan sonra beğenmedi ("sadece renkler değişmiş", cam fark edilmiyor, yeni parola ekranı korkutucu). Tasarım incelemesi yeniden açıldı. Örnek ekranlar üzerinden yeni yön kararlaştırıldı: renkli yumuşak zemin, cam kartlar, ucunda "+" olan cam menü, sade formlar, yumuşak hareketler ([cam tasarım belgesi](docs/tasarim-cam.md), [örnek ekranlar](design/cam-tasarim-ornekleri.html)). İlk turun otomatik doldurma davranışı, simge ve açılış ekranı kalıyor. Kullanıcı belgeyi aynı gün onayladı; [uygulama planı](docs/tasarim-cam-plani.md) yazıldı (15 görev). Sıra: kullanıcının plan onayı, uygulama, telefonda deneme; kılavuz (#104) bunun arkasında.
+
+**Durum (2026-11-13):** Cam tasarım planının 15 görevi kodda bitti (#103). Bütün ekranlar renkli zemin ve cam kartlarla çiziliyor; tek "+", listeden kopyalama, sade formlar, ayarlarda yedek kartı, hareketli kilit ekranı, cam doldurma penceresi ve tahmini geri hareketi eklendi. Bir tarama testi düz `Scaffold`, düz alt pencere ve `AlertDialog` kalmadığını denetliyor. Birim testleri (1099) ve entegrasyon testleri Android 11, 14 ve 17 emülatörlerinde geçti. Tahmini geri hareketi Android 17 emülatöründe elle denendi: "+" kutusu açıkken geri kutuyu kapatıyor, değişmiş formda soru çıkıyor, kökte geri uygulamayı arka plana alıyor.
+
+Ölçüm: 1000 kayıtlı listede beş savurma (debug, aynı Android 14 emülatörü) cam öncesi 15,2-15,5 sn, cam sonrası 17,0-18,0 sn sürdü. Karttaki gölgeyi kapatmak 16,6 sn, alt menünün bulanıklığını kapatmak 17,1 sn verdi; kalan fark kart başına daha çok bileşenden. Emülatörde profil modu olmadığı için karar telefondaki denemeye bırakıldı; takılma görülürse önce gölge ucuzlatılır. Yazılımsal grafikli emülatör (`-gpu swiftshader_indirect` ve `guest`) bulanık yüzeylerde qemu erişim ihlaliyle çöktü; testler `-gpu host` ile çalıştırıldı. KeyKey ekran görüntüsünü engellediği için emülatörde görsel karşılaştırma yapılamadı; görsel denetim telefondaki denemede. Kalan: telefonda kullanıcıyla deneme, kılavuz (#104), dış inceleme çağrısı (#90).
 
 **Bitti sayılması için:** GitHub Release'teki APK dört emülatöre ve gerçek telefona kuruluyor; önceki sürümden yükseltmede veri korunuyor; README son durumu anlatıyor.
 
