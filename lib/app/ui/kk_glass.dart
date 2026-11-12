@@ -141,10 +141,16 @@ class GlassSurface extends StatelessWidget {
       child: Stack(
         fit: StackFit.passthrough,
         children: [
-          if (padding == null)
-            child
-          else
-            Padding(padding: padding!, child: child),
+          // İçteki ListTile ve InkWell'in dalgası cam dolgunun üstünde
+          // görünsün; dalga köşelerden taşmasın.
+          Material(
+            type: MaterialType.transparency,
+            borderRadius: borderRadius,
+            clipBehavior: Clip.antiAlias,
+            child: padding == null
+                ? child
+                : Padding(padding: padding!, child: child),
+          ),
           Positioned(
             top: 0,
             left: inset,

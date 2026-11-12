@@ -538,7 +538,7 @@ void main() {
         mockClipboard(tester, '  jbsw y3dp ehpk 3pxp\n');
         await openForm(tester);
 
-        await tester.tap(find.byTooltip('Yapıştır'));
+        await tester.tap(find.text('Yapıştır'));
         await settle(tester);
         expect(find.text('JBSW Y3DP EHPK 3PXP'), findsOneWidget);
 
@@ -561,7 +561,7 @@ void main() {
         );
         await openForm(tester);
 
-        await tester.tap(find.byTooltip('Yapıştır'));
+        await tester.tap(find.text('Yapıştır'));
         await settle(tester);
 
         expect(find.text('Bilgiler bağlantıdan dolduruldu.'), findsOneWidget);
@@ -573,7 +573,7 @@ void main() {
         mockClipboard(tester, null);
         await openForm(tester);
 
-        await tester.tap(find.byTooltip('Yapıştır'));
+        await tester.tap(find.text('Yapıştır'));
         await settle(tester);
 
         expect(find.text('Panoda metin yok.'), findsOneWidget);
@@ -666,6 +666,19 @@ void main() {
       expect(find.textContaining('Bu kod türü desteklenmiyor'), findsOneWidget);
     });
 
+    testWidgets('yeni hesapta yalnızca üç temel alan, menü yok', (
+      tester,
+    ) async {
+      await openForm(tester);
+      for (final label in ['Servis', 'Hesap', 'Gizli anahtar']) {
+        expect(find.widgetWithText(TextField, label), findsOneWidget);
+      }
+      expect(find.widgetWithText(TextField, 'Notlar'), findsNothing);
+      expect(find.text('Algoritma'), findsNothing);
+      expect(find.byType(GlassNavBar), findsNothing);
+      expect(find.widgetWithText(FilledButton, 'Kaydet'), findsOneWidget);
+    });
+
     testWidgets('gelişmiş ayarlar: SHA-512, 8 hane, 60 saniye', (tester) async {
       await openForm(tester);
 
@@ -674,8 +687,8 @@ void main() {
         find.widgetWithText(TextField, 'Gizli anahtar'),
         'JBSWY3DPEHPK3PXP',
       );
-      await tester.tap(find.text('Gelişmiş'));
-      await settle(tester);
+      await tapVisible(tester, find.text('Daha fazla seçenek'));
+      await tapVisible(tester, find.widgetWithText(ActionChip, 'Gelişmiş'));
       await tapVisible(tester, find.text('SHA512'));
       await tapVisible(tester, find.text('8'));
       await tester.enterText(find.widgetWithText(TextField, '30'), '60');
@@ -696,8 +709,8 @@ void main() {
         find.widgetWithText(TextField, 'Gizli anahtar'),
         'JBSWY3DPEHPK3PXP',
       );
-      await tester.tap(find.text('Gelişmiş'));
-      await settle(tester);
+      await tapVisible(tester, find.text('Daha fazla seçenek'));
+      await tapVisible(tester, find.widgetWithText(ActionChip, 'Gelişmiş'));
       await tester.enterText(find.widgetWithText(TextField, '30'), '0');
       await tester.tap(find.text('Kaydet'));
       await settle(tester);

@@ -1,8 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/secret_field.dart';
+import 'package:keykey/app/ui/kk_backdrop.dart';
+import 'package:keykey/app/ui/kk_bars.dart';
+import 'package:keykey/app/ui/kk_form.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
@@ -40,6 +46,7 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
   final _period = TextEditingController();
   final _counter = TextEditingController();
   final _notes = TextEditingController();
+  final _notesFocus = FocusNode();
 
   OtpKind _kind = OtpKind.totp;
   OtpAlgorithm _algorithm = OtpAlgorithm.sha1;
@@ -54,6 +61,10 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
   bool _saving = false;
   bool _showAdvanced = false;
 
+  /// Not ve eşleşme alanı görünüyor mu: doluysa ya da yongadan eklendiyse.
+  bool _showNotes = false;
+  bool _showLink = false;
+
   /// Kaydetmeye basıldıktan sonra hatalar gösterilir.
   bool _validate = false;
   String? _linkError;
@@ -62,6 +73,7 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
 
   @override
   void dispose() {
+    _notesFocus.dispose();
     for (final controller in [
       _issuer,
       _account,
@@ -84,6 +96,8 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
       _loginId = content.loginId;
       _account.text = content.account;
       _notes.text = content.notes;
+      _showNotes = content.notes.isNotEmpty;
+      _showLink = content.loginId != null;
       _setParameters(content.parameters);
     } else if (initial != null) {
       _applyAccount(initial);
@@ -268,6 +282,7 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
         LoginPicked(:final id) => id,
         LoginUnlinked() => null,
       };
+      _showLink = _loginId != null;
       _dirty = true;
     });
   }
@@ -308,25 +323,15 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
     }
   }
 
-  Future<bool> _confirmDiscard() async {
+  Future<bool> _confirmDiscard() {
     final l10n = AppLocalizations.of(context);
-    final discard = await showKkSheet<bool>(
+    return showKkConfirm(
       context,
-      builder: (context) => KkSheetContent(
-        title: l10n.loginDiscardTitle,
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(l10n.loginKeepEditing),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(l10n.loginDiscard),
-          ),
-        ],
-      ),
+      title: l10n.loginDiscardTitle,
+      confirmLabel: l10n.loginDiscard,
+      cancelLabel: l10n.loginKeepEditing,
+      destructive: true,
     );
-    return discard ?? false;
   }
 
   @override
@@ -337,12 +342,14 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
     ref.watch(loginsControllerProvider);
     if (!_initialized) {
       if (state is! OtpsLoaded) {
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        return const KkScaffold(
+          body: Center(child: CircularProgressIndicator()),
+        );
       }
       final item = _isNew ? null : findOtp(state, widget.idHex!);
       if (!_isNew && item == null) {
-        return Scaffold(
-          appBar: AppBar(),
+        return KkScaffold(
+          appBar: kkAppBar(context),
           body: Center(child: Text(l10n.loginNotFound)),
         );
       }
@@ -364,90 +371,166 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
           context.pop();
         }
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(_isNew ? l10n.otpNewTitle : l10n.loginEditTitle),
-          actions: [
-            TextButton(
-              onPressed: _saving ? null : _save,
-              child: Text(l10n.loginSave),
-            ),
-          ],
+      child: KkScaffold(
+        appBar: kkAppBar(
+          context,
+          title: _isNew ? l10n.otpNewTitle : l10n.loginEditTitle,
         ),
-        body: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            SecretField(
-              controller: _issuer,
-              label: l10n.otpIssuer,
-              obscure: false,
-              autofocus: _isNew && widget.initial == null,
-              errorText: nameError,
-              textInputAction: TextInputAction.next,
-              onChanged: _changed,
-            ),
-            const SizedBox(height: 12),
-            SecretField(
-              controller: _account,
-              label: l10n.otpAccount,
-              obscure: false,
-              textInputAction: TextInputAction.next,
-              onChanged: _changed,
-            ),
-            const SizedBox(height: 12),
-            SecretField(
-              controller: _secret,
-              label: l10n.otpSecret,
-              helperText: l10n.otpSecretHelper,
-              errorText: secretError,
-              // Elle eklenen yeni anahtar servisin ekranından okunarak
-              // yazılır; körlemesine yazmak hataya yol açıyordu.
-              initiallyVisible: _isNew && widget.initial == null,
-              inputFormatters: [SecretKeyFormatter()],
-              // Eş genişlikli yazı tipinde 0 ile O, 1 ile I daha kolay
-              // ayrılır.
-              style: const TextStyle(fontFamily: 'monospace'),
-              trailing: IconButton(
-                tooltip: l10n.otpSecretPaste,
-                icon: const Icon(Icons.content_paste),
-                onPressed: _pasteSecret,
+        bottomNavigationBar: KkBottomAction(
+          label: l10n.loginSave,
+          busy: _saving,
+          onPressed: _save,
+        ),
+        // Form kısa; bütün alanlar hep kurulu kalsın.
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              KkFieldCard(
+                child: SecretField(
+                  controller: _issuer,
+                  label: l10n.otpIssuer,
+                  obscure: false,
+                  autofocus: _isNew && widget.initial == null,
+                  errorText: nameError,
+                  textInputAction: TextInputAction.next,
+                  onChanged: _changed,
+                ),
               ),
-              textInputAction: TextInputAction.next,
-              onChanged: _onSecretChanged,
-            ),
-            const SizedBox(height: 12),
-            SecretField(
-              controller: _notes,
-              label: l10n.loginNotes,
-              obscure: false,
-              multiline: true,
-              maxLines: 6,
-              textInputAction: TextInputAction.newline,
-              onChanged: _changed,
-            ),
-            const SizedBox(height: 8),
-            _LinkedLoginField(
-              name: switch (_linkedLogin()) {
-                final login? =>
-                  login.content.name.trim().isEmpty
-                      ? '—'
-                      : login.content.name.trim(),
-                null => null,
-              },
-              onTap: _chooseLogin,
-            ),
-            ExpansionTile(
-              key: ValueKey(_showAdvanced),
-              initiallyExpanded: _showAdvanced,
-              tilePadding: EdgeInsets.zero,
-              title: Text(l10n.otpAdvanced),
-              subtitle: Text(l10n.otpAdvancedHint),
-              onExpansionChanged: (expanded) => _showAdvanced = expanded,
-              childrenPadding: const EdgeInsets.only(bottom: 16),
-              expandedCrossAxisAlignment: CrossAxisAlignment.start,
-              children: _advanced(l10n),
-            ),
-          ],
+              KkFieldCard(
+                child: SecretField(
+                  controller: _account,
+                  label: l10n.otpAccount,
+                  obscure: false,
+                  textInputAction: TextInputAction.next,
+                  onChanged: _changed,
+                ),
+              ),
+              KkFieldCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SecretField(
+                      controller: _secret,
+                      label: l10n.otpSecret,
+                      helperText: l10n.otpSecretHelper,
+                      errorText: secretError,
+                      // Elle eklenen yeni anahtar servisin ekranından okunarak
+                      // yazılır; körlemesine yazmak hataya yol açıyordu.
+                      initiallyVisible: _isNew && widget.initial == null,
+                      inputFormatters: [SecretKeyFormatter()],
+                      // Eş genişlikli yazı tipinde 0 ile O, 1 ile I daha
+                      // kolay ayrılır.
+                      style: const TextStyle(fontFamily: 'monospace'),
+                      textInputAction: TextInputAction.next,
+                      onChanged: _onSecretChanged,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
+                      child: Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: TextButton.icon(
+                          style: TextButton.styleFrom(
+                            backgroundColor: KkGlass.of(context)
+                                .accentContainer,
+                            foregroundColor: Theme.of(context)
+                                .colorScheme
+                                .primary,
+                          ),
+                          onPressed: _pasteSecret,
+                          icon: const Icon(Icons.content_paste_rounded),
+                          label: Text(l10n.otpSecretPaste),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (_showNotes)
+                KkFieldCard(
+                  onRemove: () => setState(() {
+                    _notes.clear();
+                    _showNotes = false;
+                    _dirty = true;
+                  }),
+                  child: SecretField(
+                    controller: _notes,
+                    label: l10n.loginNotes,
+                    obscure: false,
+                    multiline: true,
+                    maxLines: 6,
+                    focusNode: _notesFocus,
+                    textInputAction: TextInputAction.newline,
+                    onChanged: _changed,
+                  ),
+                ),
+              if (_showLink)
+                KkFieldCard(
+                  child: _LinkedLoginField(
+                    name: switch (_linkedLogin()) {
+                      final login? =>
+                        login.content.name.trim().isEmpty
+                            ? '—'
+                            : login.content.name.trim(),
+                      null => null,
+                    },
+                    onTap: _chooseLogin,
+                  ),
+                ),
+              if (_showAdvanced)
+                KkFieldCard(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.otpAdvanced,
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                        Text(
+                          l10n.otpAdvancedHint,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                              ),
+                        ),
+                        const SizedBox(height: 12),
+                        ..._advanced(l10n),
+                      ],
+                    ),
+                  ),
+                ),
+              KkMoreOptions(
+                options: [
+                  if (!_showNotes)
+                    KkOption(
+                      label: l10n.formNote,
+                      onAdd: () {
+                        setState(() => _showNotes = true);
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (mounted) _notesFocus.requestFocus();
+                        });
+                      },
+                    ),
+                  if (!_showLink)
+                    KkOption(
+                      label: l10n.otpLinkedLogin,
+                      onAdd: () => unawaited(_chooseLogin()),
+                    ),
+                  if (!_showAdvanced)
+                    KkOption(
+                      label: l10n.otpAdvanced,
+                      onAdd: () => setState(() => _showAdvanced = true),
+                    ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -571,8 +654,10 @@ class _LinkedLoginField extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Icon(name == null ? Icons.link_off : Icons.link),
+      leading: Icon(
+        name == null ? Icons.link_off_rounded : Icons.link_rounded,
+        color: KkGlass.of(context).accent,
+      ),
       title: Text(l10n.otpLinkedLogin),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

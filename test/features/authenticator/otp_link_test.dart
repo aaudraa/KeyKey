@@ -90,11 +90,18 @@ void main() {
     await settle(tester);
   }
 
+  /// Eşleşmesi olmayan hesapta "Daha fazla seçenek" → "Parola kaydı".
+  Future<void> openPicker(WidgetTester tester) async {
+    await tapVisible(tester, find.text('Daha fazla seçenek'));
+    await tapVisible(tester, find.widgetWithText(ActionChip, 'Parola kaydı'));
+  }
+
   testWidgets('formdan parola kaydı seçilip kaydediliyor', (tester) async {
     await openOtpEdit(tester);
-    expect(find.text('Eşleştirilmedi'), findsOneWidget);
+    // Eşleşme yokken alan görünmez; yongadan seçilir.
+    expect(find.text('Eşleştirilmedi'), findsNothing);
 
-    await tapVisible(tester, find.text('Parola kaydı'));
+    await openPicker(tester);
     expect(find.text('Parola kaydıyla eşleştir'), findsOneWidget);
     expect(find.text('Eşleştirmeyi kaldır'), findsNothing);
     await tester.tap(find.text('GitHub').last);
@@ -109,7 +116,7 @@ void main() {
 
   testWidgets('seçici aranabiliyor', (tester) async {
     await openOtpEdit(tester);
-    await tapVisible(tester, find.text('Parola kaydı'));
+    await openPicker(tester);
 
     await tester.enterText(
       find.descendant(
@@ -182,7 +189,8 @@ void main() {
       await tapVisible(tester, find.text('Parola kaydı'));
       await tester.tap(find.text('Eşleştirmeyi kaldır'));
       await settle(tester);
-      expect(find.text('Eşleştirilmedi'), findsOneWidget);
+      // Eşleşme kalkınca alan da gizlenir.
+      expect(find.widgetWithText(ListTile, 'Parola kaydı'), findsNothing);
       await tester.tap(find.text('Kaydet'));
       await settle(tester);
 

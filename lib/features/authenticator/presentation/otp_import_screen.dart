@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/secret_field.dart';
+import 'package:keykey/app/ui/kk_backdrop.dart';
+import 'package:keykey/app/ui/kk_bars.dart';
+import 'package:keykey/app/ui/kk_form.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otp_import.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
@@ -97,9 +101,25 @@ class _OtpImportScreenState extends ConsumerState<OtpImportScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final batch = _batch;
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.otpImportTitle)),
+    return KkScaffold(
+      appBar: kkAppBar(context, title: l10n.otpImportTitle),
       body: batch == null ? _passwordForm(l10n) : _accounts(l10n, batch),
+      bottomNavigationBar: batch == null
+          ? KkBottomAction(
+              label: l10n.otpImportOpen,
+              busy: _opening,
+              onPressed: _open,
+            )
+          : _addButton(l10n, batch),
+    );
+  }
+
+  Widget? _addButton(AppLocalizations l10n, ImportBatch batch) {
+    if (ref.watch(otpsControllerProvider) is! OtpsLoaded) return null;
+    return KkBottomAction(
+      label: l10n.otpImportAdd(_selected.length),
+      busy: _saving,
+      onPressed: _selected.isEmpty ? null : () => _save(batch),
     );
   }
 
@@ -109,25 +129,14 @@ class _OtpImportScreenState extends ConsumerState<OtpImportScreen> {
       children: [
         Text(l10n.otpImportPasswordHint),
         const SizedBox(height: 16),
-        SecretField(
-          controller: _password,
-          label: l10n.otpImportPassword,
-          autofocus: true,
-          enabled: !_opening,
-          errorText: _passwordError,
-          onSubmitted: (_) => _open(),
-        ),
-        const SizedBox(height: 16),
-        Align(
-          alignment: AlignmentDirectional.centerEnd,
-          child: FilledButton(
-            onPressed: _opening ? null : _open,
-            child: _opening
-                ? const SizedBox.square(
-                    dimension: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Text(l10n.otpImportOpen),
+        KkFieldCard(
+          child: SecretField(
+            controller: _password,
+            label: l10n.otpImportPassword,
+            autofocus: true,
+            enabled: !_opening,
+            errorText: _passwordError,
+            onSubmitted: (_) => _open(),
           ),
         ),
       ],
@@ -164,7 +173,9 @@ class _OtpImportScreenState extends ConsumerState<OtpImportScreen> {
         Expanded(
           child: batch.accounts.isEmpty
               ? Center(child: Text(l10n.otpImportEmpty))
-              : ListView.builder(
+              : ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                  separatorBuilder: (_, _) => const SizedBox(height: 8),
                   itemCount: batch.accounts.length,
                   itemBuilder: (context, index) {
                     final account = batch.accounts[index];
@@ -180,36 +191,24 @@ class _OtpImportScreenState extends ConsumerState<OtpImportScreen> {
                         account.account,
                       if (duplicate) l10n.otpImportDuplicate,
                     ].join(' · ');
-                    return CheckboxListTile(
-                      value: _selected.contains(index),
-                      onChanged: duplicate || _saving
-                          ? null
-                          : (checked) => setState(() {
-                              if (checked ?? false) {
-                                _selected.add(index);
-                              } else {
-                                _selected.remove(index);
-                              }
-                            }),
-                      title: Text(title),
-                      subtitle: subtitle.isEmpty ? null : Text(subtitle),
+                    return GlassSurface(
+                      child: CheckboxListTile(
+                        value: _selected.contains(index),
+                        onChanged: duplicate || _saving
+                            ? null
+                            : (checked) => setState(() {
+                                if (checked ?? false) {
+                                  _selected.add(index);
+                                } else {
+                                  _selected.remove(index);
+                                }
+                              }),
+                        title: Text(title),
+                        subtitle: subtitle.isEmpty ? null : Text(subtitle),
+                      ),
                     );
                   },
                 ),
-        ),
-        SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: _selected.isEmpty || _saving
-                    ? null
-                    : () => _save(batch),
-                child: Text(l10n.otpImportAdd(_selected.length)),
-              ),
-            ),
-          ),
         ),
       ],
     );
@@ -226,8 +225,11 @@ class _Notice extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      child: Card(
-        child: ListTile(leading: Icon(icon), title: Text(text)),
+      child: GlassSurface(
+        child: ListTile(
+          leading: Icon(icon, color: KkGlass.of(context).accent),
+          title: Text(text),
+        ),
       ),
     );
   }

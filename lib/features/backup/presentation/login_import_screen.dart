@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
+import 'package:keykey/app/ui/kk_backdrop.dart';
+import 'package:keykey/app/ui/kk_bars.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/vault/vault_session.dart';
@@ -101,6 +104,8 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
         await ref.read(otpsControllerProvider.notifier).addAll(otps);
       }
       if (!mounted) return;
+      // Kayıt bitti; hatırlatma açıkken düğmede ilerleme halkası dönmesin.
+      setState(() => _saving = false);
       messenger.showSnackBar(
         SnackBar(content: Text(l10n.loginImportDone(items.length))),
       );
@@ -135,8 +140,8 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
     var plan = _plan;
     if (plan == null) {
       if (logins is! LoginsLoaded || otps is! OtpsLoaded) {
-        return Scaffold(
-          appBar: AppBar(title: Text(l10n.loginImportTitle)),
+        return KkScaffold(
+          appBar: kkAppBar(context, title: l10n.loginImportTitle),
           body: const Center(child: CircularProgressIndicator()),
         );
       }
@@ -151,9 +156,15 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
           if (!candidate.duplicate) index,
       };
     }
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.loginImportTitle)),
-      body: _list(l10n, plan),
+    final ready = plan;
+    return KkScaffold(
+      appBar: kkAppBar(context, title: l10n.loginImportTitle),
+      body: _list(l10n, ready),
+      bottomNavigationBar: KkBottomAction(
+        label: l10n.loginImportAdd(_selected.length),
+        busy: _saving,
+        onPressed: _selected.isEmpty ? null : () => _save(ready),
+      ),
     );
   }
 
@@ -196,49 +207,42 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
                   child: Center(child: Text(l10n.loginImportNothing)),
                 )
               else
-                SliverList.builder(
-                  itemCount: plan.candidates.length,
-                  itemBuilder: (context, index) {
-                    final candidate = plan.candidates[index];
-                    final content = candidate.content;
-                    final subtitle = [
-                      if (content.username.isNotEmpty) content.username,
-                      if (content.urls.isNotEmpty) _hostOf(content.urls.first),
-                      if (candidate.otp != null && !candidate.otpAlreadySaved)
-                        l10n.loginImportWithOtp,
-                      if (candidate.duplicate) l10n.loginImportDuplicate,
-                    ].where((part) => part.isNotEmpty).join(' · ');
-                    return CheckboxListTile(
-                      value: _selected.contains(index),
-                      onChanged: _saving
-                          ? null
-                          : (checked) => setState(() {
-                              if (checked ?? false) {
-                                _selected.add(index);
-                              } else {
-                                _selected.remove(index);
-                              }
-                            }),
-                      title: Text(content.name),
-                      subtitle: subtitle.isEmpty ? null : Text(subtitle),
-                    );
-                  },
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                  sliver: SliverList.separated(
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
+                    itemCount: plan.candidates.length,
+                    itemBuilder: (context, index) {
+                      final candidate = plan.candidates[index];
+                      final content = candidate.content;
+                      final subtitle = [
+                        if (content.username.isNotEmpty) content.username,
+                        if (content.urls.isNotEmpty)
+                          _hostOf(content.urls.first),
+                        if (candidate.otp != null && !candidate.otpAlreadySaved)
+                          l10n.loginImportWithOtp,
+                        if (candidate.duplicate) l10n.loginImportDuplicate,
+                      ].where((part) => part.isNotEmpty).join(' · ');
+                      return GlassSurface(
+                        child: CheckboxListTile(
+                          value: _selected.contains(index),
+                          onChanged: _saving
+                              ? null
+                              : (checked) => setState(() {
+                                  if (checked ?? false) {
+                                    _selected.add(index);
+                                  } else {
+                                    _selected.remove(index);
+                                  }
+                                }),
+                          title: Text(content.name),
+                          subtitle: subtitle.isEmpty ? null : Text(subtitle),
+                        ),
+                      );
+                    },
+                  ),
                 ),
             ],
-          ),
-        ),
-        SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: _selected.isEmpty || _saving
-                    ? null
-                    : () => _save(plan),
-                child: Text(l10n.loginImportAdd(_selected.length)),
-              ),
-            ),
           ),
         ),
       ],
@@ -269,8 +273,11 @@ class _Notice extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      child: Card(
-        child: ListTile(leading: Icon(icon), title: Text(text)),
+      child: GlassSurface(
+        child: ListTile(
+          leading: Icon(icon, color: KkGlass.of(context).accent),
+          title: Text(text),
+        ),
       ),
     );
   }
