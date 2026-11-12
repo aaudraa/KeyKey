@@ -105,7 +105,10 @@ void main() {
     scroll.stop();
 
     final typing = Stopwatch()..start();
-    await tester.enterText(find.widgetWithText(TextField, 'Ara'), 'kayıt 999');
+    await tester.enterText(
+      find.widgetWithText(TextField, '1000 kayıtta ara'),
+      'kayıt 999',
+    );
     await tester.pump();
     typing.stop();
     expect(find.text('Kayıt 999'), findsOneWidget);
