@@ -360,5 +360,12 @@
         "type": "String"
       }
     }
-  }
+  },
+  "formMoreOptions": "Daha fazla seçenek",
+  "formFolder": "Klasör",
+  "formNote": "Not",
+  "formCustomField": "Özel alan",
+  "formAnotherSite": "Başka site",
+  "formRemoveField": "Alanı kaldır",
+  "loginGenerate": "Üret"
 }

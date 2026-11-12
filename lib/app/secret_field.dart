@@ -27,8 +27,11 @@ class SecretField extends StatefulWidget {
     this.inputFormatters,
     this.style,
     this.search = false,
+    this.focusNode,
     super.key,
   });
+
+  final FocusNode? focusNode;
 
   /// Arama kutusu: tam yuvarlak, başında büyüteç; [label] silik yazı olarak
   /// kutunun içinde durur.
@@ -74,6 +77,7 @@ class _SecretFieldState extends State<SecretField> {
     final l10n = AppLocalizations.of(context);
     return TextField(
       controller: widget.controller,
+      focusNode: widget.focusNode,
       autofocus: widget.autofocus,
       // Kapatmak yerine salt okunur: odak ve klavye korunur, kullanıcı yanlış
       // paroladan sonra kutuya yeniden dokunmak zorunda kalmaz.

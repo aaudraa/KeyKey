@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/secret_field.dart';
+import 'package:keykey/app/ui/kk_backdrop.dart';
+import 'package:keykey/app/ui/kk_bars.dart';
+import 'package:keykey/app/ui/kk_form.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
+import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/generator/presentation/generator_sheet.dart';
 import 'package:keykey/features/generator/presentation/password_strength_meter.dart';
@@ -55,6 +60,14 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
   bool _dirty = false;
   bool _saving = false;
 
+  /// Klasör ve not alanı görünüyor mu: doluysa ya da yongadan eklendiyse.
+  bool _showFolder = false;
+  bool _showNotes = false;
+
+  /// Yongadan eklenen, ilk çizildiğinde odaklanacak alan ve odağı.
+  String? _autofocus;
+  final _addedFocus = FocusNode();
+
   bool get _isNew => widget.idHex == null;
 
   @override
@@ -72,6 +85,7 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
     for (final field in _customFields) {
       field.dispose();
     }
+    _addedFocus.dispose();
     super.dispose();
   }
 
@@ -88,6 +102,8 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
       if (content.urls.isEmpty) TextEditingController(),
     ]);
     _apps.addAll(content.apps);
+    _showFolder = _folder.text.isNotEmpty;
+    _showNotes = _notes.text.isNotEmpty;
     _customFields.addAll([
       for (final field in content.customFields)
         _CustomFieldControllers(
@@ -165,23 +181,40 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
     if (!_dirty) setState(() => _dirty = true);
   }
 
+  /// Ek alan ekler; eklenen alan ilk çizildiğinde odaklanır.
+  void _addExtra(String key, VoidCallback add) {
+    setState(() {
+      add();
+      _autofocus = key;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _addedFocus.requestFocus();
+    });
+  }
+
+  FocusNode? _focusFor(String key) => _autofocus == key ? _addedFocus : null;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final state = ref.watch(loginsControllerProvider);
     if (!_initialized) {
       if (state is! LoginsLoaded) {
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        return const KkScaffold(
+          body: Center(child: CircularProgressIndicator()),
+        );
       }
       final item = _isNew ? null : findLogin(state, widget.idHex!);
       if (!_isNew && item == null) {
-        return Scaffold(
-          appBar: AppBar(),
+        return KkScaffold(
+          appBar: kkAppBar(context),
           body: Center(child: Text(l10n.loginNotFound)),
         );
       }
       _fill(item);
     }
+    final glass = KkGlass.of(context);
+    final theme = Theme.of(context);
 
     return PopScope(
       canPop: !_dirty,
@@ -192,195 +225,251 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
           context.pop();
         }
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(_isNew ? l10n.loginNewTitle : l10n.loginEditTitle),
+      child: KkScaffold(
+        appBar: kkAppBar(
+          context,
+          title: _isNew ? l10n.loginNewTitle : l10n.loginEditTitle,
           actions: [
-            ListenableBuilder(
-              listenable: _name,
-              builder: (context, _) => TextButton(
-                onPressed: _saving || _name.text.trim().isEmpty ? null : _save,
-                child: Text(l10n.loginSave),
+            // Kaydın simge kutusu; ad yazıldıkça oluşur.
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: ListenableBuilder(
+                listenable: _name,
+                builder: (context, _) => RecordAvatar(
+                  login: LoginContent(name: _name.text, apps: _apps),
+                  name: _name.text,
+                  size: 36,
+                ),
               ),
             ),
           ],
         ),
-        body: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            SecretField(
-              controller: _name,
-              label: l10n.loginName,
-              obscure: false,
-              autofocus: _isNew,
-              textInputAction: TextInputAction.next,
-              onChanged: _changed,
-            ),
-            const SizedBox(height: 12),
-            SecretField(
-              controller: _username,
-              label: l10n.loginUsername,
-              obscure: false,
-              textInputAction: TextInputAction.next,
-              onChanged: _changed,
-            ),
-            const SizedBox(height: 12),
-            SecretField(
-              controller: _password,
-              label: l10n.loginPassword,
-              textInputAction: TextInputAction.next,
-              onChanged: _changed,
-              trailing: IconButton(
-                tooltip: l10n.generatorOpen,
-                icon: const Icon(Icons.casino_outlined),
-                onPressed: () async {
-                  final generated = await showGeneratorSheet(context);
-                  if (generated == null) return;
-                  _password.text = generated;
-                  _changed(generated);
-                },
+        bottomNavigationBar: ListenableBuilder(
+          listenable: _name,
+          builder: (context, _) => KkBottomAction(
+            label: l10n.loginSave,
+            busy: _saving,
+            onPressed: _name.text.trim().isEmpty ? null : _save,
+          ),
+        ),
+        // Form kısa; bütün alanlar hep kurulu kalsın (odak ve kaydırma için).
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              KkFieldCard(
+                child: SecretField(
+                  controller: _name,
+                  label: l10n.loginName,
+                  obscure: false,
+                  autofocus: _isNew,
+                  textInputAction: TextInputAction.next,
+                  onChanged: _changed,
+                ),
               ),
-            ),
-            ListenableBuilder(
-              listenable: _password,
-              builder: (context, _) => _password.text.isEmpty
-                  ? const SizedBox.shrink()
-                  : Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: PasswordStrengthMeter(password: _password.text),
-                    ),
-            ),
-            const SizedBox(height: 12),
-            for (final (index, url) in _urls.indexed) ...[
-              Row(
-                children: [
-                  Expanded(
-                    child: SecretField(
-                      controller: url,
-                      label: l10n.loginUrl,
-                      obscure: false,
+              KkFieldCard(
+                child: SecretField(
+                  controller: _username,
+                  label: l10n.loginUsername,
+                  obscure: false,
+                  textInputAction: TextInputAction.next,
+                  onChanged: _changed,
+                ),
+              ),
+              KkFieldCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SecretField(
+                      controller: _password,
+                      label: l10n.loginPassword,
                       textInputAction: TextInputAction.next,
                       onChanged: _changed,
                     ),
-                  ),
-                  IconButton(
-                    tooltip: l10n.loginRemoveUrl,
-                    icon: const Icon(Icons.remove_circle_outline),
-                    onPressed: () => setState(() {
-                      _urls.removeAt(index).dispose();
-                      _dirty = true;
-                    }),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-            ],
-            Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: TextButton.icon(
-                onPressed: () => setState(() {
-                  _urls.add(TextEditingController());
-                }),
-                icon: const Icon(Icons.add_link),
-                label: Text(l10n.loginAddUrl),
-              ),
-            ),
-            for (final (index, app) in _apps.indexed)
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.android),
-                title: Text(app.packageName),
-                subtitle: Text(
-                  l10n.loginAppSignature(
-                    formatCertFingerprint(app.certsSha256.first, short: true),
-                  ),
-                  style: const TextStyle(fontFamily: 'monospace'),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 4, 8, 8),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: ListenableBuilder(
+                              listenable: _password,
+                              builder: (context, _) => _password.text.isEmpty
+                                  ? const SizedBox.shrink()
+                                  : PasswordStrengthMeter(
+                                      password: _password.text,
+                                    ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          TextButton.icon(
+                            style: TextButton.styleFrom(
+                              backgroundColor: glass.accentContainer,
+                              foregroundColor: theme.colorScheme.primary,
+                            ),
+                            onPressed: () async {
+                              final generated = await showGeneratorSheet(
+                                context,
+                              );
+                              if (generated == null) return;
+                              _password.text = generated;
+                              _changed(generated);
+                            },
+                            icon: const Icon(Icons.auto_awesome_rounded),
+                            label: Text(l10n.loginGenerate),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                trailing: IconButton(
-                  tooltip: l10n.loginRemoveApp,
-                  icon: const Icon(Icons.remove_circle_outline),
-                  onPressed: () => setState(() {
+              ),
+              for (final (index, url) in _urls.indexed)
+                KkFieldCard(
+                  key: ObjectKey(url),
+                  onRemove: index == 0
+                      ? null
+                      : () => setState(() {
+                          _urls.removeAt(index).dispose();
+                          _dirty = true;
+                        }),
+                  removeTooltip: l10n.loginRemoveUrl,
+                  child: SecretField(
+                    controller: url,
+                    label: l10n.loginUrl,
+                    obscure: false,
+                    focusNode: _focusFor('url-$index'),
+                    textInputAction: TextInputAction.next,
+                    onChanged: _changed,
+                  ),
+                ),
+              for (final (index, app) in _apps.indexed)
+                KkFieldCard(
+                  onRemove: () => setState(() {
                     _apps.removeAt(index);
                     _dirty = true;
                   }),
+                  removeTooltip: l10n.loginRemoveApp,
+                  child: ListTile(
+                    leading: Icon(Icons.android_rounded, color: glass.accent),
+                    title: Text(app.packageName),
+                    subtitle: Text(
+                      l10n.loginAppSignature(
+                        formatCertFingerprint(
+                          app.certsSha256.first,
+                          short: true,
+                        ),
+                      ),
+                      style: const TextStyle(fontFamily: 'monospace'),
+                    ),
+                  ),
                 ),
-              ),
-            const SizedBox(height: 12),
-            SecretField(
-              controller: _folder,
-              label: l10n.loginFolder,
-              obscure: false,
-              textInputAction: TextInputAction.next,
-              onChanged: _changed,
-            ),
-            const SizedBox(height: 12),
-            SecretField(
-              controller: _notes,
-              label: l10n.loginNotes,
-              obscure: false,
-              multiline: true,
-              maxLines: 8,
-              textInputAction: TextInputAction.newline,
-              onChanged: _changed,
-            ),
-            const SizedBox(height: 16),
-            for (final (index, field) in _customFields.indexed) ...[
-              Row(
-                children: [
-                  Expanded(
-                    child: SecretField(
-                      controller: field.name,
-                      label: l10n.loginFieldName,
-                      obscure: false,
-                      textInputAction: TextInputAction.next,
-                      onChanged: _changed,
+              if (_showFolder)
+                KkFieldCard(
+                  onRemove: () => setState(() {
+                    _folder.clear();
+                    _showFolder = false;
+                    _dirty = true;
+                  }),
+                  child: SecretField(
+                    controller: _folder,
+                    label: l10n.loginFolder,
+                    obscure: false,
+                    focusNode: _focusFor('folder'),
+                    textInputAction: TextInputAction.next,
+                    onChanged: _changed,
+                  ),
+                ),
+              if (_showNotes)
+                KkFieldCard(
+                  onRemove: () => setState(() {
+                    _notes.clear();
+                    _showNotes = false;
+                    _dirty = true;
+                  }),
+                  child: SecretField(
+                    controller: _notes,
+                    label: l10n.loginNotes,
+                    obscure: false,
+                    multiline: true,
+                    maxLines: 8,
+                    focusNode: _focusFor('notes'),
+                    textInputAction: TextInputAction.newline,
+                    onChanged: _changed,
+                  ),
+                ),
+              for (final (index, field) in _customFields.indexed)
+                KkFieldCard(
+                  key: ObjectKey(field),
+                  onRemove: () => setState(() {
+                    _customFields.removeAt(index).dispose();
+                    _dirty = true;
+                  }),
+                  child: Column(
+                    children: [
+                      SecretField(
+                        controller: field.name,
+                        label: l10n.loginFieldName,
+                        obscure: false,
+                        focusNode: _focusFor('field-$index'),
+                        textInputAction: TextInputAction.next,
+                        onChanged: _changed,
+                      ),
+                      SecretField(
+                        controller: field.value,
+                        label: l10n.loginFieldValue,
+                        obscure: field.hidden,
+                        textInputAction: TextInputAction.next,
+                        onChanged: _changed,
+                        trailing: IconButton(
+                          tooltip: field.hidden
+                              ? l10n.loginFieldVisible
+                              : l10n.loginFieldHidden,
+                          icon: Icon(
+                            field.hidden
+                                ? Icons.lock_outline_rounded
+                                : Icons.lock_open_rounded,
+                          ),
+                          onPressed: () => setState(() {
+                            field.hidden = !field.hidden;
+                            _dirty = true;
+                          }),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              KkMoreOptions(
+                options: [
+                  if (!_showFolder)
+                    KkOption(
+                      label: l10n.formFolder,
+                      onAdd: () =>
+                          _addExtra('folder', () => _showFolder = true),
+                    ),
+                  if (!_showNotes)
+                    KkOption(
+                      label: l10n.formNote,
+                      onAdd: () => _addExtra('notes', () => _showNotes = true),
+                    ),
+                  KkOption(
+                    label: l10n.formCustomField,
+                    onAdd: () => _addExtra(
+                      'field-${_customFields.length}',
+                      () => _customFields.add(_CustomFieldControllers()),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: SecretField(
-                      controller: field.value,
-                      label: l10n.loginFieldValue,
-                      obscure: field.hidden,
-                      textInputAction: TextInputAction.next,
-                      onChanged: _changed,
+                  KkOption(
+                    label: l10n.formAnotherSite,
+                    onAdd: () => _addExtra(
+                      'url-${_urls.length}',
+                      () => _urls.add(TextEditingController()),
                     ),
-                  ),
-                  IconButton(
-                    tooltip: field.hidden
-                        ? l10n.loginFieldVisible
-                        : l10n.loginFieldHidden,
-                    icon: Icon(
-                      field.hidden ? Icons.lock_outline : Icons.lock_open,
-                    ),
-                    onPressed: () => setState(() {
-                      field.hidden = !field.hidden;
-                      _dirty = true;
-                    }),
-                  ),
-                  IconButton(
-                    tooltip: l10n.loginRemoveField,
-                    icon: const Icon(Icons.remove_circle_outline),
-                    onPressed: () => setState(() {
-                      _customFields.removeAt(index).dispose();
-                      _dirty = true;
-                    }),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
             ],
-            Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: TextButton.icon(
-                onPressed: () => setState(() {
-                  _customFields.add(_CustomFieldControllers());
-                }),
-                icon: const Icon(Icons.add),
-                label: Text(l10n.loginAddField),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

@@ -1665,5 +1665,12 @@
         "type": "String"
       }
     }
-  }
+  },
+  "formMoreOptions": "More options",
+  "formFolder": "Folder",
+  "formNote": "Note",
+  "formCustomField": "Custom field",
+  "formAnotherSite": "Another site",
+  "formRemoveField": "Remove field",
+  "loginGenerate": "Generate"
 }

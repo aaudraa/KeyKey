@@ -29,7 +29,7 @@ void main() {
       logins: logins,
     );
     await openAddPassword(tester);
-    await tester.tap(find.byTooltip('Parola üret'));
+    await tester.tap(find.text('Üret'));
     await tester.pumpAndSettle();
   }
 

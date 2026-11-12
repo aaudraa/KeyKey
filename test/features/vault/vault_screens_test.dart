@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/kk_card.dart';
+import 'package:keykey/app/ui/kk_form.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
@@ -89,6 +90,14 @@ void main() {
 
   Future<void> search(WidgetTester tester, String query) async {
     await tester.enterText(searchField(), query);
+    await tester.pumpAndSettle();
+  }
+
+  /// Uzun formda alttaki öğeyi görünür yapıp dokunur.
+  Future<void> tapVisible(WidgetTester tester, Finder finder) async {
+    await tester.ensureVisible(finder);
+    await tester.pumpAndSettle();
+    await tester.tap(finder);
     await tester.pumpAndSettle();
   }
 
@@ -445,8 +454,8 @@ void main() {
       await pumpVault(tester);
 
       await openAddPassword(tester);
-      final save = find.widgetWithText(TextButton, 'Kaydet');
-      expect(tester.widget<TextButton>(save).onPressed, isNull);
+      final save = find.widgetWithText(FilledButton, 'Kaydet');
+      expect(tester.widget<FilledButton>(save).onPressed, isNull);
 
       await tester.enterText(find.widgetWithText(TextField, 'Ad'), 'Yeni Site');
       await tester.enterText(
@@ -473,12 +482,134 @@ void main() {
       expect(visibleNames(tester), contains('Yeni Site'));
     });
 
+    testWidgets('yeni kayıtta yalnızca dört temel alan', (tester) async {
+      await pumpVault(tester);
+      await openAddPassword(tester);
+      for (final label in ['Ad', 'Kullanıcı adı', 'Parola', 'Web adresi']) {
+        expect(find.widgetWithText(TextField, label), findsOneWidget);
+      }
+      expect(find.widgetWithText(TextField, 'Klasör'), findsNothing);
+      expect(find.widgetWithText(TextField, 'Notlar'), findsNothing);
+      expect(find.text('Daha fazla seçenek'), findsOneWidget);
+      expect(find.byType(GlassNavBar), findsNothing);
+    });
+
+    testWidgets('"Not" yongası not alanını ekler ve odaklar', (tester) async {
+      await pumpVault(tester);
+      await openAddPassword(tester);
+      await tapVisible(tester, find.text('Daha fazla seçenek'));
+      await tapVisible(tester, find.widgetWithText(ActionChip, 'Not'));
+
+      final notes = find.widgetWithText(TextField, 'Notlar');
+      expect(notes, findsOneWidget);
+      final editable = tester.widget<EditableText>(
+        find.descendant(of: notes, matching: find.byType(EditableText)),
+      );
+      expect(editable.focusNode.hasFocus, isTrue);
+      expect(find.widgetWithText(ActionChip, 'Not'), findsNothing);
+    });
+
+    testWidgets('"Başka site" iki kez: üç adres alanı', (tester) async {
+      await pumpVault(tester);
+      await openAddPassword(tester);
+      await tapVisible(tester, find.text('Daha fazla seçenek'));
+      await tapVisible(tester, find.widgetWithText(ActionChip, 'Başka site'));
+      await tapVisible(tester, find.widgetWithText(ActionChip, 'Başka site'));
+      expect(find.widgetWithText(TextField, 'Web adresi'), findsNWidgets(3));
+    });
+
+    testWidgets('düzenlemede dolu ek alanlar doğrudan görünür', (tester) async {
+      logins = FakeLoginRepository(
+        items: [
+          FakeLoginRepository.item(
+            const LoginContent(
+              name: 'Dolu',
+              password: 'p',
+              urls: ['https://a.example', 'https://b.example'],
+              folder: 'İş',
+              notes: 'bir not',
+              customFields: [LoginCustomField(name: 'PIN', value: '1234')],
+            ),
+            id: 1,
+          ),
+        ],
+      );
+      await pumpVault(tester);
+      await tester.tap(find.text('Dolu'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Düzenle'));
+      await tester.pumpAndSettle();
+
+      expect(find.widgetWithText(TextField, 'Klasör'), findsOneWidget);
+      expect(find.widgetWithText(TextField, 'Notlar'), findsOneWidget);
+      expect(find.widgetWithText(TextField, 'Web adresi'), findsNWidgets(2));
+      expect(find.text('PIN'), findsOneWidget);
+
+      await tapVisible(tester, find.text('Daha fazla seçenek'));
+      expect(find.widgetWithText(ActionChip, 'Klasör'), findsNothing);
+      expect(find.widgetWithText(ActionChip, 'Not'), findsNothing);
+      expect(find.widgetWithText(ActionChip, 'Özel alan'), findsOneWidget);
+    });
+
+    testWidgets('dolu notu kaldırmak sorulur ve boş kaydedilir', (
+      tester,
+    ) async {
+      logins = FakeLoginRepository(
+        items: [
+          FakeLoginRepository.item(
+            const LoginContent(name: 'Notlu', password: 'p', notes: 'gizli'),
+            id: 1,
+          ),
+        ],
+      );
+      await pumpVault(tester);
+      await tester.tap(find.text('Notlu'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Düzenle'));
+      await tester.pumpAndSettle();
+
+      final notesCard = find.ancestor(
+        of: find.widgetWithText(TextField, 'Notlar'),
+        matching: find.byType(KkFieldCard),
+      );
+      await tester.tap(
+        find.descendant(
+          of: notesCard,
+          matching: find.byTooltip('Alanı kaldır'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(TextField, 'Notlar'), findsNothing);
+
+      await tester.tap(find.byTooltip('Geri'));
+      await tester.pumpAndSettle();
+      expect(find.text('Değişiklikler silinsin mi?'), findsOneWidget);
+      await tester.tap(find.text('Düzenlemeye devam et'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Kaydet'));
+      await tester.pumpAndSettle();
+      expect(logins.items.first.content.notes, '');
+    });
+
+    testWidgets('"Kaydet" altta ve klavyenin üstünde', (tester) async {
+      tester.view.physicalSize = const Size(400, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await pumpVault(tester);
+      await openAddPassword(tester);
+      tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+      await tester.pumpAndSettle();
+      final save = tester.getRect(find.widgetWithText(FilledButton, 'Kaydet'));
+      expect(save.bottom, lessThanOrEqualTo(800 - 300));
+    });
+
     testWidgets('form kutularında klavye öğrenmesi kapalı', (tester) async {
       await pumpVault(tester);
       await openAddPassword(tester);
 
       final fields = tester.widgetList<TextField>(find.byType(TextField));
-      expect(fields.length, greaterThanOrEqualTo(6));
+      expect(fields.length, greaterThanOrEqualTo(4));
       for (final field in fields) {
         expect(field.enableIMEPersonalizedLearning, isFalse);
         expect(field.autocorrect, isFalse);
@@ -498,7 +629,7 @@ void main() {
         'degisen-parola',
       );
       await tester.pump();
-      await tester.tap(find.widgetWithText(TextButton, 'Kaydet'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Kaydet'));
       await tester.pumpAndSettle();
 
       final content = logins.items.first.content;
@@ -513,7 +644,7 @@ void main() {
       await tester.enterText(find.widgetWithText(TextField, 'Ad'), 'Yarım');
       await tester.pump();
 
-      await tester.tap(find.byType(BackButton));
+      await tester.tap(find.byTooltip('Geri'));
       await tester.pumpAndSettle();
       expect(find.text('Değişiklikler silinsin mi?'), findsOneWidget);
       expect(find.byType(BottomSheet), findsOneWidget);
@@ -522,7 +653,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Yeni parola'), findsOneWidget);
 
-      await tester.tap(find.byType(BackButton));
+      await tester.tap(find.byTooltip('Geri'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Sil'));
       await tester.pumpAndSettle();
@@ -591,7 +722,7 @@ void main() {
       expect(find.text('İmza AB:AB:AB:AB:AB:AB:AB:AB…'), findsOneWidget);
 
       await tester.enterText(find.widgetWithText(TextField, 'Ad'), 'E-posta');
-      await tester.tap(find.widgetWithText(TextButton, 'Kaydet'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Kaydet'));
       await tester.pumpAndSettle();
 
       expect(logins.items.first.content.name, 'E-posta');
@@ -604,7 +735,7 @@ void main() {
       await tester.tap(find.byTooltip('Uygulamayı kaldır'));
       await tester.pump();
       expect(find.text('com.example.posta'), findsNothing);
-      await tester.tap(find.widgetWithText(TextButton, 'Kaydet'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Kaydet'));
       await tester.pumpAndSettle();
 
       final content = logins.items.first.content;
@@ -684,7 +815,7 @@ void main() {
 
     for (var i = 0; i < 3; i++) {
       await tester.pump(const Duration(minutes: 4));
-      await tester.enterText(find.widgetWithText(TextField, 'Notlar'), 'n$i');
+      await tester.enterText(find.widgetWithText(TextField, 'Ad'), 'n$i');
       await tester.pump();
     }
     expect(find.text('KeyKey kilitli'), findsNothing);
