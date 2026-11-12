@@ -178,6 +178,7 @@ Görünüş dışında değişen her şey bu listededir:
 5. **Süzgeç yongaları.** Favoriler ve klasör yongaları, ancak en az bir favori ya da klasör varsa görünür; boş kasada satır yer kaplamaz. *(Benim kararım.)*
 6. **Ayarlarda yedek kartı.** Yedek durumu ve "Yedekle" en üste taşınır; "Yedek ve aktarım" grubunda yedekleme satırı ayrıca durmaz. *(Benim önerim, proje sahibi örnekte gördü.)*
 7. **Ekran işlemleri üç noktada.** Kasa ekranındaki sıralama, rapor ve çöp kutusu düğmeleri tek menüde toplanır.
+8. **2FA kartında işlemler uzun basınca.** Karttaki üç nokta kalkar (örneklerde yoktu); Düzenle, Favori ve Çöp kutusuna taşı, karta uzun basınca alttan açılan pencerede durur. TalkBack'te aynı işlemler kartın işlem listesinde de bulunur. *(Benim kararım; plan yazılırken eklendi.)*
 
 ## Kısıtlar
 
