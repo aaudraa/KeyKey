@@ -312,11 +312,11 @@
   "@vaultSort": {
     "description": "Tooltip of the sort menu."
   },
-  "vaultSortName": "By name",
+  "vaultSortName": "Sort by name",
   "@vaultSortName": {
     "description": "Sort option."
   },
-  "vaultSortRecent": "Recently changed",
+  "vaultSortRecent": "Sort by last changed",
   "@vaultSortRecent": {
     "description": "Sort option."
   },
@@ -328,7 +328,7 @@
   "@vaultFavorites": {
     "description": "Filter chip."
   },
-  "vaultEmpty": "No passwords yet. Tap Add to save your first one.",
+  "vaultEmpty": "No passwords yet. Tap + below to save your first one.",
   "@vaultEmpty": {
     "description": "Empty vault message."
   },
@@ -633,7 +633,7 @@
       }
     }
   },
-  "otpEmpty": "No 2FA accounts yet. Tap Add to set up the first one.",
+  "otpEmpty": "No 2FA accounts yet. Tap + below to set up the first one.",
   "@otpEmpty": {
     "description": "Empty state of the 2FA list."
   },
@@ -1647,5 +1647,15 @@
   "addOtp": "2FA code",
   "addOtpHint": "Scan a QR code, type it in or import",
   "addBack": "Back",
-  "addClose": "Close"
+  "addClose": "Close",
+  "vaultSearchCount": "{count, plural, =1{Search 1 item} other{Search {count} items}}",
+  "@vaultSearchCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "vaultCopyPassword": "Copy password",
+  "screenMore": "More actions"
 }

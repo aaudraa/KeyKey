@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/kk_card.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
 import 'package:keykey/features/vault/presentation/vault_screen.dart';
@@ -66,13 +68,29 @@ void main() {
     matching: find.byType(KkCard),
   );
 
-  List<String> visibleNames(WidgetTester tester) => tester
-      .widgetList<KkCard>(cards())
-      .map((card) => (card.title as Text).data!)
-      .toList();
+  /// Kartın başlığındaki ad; favori kayıtta başlık ad ve yıldızdan oluşur.
+  String titleOf(KkCard card) => switch (card.title) {
+    final Text text => text.data!,
+    final Row row =>
+      (row.children.whereType<Flexible>().first.child as Text).data!,
+    _ => throw StateError('beklenmeyen başlık'),
+  };
+
+  List<String> visibleNames(WidgetTester tester) =>
+      tester.widgetList<KkCard>(cards()).map(titleOf).toList();
+
+  Finder searchField() => find.descendant(
+    of: find.byType(VaultScreen),
+    matching: find.byType(TextField),
+  );
 
   Future<void> search(WidgetTester tester, String query) async {
-    await tester.enterText(find.widgetWithText(TextField, 'Ara'), query);
+    await tester.enterText(searchField(), query);
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> openMenu(WidgetTester tester) async {
+    await tester.tap(find.byTooltip('Diğer işlemler'));
     await tester.pumpAndSettle();
   }
 
@@ -102,6 +120,133 @@ void main() {
       await search(tester, 'banka-parolasi');
       expect(visibleNames(tester), isEmpty);
       expect(find.text('Eşleşen kayıt yok.'), findsOneWidget);
+    });
+
+    testWidgets('arama kutusu kayıt sayısını söylüyor', (tester) async {
+      await pumpVault(tester);
+      expect(
+        find.descendant(
+          of: searchField(),
+          matching: find.text('3 kayıtta ara'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('boş kasada arama kutusu yalnızca "Ara"', (tester) async {
+      logins = FakeLoginRepository();
+      await pumpVault(tester);
+      expect(
+        find.descendant(of: searchField(), matching: find.text('Ara')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('favori ve klasör yoksa süzgeç satırı yok', (tester) async {
+      logins = FakeLoginRepository(
+        items: [
+          FakeLoginRepository.item(
+            const LoginContent(name: 'Posta', password: 'p'),
+            id: 1,
+          ),
+        ],
+      );
+      await pumpVault(tester);
+      expect(find.byType(FilterChip), findsNothing);
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(VaultScreen)),
+      );
+      await container
+          .read(loginsControllerProvider.notifier)
+          .setFavorite(logins.items.first, favorite: true);
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(FilterChip, 'Favoriler'), findsOneWidget);
+    });
+
+    testWidgets('son favori kalkınca süzgeç sıfırlanıyor', (tester) async {
+      await pumpVault(tester);
+      await tester.tap(find.widgetWithText(FilterChip, 'Favoriler'));
+      await tester.pumpAndSettle();
+      expect(visibleNames(tester), ['İş Bankası']);
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(VaultScreen)),
+      );
+      await container
+          .read(loginsControllerProvider.notifier)
+          .setFavorite(logins.items[1], favorite: false);
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(FilterChip, 'Favoriler'), findsNothing);
+      expect(visibleNames(tester), ['İş Bankası', 'Posta', 'Zeka Oyunu']);
+    });
+
+    testWidgets('sıralama ve ekranlar üç nokta menüsünde', (tester) async {
+      await pumpVault(tester);
+      expect(find.byTooltip('Çöp kutusu'), findsNothing);
+      expect(find.byTooltip('Sırala'), findsNothing);
+
+      await openMenu(tester);
+      await tester.tap(find.text('Son değişene göre sırala'));
+      await tester.pumpAndSettle();
+      expect(visibleNames(tester).first, isNot('İş Bankası'));
+
+      await openMenu(tester);
+      final checked = find.descendant(
+        of: find.ancestor(
+          of: find.text('Son değişene göre sırala'),
+          matching: find.byType(InkWell),
+        ),
+        matching: find.byIcon(Icons.check_rounded),
+      );
+      expect(checked, findsOneWidget);
+      await tester.tap(find.text('Çöp kutusu'));
+      await tester.pumpAndSettle();
+      expect(find.text('Çöp kutusu boş.'), findsOneWidget);
+    });
+
+    testWidgets('listeden parola kopyalanıyor, kayıt açılmıyor', (
+      tester,
+    ) async {
+      final clipboard = RecordingClipboard();
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        logins: logins,
+        clipboard: clipboard,
+      );
+      await tester.tap(
+        find.descendant(
+          of: find.widgetWithText(KkCard, 'Posta'),
+          matching: find.byTooltip('Parolayı kopyala'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(clipboard.copied, ['posta-parolasi']);
+      expect(
+        find.text('Kopyalandı. Pano 30 saniye sonra temizlenecek.'),
+        findsOneWidget,
+      );
+      expect(find.byType(VaultScreen), findsOneWidget);
+      expect(find.text('Kullanıcı adı'), findsNothing);
+    });
+
+    testWidgets('parolası boş kayıtta kopyala düğmesi yok', (tester) async {
+      logins = FakeLoginRepository(
+        items: [
+          FakeLoginRepository.item(const LoginContent(name: 'Boş'), id: 1),
+        ],
+      );
+      await pumpVault(tester);
+      expect(find.byTooltip('Parolayı kopyala'), findsNothing);
+    });
+
+    testWidgets('favori kayıtta "Favori" etiketi okunuyor', (tester) async {
+      await pumpVault(tester);
+      final handle = tester.ensureSemantics();
+      expect(find.bySemanticsLabel(RegExp('Favori')), findsWidgets);
+      handle.dispose();
     });
 
     testWidgets('favoriler ve klasörler süzülüyor', (tester) async {
@@ -449,7 +594,8 @@ void main() {
           .hideCurrentSnackBar();
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byTooltip('Çöp kutusu'));
+      await openMenu(tester);
+      await tester.tap(find.text('Çöp kutusu'));
       await tester.pumpAndSettle();
       expect(find.text('Posta'), findsOneWidget);
 
@@ -461,7 +607,8 @@ void main() {
 
     testWidgets('kalıcı silme onay istiyor', (tester) async {
       await trashPosta(tester);
-      await tester.tap(find.byTooltip('Çöp kutusu'));
+      await openMenu(tester);
+      await tester.tap(find.text('Çöp kutusu'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.byTooltip('Kalıcı olarak sil'));

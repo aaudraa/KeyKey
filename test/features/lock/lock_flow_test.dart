@@ -18,7 +18,8 @@ void main() {
   late FakeVaultService service;
 
   const lockedTitle = 'KeyKey kilitli';
-  const vaultText = "Henüz parola yok. İlkini kaydetmek için Ekle'ye dokun.";
+  const vaultText =
+      'Henüz parola yok. İlkini kaydetmek için alttaki + düğmesine dokun.';
 
   setUpAll(() async {
     sodium = await SodiumSumoInit.init();

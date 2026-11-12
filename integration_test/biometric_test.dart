@@ -37,7 +37,8 @@ void main() {
 
   const password = 'dogru-Ana-Parola-47';
   const texts = BiometricTexts(title: 'KeyKey testi', negativeButton: 'Vazgeç');
-  const vaultText = "Henüz parola yok. İlkini kaydetmek için Ekle'ye dokun.";
+  const vaultText =
+      'Henüz parola yok. İlkini kaydetmek için alttaki + düğmesine dokun.';
   const testTimeout = Timeout(Duration(minutes: 3));
 
   // Betik olmadan pencerede boşuna beklememek için yalnızca betikle çalışır.

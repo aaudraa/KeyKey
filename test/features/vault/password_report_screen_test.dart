@@ -74,11 +74,10 @@ void main() {
       logins: logins,
       locale: locale,
     );
-    await tester.tap(
-      find.byTooltip(
-        locale.languageCode == 'en' ? 'Password report' : 'Parola raporu',
-      ),
-    );
+    final en = locale.languageCode == 'en';
+    await tester.tap(find.byTooltip(en ? 'More actions' : 'Diğer işlemler'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(en ? 'Password report' : 'Parola raporu'));
     await tester.pumpAndSettle();
   }
 
