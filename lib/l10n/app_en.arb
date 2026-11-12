@@ -1657,5 +1657,13 @@
     }
   },
   "vaultCopyPassword": "Copy password",
-  "screenMore": "More actions"
+  "screenMore": "More actions",
+  "loginLastChanged": "Last changed: {date}",
+  "@loginLastChanged": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  }
 }

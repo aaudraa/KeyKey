@@ -352,5 +352,13 @@
     }
   },
   "vaultCopyPassword": "Parolayı kopyala",
-  "screenMore": "Diğer işlemler"
+  "screenMore": "Diğer işlemler",
+  "loginLastChanged": "Son değişiklik: {date}",
+  "@loginLastChanged": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  }
 }

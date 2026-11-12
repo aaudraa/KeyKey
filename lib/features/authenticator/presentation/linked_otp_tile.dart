@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:keykey/core/platform/sensitive_clipboard.dart';
+import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otp_generator.dart';
 import 'package:keykey/features/authenticator/application/otp_visibility.dart';
@@ -40,20 +40,7 @@ class LinkedOtpTile extends ConsumerStatefulWidget {
 class _LinkedOtpTileState extends ConsumerState<LinkedOtpTile> {
   String? _hotpCode;
 
-  Future<void> _copy(String code) async {
-    final l10n = AppLocalizations.of(context);
-    final messenger = ScaffoldMessenger.of(context);
-    await ref.read(sensitiveClipboardProvider).copy(code);
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            l10n.copiedWillClear(SensitiveClipboard.clearAfter.inSeconds),
-          ),
-        ),
-      );
-  }
+  Future<void> _copy(String code) => copySensitive(context, ref, code);
 
   Future<void> _generate() async {
     try {
@@ -104,10 +91,11 @@ class _LinkedOtpTileState extends ConsumerState<LinkedOtpTile> {
             excludeSemantics: true,
             child: Text(
               formatOtpCode(code ?? '•' * parameters.digits),
-              style: theme.textTheme.titleLarge?.copyWith(
+              style: theme.textTheme.headlineMedium?.copyWith(
                 fontFamily: 'monospace',
+                fontWeight: FontWeight.w600,
                 letterSpacing: 2,
-                color: code == null ? null : theme.colorScheme.primary,
+                color: theme.colorScheme.onSurface,
               ),
             ),
           ),

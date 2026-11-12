@@ -5,9 +5,12 @@ import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/kk_card.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
+import 'package:keykey/features/vault/presentation/login_detail_screen.dart';
+import 'package:keykey/features/vault/presentation/login_edit_screen.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
 import 'package:keykey/features/vault/presentation/vault_screen.dart';
 import 'package:sodium/sodium_sumo.dart';
@@ -309,8 +312,10 @@ void main() {
     testWidgets('her alan kendi kartında', (tester) async {
       await openPosta(tester);
 
-      Card cardOf(String label) => tester.widget<Card>(
-        find.ancestor(of: find.text(label), matching: find.byType(Card)).first,
+      GlassSurface cardOf(String label) => tester.widget<GlassSurface>(
+        find
+            .ancestor(of: find.text(label), matching: find.byType(GlassSurface))
+            .first,
       );
       final username = cardOf('Kullanıcı adı');
       final password = cardOf('Parola');
@@ -364,10 +369,12 @@ void main() {
       await tester.tap(find.text('Posta'));
       await tester.pumpAndSettle();
 
-      final passwordTile = find.ancestor(
-        of: find.text('Parola'),
-        matching: find.byType(ListTile),
-      );
+      final passwordTile = find
+          .ancestor(
+            of: find.text('Parola'),
+            matching: find.byType(GlassSurface),
+          )
+          .first;
       await tester.tap(
         find.descendant(of: passwordTile, matching: find.byTooltip('Kopyala')),
       );
@@ -381,14 +388,55 @@ void main() {
       );
     });
 
-    testWidgets('favori düğmesi kaydı değiştiriyor', (tester) async {
+    testWidgets('favori menüden değişiyor', (tester) async {
       await openPosta(tester);
+      expect(find.byTooltip('Favorilere ekle'), findsNothing);
 
-      await tester.tap(find.byTooltip('Favorilere ekle'));
+      await tester.tap(find.byTooltip('Diğer işlemler'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Favorilere ekle'));
       await tester.pumpAndSettle();
 
       expect(logins.items.first.content.favorite, isTrue);
-      expect(find.byTooltip('Favorilerden çıkar'), findsOneWidget);
+      await tester.tap(find.byTooltip('Diğer işlemler'));
+      await tester.pumpAndSettle();
+      expect(find.text('Favorilerden çıkar'), findsOneWidget);
+    });
+
+    testWidgets('üstte simge kutusu, ad ve site; altta son değişiklik', (
+      tester,
+    ) async {
+      await openPosta(tester);
+      final idHex = loginIdHex(logins.items.first.id);
+      final hero = tester.widget<Hero>(
+        find.descendant(
+          of: find.byType(LoginDetailScreen),
+          matching: find.byType(Hero),
+        ),
+      );
+      expect(hero.tag, loginAvatarHeroTag(idHex));
+      expect(find.textContaining('Son değişiklik: '), findsOneWidget);
+      // Başlık çubuğunda ad yok; ad simge kutusunun altında.
+      expect(
+        find.descendant(of: find.byType(AppBar), matching: find.text('Posta')),
+        findsNothing,
+      );
+      expect(
+        find.descendant(
+          of: find.byType(LoginDetailScreen),
+          matching: find.text('Posta'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('"Düzenle" formu açar, alt menü görünmez', (tester) async {
+      await openPosta(tester);
+      expect(find.byType(GlassNavBar), findsOneWidget);
+      await tester.tap(find.byTooltip('Düzenle'));
+      await tester.pumpAndSettle();
+      expect(find.byType(LoginEditScreen), findsOneWidget);
+      expect(find.byType(GlassNavBar), findsNothing);
     });
   });
 
@@ -570,7 +618,9 @@ void main() {
       await pumpVault(tester);
       await tester.tap(find.text('Posta'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Çöp kutusuna taşı'));
+      await tester.tap(find.byTooltip('Diğer işlemler'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Çöp kutusuna taşı'));
       await tester.pumpAndSettle();
     }
 

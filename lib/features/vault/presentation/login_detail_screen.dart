@@ -5,14 +5,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
-import 'package:keykey/core/platform/sensitive_clipboard.dart';
+import 'package:keykey/app/ui/kk_backdrop.dart';
+import 'package:keykey/app/ui/kk_bars.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_menu.dart';
+import 'package:keykey/app/ui/kk_snack.dart';
+import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/presentation/linked_otp_tile.dart';
 import 'package:keykey/features/authenticator/presentation/otp_display.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
+import 'package:keykey/features/vault/presentation/vault_screen.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
+
+enum _DetailAction { favorite, trash }
 
 /// Bir parola kaydının ayrıntısı. Parolalar varsayılan olarak gizlidir.
 class LoginDetailScreen extends ConsumerWidget {
@@ -23,11 +31,12 @@ class LoginDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
     final state = ref.watch(loginsControllerProvider);
     final item = findLogin(state, idHex);
     if (item == null) {
-      return Scaffold(
-        appBar: AppBar(),
+      return KkScaffold(
+        appBar: kkAppBar(context),
         body: Center(
           child: state is LoginsLoaded
               ? Text(l10n.loginNotFound)
@@ -38,74 +47,141 @@ class LoginDetailScreen extends ConsumerWidget {
     final content = item.content;
     final controller = ref.read(loginsControllerProvider.notifier);
     final linkedOtps = otpsLinkedTo(ref.watch(otpsControllerProvider), item.id);
+    final name = content.name.trim();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(content.name),
-        actions: [
-          IconButton(
-            tooltip: content.favorite
-                ? l10n.loginUnfavorite
-                : l10n.loginFavorite,
-            icon: Icon(content.favorite ? Icons.star : Icons.star_outline),
-            onPressed: () =>
-                controller.setFavorite(item, favorite: !content.favorite),
+    final cards = <Widget>[
+      if (content.username.isNotEmpty)
+        _Field(label: l10n.loginUsername, value: content.username),
+      if (content.password.isNotEmpty)
+        _Field(
+          label: l10n.loginPassword,
+          value: content.password,
+          hidden: true,
+        ),
+      for (final otp in linkedOtps)
+        LinkedOtpTile(key: ValueKey(otpIdHex(otp)), item: otp),
+      for (final url in content.urls) _Field(label: l10n.loginUrl, value: url),
+      for (final app in content.apps)
+        ListTile(
+          leading: Icon(
+            Icons.android_rounded,
+            color: KkGlass.of(context).accent,
           ),
-          IconButton(
+          title: Text(l10n.loginApp, style: theme.textTheme.labelMedium),
+          subtitle: Text(app.packageName),
+        ),
+      if (content.folder != null)
+        _Field(label: l10n.loginFolder, value: content.folder!),
+      for (final field in content.customFields)
+        _Field(label: field.name, value: field.value, hidden: field.hidden),
+      if (content.notes.isNotEmpty)
+        _Field(label: l10n.loginNotes, value: content.notes),
+      if (content.passwordHistory.isNotEmpty)
+        Theme(
+          // Açılır kartın kendi çizgileri cam kartta görünmesin.
+          data: theme.copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            leading: const Icon(Icons.history_rounded),
+            title: Text(l10n.loginHistory(content.passwordHistory.length)),
+            children: [
+              for (final entry in content.passwordHistory)
+                _Field(
+                  label: MaterialLocalizations.of(context)
+                      .formatMediumDate(entry.changedAt.toLocal()),
+                  value: entry.password,
+                  hidden: true,
+                ),
+            ],
+          ),
+        ),
+    ];
+
+    return KkScaffold(
+      appBar: kkAppBar(
+        context,
+        actions: [
+          KkCircleButton(
+            icon: Icons.edit_rounded,
             tooltip: l10n.loginEdit,
-            icon: const Icon(Icons.edit_outlined),
             onPressed: () => context.push(AppRoutes.vaultItemEdit(idHex)),
           ),
-          IconButton(
-            tooltip: l10n.loginMoveToTrash,
-            icon: const Icon(Icons.delete_outline),
-            onPressed: () => _moveToTrash(context, controller, item, l10n),
+          KkMenuButton<_DetailAction>(
+            tooltip: l10n.screenMore,
+            onSelected: (action) => switch (action) {
+              _DetailAction.favorite => unawaited(
+                controller.setFavorite(item, favorite: !content.favorite),
+              ),
+              _DetailAction.trash => unawaited(
+                _moveToTrash(context, controller, item, l10n),
+              ),
+            },
+            items: [
+              KkMenuItem(
+                value: _DetailAction.favorite,
+                label: content.favorite
+                    ? l10n.loginUnfavorite
+                    : l10n.loginFavorite,
+                icon: content.favorite
+                    ? Icons.star_rounded
+                    : Icons.star_outline_rounded,
+              ),
+              KkMenuItem(
+                value: _DetailAction.trash,
+                label: l10n.loginMoveToTrash,
+                icon: Icons.delete_outline_rounded,
+              ),
+            ],
           ),
         ],
       ),
-      body: _CardList(
+      body: ListView(
+        padding: EdgeInsets.fromLTRB(16, 4, 16, navClearance(context)),
         children: [
-          if (content.username.isNotEmpty)
-            _Field(label: l10n.loginUsername, value: content.username),
-          if (content.password.isNotEmpty)
-            _Field(
-              label: l10n.loginPassword,
-              value: content.password,
-              hidden: true,
+          Center(
+            child: Hero(
+              tag: loginAvatarHeroTag(idHex),
+              child: RecordAvatar(login: content, name: content.name, size: 72),
             ),
-          for (final otp in linkedOtps)
-            LinkedOtpTile(key: ValueKey(otpIdHex(otp)), item: otp),
-          for (final url in content.urls)
-            _Field(label: l10n.loginUrl, value: url),
-          for (final app in content.apps)
-            ListTile(
-              leading: const Icon(Icons.android),
-              title: Text(
-                l10n.loginApp,
-                style: Theme.of(context).textTheme.labelMedium,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            name.isEmpty ? '—' : name,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          if (content.urls.isNotEmpty)
+            Text(
+              content.urls.first,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
               ),
-              subtitle: Text(app.packageName),
             ),
-          if (content.folder != null)
-            _Field(label: l10n.loginFolder, value: content.folder!),
-          for (final field in content.customFields)
-            _Field(label: field.name, value: field.value, hidden: field.hidden),
-          if (content.notes.isNotEmpty)
-            _Field(label: l10n.loginNotes, value: content.notes),
-          if (content.passwordHistory.isNotEmpty)
-            ExpansionTile(
-              leading: const Icon(Icons.history),
-              title: Text(l10n.loginHistory(content.passwordHistory.length)),
-              children: [
-                for (final entry in content.passwordHistory)
-                  _Field(
-                    label: MaterialLocalizations.of(context)
-                        .formatMediumDate(entry.changedAt.toLocal()),
-                    value: entry.password,
-                    hidden: true,
-                  ),
-              ],
+          const SizedBox(height: 20),
+          for (final card in cards) ...[
+            GlassSurface(
+              child: ClipRRect(
+                borderRadius: const BorderRadius.all(Radius.circular(22)),
+                child: Material(type: MaterialType.transparency, child: card),
+              ),
             ),
+            const SizedBox(height: 10),
+          ],
+          const SizedBox(height: 6),
+          Text(
+            l10n.loginLastChanged(
+              MaterialLocalizations.of(context)
+                  .formatMediumDate(item.updatedAt.toLocal()),
+            ),
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
         ],
       ),
     );
@@ -118,34 +194,20 @@ class LoginDetailScreen extends ConsumerWidget {
     AppLocalizations l10n,
   ) async {
     final messenger = ScaffoldMessenger.of(context);
+    final rootContext = Navigator.of(context, rootNavigator: true).context;
     await controller.moveToTrash(item, DateTime.now().toUtc());
     if (context.mounted) context.pop();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(l10n.loginMovedToTrash),
-        action: SnackBarAction(
-          label: l10n.loginUndo,
-          onPressed: () => unawaited(controller.restoreById(item.id)),
-        ),
+    if (!rootContext.mounted) {
+      messenger.hideCurrentSnackBar();
+      return;
+    }
+    showKkSnack(
+      rootContext,
+      l10n.loginMovedToTrash,
+      action: SnackBarAction(
+        label: l10n.loginUndo,
+        onPressed: () => unawaited(controller.restoreById(item.id)),
       ),
-    );
-  }
-}
-
-/// Her satır kendi kartında; aralarında küçük boşluk.
-class _CardList extends StatelessWidget {
-  const new({required this.children});
-
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.separated(
-      padding: EdgeInsets.fromLTRB(16, 8, 16, navClearance(context)),
-      itemCount: children.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 8),
-      itemBuilder: (context, index) =>
-          Card(clipBehavior: Clip.antiAlias, child: children[index]),
     );
   }
 }
@@ -167,24 +229,10 @@ class _Field extends ConsumerStatefulWidget {
 class _FieldState extends ConsumerState<_Field> {
   bool _revealed = false;
 
-  Future<void> _copy() async {
-    final l10n = AppLocalizations.of(context);
-    final messenger = ScaffoldMessenger.of(context);
-    await ref.read(sensitiveClipboardProvider).copy(widget.value);
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            l10n.copiedWillClear(SensitiveClipboard.clearAfter.inSeconds),
-          ),
-        ),
-      );
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final accent = KkGlass.of(context).accent;
     final concealed = widget.hidden && !_revealed;
     return ListTile(
       title: Text(widget.label, style: Theme.of(context).textTheme.labelMedium),
@@ -209,13 +257,14 @@ class _FieldState extends ConsumerState<_Field> {
                 concealed
                     ? Icons.visibility_outlined
                     : Icons.visibility_off_outlined,
+                color: accent,
               ),
               onPressed: () => setState(() => _revealed = !_revealed),
             ),
           IconButton(
             tooltip: l10n.copy,
-            icon: const Icon(Icons.copy_outlined),
-            onPressed: _copy,
+            icon: Icon(Icons.copy_rounded, color: accent),
+            onPressed: () => copySensitive(context, ref, widget.value),
           ),
         ],
       ),
