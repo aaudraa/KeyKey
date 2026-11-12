@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -120,6 +122,24 @@ void main() {
       });
     });
   }
+
+  test("Android'de sayfalar tahmini geri hareketiyle kayar", () {
+    for (final theme in [AppTheme.light, AppTheme.dark]) {
+      expect(
+        theme.pageTransitionsTheme.builders[TargetPlatform.android],
+        isA<PredictiveBackPageTransitionsBuilder>(),
+      );
+    }
+  });
+
+  test('ana etkinlik tahmini geri hareketine açık', () {
+    final manifest = File('android/app/src/main/AndroidManifest.xml')
+        .readAsStringSync();
+    final main = RegExp(r'<activity\s+android:name="\.MainActivity"[^>]*>')
+        .firstMatch(manifest)!
+        .group(0)!;
+    expect(main, contains('android:enableOnBackInvokedCallback="true"'));
+  });
 
   test('baş harf kutularında beyaz harf okunur', () {
     expect(KkColors.avatarPalette, hasLength(10));

@@ -308,10 +308,6 @@
   "@vaultSearch": {
     "description": "Search field on the vault list."
   },
-  "vaultSort": "Sort",
-  "@vaultSort": {
-    "description": "Tooltip of the sort menu."
-  },
   "vaultSortName": "Sort by name",
   "@vaultSortName": {
     "description": "Sort option."
@@ -434,10 +430,6 @@
   "@loginDiscard": {
     "description": "Dialog button."
   },
-  "loginAddUrl": "Add website",
-  "@loginAddUrl": {
-    "description": "Button."
-  },
   "loginApp": "App",
   "@loginApp": {
     "description": "Label for an Android app linked to a login for autofill."
@@ -474,14 +466,6 @@
   "loginFieldVisible": "Show value by default",
   "@loginFieldVisible": {
     "description": "Tooltip."
-  },
-  "loginRemoveField": "Remove field",
-  "@loginRemoveField": {
-    "description": "Tooltip."
-  },
-  "loginAddField": "Add field",
-  "@loginAddField": {
-    "description": "Button."
   },
   "trashTitle": "Trash",
   "@trashTitle": {
@@ -588,10 +572,6 @@
   "@generatorPassphraseNote": {
     "description": "Explains the word list."
   },
-  "generatorOpen": "Generate password",
-  "@generatorOpen": {
-    "description": "Tooltip on the password field."
-  },
   "settingsLicenses": "Licenses",
   "@settingsLicenses": {
     "description": "Settings entry that opens the license page."
@@ -695,10 +675,6 @@
   "otpClose": "Close",
   "@otpClose": {
     "description": "Closes a dialog."
-  },
-  "otpAddTitle": "Add a 2FA account",
-  "@otpAddTitle": {
-    "description": "Title of the sheet that lists the ways to add an account."
   },
   "otpAddManual": "Enter key manually",
   "@otpAddManual": {
@@ -981,10 +957,6 @@
   "settingsOtpRequireAuthHelp": "Protects the codes if someone picks up your unlocked phone. It does not protect against malware on the device.",
   "@settingsOtpRequireAuthHelp": {
     "description": "Explains what the setting protects against."
-  },
-  "autofillTitle": "Fill with KeyKey",
-  "@autofillTitle": {
-    "description": "Title of the autofill screen."
   },
   "autofillFor": "For {target}",
   "@autofillFor": {

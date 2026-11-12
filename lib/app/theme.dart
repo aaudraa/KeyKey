@@ -128,6 +128,12 @@ abstract final class AppTheme {
       extensions: [glass],
       scaffoldBackgroundColor: Colors.transparent,
       canvasColor: surface,
+      // Android 14+ kenardan geri hareketinde sayfa parmağı izler.
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+        },
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         foregroundColor: ink,
