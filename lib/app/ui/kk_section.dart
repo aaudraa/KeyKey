@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Ayarlardaki grup: başlık ve altında, aralarında ince çizgi olan
-/// satırlar tek bir kartta.
+/// satırlar tek bir cam kartta.
 ///
 /// Satırlar aynı boydadır: alt yazısı olmayan satır da iki satırlık boyda
 /// durur. Alt yazılar tek satırdır; uzun açıklama [KkInfoRow] ile pencereye
@@ -11,8 +12,8 @@ import 'package:keykey/l10n/generated/app_localizations.dart';
 class KkSection extends StatelessWidget {
   const new({required this.title, required this.children, super.key});
 
-  /// Bir satırın en az boyu: Material'ın iki satırlık liste satırı.
-  static const double rowHeight = 72;
+  /// Bir satırın en az boyu (normal yazıda).
+  static const double rowHeight = 64;
 
   final String title;
   final List<Widget> children;
@@ -37,17 +38,23 @@ class KkSection extends StatelessWidget {
               ),
             ),
           ),
-          Card(
-            clipBehavior: Clip.antiAlias,
-            child: ListTileTheme.merge(
-              minTileHeight: rowHeight,
-              child: Column(
-                children: [
-                  for (var i = 0; i < children.length; i++) ...[
-                    if (i > 0) const Divider(height: 1),
-                    children[i],
-                  ],
-                ],
+          GlassSurface(
+            borderRadius: const BorderRadius.all(Radius.circular(26)),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.all(Radius.circular(26)),
+              child: Material(
+                type: MaterialType.transparency,
+                child: ListTileTheme.merge(
+                  minTileHeight: rowHeight,
+                  child: Column(
+                    children: [
+                      for (var i = 0; i < children.length; i++) ...[
+                        if (i > 0) const Divider(height: 1, indent: 16),
+                        children[i],
+                      ],
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -110,6 +117,30 @@ class KkInfoRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Vurgu zeminli küçük simge kutusu: ayar satırlarında ve "+" kutusunda.
+class KkIconBox extends StatelessWidget {
+  const new({required this.icon, this.size = 36, super.key});
+
+  final IconData icon;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final glass = KkGlass.of(context);
+    return ExcludeSemantics(
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: glass.accentContainer,
+          borderRadius: BorderRadius.circular(size * 0.3),
+        ),
+        child: Icon(icon, size: size * 0.55, color: glass.accent),
+      ),
     );
   }
 }

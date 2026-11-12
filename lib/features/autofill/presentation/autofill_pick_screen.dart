@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/app/ui/kk_card.dart';
-import 'package:keykey/app/ui/record_watermark.dart';
+import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/features/authenticator/application/otp_clock.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
@@ -354,7 +354,7 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
       subtitle: item.content.username.isEmpty
           ? null
           : Text(item.content.username),
-      watermark: RecordWatermark(login: item.content),
+      leading: RecordAvatar(login: item.content, name: item.content.name),
       onTap: () => unawaited(_pick(item, matches)),
     ),
   );

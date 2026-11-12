@@ -5,7 +5,7 @@ import 'package:keykey/app/router.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/kk_card.dart';
-import 'package:keykey/app/ui/record_watermark.dart';
+import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/features/backup/presentation/backup_reminder_banner.dart';
 import 'package:keykey/features/vault/application/login_search.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
@@ -192,8 +192,7 @@ class _LoginTile extends StatelessWidget {
     return KkCard(
       title: Text(name.isEmpty ? '—' : name),
       subtitle: content.username.isEmpty ? null : Text(content.username),
-      // Silik simge yalnızca görsel; ekran okuyucu adı zaten okuyor.
-      watermark: RecordWatermark(login: content),
+      leading: RecordAvatar(login: content, name: content.name),
       trailing: content.favorite
           ? Padding(
               padding: const EdgeInsetsDirectional.only(end: 10),

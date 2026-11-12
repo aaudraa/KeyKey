@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:keykey/app/ui/kk_card.dart';
 import 'package:keykey/features/authenticator/data/base32.dart';
 import 'package:keykey/features/authenticator/data/otp_content.dart';
 import 'package:keykey/features/authenticator/data/otp_parameters.dart';
@@ -156,14 +155,14 @@ void main() {
       };
 
       await openAuthenticator(tester);
-      expect(heights(), {KkCard.minHeight});
+      expect(heights(), {64.0});
 
       now = DateTime.fromMillisecondsSinceEpoch(50000, isUtc: true);
       await settle(tester);
       // Saat sağlayıcısı yeni zamanı bir sonraki tıkta okur.
       await tester.pump(const Duration(seconds: 1));
       expect(find.textContaining('Sıradaki'), findsWidgets);
-      expect(heights(), {KkCard.minHeight});
+      expect(heights(), {64.0});
     });
 
     testWidgets('HOTP kartı TOTP kartıyla aynı boyda, kod üret düğmesi var', (
@@ -180,7 +179,7 @@ void main() {
       );
       await openAuthenticator(tester);
 
-      expect(tester.getSize(tileOf(9)).height, KkCard.minHeight);
+      expect(tester.getSize(tileOf(9)).height, 64);
       expect(
         find.descendant(of: tileOf(9), matching: find.byTooltip('Kod üret')),
         findsOneWidget,

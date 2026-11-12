@@ -125,7 +125,7 @@ void main() {
           .widgetList(cards())
           .map((w) => tester.getSize(find.byWidget(w)).height)
           .toSet();
-      expect(heights, {KkCard.minHeight});
+      expect(heights, {64.0});
     });
 
     testWidgets('son kart alt menünün altında kalmayacak kadar boşluk var', (
@@ -364,7 +364,7 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    testWidgets('listede bağlı uygulamanın simgesi, diğerlerinde çizgi simge', (
+    testWidgets('listede bağlı uygulamanın simgesi, diğerlerinde baş harf', (
       tester,
     ) async {
       await pumpKeyKey(
@@ -380,10 +380,8 @@ void main() {
         matching: matching,
       );
       expect(inCard('Posta', find.byType(Image)), findsOneWidget);
-      expect(
-        inCard('İş Bankası', find.byIcon(Icons.key_outlined)),
-        findsOneWidget,
-      );
+      expect(inCard('İş Bankası', find.text('İ')), findsOneWidget);
+      expect(inCard('İş Bankası', find.byType(Image)), findsNothing);
       expect(inCard('Posta', find.byType(CircleAvatar)), findsNothing);
     });
 

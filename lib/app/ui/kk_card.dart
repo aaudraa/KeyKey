@@ -1,124 +1,110 @@
 import 'package:flutter/material.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_motion.dart';
 
-/// Filigranın kartın hangi kenarında duracağı.
-enum WatermarkSide { start, end }
-
-/// Listelerdeki küçük kart. Normal yazı boyutunda hepsi aynı boydadır:
+/// Listelerdeki cam kart. Normal yazı boyutunda hepsi aynı boydadır:
 /// başlık ve alt yazı tek satırda kesilir. Telefonun yazı boyutu büyüyünce
-/// kart da büyür, yoksa metin kesilir (erişilebilirlik).
-class KkCard extends StatelessWidget {
+/// kart da büyür, yoksa metin kesilir (erişilebilirlik). Arkasını
+/// bulanıklaştırmaz; liste takılmadan kayar.
+class KkCard extends StatefulWidget {
   const new({
     required this.title,
     this.subtitle,
     this.leading,
     this.trailing,
-    this.watermark,
-    this.watermarkSide = WatermarkSide.end,
     this.onTap,
     this.onLongPress,
     this.semanticLabel,
+    this.minHeight = 64,
     super.key,
   });
-
-  /// Normal yazı boyutundaki yükseklik (iki satır).
-  static const double minHeight = 60;
-
-  /// Filigranın görünürlüğü.
-  static const double watermarkOpacity = 0.2;
 
   final Widget title;
   final Widget? subtitle;
   final Widget? leading;
   final Widget? trailing;
-
-  /// Kartın kenarına yaslanan, dışına taşıp kırpılan silik resim.
-  final Widget? watermark;
-  final WatermarkSide watermarkSide;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
   final String? semanticLabel;
 
+  /// Normal yazı boyutundaki yükseklik.
+  final double minHeight;
+
+  @override
+  State<KkCard> createState() => _KkCardState();
+}
+
+class _KkCardState extends State<KkCard> {
+  static const _radius = BorderRadius.all(Radius.circular(22));
+  var _pressed = false;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final shape = theme.cardTheme.shape as RoundedRectangleBorder?;
-    final radius =
-        (shape?.borderRadius as BorderRadius?) ??
-        const BorderRadius.all(Radius.circular(14));
-    final start = watermarkSide == WatermarkSide.start;
 
     final Widget texts = Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         DefaultTextStyle.merge(
-          style: theme.textTheme.titleSmall,
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          child: title,
+          child: widget.title,
         ),
-        if (subtitle != null)
+        if (widget.subtitle != null)
           DefaultTextStyle.merge(
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            child: subtitle!,
+            child: widget.subtitle!,
           ),
       ],
     );
 
     final content = Padding(
       padding: EdgeInsetsDirectional.only(
-        start: start && watermark != null ? 28 : 14,
-        end: trailing == null ? 14 : 4,
-        top: 6,
-        bottom: 6,
+        start: widget.leading == null ? 16 : 11,
+        end: widget.trailing == null ? 16 : 4,
+        top: 8,
+        bottom: 8,
       ),
       child: Row(
         children: [
-          if (leading != null) ...[leading!, const SizedBox(width: 12)],
+          if (widget.leading != null) ...[
+            widget.leading!,
+            const SizedBox(width: 12),
+          ],
           Expanded(child: texts),
-          ?trailing,
+          ?widget.trailing,
         ],
       ),
     );
 
+    final interactive = widget.onTap != null || widget.onLongPress != null;
     return Semantics(
-      label: semanticLabel,
-      container: semanticLabel != null,
-      child: Card(
-        child: ClipRRect(
-          borderRadius: radius,
-          child: InkWell(
-            onTap: onTap,
-            onLongPress: onLongPress,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: minHeight),
-              child: Stack(
-                alignment: AlignmentDirectional.centerStart,
-                children: [
-                  if (watermark != null)
-                    PositionedDirectional(
-                      top: 0,
-                      bottom: 0,
-                      width: 72,
-                      start: start ? -14 : null,
-                      end: start ? null : -14,
-                      child: ExcludeSemantics(
-                        child: Opacity(
-                          opacity: watermarkOpacity,
-                          child: OverflowBox(
-                            maxWidth: double.infinity,
-                            maxHeight: double.infinity,
-                            child: watermark,
-                          ),
-                        ),
-                      ),
-                    ),
-                  content,
-                ],
+      label: widget.semanticLabel,
+      container: widget.semanticLabel != null,
+      child: AnimatedScale(
+        scale: _pressed ? 0.98 : 1,
+        duration: KkMotion.of(context, KkMotion.fast),
+        child: GlassSurface(
+          child: Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              borderRadius: _radius,
+              onTap: widget.onTap,
+              onLongPress: widget.onLongPress,
+              onHighlightChanged: interactive
+                  ? (value) => setState(() => _pressed = value)
+                  : null,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: widget.minHeight),
+                child: content,
               ),
             ),
           ),

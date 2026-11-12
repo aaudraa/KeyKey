@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:keykey/app/ui/kk_card.dart';
-import 'package:keykey/app/ui/record_watermark.dart';
+import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/features/authenticator/application/otp_generator.dart';
 import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
@@ -138,10 +138,7 @@ class OtpCodeTile extends StatelessWidget {
               children: [?subtitle == null ? null : Text(subtitle), codeColumn],
             )
           : (subtitle == null ? null : Text(subtitle)),
-      watermark: linked != null && linked.apps.isNotEmpty
-          ? RecordWatermark(login: linked)
-          : null,
-      watermarkSide: WatermarkSide.start,
+      leading: RecordAvatar(login: linked, name: otpTitle(content, l10n)),
       onTap: code == null ? null : () => onCopy(code!),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,

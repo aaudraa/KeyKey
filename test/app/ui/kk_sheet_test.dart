@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/theme.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_section.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
 
@@ -118,11 +119,11 @@ void main() {
     );
     expect(find.text('Güvenlik'), findsOneWidget);
     expect(
-      find.ancestor(of: find.text('Bir'), matching: find.byType(Card)),
+      find.ancestor(of: find.text('Bir'), matching: find.byType(GlassSurface)),
       findsOneWidget,
     );
     expect(
-      find.ancestor(of: find.text('İki'), matching: find.byType(Card)),
+      find.ancestor(of: find.text('İki'), matching: find.byType(GlassSurface)),
       findsOneWidget,
     );
   });

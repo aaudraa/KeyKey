@@ -12,27 +12,31 @@ Widget _host(List<Widget> children, {double textScale = 1}) => MaterialApp(
 );
 
 void main() {
-  testWidgets(
-    'kısa ve uzun adlı, alt yazılı ve alt yazısız kartlar aynı boyda',
-    (tester) async {
-      await tester.pumpWidget(
-        _host([
-          const KkCard(key: Key('kisa'), title: Text('A')),
-          KkCard(
-            key: const Key('uzun'),
-            title: Text('Çok uzun bir kayıt adı ' * 10),
-            subtitle: Text('kullanici@ornek.com ' * 10),
-          ),
-        ]),
-      );
+  testWidgets('normal yazıda kart 64 dp, uzun ad kesilir ve boy değişmez', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host([
+        const KkCard(key: Key('kisa'), title: Text('A')),
+        KkCard(
+          key: const Key('uzun'),
+          title: Text('Çok uzun bir kayıt adı ' * 10),
+          subtitle: Text('kullanici@ornek.com ' * 10),
+        ),
+      ]),
+    );
 
-      final short = tester.getSize(find.byKey(const Key('kisa'))).height;
-      final long = tester.getSize(find.byKey(const Key('uzun'))).height;
-      expect(short, 60);
-      expect(long, 60);
-      expect(tester.takeException(), isNull);
-    },
-  );
+    expect(tester.getSize(find.byKey(const Key('kisa'))).height, 64);
+    expect(tester.getSize(find.byKey(const Key('uzun'))).height, 64);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('en az boy değiştirilebilir', (tester) async {
+    await tester.pumpWidget(
+      _host([const KkCard(key: Key('kart'), title: Text('A'), minHeight: 72)]),
+    );
+    expect(tester.getSize(find.byKey(const Key('kart'))).height, 72);
+  });
 
   testWidgets('yazı %200 olunca kart büyür ve taşmaz', (tester) async {
     await tester.pumpWidget(
@@ -47,42 +51,74 @@ void main() {
 
     expect(
       tester.getSize(find.byKey(const Key('kart'))).height,
-      greaterThan(60),
+      greaterThan(64),
     );
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('dokununca onTap çağrılır', (tester) async {
-    var taps = 0;
-    await tester.pumpWidget(
-      _host([KkCard(title: const Text('GitHub'), onTap: () => taps++)]),
-    );
-    await tester.tap(find.text('GitHub'));
-    expect(taps, 1);
+  testWidgets('liste kartı arkasını bulanıklaştırmaz', (tester) async {
+    await tester.pumpWidget(_host([const KkCard(title: Text('GitHub'))]));
+    expect(find.byType(BackdropFilter), findsNothing);
   });
 
-  testWidgets('filigran kartın içinde kırpılır, yazıyı örtmez', (tester) async {
+  testWidgets('dokununca onTap, uzun basınca onLongPress çağrılır', (
+    tester,
+  ) async {
+    var taps = 0;
+    var longs = 0;
     await tester.pumpWidget(
       _host([
-        const KkCard(
-          key: Key('kart'),
-          title: Text('GitHub'),
-          watermark: SizedBox(key: Key('filigran'), width: 120, height: 120),
+        KkCard(
+          title: const Text('GitHub'),
+          onTap: () => taps++,
+          onLongPress: () => longs++,
         ),
       ]),
     );
+    await tester.tap(find.text('GitHub'));
+    await tester.pumpAndSettle();
+    await tester.longPress(find.text('GitHub'));
+    await tester.pumpAndSettle();
+    expect(taps, 1);
+    expect(longs, 1);
+  });
 
-    final card = tester.getRect(find.byKey(const Key('kart')));
-    expect(tester.getSize(find.byKey(const Key('kart'))).height, 60);
-    // Filigran kartın sağ kenarına yaslı, kartın dışına taşar ama kırpılır.
-    final mark = tester.getRect(find.byKey(const Key('filigran')));
-    expect(mark.right, greaterThan(card.right));
-    expect(
-      find.ancestor(
-        of: find.byKey(const Key('filigran')),
-        matching: find.byType(ClipRRect),
-      ),
-      findsOneWidget,
+  testWidgets('sondaki düğmeye dokunmak kartı açmaz', (tester) async {
+    var taps = 0;
+    var copies = 0;
+    await tester.pumpWidget(
+      _host([
+        KkCard(
+          title: const Text('GitHub'),
+          onTap: () => taps++,
+          trailing: IconButton(
+            tooltip: 'Kopyala',
+            icon: const Icon(Icons.copy_rounded),
+            onPressed: () => copies++,
+          ),
+        ),
+      ]),
     );
+    await tester.tap(find.byTooltip('Kopyala'));
+    await tester.pumpAndSettle();
+    expect(copies, 1);
+    expect(taps, 0);
+  });
+
+  testWidgets('basılıyken kart hafifçe küçülür', (tester) async {
+    await tester.pumpWidget(
+      _host([KkCard(title: const Text('GitHub'), onTap: () {})]),
+    );
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.text('GitHub')),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<AnimatedScale>(find.byType(AnimatedScale)).scale,
+      lessThan(1),
+    );
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(tester.widget<AnimatedScale>(find.byType(AnimatedScale)).scale, 1);
   });
 }
