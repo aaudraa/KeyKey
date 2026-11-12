@@ -1278,19 +1278,6 @@
   "@backupCreate": {
     "description": "Settings tile that saves an encrypted backup file."
   },
-  "backupLast": "Last backup: {time}",
-  "@backupLast": {
-    "description": "Subtitle with the time of the last backup.",
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "backupNever": "No backup yet.",
-  "@backupNever": {
-    "description": "Subtitle when no backup was taken."
-  },
   "backupHelp": "The backup file is encrypted. It opens with your current master password or your recovery key. If you lose this phone, it is the only way to get your data back.",
   "@backupHelp": {
     "description": "Explains what a backup is and how it opens."
@@ -1672,5 +1659,16 @@
   "formCustomField": "Custom field",
   "formAnotherSite": "Another site",
   "formRemoveField": "Remove field",
-  "loginGenerate": "Generate"
+  "loginGenerate": "Generate",
+  "backupStatusNever": "No backup yet",
+  "backupStatusToday": "Last backup today",
+  "backupStatusDays": "{count, plural, =1{Last backup 1 day ago} other{Last backup {count} days ago}}",
+  "@backupStatusDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupStatusAction": "Back up"
 }

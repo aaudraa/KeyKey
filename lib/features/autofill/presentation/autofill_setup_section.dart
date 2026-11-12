@@ -81,7 +81,7 @@ class _AutofillSetupSectionState extends ConsumerState<AutofillSetupSection> {
       return [
         ListTile(
           enabled: false,
-          leading: const Icon(Icons.edit_note),
+          leading: const KkIconBox(icon: Icons.edit_note_rounded),
           title: Text(l10n.autofillSetupTitle),
           subtitle: KkRowSubtitle(l10n.autofillSetupUnsupported),
         ),
@@ -95,7 +95,7 @@ class _AutofillSetupSectionState extends ConsumerState<AutofillSetupSection> {
         : l10n.autofillSetupChrome;
     return [
       ListTile(
-        leading: const Icon(Icons.edit_note),
+        leading: const KkIconBox(icon: Icons.edit_note_rounded),
         title: Text(l10n.autofillSetupTitle),
         subtitle: KkRowSubtitle(
           status.enabled
@@ -110,7 +110,7 @@ class _AutofillSetupSectionState extends ConsumerState<AutofillSetupSection> {
           infoTitle: l10n.autofillSetupChromeTitle,
           info: chromeHelp,
           child: ListTile(
-            leading: const Icon(Icons.public),
+            leading: const KkIconBox(icon: Icons.public_rounded),
             title: Text(l10n.autofillSetupChromeTitle),
             subtitle: KkRowSubtitle(chromeHelp),
             trailing: status.chromeTooOld

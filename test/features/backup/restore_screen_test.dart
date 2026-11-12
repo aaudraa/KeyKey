@@ -177,7 +177,7 @@ void main() {
         find.text('2 kayıt eklendi, 1 kayıt güncellendi.'),
         findsOneWidget,
       );
-      expect(find.text('Yedek al'), findsOneWidget);
+      expect(find.text('Yedekle'), findsOneWidget);
     });
 
     testWidgets('değiştirme onay istiyor, vazgeçilirse bir şey olmuyor', (

@@ -262,8 +262,6 @@
   "autofillSetupOpenFailed": "Ayar açılamadı.",
   "autofillWarnWebViewUnknown": "Bu uygulama içinde bir web sayfası gösteriyor. KeyKey sayfanın kime ait olduğunu doğrulayamaz; doldurulan parolayı uygulama okuyabilir.",
   "backupCreate": "Yedek al",
-  "backupLast": "Son yedek: {time}",
-  "backupNever": "Henüz yedek alınmadı.",
   "backupHelp": "Yedek dosyası şifrelidir; şu anki ana parolanla veya kurtarma anahtarınla açılır. Bu telefon kaybolursa verini geri almanın tek yolu budur.",
   "backupSaved": "Yedek kaydedildi.",
   "backupFailed": "Yedek kaydedilemedi. Başka bir konum dene.",
@@ -367,5 +365,16 @@
   "formCustomField": "Özel alan",
   "formAnotherSite": "Başka site",
   "formRemoveField": "Alanı kaldır",
-  "loginGenerate": "Üret"
+  "loginGenerate": "Üret",
+  "backupStatusNever": "Henüz yedek yok",
+  "backupStatusToday": "Son yedek bugün",
+  "backupStatusDays": "{count, plural, other{Son yedek {count} gün önce}}",
+  "@backupStatusDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupStatusAction": "Yedekle"
 }

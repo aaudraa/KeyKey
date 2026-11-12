@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
+import 'package:keykey/app/ui/kk_section.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/features/autofill/application/autofill_setup.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
@@ -144,6 +145,48 @@ void main() {
         expect(last.bottom, lessThanOrEqualTo(pill.top));
       });
     }
+
+    testWidgets('satırlarda simge kutusu, açılan satırlarda ok var', (
+      tester,
+    ) async {
+      await pumpSettings(tester);
+      Finder row(String text) =>
+          find.ancestor(of: find.text(text), matching: find.byType(ListTile));
+      for (final text in ['Ana parolayı değiştir', 'Şimdi kilitle']) {
+        expect(
+          find.descendant(of: row(text), matching: find.byType(KkIconBox)),
+          findsOneWidget,
+          reason: text,
+        );
+      }
+      expect(
+        find.descendant(
+          of: row('Ana parolayı değiştir'),
+          matching: find.byIcon(Icons.chevron_right_rounded),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('lisanslar sayfasının zemini saydam değil', (tester) async {
+      await pumpSettings(tester);
+      // Son satır; menünün altında kalmasın diye liste sonuna kaydırılır.
+      await tester.drag(find.byType(ListView).first, const Offset(0, -3000));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Lisanslar'));
+      await tester.pumpAndSettle();
+
+      final page = find.byType(LicensePage);
+      expect(page, findsOneWidget);
+      final scaffold = find
+          .descendant(of: page, matching: find.byType(Scaffold))
+          .first;
+      final background = Theme.of(tester.element(scaffold))
+          .scaffoldBackgroundColor;
+      expect(background.a, 1);
+      // Kendi sayfası; alttaki menü görünmüyor.
+      expect(find.byKey(GlassNavBar.pillKey), findsNothing);
+    });
 
     testWidgets('satırlar aynı boyda', (tester) async {
       service.biometricSupportValue = BiometricSupport.available;

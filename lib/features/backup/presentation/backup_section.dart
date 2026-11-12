@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:keykey/app/ui/kk_section.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/vault/vault_session.dart';
@@ -59,85 +58,44 @@ Future<void> backUpVault(BuildContext context, WidgetRef ref) async {
   }
 }
 
-/// Ayarlardaki "Yedek ve aktarım" grubu: yedek alma ve son yedeğin zamanı,
-/// geri yükleme, içe ve dışa aktarma.
-class BackupSection extends ConsumerStatefulWidget {
+/// Ayarlardaki "Yedek ve aktarım" grubu: geri yükleme, içe ve dışa
+/// aktarma. Yedek alma ayarların en üstündeki `BackupStatusCard`'da.
+class BackupSection extends ConsumerWidget {
   const new({super.key});
 
   @override
-  ConsumerState<BackupSection> createState() => _BackupSectionState();
-}
-
-class _BackupSectionState extends ConsumerState<BackupSection> {
-  bool _busy = false;
-
-  Future<void> _backUp() async {
-    if (_busy) return;
-    setState(() => _busy = true);
-    try {
-      await backUpVault(context, ref);
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final settings = ref.watch(settingsControllerProvider);
-    final last = settings?.lastBackupAt;
-    final locale = Localizations.localeOf(context).toLanguageTag();
+    const chevron = Icon(Icons.chevron_right_rounded);
     return KkSection(
       title: l10n.settingsGroupBackup,
       children: [
-        KkInfoRow(
-          infoTitle: l10n.backupCreate,
-          info: l10n.backupHelp,
-          child: ListTile(
-            leading: _busy
-                ? const SizedBox.square(
-                    dimension: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.save_alt),
-            title: Text(l10n.backupCreate),
-            subtitle: KkRowSubtitle(
-              last == null
-                  ? l10n.backupNever
-                  : l10n.backupLast(
-                      DateFormat.yMMMd(locale).add_Hm().format(last.toLocal()),
-                    ),
-            ),
-            enabled: !_busy,
-            onTap: () => unawaited(_backUp()),
-          ),
-        ),
         ListTile(
-          leading: const Icon(Icons.settings_backup_restore),
+          leading: const KkIconBox(icon: Icons.settings_backup_restore_rounded),
           title: Text(l10n.restoreTitle),
           subtitle: KkRowSubtitle(l10n.restoreHelp),
-          enabled: !_busy,
+          trailing: chevron,
           onTap: () => unawaited(pickBackupToRestore(context, ref)),
         ),
         ListTile(
-          leading: const Icon(Icons.input),
+          leading: const KkIconBox(icon: Icons.input_rounded),
           title: Text(l10n.loginImportTitle),
           subtitle: KkRowSubtitle(l10n.loginImportHelp),
-          enabled: !_busy,
+          trailing: chevron,
           onTap: () => unawaited(pickLoginExport(context, ref)),
         ),
         ListTile(
-          leading: const Icon(Icons.phonelink_lock_outlined),
+          leading: const KkIconBox(icon: Icons.phonelink_lock_rounded),
           title: Text(l10n.otpImportSettingsTitle),
           subtitle: KkRowSubtitle(l10n.otpImportSettingsHelp),
-          enabled: !_busy,
+          trailing: chevron,
           onTap: () => unawaited(importFromFile(context, ref)),
         ),
         ListTile(
-          leading: const Icon(Icons.output),
+          leading: const KkIconBox(icon: Icons.output_rounded),
           title: Text(l10n.exportTitle),
           subtitle: KkRowSubtitle(l10n.exportHelp),
-          enabled: !_busy,
+          trailing: chevron,
           onTap: () => unawaited(exportPlaintext(context, ref)),
         ),
       ],

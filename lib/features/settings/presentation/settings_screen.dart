@@ -6,6 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/keykey_logo.dart';
+import 'package:keykey/app/ui/kk_backdrop.dart';
+import 'package:keykey/app/ui/kk_bars.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_section.dart';
 import 'package:keykey/core/platform/app_packages.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
@@ -14,6 +17,7 @@ import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/presentation/confirm_identity.dart';
 import 'package:keykey/features/autofill/presentation/autofill_setup_section.dart';
 import 'package:keykey/features/backup/presentation/backup_section.dart';
+import 'package:keykey/features/backup/presentation/backup_status_card.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
@@ -113,23 +117,48 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  /// Flutter'ın lisans sayfası kendi `Scaffold`'unu kullanır. Temadaki
+  /// saydam zeminle sayfanın arkası boş kalırdı; sayfa opak zeminli bir
+  /// temayla ve alttaki menünün üstünde açılır.
+  void _openLicenses(String? version) {
+    final theme = Theme.of(context);
+    final ground = KkGlass.of(context).ground;
+    Navigator.of(context, rootNavigator: true).push(
+      MaterialPageRoute<void>(
+        builder: (context) => Theme(
+          data: theme.copyWith(
+            scaffoldBackgroundColor: ground,
+            appBarTheme: theme.appBarTheme.copyWith(backgroundColor: ground),
+          ),
+          child: LicensePage(
+            applicationName: 'KeyKey',
+            applicationVersion: version,
+            applicationIcon: const KeyKeyLogo(size: 48),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final settings = ref.watch(settingsControllerProvider);
     final version = ref.watch(appVersionProvider).value;
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.navSettings)),
+    return KkScaffold(
+      appBar: kkRootAppBar(context, title: l10n.navSettings),
       body: ListView(
         // Altta: yüzen menü.
         padding: EdgeInsets.only(bottom: navClearance(context)),
         children: [
+          const BackupStatusCard(),
           KkSection(
             title: l10n.settingsGroupSecurity,
             children: [
               ListTile(
-                leading: const Icon(Icons.password_outlined),
+                leading: const KkIconBox(icon: Icons.password_rounded),
                 title: Text(l10n.changePasswordTitle),
+                trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => context.push(AppRoutes.changePassword),
               ),
               if (_support == BiometricSupport.available)
@@ -137,7 +166,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   infoTitle: l10n.settingsBiometric,
                   info: l10n.settingsBiometricHint,
                   child: SwitchListTile(
-                    secondary: const Icon(Icons.fingerprint),
+                    secondary: const KkIconBox(icon: Icons.fingerprint_rounded),
                     title: Text(l10n.settingsBiometric),
                     value: _biometricEnabled,
                     onChanged: _busy
@@ -148,7 +177,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               if (_support == BiometricSupport.notEnrolled)
                 ListTile(
                   enabled: false,
-                  leading: const Icon(Icons.fingerprint),
+                  leading: const KkIconBox(icon: Icons.fingerprint_rounded),
                   title: Text(l10n.settingsBiometric),
                   subtitle: KkRowSubtitle(l10n.settingsBiometricNotEnrolled),
                 ),
@@ -156,7 +185,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 infoTitle: l10n.settingsOtpRequireAuth,
                 info: l10n.settingsOtpRequireAuthHelp,
                 child: SwitchListTile(
-                  secondary: const Icon(Icons.shield_outlined),
+                  secondary: const KkIconBox(icon: Icons.shield_rounded),
                   title: Text(l10n.settingsOtpRequireAuth),
                   value: settings?.otpRequireAuth ?? false,
                   onChanged: settings == null
@@ -165,7 +194,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
               ListTile(
-                leading: const Icon(Icons.lock_outline),
+                leading: const KkIconBox(icon: Icons.lock_rounded),
                 title: Text(l10n.settingsLockNow),
                 onTap: () => ref.read(vaultControllerProvider.notifier).lock(),
               ),
@@ -180,7 +209,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   SensitiveClipboard.clearAfter.inSeconds,
                 ),
                 child: SwitchListTile(
-                  secondary: const Icon(Icons.content_paste_go),
+                  secondary: const KkIconBox(
+                    icon: Icons.content_paste_go_rounded,
+                  ),
                   title: Text(l10n.settingsAutofillCopyOtp),
                   value: settings?.autofillCopyOtp ?? false,
                   onChanged: settings == null
@@ -194,19 +225,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: l10n.settingsGroupAbout,
             children: [
               ListTile(
-                leading: const Icon(Icons.info_outline),
+                leading: const KkIconBox(icon: Icons.info_rounded),
                 title: Text(l10n.settingsVersion),
                 trailing: Text(version ?? ''),
               ),
               ListTile(
-                leading: const Icon(Icons.description_outlined),
+                leading: const KkIconBox(icon: Icons.description_rounded),
                 title: Text(l10n.settingsLicenses),
-                onTap: () => showLicensePage(
-                  context: context,
-                  applicationName: 'KeyKey',
-                  applicationVersion: version,
-                  applicationIcon: const KeyKeyLogo(size: 48),
-                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => _openLicenses(version),
               ),
             ],
           ),
