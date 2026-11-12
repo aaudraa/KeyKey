@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:keykey/app/app.dart';
+import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/core/storage/vault_database.dart';
 import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/vault_service.dart';
@@ -111,6 +112,7 @@ void main() {
         ProviderScope(
           key: UniqueKey(),
           overrides: [
+            ambientMotionProvider.overrideWithValue(false),
             vaultServiceProvider.overrideWithValue(service),
             settingsRepositoryFactoryProvider.overrideWithValue(
               (session) => SettingsRepository(

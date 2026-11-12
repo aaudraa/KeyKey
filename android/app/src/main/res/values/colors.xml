@@ -2,5 +2,5 @@
 <resources>
     <color name="ic_launcher_background">#FFFFFF</color>
     <!-- Açılış ekranının zemini: uygulamanın krem rengi. -->
-    <color name="kk_launch_background">#F6F1E7</color>
+    <color name="kk_launch_background">#F3EEF4</color>
 </resources>

@@ -3,32 +3,51 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/theme.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 
-/// WCAG bağıl parlaklığından kontrast oranı.
+/// WCAG bağıl parlaklığı.
+double luminance(Color c) {
+  double channel(double v) =>
+      v <= 0.03928 ? v / 12.92 : math.pow((v + 0.055) / 1.055, 2.4).toDouble();
+  return 0.2126 * channel(c.r) + 0.7152 * channel(c.g) + 0.0722 * channel(c.b);
+}
+
+/// WCAG kontrast oranı.
 double contrast(Color a, Color b) {
-  double channel(double c) =>
-      c <= 0.03928 ? c / 12.92 : math.pow((c + 0.055) / 1.055, 2.4).toDouble();
-  double luminance(Color c) =>
-      0.2126 * channel(c.r) + 0.7152 * channel(c.g) + 0.0722 * channel(c.b);
   final la = luminance(a);
   final lb = luminance(b);
   return (math.max(la, lb) + 0.05) / (math.min(la, lb) + 0.05);
 }
 
+/// Yarı saydam [fg]'nin opak [bg] üstündeki görünen rengi.
+Color over(Color bg, Color fg) {
+  final a = fg.a;
+  double mix(double b, double f) => b * (1 - a) + f * a;
+  return Color.from(
+    alpha: 1,
+    red: mix(bg.r, fg.r),
+    green: mix(bg.g, fg.g),
+    blue: mix(bg.b, fg.b),
+  );
+}
+
 void main() {
-  group('renkler', () {
-    test('açık tema krem zemin ve koyu turuncu vurgu', () {
+  group('sabit renkler', () {
+    test('açık tema', () {
       final theme = AppTheme.light;
-      expect(theme.scaffoldBackgroundColor, const Color(0xFFF6F1E7));
-      expect(theme.colorScheme.primary, const Color(0xFFB4470F));
-      expect(theme.colorScheme.onPrimary, const Color(0xFFFFFFFF));
+      expect(theme.colorScheme.primary, const Color(0xFF9A3A08));
+      expect(theme.extension<KkGlass>()!.ground, const Color(0xFFF3EEF4));
     });
 
-    test('koyu tema sıcak koyu zemin ve açık turuncu vurgu', () {
+    test('koyu tema', () {
       final theme = AppTheme.dark;
-      expect(theme.scaffoldBackgroundColor, const Color(0xFF1C1A17));
-      expect(theme.colorScheme.primary, const Color(0xFFFF8A4C));
-      expect(theme.colorScheme.onPrimary, const Color(0xFF1C1A17));
+      expect(theme.colorScheme.primary, const Color(0xFFFFA873));
+      expect(theme.extension<KkGlass>()!.ground, const Color(0xFF0C0B10));
+    });
+
+    test('zemin saydam, ekranlar kendi zeminini çizer', () {
+      expect(AppTheme.light.scaffoldBackgroundColor.a, 0);
+      expect(AppTheme.dark.scaffoldBackgroundColor.a, 0);
     });
 
     test('simge turuncusu ayrı tutuluyor', () {
@@ -42,39 +61,55 @@ void main() {
   ]) {
     group('$name tema kontrastı', () {
       final scheme = theme.colorScheme;
-      final background = theme.scaffoldBackgroundColor;
+      final glass = theme.extension<KkGlass>()!;
+      final grounds = [
+        for (final g in glass.worstGrounds()) ...[g, over(g, glass.fill)],
+      ];
 
-      test('yazı zeminde ve kartta okunur', () {
-        expect(
-          contrast(scheme.onSurface, background),
-          greaterThanOrEqualTo(4.5),
-        );
-        expect(
-          contrast(scheme.onSurface, scheme.surface),
-          greaterThanOrEqualTo(4.5),
-        );
+      test('en kötü zemin noktası en az dört renk', () {
+        expect(glass.worstGrounds(), hasLength(4));
       });
 
-      test('ikincil yazı zeminde, kartta ve kutuda okunur', () {
-        for (final bg in [
-          background,
-          scheme.surface,
-          scheme.surfaceContainerHighest,
-        ]) {
+      for (final (role, color) in [
+        ('yazı', scheme.onSurface),
+        ('ikincil yazı', scheme.onSurfaceVariant),
+        ('vurgulu yazı', scheme.primary),
+        ('hata', scheme.error),
+      ]) {
+        test('$role zeminin ve kartın her yerinde okunur', () {
+          for (final bg in grounds) {
+            expect(
+              contrast(color, bg),
+              greaterThanOrEqualTo(4.5),
+              reason: '$bg',
+            );
+          }
+        });
+      }
+
+      test('vurgulu simge her yerde görünür', () {
+        for (final bg in grounds) {
           expect(
-            contrast(scheme.onSurfaceVariant, bg),
-            greaterThanOrEqualTo(4.5),
+            contrast(glass.accent, bg),
+            greaterThanOrEqualTo(3.0),
+            reason: '$bg',
           );
         }
       });
 
-      test('vurgu zeminde, vurgu üstündeki yazı vurguda okunur', () {
-        expect(contrast(scheme.primary, background), greaterThanOrEqualTo(4.5));
-        expect(
-          contrast(scheme.onPrimary, scheme.primary),
-          greaterThanOrEqualTo(4.5),
-        );
+      test('ana düğmenin yazısı geçişin iki ucunda okunur', () {
+        for (final c in glass.ctaGradient.colors) {
+          expect(contrast(glass.onCta, c), greaterThanOrEqualTo(4.5));
+        }
+        expect(glass.ctaGradient.colors, [KkColors.ctaStart, KkColors.ctaEnd]);
       });
     });
   }
+
+  test('baş harf kutularında beyaz harf okunur', () {
+    expect(KkColors.avatarPalette, hasLength(10));
+    for (final c in KkColors.avatarPalette) {
+      expect(contrast(Colors.white, c), greaterThanOrEqualTo(4.5));
+    }
+  });
 }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/app.dart';
+import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/core/backup/backup_codec.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/crypto/record_cipher.dart';
@@ -626,6 +627,7 @@ Future<void> pumpKeyKey(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        ambientMotionProvider.overrideWithValue(false),
         vaultServiceProvider.overrideWithValue(service),
         initialVaultStatusProvider.overrideWithValue(status),
         loginRepositoryFactoryProvider.overrideWithValue((_) => repository),
