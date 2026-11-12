@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/features/authenticator/application/otp_visibility.dart';
 import 'package:keykey/features/authenticator/presentation/confirm_identity.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
@@ -16,25 +17,36 @@ class OtpGate extends ConsumerWidget {
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.visibility_off_outlined,
-              size: 48,
-              color: theme.colorScheme.primary,
-            ),
-            const SizedBox(height: 16),
-            Text(l10n.otpHiddenTitle, style: theme.textTheme.titleLarge),
-            const SizedBox(height: 8),
-            Text(l10n.otpHiddenBody, textAlign: TextAlign.center),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: () => revealOtpCodes(context, ref),
-              icon: const Icon(Icons.fingerprint),
-              label: Text(l10n.otpReveal),
-            ),
-          ],
+        child: GlassSurface(
+          borderRadius: const BorderRadius.all(Radius.circular(26)),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Icon(
+                Icons.visibility_off_rounded,
+                size: 48,
+                color: KkGlass.of(context).accent,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                l10n.otpHiddenTitle,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(l10n.otpHiddenBody, textAlign: TextAlign.center),
+              const SizedBox(height: 24),
+              FilledButton.icon(
+                onPressed: () => revealOtpCodes(context, ref),
+                icon: const Icon(Icons.fingerprint_rounded),
+                label: Text(l10n.otpReveal),
+              ),
+            ],
+          ),
         ),
       ),
     );

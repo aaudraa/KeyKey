@@ -7,8 +7,12 @@ import 'package:intl/intl.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
+import 'package:keykey/app/ui/kk_backdrop.dart';
+import 'package:keykey/app/ui/kk_bars.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_menu.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
-import 'package:keykey/core/platform/sensitive_clipboard.dart';
+import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otp_clock.dart';
 import 'package:keykey/features/authenticator/application/otp_search.dart';
@@ -29,6 +33,8 @@ import 'package:keykey/l10n/generated/app_localizations.dart';
 /// TOTP hesabı varken liste [OtpClockBuilder] ile saniyede birkaç kez
 /// yenilenir. Sekme arka plandayken `go_router` `TickerMode`'u kapatır,
 /// geri sayım da durur.
+enum _ScreenAction { clockHelp, trash }
+
 class AuthenticatorScreen extends ConsumerStatefulWidget {
   const new({super.key});
 
@@ -52,20 +58,7 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
 
   DateTime _now() => ref.read(otpClockProvider)();
 
-  Future<void> _copy(String code) async {
-    final l10n = AppLocalizations.of(context);
-    final messenger = ScaffoldMessenger.of(context);
-    await ref.read(sensitiveClipboardProvider).copy(code);
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            l10n.copiedWillClear(SensitiveClipboard.clearAfter.inSeconds),
-          ),
-        ),
-      );
-  }
+  Future<void> _copy(String code) => copySensitive(context, ref, code);
 
   Future<void> _generate(OtpItem item) async {
     final controller = ref.read(otpsControllerProvider.notifier);
@@ -89,19 +82,16 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
           await controller.setFavorite(item, favorite: !item.content.favorite);
         case OtpTileAction.trash:
           final l10n = AppLocalizations.of(context);
-          final messenger = ScaffoldMessenger.of(context);
           await controller.moveToTrash(item, DateTime.now().toUtc());
-          messenger
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(
-                content: Text(l10n.loginMovedToTrash),
-                action: SnackBarAction(
-                  label: l10n.loginUndo,
-                  onPressed: () => unawaited(controller.restoreById(item.id)),
-                ),
-              ),
-            );
+          if (!mounted) return;
+          showKkSnack(
+            context,
+            l10n.loginMovedToTrash,
+            action: SnackBarAction(
+              label: l10n.loginUndo,
+              onPressed: () => unawaited(controller.restoreById(item.id)),
+            ),
+          );
       }
     } on VaultLockedException {
       // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.
@@ -116,19 +106,33 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
     final state = ref.watch(otpsControllerProvider);
     if (state is! OtpsLoaded) _hotpCodes.clear();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.navAuthenticator),
+    return KkScaffold(
+      appBar: kkRootAppBar(
+        context,
+        title: l10n.navAuthenticator,
         actions: [
-          IconButton(
-            tooltip: l10n.otpClockHelp,
-            icon: const Icon(Icons.schedule),
-            onPressed: () => showClockHelp(context, _now()),
-          ),
-          IconButton(
-            tooltip: l10n.trashTitle,
-            icon: const Icon(Icons.delete_outline),
-            onPressed: () => context.push(AppRoutes.authenticatorTrash),
+          KkMenuButton<_ScreenAction>(
+            tooltip: l10n.screenMore,
+            onSelected: (action) => switch (action) {
+              _ScreenAction.clockHelp => unawaited(
+                showClockHelp(context, _now()),
+              ),
+              _ScreenAction.trash => unawaited(
+                context.push(AppRoutes.authenticatorTrash),
+              ),
+            },
+            items: [
+              KkMenuItem(
+                value: _ScreenAction.clockHelp,
+                label: l10n.otpClockHelp,
+                icon: Icons.schedule_rounded,
+              ),
+              KkMenuItem(
+                value: _ScreenAction.trash,
+                label: l10n.trashTitle,
+                icon: Icons.delete_outline_rounded,
+              ),
+            ],
           ),
         ],
       ),
@@ -155,23 +159,32 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
       children: [
         if (hasAccounts)
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
             child: SecretField(
               controller: _search,
               label: l10n.vaultSearch,
               obscure: false,
+              search: true,
               textInputAction: TextInputAction.search,
               onChanged: (_) => setState(() {}),
             ),
           ),
         if (state.unreadableCount > 0)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Card(
-              color: Theme.of(context).colorScheme.errorContainer,
-              child: ListTile(
-                leading: const Icon(Icons.warning_amber_outlined),
-                title: Text(l10n.vaultUnreadable(state.unreadableCount)),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: GlassSurface(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.warning_amber_rounded,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(l10n.vaultUnreadable(state.unreadableCount)),
+                  ),
+                ],
               ),
             ),
           ),
@@ -192,7 +205,7 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
                     (item) => item.content.parameters.kind == OtpKind.totp,
                   ),
                   builder: (context, now) => ListView.separated(
-                    // Altta: yüzen menü ve "Ekle" düğmesi.
+                    // Altta yüzen menü için boşluk.
                     padding: EdgeInsets.fromLTRB(
                       16,
                       4,

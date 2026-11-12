@@ -77,12 +77,7 @@ void main() {
     await pumpApp(tester);
     await tester.tap(find.byIcon(Icons.shield_outlined));
     await settle(tester);
-    await tester.tap(
-      find.descendant(
-        of: find.byKey(ValueKey(otpIdHex(otps.items.single))),
-        matching: find.byIcon(Icons.more_vert),
-      ),
-    );
+    await tester.longPress(find.byKey(ValueKey(otpIdHex(otps.items.single))));
     await settle(tester);
     await tester.tap(find.text('Düzenle'));
     await settle(tester);

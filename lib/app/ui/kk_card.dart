@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
 
@@ -16,8 +17,13 @@ class KkCard extends StatefulWidget {
     this.onLongPress,
     this.semanticLabel,
     this.minHeight = 64,
+    this.customSemanticsActions,
     super.key,
   });
+
+  /// Ekran okuyucunun işlem listesinde görünen ek işler (ör. uzun basınca
+  /// açılan pencerenin işleri).
+  final Map<CustomSemanticsAction, VoidCallback>? customSemanticsActions;
 
   final Widget title;
   final Widget? subtitle;
@@ -95,16 +101,19 @@ class _KkCardState extends State<KkCard> {
         child: GlassSurface(
           child: Material(
             type: MaterialType.transparency,
-            child: InkWell(
-              borderRadius: _radius,
-              onTap: widget.onTap,
-              onLongPress: widget.onLongPress,
-              onHighlightChanged: interactive
-                  ? (value) => setState(() => _pressed = value)
-                  : null,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: widget.minHeight),
-                child: content,
+            child: Semantics(
+              customSemanticsActions: widget.customSemanticsActions,
+              child: InkWell(
+                borderRadius: _radius,
+                onTap: widget.onTap,
+                onLongPress: widget.onLongPress,
+                onHighlightChanged: interactive
+                    ? (value) => setState(() => _pressed = value)
+                    : null,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: widget.minHeight),
+                  child: content,
+                ),
               ),
             ),
           ),

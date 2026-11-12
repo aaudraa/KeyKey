@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
@@ -8,6 +9,7 @@ import 'package:keykey/features/authenticator/data/base32.dart';
 import 'package:keykey/features/authenticator/data/otp_content.dart';
 import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/authenticator/presentation/otp_display.dart';
+import 'package:keykey/features/authenticator/presentation/otp_ring.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:sodium/sodium_sumo.dart';
@@ -97,10 +99,14 @@ void main() {
     await settle(tester);
   }
 
+  /// Kartın işlemleri uzun basınca alttan açılan pencerede.
   Future<void> openMenu(WidgetTester tester, int id) async {
-    await tester.tap(
-      find.descendant(of: tileOf(id), matching: find.byIcon(Icons.more_vert)),
-    );
+    await tester.longPress(tileOf(id));
+    await settle(tester);
+  }
+
+  Future<void> openScreenMenu(WidgetTester tester) async {
+    await tester.tap(find.byTooltip('Diğer işlemler'));
     await settle(tester);
   }
 
@@ -116,6 +122,41 @@ void main() {
       ];
       expect(titles, ['Zeka', 'GitHub', 'Posta']);
       expect(find.textContaining('Sıradaki'), findsNothing);
+    });
+
+    testWidgets('süre halkası kalan saniyeyi okutuyor', (tester) async {
+      await openAuthenticator(tester);
+      final handle = tester.ensureSemantics();
+      expect(find.bySemanticsLabel(RegExp('30 saniye kaldı')), findsWidgets);
+      expect(find.byType(OtpRing), findsWidgets);
+      handle.dispose();
+    });
+
+    testWidgets('kartın işlemleri ekran okuyucuda da var', (tester) async {
+      await openAuthenticator(tester);
+      final handle = tester.ensureSemantics();
+      final node = tester.getSemantics(
+        find.descendant(of: tileOf(2), matching: find.byType(InkWell)).first,
+      );
+      final labels = [
+        for (final id
+            in node.getSemanticsData().customSemanticsActionIds ??
+                const <int>[])
+          CustomSemanticsAction.getAction(id)!.label,
+      ];
+      expect(
+        labels,
+        unorderedEquals(['Düzenle', 'Favorilere ekle', 'Çöp kutusuna taşı']),
+      );
+      handle.dispose();
+    });
+
+    testWidgets('%200 yazıda kartlar taşmıyor', (tester) async {
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await openAuthenticator(tester);
+      expect(tester.takeException(), isNull);
+      expect(find.text('287 082'), findsOneWidget);
     });
 
     testWidgets('dokununca kod boşluksuz kopyalanıyor', (tester) async {
@@ -157,14 +198,14 @@ void main() {
       };
 
       await openAuthenticator(tester);
-      expect(heights(), {64.0});
+      expect(heights(), {72.0});
 
       now = DateTime.fromMillisecondsSinceEpoch(50000, isUtc: true);
       await settle(tester);
       // Saat sağlayıcısı yeni zamanı bir sonraki tıkta okur.
       await tester.pump(const Duration(seconds: 1));
       expect(find.textContaining('Sıradaki'), findsWidgets);
-      expect(heights(), {64.0});
+      expect(heights(), {72.0});
     });
 
     testWidgets('HOTP kartı TOTP kartıyla aynı boyda, kod üret düğmesi var', (
@@ -181,9 +222,12 @@ void main() {
       );
       await openAuthenticator(tester);
 
-      expect(tester.getSize(tileOf(9)).height, 64);
+      expect(tester.getSize(tileOf(9)).height, 72);
       expect(
-        find.descendant(of: tileOf(9), matching: find.byTooltip('Kod üret')),
+        find.descendant(
+          of: tileOf(9),
+          matching: find.widgetWithText(TextButton, 'Kod üret'),
+        ),
         findsOneWidget,
       );
     });
@@ -273,9 +317,7 @@ void main() {
           ),
         );
       await openAuthenticator(tester);
-      expect(find.text('••• •••'), findsOneWidget);
-
-      await tester.tap(find.byTooltip('Kod üret'));
+      await tester.tap(find.widgetWithText(TextButton, 'Kod üret'));
       await settle(tester);
       expect(find.text('755 224'), findsOneWidget);
       expect(otps.items.single.content.parameters.counter, 1);
@@ -293,7 +335,8 @@ void main() {
     testWidgets('saat yardımı cihaz saatini gösteriyor', (tester) async {
       await openAuthenticator(tester);
 
-      await tester.tap(find.byTooltip('Kodlar tutmuyor mu?'));
+      await openScreenMenu(tester);
+      await tester.tap(find.text('Kodlar tutmuyor mu?'));
       await settle(tester);
 
       expect(find.text('Cihaz saatini kontrol et'), findsOneWidget);
@@ -677,7 +720,8 @@ void main() {
 
     Future<void> openTrash(WidgetTester tester) async {
       await openAuthenticator(tester);
-      await tester.tap(find.byTooltip('Çöp kutusu'));
+      await openScreenMenu(tester);
+      await tester.tap(find.text('Çöp kutusu'));
       await settle(tester);
     }
 
