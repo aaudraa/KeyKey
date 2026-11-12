@@ -27,6 +27,11 @@ class AppShell extends StatelessWidget {
           final branch = navigationShell.route.branches[index];
           branch.navigatorKey.currentState?.maybePop();
         },
+        // "+" kutusu Görev 5'te bağlanır.
+        onAdd: () {},
+        addOpen: false,
+        addLabel: l10n.vaultAdd,
+        closeLabel: l10n.otpClose,
         items: [
           GlassNavItem(
             icon: Icons.lock_outline,
