@@ -1670,5 +1670,13 @@
       }
     }
   },
-  "backupStatusAction": "Back up"
+  "backupStatusAction": "Back up",
+  "autofillMatchCount": "{count, plural, =1{1 match} other{{count} matches}}",
+  "@autofillMatchCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

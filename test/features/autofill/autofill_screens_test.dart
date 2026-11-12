@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keykey/app/ui/keykey_logo.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/features/authenticator/application/otp_clock.dart';
 import 'package:keykey/features/authenticator/application/otp_generator.dart';
@@ -665,6 +666,18 @@ void main() {
 
       expect(find.text('Bu uygulama sahte olabilir'), findsOneWidget);
       expect(find.text('Uygulamayı bu kayda bağla'), findsNothing);
+      // Tehlikeli seçenek turuncu geçişli ana düğme gibi görünmemeli.
+      final fill = find.widgetWithText(FilledButton, 'Yine de doldur');
+      final error = Theme.of(tester.element(fill)).colorScheme.error;
+      final painted = tester
+          .widgetList<DecoratedBox>(
+            find.descendant(of: fill, matching: find.byType(DecoratedBox)),
+          )
+          .map((box) => box.decoration)
+          .whereType<ShapeDecoration>()
+          .toList();
+      expect(painted.any((d) => d.gradient != null), isFalse);
+      expect(painted.any((d) => d.color == error), isTrue);
       await tester.tap(find.text('Vazgeç'));
       await tester.pumpAndSettle();
       expect(bridge.filled, isNull);
@@ -782,6 +795,68 @@ void main() {
         1000,
       );
       await tester.pump();
+
+      expect(bridge.cancelled, isTrue);
+      expect(bridge.filled, isNull);
+    });
+
+    testWidgets('pencere arkadaki uygulamayı bulanıklaştırmıyor', (
+      tester,
+    ) async {
+      await pumpAutofill(tester, status: VaultOpen(service.newSession()));
+      expect(find.byType(BackdropFilter), findsNothing);
+    });
+
+    testWidgets('başlıkta logo ve eşleşme sayısı var', (tester) async {
+      await pumpAutofill(tester, status: VaultOpen(service.newSession()));
+      expect(inFrame(find.byType(KeyKeyLogo)), findsOneWidget);
+      expect(inFrame(find.text('2 eşleşme')), findsOneWidget);
+    });
+
+    testWidgets('tutamaç biraz çekilip bırakılınca pencere yerine dönüyor', (
+      tester,
+    ) async {
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+      );
+      final handle = find.byKey(AutofillSheetFrame.handleKey);
+      final start = tester.getTopLeft(handle).dy;
+
+      final gesture = await tester.startGesture(tester.getCenter(handle));
+      for (var i = 0; i < 4; i++) {
+        await gesture.moveBy(const Offset(0, 10));
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      // Pencere parmağı izliyor.
+      expect(tester.getTopLeft(handle).dy, greaterThan(start + 30));
+      await tester.pump(const Duration(milliseconds: 300));
+      await gesture.up();
+      await tester.pumpAndSettle();
+
+      expect(tester.getTopLeft(handle).dy, start);
+      expect(bridge.cancelled, isFalse);
+    });
+
+    testWidgets('yarıdan fazla çekince pencere kapanıyor', (tester) async {
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+      );
+      final handle = find.byKey(AutofillSheetFrame.handleKey);
+      final sheetHeight =
+          tester.getSize(find.byType(AutofillSheetFrame)).height -
+          tester.getTopLeft(handle).dy;
+
+      final gesture = await tester.startGesture(tester.getCenter(handle));
+      final steps = (sheetHeight * 0.6 / 10).ceil();
+      for (var i = 0; i < steps; i++) {
+        await gesture.moveBy(const Offset(0, 10));
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      await tester.pump(const Duration(milliseconds: 300));
+      await gesture.up();
+      await tester.pumpAndSettle();
 
       expect(bridge.cancelled, isTrue);
       expect(bridge.filled, isNull);

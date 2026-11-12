@@ -186,19 +186,7 @@ Future<bool> showKkConfirm(
             ],
             const SizedBox(height: 24),
             FilledButton(
-              style: destructive
-                  ? ButtonStyle(
-                      foregroundColor: WidgetStatePropertyAll(scheme.onError),
-                      backgroundBuilder: (context, states, child) =>
-                          DecoratedBox(
-                            decoration: ShapeDecoration(
-                              shape: const StadiumBorder(),
-                              color: scheme.error,
-                            ),
-                            child: child,
-                          ),
-                    )
-                  : null,
+              style: destructive ? kkDangerButtonStyle(scheme) : null,
               onPressed: () => Navigator.of(context).pop(true),
               child: Text(confirmLabel),
             ),
@@ -214,3 +202,18 @@ Future<bool> showKkConfirm(
   );
   return result ?? false;
 }
+
+/// Geri alınamayan ya da tehlikeli işin düğmesi: temadaki turuncu geçiş
+/// yerine düz hata rengi.
+ButtonStyle kkDangerButtonStyle(ColorScheme scheme) => ButtonStyle(
+  foregroundColor: WidgetStatePropertyAll(scheme.onError),
+  backgroundBuilder: (context, states, child) => DecoratedBox(
+    decoration: ShapeDecoration(
+      shape: const StadiumBorder(),
+      color: states.contains(WidgetState.disabled)
+          ? scheme.error.withValues(alpha: 0.38)
+          : scheme.error,
+    ),
+    child: child,
+  ),
+);

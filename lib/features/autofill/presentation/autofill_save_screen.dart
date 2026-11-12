@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/secret_field.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/autofill/application/autofill_bridge.dart';
 import 'package:keykey/features/autofill/application/autofill_matches.dart';
@@ -233,7 +234,7 @@ class _ExistingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final name = item.content.name.isEmpty ? '—' : item.content.name;
-    return Card(
+    return GlassSurface(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -248,11 +249,11 @@ class _ExistingCard extends StatelessWidget {
             Align(
               alignment: AlignmentDirectional.centerEnd,
               child: samePassword
-                  ? FilledButton.tonal(
+                  ? OutlinedButton(
                       onPressed: onClose,
                       child: Text(l10n.autofillClose),
                     )
-                  : FilledButton.tonal(
+                  : OutlinedButton(
                       onPressed: busy ? null : onUpdate,
                       child: Text(l10n.autofillSaveUpdate),
                     ),

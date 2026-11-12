@@ -376,5 +376,13 @@
       }
     }
   },
-  "backupStatusAction": "Yedekle"
+  "backupStatusAction": "Yedekle",
+  "autofillMatchCount": "{count, plural, other{{count} eşleşme}}",
+  "@autofillMatchCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

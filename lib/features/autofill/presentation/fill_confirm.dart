@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/features/autofill/application/autofill_bridge.dart';
 import 'package:keykey/features/autofill/domain/fill_warnings.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
@@ -149,12 +150,7 @@ class _FillConfirmContentState extends State<FillConfirmContent> {
                 child: Text(l10n.autofillCancel),
               ),
               FilledButton(
-                style: danger
-                    ? FilledButton.styleFrom(
-                        backgroundColor: theme.colorScheme.error,
-                        foregroundColor: theme.colorScheme.onError,
-                      )
-                    : null,
+                style: danger ? kkDangerButtonStyle(theme.colorScheme) : null,
                 onPressed: () => widget.onConfirm(bind: _bind),
                 child: Text(l10n.autofillFillAnyway),
               ),

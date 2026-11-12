@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/app/ui/kk_card.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/features/authenticator/application/otp_clock.dart';
@@ -282,6 +283,9 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
       children: [
         AutofillSheetHeader(
           title: l10n.autofillFor(targetName),
+          info: matched.isEmpty
+              ? null
+              : l10n.autofillMatchCount(matched.length),
           onClose: cancel,
         ),
         Flexible(
@@ -318,12 +322,15 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
           child: Focus(
             onFocusChange: (focused) =>
                 setState(() => _searchFocused = focused),
-            child: SecretField(
-              controller: _query,
-              label: l10n.autofillSearchOther,
-              obscure: false,
-              textInputAction: TextInputAction.search,
-              onChanged: (_) => setState(() {}),
+            child: GlassSurface(
+              padding: const EdgeInsets.all(4),
+              child: SecretField(
+                controller: _query,
+                label: l10n.autofillSearchOther,
+                obscure: false,
+                textInputAction: TextInputAction.search,
+                onChanged: (_) => setState(() {}),
+              ),
             ),
           ),
         ),
