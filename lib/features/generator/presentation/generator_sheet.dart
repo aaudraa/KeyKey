@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/features/generator/application/password_generator.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
@@ -99,8 +100,14 @@ class _GeneratorSheetState extends ConsumerState<GeneratorSheet> {
                   _update(() => _mode = selection.single),
             ),
             const SizedBox(height: 16),
-            Card(
+            GlassSurface(
               child: ListTile(
+                contentPadding: const EdgeInsetsDirectional.fromSTEB(
+                  16,
+                  8,
+                  8,
+                  8,
+                ),
                 title: Text(
                   _value.isEmpty
                       ? '—'
@@ -108,7 +115,10 @@ class _GeneratorSheetState extends ConsumerState<GeneratorSheet> {
                       ? _value
                       : '•' * 12,
                   key: const Key('generator-value'),
-                  style: const TextStyle(fontFamily: 'monospace'),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontFamily: 'monospace',
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 subtitle: Text(l10n.generatorBits(bits.round())),
                 trailing: Row(
@@ -125,7 +135,10 @@ class _GeneratorSheetState extends ConsumerState<GeneratorSheet> {
                     ),
                     IconButton(
                       tooltip: l10n.generatorRegenerate,
-                      icon: const Icon(Icons.refresh),
+                      icon: Icon(
+                        Icons.refresh_rounded,
+                        color: KkGlass.of(context).accent,
+                      ),
                       onPressed: () => _update(() {}),
                     ),
                   ],

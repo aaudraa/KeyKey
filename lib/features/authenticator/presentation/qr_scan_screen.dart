@@ -4,6 +4,9 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_zxing/flutter_zxing.dart';
+import 'package:keykey/app/ui/kk_backdrop.dart';
+import 'package:keykey/app/ui/kk_bars.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/features/authenticator/application/scanned_code.dart';
 import 'package:keykey/features/authenticator/presentation/scanned_code_handler.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
@@ -126,13 +129,14 @@ class _QrScanScreenState extends ConsumerState<QrScanScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final camera = ref.watch(qrCameraProvider);
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.otpAddScan),
+    return KkScaffold(
+      appBar: kkAppBar(
+        context,
+        title: l10n.otpAddScan,
         actions: [
-          IconButton(
+          KkCircleButton(
+            icon: Icons.image_rounded,
             tooltip: l10n.otpAddImage,
-            icon: const Icon(Icons.image_outlined),
             onPressed: _readImageInstead,
           ),
         ],
@@ -141,28 +145,31 @@ class _QrScanScreenState extends ConsumerState<QrScanScreen> {
           ? Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.no_photography_outlined, size: 48),
-                    const SizedBox(height: 16),
-                    Text(
-                      l10n.otpCameraUnavailable,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-                    FilledButton.icon(
-                      onPressed: _readImageInstead,
-                      icon: const Icon(Icons.image_outlined),
-                      label: Text(l10n.otpAddImage),
-                    ),
-                  ],
+                child: GlassSurface(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.no_photography_outlined, size: 48),
+                      const SizedBox(height: 16),
+                      Text(
+                        l10n.otpCameraUnavailable,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      FilledButton.icon(
+                        onPressed: _readImageInstead,
+                        icon: const Icon(Icons.image_outlined),
+                        label: Text(l10n.otpAddImage),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             )
-          : Column(
+          : Stack(
               children: [
-                Expanded(
+                Positioned.fill(
                   child: camera(
                     onText: _onText,
                     onUnavailable: () {
@@ -170,9 +177,22 @@ class _QrScanScreenState extends ConsumerState<QrScanScreen> {
                     },
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(l10n.otpScanHint, textAlign: TextAlign.center),
+                // Açıklama kamera görüntüsünün üstünde, güçlü camda.
+                Positioned(
+                  left: 16,
+                  right: 16,
+                  bottom: 16,
+                  child: SafeArea(
+                    top: false,
+                    child: GlassSurface(
+                      strong: true,
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        l10n.otpScanHint,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

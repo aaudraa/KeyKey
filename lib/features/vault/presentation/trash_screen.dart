@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:keykey/app/ui/kk_backdrop.dart';
+import 'package:keykey/app/ui/kk_bars.dart';
+import 'package:keykey/app/ui/kk_card.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
+import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
@@ -15,8 +20,8 @@ class TrashScreen extends ConsumerWidget {
     final state = ref.watch(loginsControllerProvider);
     final controller = ref.read(loginsControllerProvider.notifier);
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.trashTitle)),
+    return KkScaffold(
+      appBar: kkAppBar(context, title: l10n.trashTitle),
       body: switch (state) {
         LoginsLoading() => const Center(child: CircularProgressIndicator()),
         LoginsLoaded(:final trashed) => Column(
@@ -30,32 +35,45 @@ class TrashScreen extends ConsumerWidget {
             Expanded(
               child: trashed.isEmpty
                   ? Center(child: Text(l10n.trashEmpty))
-                  : ListView(
-                      children: [
-                        for (final item in trashed)
-                          ListTile(
-                            title: Text(item.content.name),
-                            subtitle: item.content.username.isEmpty
-                                ? null
-                                : Text(item.content.username),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  tooltip: l10n.trashRestore,
-                                  icon: const Icon(Icons.restore),
-                                  onPressed: () => controller.restore(item),
-                                ),
-                                IconButton(
-                                  tooltip: l10n.trashDelete,
-                                  icon: const Icon(Icons.delete_forever),
-                                  onPressed: () =>
-                                      _confirmDelete(context, controller, item),
-                                ),
-                              ],
-                            ),
+                  : ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      itemCount: trashed.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 8),
+                      itemBuilder: (context, index) {
+                        final item = trashed[index];
+                        return KkCard(
+                          leading: RecordAvatar(
+                            login: item.content,
+                            name: item.content.name,
                           ),
-                      ],
+                          title: Text(item.content.name),
+                          subtitle: item.content.username.isEmpty
+                              ? null
+                              : Text(item.content.username),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                tooltip: l10n.trashRestore,
+                                icon: Icon(
+                                  Icons.restore_rounded,
+                                  color: KkGlass.of(context).accent,
+                                ),
+                                onPressed: () => controller.restore(item),
+                              ),
+                              IconButton(
+                                tooltip: l10n.trashDelete,
+                                icon: Icon(
+                                  Icons.delete_forever_rounded,
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
+                                onPressed: () =>
+                                    _confirmDelete(context, controller, item),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
             ),
           ],
