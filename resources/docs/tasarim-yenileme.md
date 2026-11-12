@@ -1,5 +1,7 @@
 # KeyKey Tasarım Yenilemesi
 
+> **2026-11-12:** Bu belgenin "Görsel dil" ve "Ekranlar" bölümlerinin yerini [cam tasarım belgesi](tasarim-cam.md) aldı. "Otomatik doldurma" bölümündeki davranış kuralları ve simge kararı geçerliliğini koruyor.
+
 Faz 9'daki tasarım incelemesinin ([#103](https://github.com/aaudraa/KeyKey/issues/103)) tasarım belgesi. 2026-11-10'da proje sahibiyle birlikte örnek ekranlar üzerinden kararlaştırıldı. Bu belge neyin yapılacağını anlatır; nasıl ve hangi sırayla yapılacağı ayrı bir planda yazılır.
 
 ## Neden
