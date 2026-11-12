@@ -4,6 +4,7 @@ import 'package:keykey/features/generator/application/password_generator.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:sodium/sodium_sumo.dart';
 
+import '../../support/add_flow.dart';
 import '../../support/fake_vault_service.dart';
 
 void main() {
@@ -27,8 +28,7 @@ void main() {
       service: service,
       logins: logins,
     );
-    await tester.tap(find.text('Ekle'));
-    await tester.pumpAndSettle();
+    await openAddPassword(tester);
     await tester.tap(find.byTooltip('Parola üret'));
     await tester.pumpAndSettle();
   }

@@ -10,6 +10,7 @@ import 'package:keykey/features/vault/presentation/login_ids.dart';
 import 'package:keykey/features/vault/presentation/vault_screen.dart';
 import 'package:sodium/sodium_sumo.dart';
 
+import '../../support/add_flow.dart';
 import '../../support/fake_vault_service.dart';
 
 void main() {
@@ -250,8 +251,7 @@ void main() {
     testWidgets('yeni kayıt ekleniyor ve listede görünüyor', (tester) async {
       await pumpVault(tester);
 
-      await tester.tap(find.text('Ekle'));
-      await tester.pumpAndSettle();
+      await openAddPassword(tester);
       final save = find.widgetWithText(TextButton, 'Kaydet');
       expect(tester.widget<TextButton>(save).onPressed, isNull);
 
@@ -282,8 +282,7 @@ void main() {
 
     testWidgets('form kutularında klavye öğrenmesi kapalı', (tester) async {
       await pumpVault(tester);
-      await tester.tap(find.text('Ekle'));
-      await tester.pumpAndSettle();
+      await openAddPassword(tester);
 
       final fields = tester.widgetList<TextField>(find.byType(TextField));
       expect(fields.length, greaterThanOrEqualTo(6));
@@ -317,8 +316,7 @@ void main() {
 
     testWidgets('kaydedilmeden çıkarken onay isteniyor', (tester) async {
       await pumpVault(tester);
-      await tester.tap(find.text('Ekle'));
-      await tester.pumpAndSettle();
+      await openAddPassword(tester);
       await tester.enterText(find.widgetWithText(TextField, 'Ad'), 'Yarım');
       await tester.pump();
 
@@ -485,8 +483,7 @@ void main() {
 
   testWidgets('yazmak otomatik kilit süresini yeniliyor', (tester) async {
     await pumpVault(tester);
-    await tester.tap(find.text('Ekle'));
-    await tester.pumpAndSettle();
+    await openAddPassword(tester);
 
     for (var i = 0; i < 3; i++) {
       await tester.pump(const Duration(minutes: 4));

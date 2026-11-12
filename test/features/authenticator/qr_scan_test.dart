@@ -9,6 +9,7 @@ import 'package:keykey/features/authenticator/data/otpauth_uri.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:sodium/sodium_sumo.dart';
 
+import '../../support/add_flow.dart';
 import '../../support/fake_vault_service.dart';
 
 void main() {
@@ -106,10 +107,7 @@ void main() {
       );
       await tester.tap(find.byIcon(Icons.shield_outlined));
       await settle(tester);
-      await tester.tap(find.text('Ekle'));
-      await settle(tester);
-      await tester.tap(find.text(option));
-      await settle(tester);
+      await openAddOtp(tester, option, settle: () => settle(tester));
     }
 
     testWidgets('kamerayla okunan hesap onaydan sonra kaydediliyor', (

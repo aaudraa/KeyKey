@@ -70,15 +70,6 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        // Sekmeler aynı anda ağaçta durur, varsayılan Hero etiketi çakışır.
-        heroTag: 'vault-add',
-        onPressed: state is LoginsLoaded
-            ? () => context.push(AppRoutes.vaultNew)
-            : null,
-        icon: const Icon(Icons.add),
-        label: Text(l10n.vaultAdd),
-      ),
       body: switch (state) {
         LoginsLoading() => const Center(child: CircularProgressIndicator()),
         LoginsLoaded() => _loaded(context, l10n, state),
@@ -166,7 +157,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
                     16,
                     4,
                     16,
-                    navClearance(context) + 72,
+                    navClearance(context),
                   ),
                   itemCount: visible.length,
                   separatorBuilder: (_, _) => const SizedBox(height: 8),

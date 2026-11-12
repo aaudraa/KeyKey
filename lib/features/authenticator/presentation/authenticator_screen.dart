@@ -20,12 +20,9 @@ import 'package:keykey/features/authenticator/presentation/otp_clock_builder.dar
 import 'package:keykey/features/authenticator/presentation/otp_code_tile.dart';
 import 'package:keykey/features/authenticator/presentation/otp_display.dart';
 import 'package:keykey/features/authenticator/presentation/otp_gate.dart';
-import 'package:keykey/features/authenticator/presentation/scanned_code_handler.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
-
-enum _AddOption { scan, image, manual, import }
 
 /// 2FA kodlarının listesi.
 ///
@@ -113,65 +110,6 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
     }
   }
 
-  Future<void> _showAddOptions() async {
-    final l10n = AppLocalizations.of(context);
-    final option = await showModalBottomSheet<_AddOption>(
-      context: context,
-      showDragHandle: true,
-      // Küçük ekranlarda seçenekler sığmazsa kaydırılır.
-      isScrollControlled: true,
-      builder: (context) => SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: Text(
-                  l10n.otpAddTitle,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.qr_code_scanner),
-                title: Text(l10n.otpAddScan),
-                onTap: () => Navigator.pop(context, _AddOption.scan),
-              ),
-              ListTile(
-                leading: const Icon(Icons.image_outlined),
-                title: Text(l10n.otpAddImage),
-                onTap: () => Navigator.pop(context, _AddOption.image),
-              ),
-              ListTile(
-                leading: const Icon(Icons.keyboard_outlined),
-                title: Text(l10n.otpAddManual),
-                onTap: () => Navigator.pop(context, _AddOption.manual),
-              ),
-              ListTile(
-                leading: const Icon(Icons.download_outlined),
-                title: Text(l10n.otpAddImport),
-                onTap: () => Navigator.pop(context, _AddOption.import),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-    if (!mounted) return;
-    switch (option) {
-      case _AddOption.scan:
-        await context.push(AppRoutes.authenticatorScan);
-      case _AddOption.image:
-        await readQrFromImage(context, ref, replace: false);
-      case _AddOption.manual:
-        await context.push(AppRoutes.authenticatorNew);
-      case _AddOption.import:
-        await importFromFile(context, ref);
-      case null:
-        return;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -193,13 +131,6 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
             onPressed: () => context.push(AppRoutes.authenticatorTrash),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        // Sekmeler aynı anda ağaçta durur, varsayılan Hero etiketi çakışır.
-        heroTag: 'otp-add',
-        onPressed: state is OtpsLoaded ? _showAddOptions : null,
-        icon: const Icon(Icons.add),
-        label: Text(l10n.vaultAdd),
       ),
       body: switch (state) {
         OtpsLoading() => const Center(child: CircularProgressIndicator()),
@@ -266,7 +197,7 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
                       16,
                       4,
                       16,
-                      navClearance(context) + 72,
+                      navClearance(context),
                     ),
                     itemCount: visible.length,
                     separatorBuilder: (context, index) =>

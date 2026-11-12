@@ -140,7 +140,9 @@ void main() {
     debugPrint('KKADIM Hesap elle ekleniyor.');
     await tester.tap(_otpTab());
     await pumpUntilFound(tester, find.textContaining('Henüz 2FA hesabı yok'));
-    await tapText(tester, 'Ekle');
+    await tester.tap(find.byKey(GlassNavBar.addKey));
+    await pumpUntilFound(tester, find.text('2FA kodu'));
+    await tapText(tester, '2FA kodu');
     await pumpUntilFound(tester, find.text('Anahtarı elle gir'));
     await tapText(tester, 'Anahtarı elle gir');
     await pumpUntilFound(tester, find.text('Yeni 2FA hesabı'));

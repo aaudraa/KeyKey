@@ -335,5 +335,12 @@
   "reportOpenHint": "Parolasını değiştirmek için kayda dokun.",
   "otpNoCode": "Henüz kod yok",
   "secretConcealed": "Gizli",
-  "favoriteMark": "Favori"
+  "favoriteMark": "Favori",
+  "addTitle": "Ne eklemek istiyorsun?",
+  "addPassword": "Parola",
+  "addPasswordHint": "Site ya da uygulama girişi",
+  "addOtp": "2FA kodu",
+  "addOtpHint": "QR tara, elle gir ya da içe aktar",
+  "addBack": "Geri",
+  "addClose": "Kapat"
 }

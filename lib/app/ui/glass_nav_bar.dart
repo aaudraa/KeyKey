@@ -28,6 +28,7 @@ class GlassNavBar extends StatelessWidget {
     required this.addOpen,
     required this.addLabel,
     required this.closeLabel,
+    this.tabsHidden = false,
     super.key,
   });
 
@@ -53,6 +54,10 @@ class GlassNavBar extends StatelessWidget {
   final bool addOpen;
   final String addLabel;
   final String closeLabel;
+
+  /// "+" kutusu açıkken sekmeler ekran okuyucudan gizlenir; odak kutuda
+  /// kalır.
+  final bool tabsHidden;
 
   /// Ad ve "Sekme 1/3": eski NavigationBar ile aynı okunuş.
   String _semanticLabel(MaterialLocalizations l, int i) =>
@@ -124,12 +129,15 @@ class GlassNavBar extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         for (var i = 0; i < items.length; i++)
-                          _NavTab(
-                            item: items[i],
-                            selected: i == selectedIndex,
-                            showLabel: showLabel,
-                            semanticLabel: _semanticLabel(localizations, i),
-                            onTap: () => onSelected(i),
+                          ExcludeSemantics(
+                            excluding: tabsHidden,
+                            child: _NavTab(
+                              item: items[i],
+                              selected: i == selectedIndex,
+                              showLabel: showLabel,
+                              semanticLabel: _semanticLabel(localizations, i),
+                              onTap: () => onSelected(i),
+                            ),
                           ),
                         Padding(
                           padding: const EdgeInsets.symmetric(

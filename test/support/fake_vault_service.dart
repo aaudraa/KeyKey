@@ -619,6 +619,7 @@ Future<void> pumpKeyKey(
   FakeRestoreService? restores,
   AppPackages? packages,
   Locale locale = const Locale('tr'),
+  bool settle = true,
 }) async {
   tester.platformDispatcher.localesTestValue = [locale];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
@@ -668,5 +669,9 @@ Future<void> pumpKeyKey(
       child: const KeyKeyApp(),
     ),
   );
-  await tester.pumpAndSettle();
+  if (settle) {
+    await tester.pumpAndSettle();
+  } else {
+    await tester.pump();
+  }
 }

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/features/authenticator/data/base32.dart';
 import 'package:keykey/features/authenticator/data/otp_content.dart';
 import 'package:keykey/features/authenticator/data/otp_parameters.dart';
@@ -11,6 +12,7 @@ import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:sodium/sodium_sumo.dart';
 
+import '../../support/add_flow.dart';
 import '../../support/fake_vault_service.dart';
 
 void main() {
@@ -365,10 +367,11 @@ void main() {
   group('elle ekleme', () {
     Future<void> openForm(WidgetTester tester) async {
       await openAuthenticator(tester);
-      await tester.tap(find.text('Ekle'));
-      await settle(tester);
-      await tester.tap(find.text('Anahtarı elle gir'));
-      await settle(tester);
+      await openAddOtp(
+        tester,
+        'Anahtarı elle gir',
+        settle: () => settle(tester),
+      );
     }
 
     testWidgets('anahtar ve servis adıyla kaydediliyor', (tester) async {
@@ -391,14 +394,14 @@ void main() {
       expect(find.text('Yeni'), findsOneWidget);
     });
 
-    testWidgets('etkin sekmeye dokunmak kaydedilmemişi sormadan silmiyor', (
-      tester,
-    ) async {
+    testWidgets('geri tuşu kaydedilmemişi sormadan silmiyor', (tester) async {
       await openForm(tester);
+      // Form ekranında alt menü yok; geri tuşu tek çıkış yolu.
+      expect(find.byType(GlassNavBar), findsNothing);
       await tester.enterText(find.widgetWithText(TextField, 'Servis'), 'Yarım');
       await settle(tester);
 
-      await tester.tap(find.byIcon(Icons.shield));
+      await tester.binding.handlePopRoute();
       await settle(tester);
       expect(find.text('Değişiklikler silinsin mi?'), findsOneWidget);
       await tester.tap(find.text('Düzenlemeye devam et'));
@@ -406,7 +409,7 @@ void main() {
       expect(find.text('Yeni 2FA hesabı'), findsOneWidget);
       expect(find.widgetWithText(TextField, 'Yarım'), findsOneWidget);
 
-      await tester.tap(find.byIcon(Icons.shield));
+      await tester.binding.handlePopRoute();
       await settle(tester);
       await tester.tap(find.text('Sil'));
       await settle(tester);
@@ -414,10 +417,10 @@ void main() {
       expect(otps.items, hasLength(3));
     });
 
-    testWidgets('boş formda etkin sekme listeye döndürüyor', (tester) async {
+    testWidgets('boş formda geri tuşu listeye döndürüyor', (tester) async {
       await openForm(tester);
 
-      await tester.tap(find.byIcon(Icons.shield));
+      await tester.binding.handlePopRoute();
       await settle(tester);
 
       expect(find.text('Yeni 2FA hesabı'), findsNothing);

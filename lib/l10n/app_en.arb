@@ -1640,5 +1640,12 @@
   "favoriteMark": "Favorite",
   "@favoriteMark": {
     "description": "Screen reader label of the star on favorite items."
-  }
+  },
+  "addTitle": "What do you want to add?",
+  "addPassword": "Password",
+  "addPasswordHint": "A site or app sign-in",
+  "addOtp": "2FA code",
+  "addOtpHint": "Scan a QR code, type it in or import",
+  "addBack": "Back",
+  "addClose": "Close"
 }

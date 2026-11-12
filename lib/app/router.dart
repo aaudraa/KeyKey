@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/app_shell.dart';
@@ -91,7 +91,10 @@ final routerProvider = Provider<GoRouter>((ref) {
     ..listen(vaultControllerProvider, (_, _) => statusChanges.value++)
     ..onDispose(statusChanges.dispose);
 
+  // Form ekranları kök gezginde açılır; alt menünün üstünü örterler.
+  final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'kök');
   final router = GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: AppRoutes.vault,
     refreshListenable: statusChanges,
     redirect: (context, state) =>
@@ -139,6 +142,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) => const VaultScreen(),
                 routes: [
                   GoRoute(
+                    parentNavigatorKey: rootNavigatorKey,
                     path: 'yeni',
                     builder: (context, state) => const LoginEditScreen(),
                   ),
@@ -156,6 +160,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                         LoginDetailScreen(idHex: state.pathParameters['id']!),
                     routes: [
                       GoRoute(
+                        parentNavigatorKey: rootNavigatorKey,
                         path: 'duzenle',
                         builder: (context, state) =>
                             LoginEditScreen(idHex: state.pathParameters['id']),
@@ -173,6 +178,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) => const AuthenticatorScreen(),
                 routes: [
                   GoRoute(
+                    parentNavigatorKey: rootNavigatorKey,
                     path: 'yeni',
                     // QR'dan okunan hesap onay için forma dolu gelir.
                     builder: (context, state) => OtpEditScreen(
@@ -187,6 +193,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                     builder: (context, state) => const QrScanScreen(),
                   ),
                   GoRoute(
+                    parentNavigatorKey: rootNavigatorKey,
                     path: 'ice-aktar',
                     // Okunan hesaplar yalnızca bellekte, ekrana doğrudan
                     // verilir. Kaynak yoksa, örneğin uygulama yeniden
@@ -202,6 +209,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                     builder: (context, state) => const OtpTrashScreen(),
                   ),
                   GoRoute(
+                    parentNavigatorKey: rootNavigatorKey,
                     path: 'hesap/:id/duzenle',
                     builder: (context, state) =>
                         OtpEditScreen(idHex: state.pathParameters['id']),
@@ -217,10 +225,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) => const SettingsScreen(),
                 routes: [
                   GoRoute(
+                    parentNavigatorKey: rootNavigatorKey,
                     path: 'parola',
                     builder: (context, state) => const ChangePasswordScreen(),
                   ),
                   GoRoute(
+                    parentNavigatorKey: rootNavigatorKey,
                     path: 'ice-aktar',
                     // Okunan dosya yalnızca bellekte, ekrana doğrudan verilir.
                     // Yoksa, örneğin uygulama yeniden açıldıysa, ayarlara
