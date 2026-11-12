@@ -104,6 +104,23 @@ void main() {
     expect(tester.binding.hasScheduledFrame, isFalse);
   });
 
+  testWidgets('animasyon ayarı açılıp kapanınca kayan zemin çökmüyor', (
+    tester,
+  ) async {
+    for (final off in [false, true, false, true, false]) {
+      await tester.pumpWidget(
+        _host(
+          AppTheme.light,
+          const KkBackdrop(drifting: true),
+          disableAnimations: off,
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(tester.takeException(), isNull);
+    expect(tester.binding.hasScheduledFrame, isTrue);
+  });
+
   testWidgets('animasyonlar kapalıyken kayan zemin de durur', (tester) async {
     await tester.pumpWidget(
       _host(

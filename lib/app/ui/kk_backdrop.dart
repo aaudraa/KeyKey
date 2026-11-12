@@ -23,8 +23,9 @@ class KkBackdrop extends StatefulWidget {
   State<KkBackdrop> createState() => _KkBackdropState();
 }
 
-class _KkBackdropState extends State<KkBackdrop>
-    with SingleTickerProviderStateMixin {
+// Animasyon ayarı değişince denetleyici yeniden kurulur; bu yüzden tek
+// zamanlayıcılı karışım yetmez.
+class _KkBackdropState extends State<KkBackdrop> with TickerProviderStateMixin {
   AnimationController? _drift;
 
   @override
