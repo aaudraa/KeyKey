@@ -236,16 +236,14 @@ abstract final class AppTheme {
           (states) => states.contains(WidgetState.selected) ? accent : muted,
         ),
       ),
-      // Görev 3'te pencereyi showKkSheet cam olarak çizince saydam olacak.
-      bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: surface,
-        modalBackgroundColor: surface,
+      // Pencerenin camını showKkSheet çizer.
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: Colors.transparent,
+        modalBackgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
-        showDragHandle: true,
-        dragHandleColor: glass.border,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-        ),
+        elevation: 0,
+        modalElevation: 0,
+        showDragHandle: false,
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: surface,

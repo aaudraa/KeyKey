@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/features/generator/application/password_generator.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Parola üretici. Seçilen parolayı döndürür, vazgeçilirse `null`.
 Future<String?> showGeneratorSheet(BuildContext context) {
-  return showModalBottomSheet<String>(
-    context: context,
-    isScrollControlled: true,
-    showDragHandle: true,
+  return showKkSheet<String>(
+    context,
     builder: (context) => const GeneratorSheet(),
   );
 }

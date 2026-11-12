@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:keykey/app/theme.dart';
 
 /// Cam yüzeylerin ve renkli zeminin renkleri. Değerler
 /// `resources/docs/tasarim-cam-plani.md` belgesindeki tabloda.
@@ -59,8 +60,14 @@ class KkGlass extends ThemeExtension<KkGlass> {
   /// Lekenin merkezindeki görünürlük.
   final double blobAlpha;
 
-  static KkGlass of(BuildContext context) =>
-      Theme.of(context).extension<KkGlass>()!;
+  /// Temada yoksa (ör. temasız test uygulaması) parlaklığa uyan KeyKey
+  /// değerleri.
+  static KkGlass of(BuildContext context) {
+    final theme = Theme.of(context);
+    return theme.extension<KkGlass>() ??
+        (theme.brightness == Brightness.dark ? AppTheme.dark : AppTheme.light)
+            .extension<KkGlass>()!;
+  }
 
   /// Zemin ve her lekenin en koyu (koyu temada en açık) noktası. Kontrast bu
   /// renklere göre ölçülür.

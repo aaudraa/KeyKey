@@ -127,4 +127,48 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('pencere cam: arkasını bulanıklaştırır', (tester) async {
+    await _openConfirm(tester);
+    expect(
+      find.descendant(
+        of: find.byType(BottomSheet),
+        matching: find.byType(BackdropFilter),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('animasyonlar kapalıyken pencere hemen yerinde', (tester) async {
+    late BuildContext ctx;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(disableAnimations: true),
+          child: child!,
+        ),
+        home: Builder(
+          builder: (context) {
+            ctx = context;
+            return const Scaffold();
+          },
+        ),
+      ),
+    );
+    unawaited(
+      showKkConfirm(
+        ctx,
+        title: 'Silinsin mi?',
+        confirmLabel: 'Sil',
+        cancelLabel: 'Vazgeç',
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('Sil'), findsOneWidget);
+    expect(tester.binding.hasScheduledFrame, isFalse);
+    final bottom = tester.getRect(find.text('Vazgeç')).bottom;
+    expect(bottom, lessThan(600));
+  });
 }
