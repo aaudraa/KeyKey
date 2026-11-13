@@ -60,7 +60,7 @@ K logosu marka işaretidir, kontrast kuralından muaftır.
 
 ## Aşama 0: Renkler
 
-### Görev 1: Siyah-beyaz tema ve turuncunun dört yere çekilmesi
+### Task 1: Siyah-beyaz tema ve turuncunun dört yere çekilmesi
 
 **Dosyalar:**
 - Değişir: `lib/app/theme.dart`, `lib/app/ui/kk_glass.dart`, `lib/app/ui/glass_nav_bar.dart` (`_AddButton`, seçili sekme), `lib/app/ui/kk_sheet.dart` (tutamak, `kkDangerButtonStyle`), `lib/features/authenticator/presentation/otp_ring.dart`, `lib/features/generator/presentation/password_strength_meter.dart`, `lib/features/backup/presentation/backup_status_card.dart`
@@ -76,7 +76,7 @@ K logosu marka işaretidir, kontrast kuralından muaftır.
 - [ ] **Adım 5: Çalıştır, yeşil.** Hedef testler PASS; ardından `flutter test` tamamı. Renk değerine bağlı eski testler (ör. avatar, nav) yeni değerlere güncellenir.
 - [ ] **Adım 6: Commit + push.** `özellik(tema): siyah-beyaz renkler, turuncu dört yerde`
 
-### Görev 2: Kutusuz simgeler ve logo
+### Task 2: Kutusuz simgeler ve logo
 
 **Dosyalar:**
 - Değişir: `lib/app/ui/record_avatar.dart`, `lib/app/ui/kk_section.dart` (`KkIconBox`), `lib/app/ui/keykey_logo.dart`, `lib/app/theme.dart` (`avatarPalette` kalkar)
@@ -93,7 +93,7 @@ K logosu marka işaretidir, kontrast kuralından muaftır.
 
 ## Aşama 1: Ölçüler
 
-### Görev 3: Küçük ölçüler
+### Task 3: Küçük ölçüler
 
 **Dosyalar:**
 - Yeni: `lib/app/ui/kk_metrics.dart`
@@ -110,7 +110,7 @@ K logosu marka işaretidir, kontrast kuralından muaftır.
 - [ ] **Adım 4: Çalıştır, yeşil;** sonra `flutter test` tamamı (boya bağlı eski ölçü testleri yeni değerlere çekilir) ve `flutter test test/accessibility`.
 - [ ] **Adım 5: Commit + push.** `özellik(arayüz): daha küçük yazı, satır ve düğmeler`
 
-### Görev 4: Küçük anahtar ve (i)'nin yeri
+### Task 4: Küçük anahtar ve (i)'nin yeri
 
 **Dosyalar:**
 - Yeni: `lib/app/ui/kk_switch.dart`
@@ -127,7 +127,7 @@ K logosu marka işaretidir, kontrast kuralından muaftır.
 - [ ] **Adım 5: Çalıştır, yeşil;** `flutter test` tamamı.
 - [ ] **Adım 6: Commit + push.** `özellik(ayarlar): küçük anahtar, bilgi düğmesi anahtarın solunda`
 
-### Görev 5: Telefonda deneme 1 (görünüm)
+### Task 5: Telefonda deneme 1 (görünüm)
 
 - [ ] **Adım 1:** Entegrasyon testleri Android 11, 14, 17 emülatörlerinde (`-gpu host`), `flutter test integration_test -d <cihaz>`; hepsi PASS.
 - [ ] **Adım 2:** `flutter build apk --release --target-platform android-arm64` (telefondaki sürümle aynı hata ayıklama imzası; veri korunur). `resources/scripts/check-release-apk.sh` PASS.
@@ -136,7 +136,7 @@ K logosu marka işaretidir, kontrast kuralından muaftır.
 
 ## Aşama 2: Hareket altyapısı ve Katman 1
 
-### Görev 6: Hareket değerleri ve tarama testi
+### Task 6: Hareket değerleri ve tarama testi
 
 **Dosyalar:**
 - Değişir: `lib/app/ui/kk_motion.dart`, süre yazan dosyalar (`kk_entrance.dart`, `lock_screen.dart`, `qr_scan_screen.dart`)
@@ -151,7 +151,7 @@ K logosu marka işaretidir, kontrast kuralından muaftır.
 - [ ] **Adım 4: Yeşil;** `flutter test`.
 - [ ] **Adım 5: Commit + push.** `yeniden-düzenleme(hareket): ortak hareket değerleri`
 
-### Görev 7: Kayan zemin her ekranda (1.11) ve küçülen başlık (1.9)
+### Task 7: Kayan zemin her ekranda (1.11) ve küçülen başlık (1.9)
 
 **Dosyalar:**
 - Yeni: `lib/app/ui/kk_ambient.dart`
@@ -167,7 +167,7 @@ K logosu marka işaretidir, kontrast kuralından muaftır.
 - [ ] **Adım 4: Yeşil;** `flutter test` (bütün ekran testleri `KkAmbient` olmadan çalıştığı için durgun kalır).
 - [ ] **Adım 5: Commit + push.** `özellik(hareket): her ekranda yavaş kayan zemin, küçülen başlık`
 
-### Görev 8: Katman 1 hareketleri (1.1–1.5, 1.10)
+### Task 8: Katman 1 hareketleri (1.1–1.5, 1.10)
 
 **Dosyalar:**
 - Yeni: `lib/app/ui/kk_pressable.dart`, `lib/app/ui/kk_page_transition.dart`
@@ -191,7 +191,7 @@ K logosu marka işaretidir, kontrast kuralından muaftır.
 
 ## Aşama 3: Katman 2 (geri bildirim)
 
-### Görev 9: Kopyalama, kaydetme ve titreme (2.1, 2.2, 2.4, 2.5)
+### Task 9: Kopyalama, kaydetme ve titreme (2.1, 2.2, 2.4, 2.5)
 
 **Dosyalar:**
 - Yeni: `kk_copy_icon.dart`, `kk_shake.dart`, `kk_done_mark.dart`
@@ -208,7 +208,7 @@ K logosu marka işaretidir, kontrast kuralından muaftır.
 - [ ] **Adım 4: Yeşil;** `flutter test`.
 - [ ] **Adım 5: Commit + push.** `özellik(hareket): kopyalama, kaydetme ve hata geri bildirimi`
 
-### Görev 10: Liste hareketleri ve "Daha fazla seçenek" (2.3, 2.6, 2.7, 3.6)
+### Task 10: Liste hareketleri ve "Daha fazla seçenek" (2.3, 2.6, 2.7, 3.6)
 
 **Dosyalar:**
 - Yeni: `lib/app/ui/kk_animated_items.dart`
@@ -225,13 +225,13 @@ K logosu marka işaretidir, kontrast kuralından muaftır.
 - [ ] **Adım 4: Yeşil;** `flutter test`; `integration_test/performance_test.dart` emülatörde, savurma sayıları cam turuyla karşılaştırılır (ölçüm `resources/docs/tasarim-siyah-beyaz.md`'nin "Denetim" bölümüne yazılır).
 - [ ] **Adım 5: Commit + push.** `özellik(hareket): listelerde ekleme, silme ve arama hareketi`
 
-### Görev 11: Telefonda deneme 2
+### Task 11: Telefonda deneme 2
 
 Görev 5'in adımları, APK adı `keykey-siyah-beyaz-2.apk`. Takılan ya da fazla gelen hareket madde numarasıyla sadeleştirilir.
 
 ## Aşama 4: Katman 3 (içerik)
 
-### Görev 12: Gizli metin, üretici, güç çubuğu, 2FA kodu ve sayılar (3.1–3.5, 3.7)
+### Task 12: Gizli metin, üretici, güç çubuğu, 2FA kodu ve sayılar (3.1–3.5, 3.7)
 
 **Dosyalar:**
 - Yeni: `kk_secret_text.dart`, `kk_rolling_text.dart`
@@ -251,7 +251,7 @@ Görev 5'in adımları, APK adı `keykey-siyah-beyaz-2.apk`. Takılan ya da fazl
 
 ## Aşama 5: Katman 4 (özel anlar)
 
-### Görev 13: Açılış, kilit ve kilitlenme (4.1–4.4)
+### Task 13: Açılış, kilit ve kilitlenme (4.1–4.4)
 
 **Dosyalar:** `keykey_logo.dart`, `lock_screen.dart`, `app_shell.dart`, `auto_lock_scope.dart`; testler `test/features/lock/…`, `test/app/…`
 
@@ -261,7 +261,7 @@ Görev 5'in adımları, APK adı `keykey-siyah-beyaz-2.apk`. Takılan ya da fazl
 - [ ] **Adım 4: Yeşil;** `flutter test`.
 - [ ] **Adım 5: Commit + push.** `özellik(hareket): açılış ve kilit hareketleri`
 
-### Görev 14: Yedek, aktarma, kurulum, QR ve otomatik doldurma (4.5–4.9)
+### Task 14: Yedek, aktarma, kurulum, QR ve otomatik doldurma (4.5–4.9)
 
 **Dosyalar:** `backup_status_card.dart`, `login_import_screen.dart`, `otp_import_screen.dart`, `restore_screen.dart`, `backup_section.dart`, `onboarding_screen.dart`, `new_password_screen.dart`, `recovery_screen.dart`, `qr_scan_screen.dart`, `autofill_sheet_frame.dart`, `autofill_pick_screen.dart`; testleri ilgili `test/features/…` altında
 
@@ -271,7 +271,7 @@ Görev 5'in adımları, APK adı `keykey-siyah-beyaz-2.apk`. Takılan ya da fazl
 - [ ] **Adım 4: Yeşil;** `flutter test`.
 - [ ] **Adım 5: Commit + push.** `özellik(hareket): yedek, aktarma, kurulum ve QR hareketleri`
 
-### Görev 15: Son denetim ve telefonda deneme 3
+### Task 15: Son denetim ve telefonda deneme 3
 
 - [ ] **Adım 1:** Format, analiz, birim testleri; entegrasyon testleri Android 11, 14, 17 emülatörlerinde.
 - [ ] **Adım 2:** 1000 kayıtlı listede savurma ölçümü (`performance_test.dart`), sonuç belgeye.
