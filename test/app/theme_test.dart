@@ -52,6 +52,8 @@ void main() {
       expect(glass.brandStroke, const Color(0xFFC2470C));
       expect(glass.onBrand, const Color(0xFF1A0D05));
       expect(glass.accent, theme.colorScheme.onSurface);
+      // Kartın içi gri değil beyaz görünsün (proje sahibinin isteği).
+      expect(glass.fill.a, greaterThanOrEqualTo(0.85));
     });
 
     test('koyu tema', () {

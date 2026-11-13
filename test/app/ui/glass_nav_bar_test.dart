@@ -179,7 +179,7 @@ void main() {
         .toList();
     expect(decorations.map((d) => d.color), contains(glass.navFill));
     // Arkadaki içerik seçilsin: dolgu çok saydam.
-    expect(glass.navFill.a, lessThanOrEqualTo(0.16));
+    expect(glass.navFill.a, lessThanOrEqualTo(0.06));
     // Üstten aşağı sönen beyaz parıltı.
     final sheen = decorations
         .map((d) => d.gradient)
@@ -192,7 +192,7 @@ void main() {
         )
         .filter;
     // Buzlu: şekiller dağılır ama arkada bir şey olduğu anlaşılır.
-    expect(GlassSurface.navBlurSigma, inInclusiveRange(10, 20));
+    expect(GlassSurface.navBlurSigma, inInclusiveRange(8, 12));
     expect(filter.toString(), contains('blur(${GlassSurface.navBlurSigma}'));
   });
 

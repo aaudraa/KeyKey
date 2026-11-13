@@ -38,7 +38,7 @@
 | `brandStroke` | `#C2470C` | `#FF8A4C` | ince çizgi (2FA halkası): gri lekenin üstünde `#F26B1D` 1,9:1, `#C2470C` 3,1:1 |
 | `tint` (seçili/basılı zemin) | siyah %6 | beyaz %9 | eski `accentContainer` |
 | `error` | `#A1201A` | `#FFB4AB` | değişmez (4,7:1 / 8,1:1) |
-| cam kart `fill` | beyaz %52 | beyaz %7 | |
+| cam kart `fill` | beyaz %88 | beyaz %7 | ilk denemeden sonra (önce %52) |
 
 K logosu marka işaretidir, kontrast kuralından muaftır.
 
@@ -178,7 +178,8 @@ K logosu marka işaretidir, kontrast kuralından muaftır.
 - Üretir: `KkPressable({required Widget child, double pressedScale = 0.965})`: alt ağaçtaki basma durumunu `Listener` ile izler (dokunuşu yutmaz), `AnimatedScale` `fast` + `spring`. Küçük düğmeler `pressedScale: 0.88`. `KkPageTransitionsBuilder`: geri hareketi sürerken (`route.popGestureInProgress`) `PredictiveBackPageTransitionsBuilder`'a devreder; diğer zamanlarda 24 dp sağdan kayma + solma, `enter` + `standard`.
 
 - [ ] **Adım 1: Testleri yaz.**
-  - Giriş (1.1): ilk karede öğe 16 dp aşağıda, ölçek 0,96, saydamlık 0; `enter + stagger*index` sonra yerinde; 9. öğe hareketsiz.
+  - Giriş (1.1): ilk karede öğe 16 dp aşağıda, ölçek 0,96, saydamlık 0; `enter + stagger*min(index, 8)` sonra yerinde.
+  - Kaydırınca giriş (1.1, telefon denemesi 1): kaydırırken sonradan kurulan öğe de 0'dan başlar, gecikmesiz, `enter` sonra yerinde; animasyonlar kapalıyken anında.
   - Yeniden oynama (1.10): kapsamın üstündeki `TickerMode` `false → true` olunca görünen öğeler yeniden 0'dan başlar; kapsamın sayfası üstüne itilen sayfa kapanınca (`ModalRoute.secondaryAnimation` `dismissed`) yeniden başlar; animasyonlar kapalıyken oynamaz.
   - Basma (1.3): `KkCard` basılıyken ölçek 0,965, bırakınca 1; `onTap` bir kez çağrılır.
   - Alt menü ve alt düğme (1.2): ilk karede 24 dp aşağıda, `enter` sonra yerinde.

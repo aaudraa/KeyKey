@@ -139,7 +139,7 @@ class GlassSurface extends StatelessWidget {
 
   /// Alt menünün buzlu camı: arkadaki şekiller dağılır ama seçilir; yazı
   /// okunmaz.
-  static const double navBlurSigma = 14;
+  static const double navBlurSigma = 10;
 
   /// Bulanık arkaplanın renk doygunluğu artışı ([vibrant]).
   static const double vibrance = 2.1;

@@ -58,7 +58,7 @@ Cam tasarım kodda bitti ve proje sahibi telefonda denedi. Kendi sözleriyle:
 |---|---|---|
 | Zemin | `#E6E6E8` | `#000000` |
 | Işık lekeleri (üç adet, renksiz) | beyaz, `#A9A9AE`, beyaz | `#5A5A5E`, `#3A3A3E`, `#4A4A4E` |
-| Cam kart | beyaz %52, beyaz kenar, üstte ince parlak çizgi, hafif gölge | beyaz %7, beyaz %15 kenar |
+| Cam kart | beyaz %88 (proje sahibi "kartların içi gri değil beyaz olsun" dedi; önce %52), beyaz kenar, üstte ince parlak çizgi, hafif gölge | beyaz %7, beyaz %15 kenar |
 | Yazı | `#111111` | `#F4F4F4` |
 | İkincil yazı | `#6B6B6B` (testte geçmezse koyulaşır) | `#9A9A9A` |
 | Seçili/basılı zemini | siyahın %6'sı | beyazın %9'u |
@@ -89,7 +89,7 @@ Geri kalan her şey siyah-beyazdır *(benim kararlarım, örneklerde gösterildi
 - Kartlar yarı saydamdır, arkalarını canlı bulanıklaştırmaz (liste takılmasın diye; bugünkü gibi).
 - Gerçek bulanıklık yalnızca şuralarda: alt menü, "+" kutusu ve arkasındaki perde, alttan açılan pencereler, bildirim.
 - "+" açılınca arka plan bulanıklaşır ve hafifçe kararır (bugünkü davranış korunur).
-- Alt menü buzlu camdır: dolgusu çok saydam (açıkta beyaz %14, koyuda %6), bulanıklık hafif (14), üstten aşağı sönen beyaz parıltı. Proje sahibi ilk denemede "camsı his yok" dedi (2026-11-13); renksiz zeminde güçlü bulanıklık menüyü düz gri bir kutuya çeviriyordu.
+- Alt menü buzlu camdır: dolgusu çok saydam (açıkta beyaz %5, koyuda %3), bulanıklık hafif (10), üstten aşağı sönen beyaz parıltı. İkinci denemede proje sahibi daha saydam istedi. Proje sahibi ilk denemede "camsı his yok" dedi (2026-11-13); renksiz zeminde güçlü bulanıklık menüyü düz gri bir kutuya çeviriyordu.
 
 ### Ölçüler
 
@@ -132,7 +132,7 @@ En küçük yazı 11 sp'nin altına inmez. %200 yazı boyutunda taşma testleri 
 1. Her hareket 150-450 ms sürer. Hiçbiri bekletmez: hareket sürerken dokunuşlar çalışır, yeni hareket eskisini yarıda keser.
 2. Aynı anda tek ana hareket; diğerleri ona eşlik eder (daha kısa, daha küçük).
 3. Hareket yalnızca ilk girişte kalmaz, uygulama kullanılırken de sürer (proje sahibinin isteği): her dokunuşun bir karşılığı vardır (Katman 2 ve 3), ekrana her dönüşte giriş hareketi oynar (1.10) ve zemin bütün ekranlarda çok yavaş kayar (1.11). Kendi kendine süren öteki hareketler: kilit ekranı, 2FA halkası, ilerleme göstergeleri. Sürekli kayan zemin, alt menünün bulanıklığını her karede yeniden çizdirir; telefonda pil ya da takılma görülürse önce zeminin hızı ve kare sıklığı düşürülür, gerekirse 1.11 çıkarılır.
-4. Kaydırma sırasında yeni hareket başlamaz (küçülen başlık dışında).
+4. Kaydırırken ekrana giren kartlar da giriş hareketiyle gelir (proje sahibinin isteği, 2026-11-13: "aşağı yukarı kaydırırken fark edilsin"). Kaydırma sırasında başka yeni hareket başlamaz (küçülen başlık dışında). Giriş hareketi proje sahibine çok hızlı geldi: süre `enter` (350 ms) ve yay eğrisi kullanılır, bugünkü 250 ms değil.
 5. Yalnızca ucuz hareketler: yer, ölçek, saydamlık, döndürme. Bulanıklık ya da gölge canlandırılmaz.
 6. Telefonda "animasyonları kaldır" açıksa hepsi anında olur (`KkMotion.of`), süren hareketler durur (`ambientMotionProvider`).
 7. Android'in geri hareketi önizlemesiyle çakışan özel geçiş yapılmaz.
@@ -158,7 +158,7 @@ En küçük yazı 11 sp'nin altına inmez. %200 yazı boyutunda taşma testleri 
 
 | No | Yer | Hareket | Süre / eğri | Kodda | Bugün |
 |---|---|---|---|---|---|
-| 1.1 | Ekran açılışı | Görünen satırlar 16 dp aşağıdan ve %96 ölçekten sırayla yerine oturur | `enter`, `spring`, `stagger` | `kk_entrance.dart` | Var (12 dp, ölçeksiz); güçlendirilir |
+| 1.1 | Ekran açılışı ve kaydırma | Görünen satırlar 16 dp aşağıdan ve %96 ölçekten sırayla yerine oturur; kaydırırken ekrana giren her kart da aynı hareketle gelir (sıra gecikmesi olmadan) | `enter`, `spring`, `stagger` | `kk_entrance.dart` | Var (12 dp, ölçeksiz, yalnızca ilk kare); güçlendirilir |
 | 1.2 | Alt menü ve alttaki ana düğme | Ekran açılırken alttan yaylanarak gelir | `enter`, `spring` | `glass_nav_bar.dart`, `kk_bars.dart` (`KkBottomAction`) | Yeni |
 | 1.3 | Basma | Kart ve satır %96,5'e, küçük düğme ve simge %88'e esner; bırakınca yaylanır. Dalga efekti kalır | `fast`, `spring` | `kk_card.dart`, `kk_bars.dart`, yeni ortak `KkPressable` | Kartta var (%98); yaygınlaştırılır |
 | 1.4 | Ekran geçişi | Form ve alt ekranlar sağdan 24 dp kayarak ve solarak açılır; karttan ayrıntıya büyüme kalır | `enter`, `standard` | Tema `pageTransitionsTheme` | Kısmen var |
