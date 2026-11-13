@@ -99,7 +99,11 @@ void main() {
 
     final scroll = Stopwatch()..start();
     for (var i = 0; i < 5; i++) {
-      await tester.fling(find.byType(ListView), const Offset(0, -2000), 4000);
+      await tester.fling(
+        find.byType(CustomScrollView),
+        const Offset(0, -2000),
+        4000,
+      );
       await tester.pumpAndSettle();
     }
     scroll.stop();

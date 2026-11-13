@@ -186,13 +186,13 @@ En küçük yazı 11 sp'nin altına inmez. %200 yazı boyutunda taşma testleri 
 
 | No | Yer | Hareket | Süre / eğri | Kodda |
 |---|---|---|---|---|
-| 3.1 | Parolayı göster/gizle | Noktalar soldan sağa sırayla karakterlere döner (karakter başına 12 ms, toplam en çok 300 ms); gizlerken tersine. Göz simgesi çizgili göze geçer | ≤ 300 ms | `login_detail_screen`, `kk_form.dart`, yeni ortak `KkSecretText` |
-| 3.2 | "Üret" | Karakterler 250 ms rastgele karışıp yeni parolaya oturur; güç çubuğu sıfırdan yeniden dolar. Karışan karakterler süs amaçlı rastgeledir, gerçek parola değildir | 250 + `enter` | `generator_sheet.dart`, `password_strength_meter.dart` |
+| 3.1 | Parolayı göster/gizle | Noktalar soldan sağa sırayla karakterlere döner (karakter başına 12 ms, toplam en çok 300 ms); gizlerken tersine. Göz simgesi çizgili göze geçer. *Gizliyken uzunluğu belli etmemek için hep 8 nokta görünür; formdaki yazma kutusu (TextField) karakter karakter dönmez, yalnızca ayrıntı ekranındaki değer döner. (Benim kararım, Görev 12.)* | ≤ 300 ms | `login_detail_screen`, `kk_form.dart`, yeni ortak `KkSecretText` |
+| 3.2 | "Üret" | Karakterler 250 ms rastgele karışıp yeni parolaya oturur; güç çubuğu sıfırdan yeniden dolar. Karışan karakterler süs amaçlı rastgeledir, gerçek parola değildir. *Üretici penceresinde güç çubuğu yok (bit sayısı yazıyor); çubuk, parola formunda "Üret" ile dolan parolada 3.3'teki gibi kayar.* | 250 + `enter` | `generator_sheet.dart`, `password_strength_meter.dart` |
 | 3.3 | Güç çubuğu | Değer değiştikçe genişlik yumuşak kayar | `base` | `password_strength_meter.dart` |
 | 3.4 | 2FA kodu yenilenince | Eski rakamlar yukarı kayıp solar, yenileri alttan gelir (rakamlar arası 20 ms) | `base`, `standard` | `otp_display.dart`, `otp_code_tile.dart` |
 | 3.5 | 2FA son 5 saniye | Halka saniyede bir hafifçe atar (%100 → %112) | 1 sn döngü | `otp_ring.dart` |
 | 3.6 | Arama | Yazdıkça elenen kartlar solar, kalanlar kayarak yerleşir; sonuç yoksa boş durum solarak ve 8 dp yükselerek gelir | `base` | `vault_screen`, `authenticator_screen` |
-| 3.7 | Sayılar | "24 kayıt", "6 hesap" değişince eski sayı yukarı çıkar, yenisi alttan gelir | `fast` | Liste ekranları |
+| 3.7 | Sayılar | "24 kayıt", "6 hesap" değişince eski sayı yukarı çıkar, yenisi alttan gelir. *Uygulanmadı: sayı yalnızca arama kutusunun boşken görünen ipucunda duruyor ve kayıt başka ekranda eklenip silindiği için değişim hiç görülmüyor. (Benim kararım, Görev 12.)* | `fast` | Liste ekranları |
 
 ### Katman 4: Özel anlar
 
@@ -244,6 +244,7 @@ Takılan ya da fazla gelen hareket, denemede sadeleştirilir ya da çıkarılır
 - Hareket sürerken dokunmanın çalıştığını gösteren testler (kaydetme, kopyalama, kilit açılışı).
 - Tarama testi: ekranlarda elle yazılmış süre (`Duration(milliseconds:`) kalmaması; hepsi `KkMotion`'dan gelir.
 - 1000 kayıtlı listede savurma ölçümü, cam turundaki sayılarla karşılaştırılır.
+  - *Ölçüm (2026-11-13, Görev 11, Android 14 emülatörü, debug, `KKPERF`):* yükleme 408 ms, dört arama toplam 9 ms, yazıp süzme 374 ms, beş savurma ve durulma 17,4 sn. Cam turunda savurma ölçülmemişti; karşılaştırma için en yakın sayılar [güvenlik denetimindeki](guvenlik-denetimi.md) telefon ölçümü: yükleme 310 ms, arama 26 ms, yazıp süzme 363 ms. Yazıp süzme aynı düzeyde kaldı; savurma sayısı bundan sonraki turlar için dayanak.
 - Samsung telefonda proje sahibiyle üç deneme (yukarıdaki tablo).
 
 ## Açık soruların yanıtları (2026-11-13)
