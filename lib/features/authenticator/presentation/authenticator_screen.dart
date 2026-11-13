@@ -205,25 +205,30 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
                 hasAccounts ? l10n.otpNoResults : l10n.otpEmpty,
                 textAlign: TextAlign.center,
               ),
-              itemBuilder: (context, item, index) {
-                final loginId = item.content.loginId;
-                return OtpCodeTile(
-                  key: ValueKey(otpIdHex(item)),
-                  item: item,
-                  now: now,
-                  flash: watchLastSaved(ref, savedOtpKey(otpIdHex(item))),
-                  linkedLogin: loginId == null
-                      ? null
-                      : findLogin(
-                          ref.watch(loginsControllerProvider),
-                          loginIdHex(loginId),
-                        )?.content,
-                  hotpCode: _hotpCodes[otpIdHex(item)],
-                  onCopy: _copy,
-                  onGenerate: () => unawaited(_generate(item)),
-                  onAction: (action) => unawaited(_onAction(item, action)),
-                );
-              },
+              // Kart kendi Consumer'ında izler: öğeler saatle her saniye
+              // yeniden kurulur ve ekranın ref'iyle yapılan seçici
+              // izlemeler her seferinde yeni dinleyici bırakırdı.
+              itemBuilder: (context, item, index) => Consumer(
+                builder: (context, ref, _) {
+                  final loginId = item.content.loginId;
+                  return OtpCodeTile(
+                    key: ValueKey(otpIdHex(item)),
+                    item: item,
+                    now: now,
+                    flash: watchLastSaved(ref, savedOtpKey(otpIdHex(item))),
+                    linkedLogin: loginId == null
+                        ? null
+                        : findLogin(
+                            ref.watch(loginsControllerProvider),
+                            loginIdHex(loginId),
+                          )?.content,
+                    hotpCode: _hotpCodes[otpIdHex(item)],
+                    onCopy: _copy,
+                    onGenerate: () => unawaited(_generate(item)),
+                    onAction: (action) => unawaited(_onAction(item, action)),
+                  );
+                },
+              ),
             ),
           ),
         ),

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/app.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
@@ -621,6 +622,7 @@ Future<void> pumpKeyKey(
   Locale locale = const Locale('tr'),
   bool settle = true,
   bool ambient = false,
+  List<Override> extraOverrides = const [],
 }) async {
   tester.platformDispatcher.localesTestValue = [locale];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
@@ -666,6 +668,7 @@ Future<void> pumpKeyKey(
         appPackagesProvider.overrideWithValue(packages ?? FakeAppPackages()),
         effWordlistProvider.overrideWith((ref) async => _effWords),
         commonPasswordsProvider.overrideWith((ref) async => _commonPasswords),
+        ...extraOverrides,
       ],
       child: const KeyKeyApp(),
     ),

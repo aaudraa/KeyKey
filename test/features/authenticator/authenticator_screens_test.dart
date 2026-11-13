@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keykey/app/last_saved.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/kk_card.dart';
 import 'package:keykey/app/ui/kk_done_mark.dart';
@@ -20,6 +21,19 @@ import 'package:sodium/sodium_sumo.dart';
 
 import '../../support/add_flow.dart';
 import '../../support/fake_vault_service.dart';
+
+/// Son kayıt durumunu dinleyenleri sayar.
+class _CountingLastSaved extends LastSaved {
+  int active = 0;
+
+  @override
+  String? build() {
+    ref
+      ..onAddListener(() => active++)
+      ..onRemoveListener(() => active--);
+    return super.build();
+  }
+}
 
 void main() {
   // RFC 4226 Ek D anahtarı: sayaç 1 → 287082, 2 → 359152, 0 → 755224.
@@ -115,6 +129,28 @@ void main() {
   }
 
   group('liste', () {
+    testWidgets('saat ilerledikçe dinleyiciler birikmez', (tester) async {
+      final counted = _CountingLastSaved();
+      var time = now;
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        otps: otps,
+        clock: () => time,
+        clipboard: clipboard,
+        extraOverrides: [lastSavedProvider.overrideWith(() => counted)],
+      );
+      await tester.tap(find.byIcon(Icons.shield_outlined));
+      await settle(tester);
+      final before = counted.active;
+      for (var i = 0; i < 20; i++) {
+        time = time.add(const Duration(seconds: 1));
+        await tester.pump(const Duration(milliseconds: 250));
+      }
+      expect(counted.active, before);
+    });
+
     testWidgets('kodlar gösteriliyor, favori önde', (tester) async {
       await openAuthenticator(tester);
 
