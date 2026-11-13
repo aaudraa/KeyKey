@@ -166,7 +166,7 @@ En küçük yazı 11 sp'nin altına inmez. %200 yazı boyutunda taşma testleri 
 | 1.6 | "+" kutusu | Yaylanarak açılır, satırlar sırayla belirir, "+" çarpıya döner, arka plan bulanıklaşır | `panelOpen` / `panelClose` | `add_panel.dart` | Var; korunur |
 | 1.7 | Anahtarlar | Topuz yaylanarak kayar, zemin rengi yumuşak değişir | `base`, `spring` | Tema `switchTheme` ya da ortak `KkSwitch` | Yeni |
 | 1.8 | Alttan açılan pencereler ve (i) | Yaylanarak açılır, aşağı çekince parmağı izler | `panelOpen` | `kk_sheet.dart` | Var; korunur |
-| 1.9 | Büyük başlık | Kaydırınca küçülüp üst çubuğa oturur. *Telefon denemesi 4'te çubuktaki yazının küçülmesi anlamsız bulundu. Yeni hali: Kasa, 2FA ve Ayarlar'da büyük başlık (26) arama kutusu ve süzgeçlerle birlikte listenin içinde kayar; kayıp gidince üst çubukta küçük başlık (17) solarak belirir.* | Kaydırmaya bağlı | `vault_screen`, `authenticator_screen`, `settings_screen` | Yeni; onaylandı |
+| 1.9 | Büyük başlık | Kaydırınca küçülüp üst çubuğa oturur. *Telefon denemesi 4'te çubuktaki yazının küçülmesi anlamsız bulundu. Yeni hali: Kasa, 2FA ve Ayarlar'da büyük başlık (26) arama kutusu ve süzgeçlerle birlikte listenin içinde kayar; kayıp gidince üst çubukta küçük başlık (17) solarak belirir. Telefon denemesi 5'te bu da kaldırıldı: başlıklar üst çubukta sabit, kökte 24, alt ekranlarda 19, kalın (w800); arama kutusu listeyle kayar, kayıp gidince üç noktanın solunda arama simgesi belirir.* | Kaydırmaya bağlı | `vault_screen`, `authenticator_screen`, `settings_screen` | Yeni; onaylandı |
 | 1.10 | Her dönüş | Giriş hareketi (1.1) yalnızca ekranın ilk açılışında değil, her sekme değişiminde ve alt ekrandan geri dönüşte de oynar | `enter`, `spring`, `stagger` | `kk_entrance.dart`, `app_shell.dart` | Bugün yalnızca ilk açılışta; proje sahibinin isteği |
 | 1.11 | Zemin | Işık lekeleri bütün ekranlarda çok yavaş kayar (kilit ekranındaki gibi, daha sakin). Kaydırırken, uygulama arka plandayken ve "animasyonları kaldır" açıkken durur | Sürekli, 30-40 sn döngü | `kk_backdrop.dart` | Bugün yalnızca kilit ekranında; proje sahibinin isteği |
 
@@ -255,6 +255,12 @@ Proje sahibi dördüncü deneme sürümünü telefonda denedi:
 - Kasa ve Ayarlar gibi sekmelerdeki kartlar buzlu cam olmasın, biraz büyüsün; okunurluk düşmüş. Karar: bütün kartlar dolu, ölçüler cam turundaki boylara döner (kart 64, ayar satırı 56, yazılar 15/12,5 ve 14,5/12,5, kayıt simgesi 40).
 - Arama kutusu kaydırınca yukarı gitmiyordu. Karar: arama kutusu ve süzgeçler listenin içinde, onunla birlikte kayar.
 - Küçülen başlığın bir anlamı yoktu. Karar: büyük başlık listeyle birlikte kayar, gidince üst çubukta küçük başlık belirir (1.9).
+
+## Telefon denemesi 5 (2026-11-13)
+
+- Ekran adları (Kasa, 2FA, Ayarlar, Düzenle) hiç büyüyüp küçülmesin, üstte sabit dursun, biraz büyük ve kalın olsun. Karar: başlıklar üst çubukta sabit; kökte 22 → 24, alt ekranlarda 17 → 19, kalınlık w700 → w800.
+- Arama kutusu yukarı kayınca üstte, üç noktanın solunda simge olsun. Karar: arama kutusu listenin başında kayar; kayıp gidince üst çubukta arama simgesi belirir, dokununca liste başa döner ve kutu odaklanır.
+- Bütün formlarda alanın sol üstündeki etiket kartın üst kenarından taşıyor, yarısı kesiliyordu. Neden: alanlar dış çizgili stildeydi, etiket çizginin üstüne oturuyordu. Karar: etiket dolu kutunun içinde, odak ve hata alt çizgiyle gösterilir; alan boyu 60 dp.
 
 ## Açık soruların yanıtları (2026-11-13)
 
