@@ -60,31 +60,69 @@ class _KkRollingTextState extends State<KkRollingText>
     if (previous == null) return Text(widget.text, style: widget.style);
     final next = widget.text;
     final style = DefaultTextStyle.of(context).style.merge(widget.style);
-    final travel = (style.fontSize ?? 14) * 0.8;
-    final length = math.max(next.length, previous.length);
+    // Karakterlerin yeri, tam metnin kendi dizilişinden ölçülür; böylece
+    // kayarken metin bir an bile başka türlü dizilmez (genişlik sabit).
+    final painter = TextPainter(
+      text: TextSpan(text: next, style: style),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+    )..layout();
+    final slots = <(int, double, double)>[];
+    for (var i = 0; i < next.length; i++) {
+      final before = i < previous.length ? previous[i] : '';
+      if (before == next[i]) continue;
+      final left = painter.getOffsetForCaret(TextPosition(offset: i), .zero).dx;
+      final right = i + 1 < next.length
+          ? painter.getOffsetForCaret(TextPosition(offset: i + 1), .zero).dx
+          : painter.width;
+      slots.add((i, left, right - left));
+    }
+    final height = painter.height;
+    painter.dispose();
     final total = _motion.duration!.inMicroseconds;
     return Semantics(
       label: next,
       excludeSemantics: true,
-      child: AnimatedBuilder(
-        animation: _motion,
-        builder: (context, _) => Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (var i = 0; i < length; i++)
-              _slot(
-                before: i < previous.length ? previous[i] : '',
-                after: i < next.length ? next[i] : '',
-                t: Interval(
-                  (KkRollingText.stagger * i).inMicroseconds / total,
-                  (KkRollingText.stagger * i + KkMotion.base).inMicroseconds /
-                      total,
-                  curve: KkMotion.standard,
-                ).transform(_motion.value),
-                travel: travel,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // Değişen karakterler yerinde saydam durur; üstlerinde kayarlar.
+          Text.rich(
+            TextSpan(
+              children: [
+                for (var i = 0; i < next.length; i++)
+                  TextSpan(
+                    text: next[i],
+                    style: slots.any((slot) => slot.$1 == i)
+                        ? const TextStyle(color: Colors.transparent)
+                        : null,
+                  ),
+              ],
+            ),
+            style: widget.style,
+          ),
+          for (final (i, left, width) in slots)
+            Positioned(
+              left: left,
+              top: 0,
+              width: width,
+              height: height,
+              child: AnimatedBuilder(
+                animation: _motion,
+                builder: (context, _) => _slot(
+                  before: i < previous.length ? previous[i] : '',
+                  after: next[i],
+                  t: Interval(
+                    (KkRollingText.stagger * i).inMicroseconds / total,
+                    (KkRollingText.stagger * i + KkMotion.base).inMicroseconds /
+                        total,
+                    curve: KkMotion.standard,
+                  ).transform(_motion.value),
+                  travel: (style.fontSize ?? 14) * 0.8,
+                ),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }
@@ -95,27 +133,25 @@ class _KkRollingTextState extends State<KkRollingText>
     required double t,
     required double travel,
   }) {
-    if (before == after) return Text(after, style: widget.style);
     return ClipRect(
       child: Stack(
-        alignment: Alignment.center,
+        alignment: AlignmentDirectional.centerStart,
         children: [
           if (before.isNotEmpty)
             Opacity(
               opacity: 1 - t,
               child: Transform.translate(
                 offset: Offset(0, -travel * t),
-                child: Text(before, style: widget.style),
+                child: Text(before, style: widget.style, softWrap: false),
               ),
             ),
-          if (after.isNotEmpty)
-            Opacity(
-              opacity: t,
-              child: Transform.translate(
-                offset: Offset(0, travel * (1 - t)),
-                child: Text(after, style: widget.style),
-              ),
+          Opacity(
+            opacity: t,
+            child: Transform.translate(
+              offset: Offset(0, travel * (1 - t)),
+              child: Text(after, style: widget.style, softWrap: false),
             ),
+          ),
         ],
       ),
     );

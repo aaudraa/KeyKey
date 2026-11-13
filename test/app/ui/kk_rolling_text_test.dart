@@ -38,6 +38,26 @@ void main() {
       expect(find.text('6'), findsNothing);
     });
 
+    testWidgets('kayarken metin tek parça kalır, boyu değişmez', (
+      tester,
+    ) async {
+      const style = TextStyle(fontSize: 24, letterSpacing: 2);
+      await tester.pumpWidget(
+        _host(const KkRollingText(text: '123 456', style: style)),
+      );
+      final rest = tester.getSize(find.byType(KkRollingText));
+      await tester.pumpWidget(
+        _host(const KkRollingText(text: '123 457', style: style)),
+      );
+      await tester.pump();
+      await tester.pump(KkMotion.base ~/ 2);
+      // Yeni metin tek parça olarak yerinde; yalnızca değişen rakam kayar.
+      expect(find.text('123 457', findRichText: true), findsOneWidget);
+      expect(tester.getSize(find.byType(KkRollingText)), rest);
+      await tester.pumpAndSettle();
+      expect(tester.getSize(find.byType(KkRollingText)), rest);
+    });
+
     testWidgets('kayarken ekran okuyucu yalnızca yeni metni okur', (
       tester,
     ) async {
