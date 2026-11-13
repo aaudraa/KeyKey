@@ -174,7 +174,7 @@ void main() {
 
     await tapButton(tester, 'Yazdım');
     await pumpUntilFound(tester, find.text('Doğrula ve kasayı aç'));
-    await tester.enterText(find.byType(TextField), recoveryKey);
+    await tester.enterText(find.byType(TextField).last, recoveryKey);
     await tester.pump();
     await tapButton(tester, 'Doğrula ve kasayı aç');
     await pumpUntilFound(tester, find.text(vaultText));

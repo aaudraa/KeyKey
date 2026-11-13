@@ -167,14 +167,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ),
                   transitionBuilder: (child, animation) {
                     final incoming = child.key == ValueKey(_step);
-                    return FadeTransition(
-                      opacity: animation,
-                      child: SlideTransition(
-                        position: Tween(
-                          begin: Offset(incoming ? 0.25 : -0.25, 0),
-                          end: Offset.zero,
-                        ).animate(animation),
-                        child: child,
+                    // Kayıp giden adım (ör. kurtarma anahtarı) yalnızca
+                    // çizilir: dokunulmaz, odaklanmaz, ekran okuyucu okumaz.
+                    return IgnorePointer(
+                      ignoring: !incoming,
+                      child: ExcludeFocus(
+                        excluding: !incoming,
+                        child: ExcludeSemantics(
+                          excluding: !incoming,
+                          child: FadeTransition(
+                            opacity: animation,
+                            child: SlideTransition(
+                              position: Tween(
+                                begin: Offset(incoming ? 0.25 : -0.25, 0),
+                                end: Offset.zero,
+                              ).animate(animation),
+                              child: child,
+                            ),
+                          ),
+                        ),
                       ),
                     );
                   },

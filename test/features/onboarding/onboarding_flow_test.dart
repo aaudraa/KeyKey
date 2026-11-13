@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/onboarding/presentation/onboarding_screen.dart';
@@ -59,6 +60,59 @@ void main() {
   }
 
   group('adım geçişi', () {
+    /// Ekran okuyucunun gördüğü ağaçta bu etiket var mı.
+    bool spoken(WidgetTester tester, String label) {
+      var found = false;
+      bool visit(SemanticsNode node) {
+        if (node.label.contains(label)) found = true;
+        node.visitChildren(visit);
+        return !found;
+      }
+
+      visit(
+        tester
+            .binding
+            .renderViews
+            .first
+            .owner!
+            .semanticsOwner!
+            .rootSemanticsNode!,
+      );
+      return found;
+    }
+
+    testWidgets('çıkan adım dokunuşa ve ekran okuyucuya kapalı', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await goToShowKey(tester);
+      final keyText = find.byWidgetPredicate(
+        (widget) => widget is Text && widget.style?.fontFamily == 'monospace',
+      );
+      final key = tester.widget<Text>(keyText).data!;
+      expect(spoken(tester, key), isTrue);
+      await tester.tap(find.widgetWithText(FilledButton, 'Yazdım'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      // Kayıp giden adım hâlâ çiziliyor ama okunmuyor, dokunulmuyor.
+      expect(keyText, findsOneWidget);
+      expect(spoken(tester, key), isFalse);
+      expect(
+        find.ancestor(of: keyText, matching: find.byType(IgnorePointer)),
+        findsWidgets,
+      );
+      expect(
+        tester
+            .widgetList<IgnorePointer>(
+              find.ancestor(of: keyText, matching: find.byType(IgnorePointer)),
+            )
+            .any((w) => w.ignoring),
+        isTrue,
+      );
+      await tester.pumpAndSettle();
+      handle.dispose();
+    });
+
     double progress(WidgetTester tester) => tester
         .widget<LinearProgressIndicator>(
           find.descendant(
