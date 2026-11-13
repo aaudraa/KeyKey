@@ -154,6 +154,20 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
 
+    testWidgets('ilgisiz kod reddedilince çerçeve yeniden nefes alır', (
+      tester,
+    ) async {
+      await openCamera(tester, ambient: true);
+      camera.scan('https://example.com');
+      await settle(tester);
+      expect(find.text('Bu QR kodu bir 2FA hesabı değil.'), findsOneWidget);
+      final first = frameScale(tester);
+      await tester.pump(KkMotion.breath ~/ 2);
+      final second = frameScale(tester);
+      expect((first - second).abs(), greaterThan(0.005));
+      await tester.pumpWidget(const SizedBox());
+    });
+
     testWidgets('süren hareket kapalıyken çerçeve durur', (tester) async {
       await openCamera(tester, ambient: false);
       expect(frameScale(tester), 1);

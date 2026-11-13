@@ -264,6 +264,8 @@ class _ScanFrameState extends State<_ScanFrame> with TickerProviderStateMixin {
       _close.forward();
     } else {
       _close.reverse();
+      // Kod reddedildi, tarama sürüyor: çerçeve yeniden nefes alır.
+      if (KkAmbient.of(context)) _breath.repeat();
     }
   }
 
