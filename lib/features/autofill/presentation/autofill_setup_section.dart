@@ -106,20 +106,24 @@ class _AutofillSetupSectionState extends ConsumerState<AutofillSetupSection> {
         onTap: () => unawaited(_open((b) => b.openAutofillSettings())),
       ),
       if (chromeHelp != null)
-        KkInfoRow(
-          infoTitle: l10n.autofillSetupChromeTitle,
-          info: chromeHelp,
-          child: ListTile(
-            leading: const KkIconBox(icon: Icons.public_rounded),
-            title: Text(l10n.autofillSetupChromeTitle),
-            subtitle: KkRowSubtitle(chromeHelp),
-            trailing: status.chromeTooOld
-                ? null
-                : const Icon(Icons.open_in_new),
-            onTap: status.chromeTooOld
-                ? null
-                : () => unawaited(_open((b) => b.openChromeAutofillSettings())),
+        ListTile(
+          leading: const KkIconBox(icon: Icons.public_rounded),
+          title: Text(l10n.autofillSetupChromeTitle),
+          subtitle: KkRowSubtitle(chromeHelp),
+          contentPadding: const EdgeInsetsDirectional.only(start: 16, end: 12),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              KkInfoButton(
+                title: l10n.autofillSetupChromeTitle,
+                info: chromeHelp,
+              ),
+              if (!status.chromeTooOld) const Icon(Icons.open_in_new),
+            ],
           ),
+          onTap: status.chromeTooOld
+              ? null
+              : () => unawaited(_open((b) => b.openChromeAutofillSettings())),
         ),
     ];
   }

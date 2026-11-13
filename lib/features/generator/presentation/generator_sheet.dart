@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
+import 'package:keykey/app/ui/kk_switch.dart';
 import 'package:keykey/features/generator/application/password_generator.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
@@ -175,25 +176,25 @@ class _GeneratorSheetState extends ConsumerState<GeneratorSheet> {
               () => _password = _password.copyWith(length: value.round()),
             ),
           ),
-          SwitchListTile(
+          KkSwitchTile(
             title: Text(l10n.generatorLowercase),
             value: _password.lowercase,
             onChanged: (value) =>
                 _update(() => _password = _password.copyWith(lowercase: value)),
           ),
-          SwitchListTile(
+          KkSwitchTile(
             title: Text(l10n.generatorUppercase),
             value: _password.uppercase,
             onChanged: (value) =>
                 _update(() => _password = _password.copyWith(uppercase: value)),
           ),
-          SwitchListTile(
+          KkSwitchTile(
             title: Text(l10n.generatorDigits),
             value: _password.digits,
             onChanged: (value) =>
                 _update(() => _password = _password.copyWith(digits: value)),
           ),
-          SwitchListTile(
+          KkSwitchTile(
             title: Text(l10n.generatorSymbols),
             value: _password.symbols,
             onChanged: (value) =>

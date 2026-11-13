@@ -8,8 +8,8 @@ import 'package:keykey/l10n/generated/app_localizations.dart';
 /// satırlar tek bir cam kartta.
 ///
 /// Satırlar aynı boydadır: alt yazısı olmayan satır da iki satırlık boyda
-/// durur. Alt yazılar tek satırdır; uzun açıklama [KkInfoRow] ile pencereye
-/// taşınır.
+/// durur. Alt yazılar tek satırdır; uzun açıklama [KkInfoButton] ile
+/// pencereye taşınır.
 class KkSection extends StatelessWidget {
   const new({required this.title, required this.children, super.key});
 
@@ -91,48 +91,38 @@ class KkRowSubtitle extends StatelessWidget {
       Text(text, maxLines: 1, overflow: TextOverflow.ellipsis);
 }
 
-/// Sonunda küçük (i) düğmesi olan satır. Düğme [info] metnini alttan açılan
-/// pencerede gösterir. Düğme satırdan ayrı bir öğedir; TalkBack'te ayrıca
-/// odaklanır.
-class KkInfoRow extends StatelessWidget {
-  const new({
-    required this.child,
-    required this.infoTitle,
-    required this.info,
-    super.key,
-  });
+/// Küçük (i) düğmesi: [info] metnini alttan açılan pencerede gösterir.
+/// Satırın sonunda, anahtarın ya da okun hemen solunda durur; TalkBack'te
+/// satırdan ayrı odaklanır.
+class KkInfoButton extends StatelessWidget {
+  const new({required this.title, required this.info, super.key});
 
-  final Widget child;
-  final String infoTitle;
+  final String title;
   final String info;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Row(
-      children: [
-        Expanded(child: child),
-        Padding(
-          padding: const EdgeInsetsDirectional.only(end: 4),
-          child: IconButton(
-            tooltip: l10n.settingsMoreInfo,
-            icon: const Icon(Icons.info_outline),
-            onPressed: () => showKkSheet<void>(
-              context,
-              builder: (context) => KkSheetContent(
-                title: infoTitle,
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(l10n.otpClose),
-                  ),
-                ],
-                child: Text(info),
-              ),
+    return IconButton(
+      tooltip: l10n.settingsMoreInfo,
+      icon: Icon(
+        Icons.info_outline,
+        size: 20,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+      onPressed: () => showKkSheet<void>(
+        context,
+        builder: (context) => KkSheetContent(
+          title: title,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(l10n.otpClose),
             ),
-          ),
+          ],
+          child: Text(info),
         ),
-      ],
+      ),
     );
   }
 }

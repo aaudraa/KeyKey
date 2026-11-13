@@ -10,6 +10,7 @@ import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_section.dart';
+import 'package:keykey/app/ui/kk_switch.dart';
 import 'package:keykey/core/platform/app_packages.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
@@ -162,17 +163,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 onTap: () => context.push(AppRoutes.changePassword),
               ),
               if (_support == BiometricSupport.available)
-                KkInfoRow(
+                KkSwitchTile(
                   infoTitle: l10n.settingsBiometric,
                   info: l10n.settingsBiometricHint,
-                  child: SwitchListTile(
-                    secondary: const KkIconBox(icon: Icons.fingerprint_rounded),
-                    title: Text(l10n.settingsBiometric),
-                    value: _biometricEnabled,
-                    onChanged: _busy
-                        ? null
-                        : (value) => _setBiometric(enable: value),
-                  ),
+                  secondary: const KkIconBox(icon: Icons.fingerprint_rounded),
+                  title: Text(l10n.settingsBiometric),
+                  value: _biometricEnabled,
+                  onChanged: _busy
+                      ? null
+                      : (value) => _setBiometric(enable: value),
                 ),
               if (_support == BiometricSupport.notEnrolled)
                 ListTile(
@@ -181,17 +180,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   title: Text(l10n.settingsBiometric),
                   subtitle: KkRowSubtitle(l10n.settingsBiometricNotEnrolled),
                 ),
-              KkInfoRow(
+              KkSwitchTile(
                 infoTitle: l10n.settingsOtpRequireAuth,
                 info: l10n.settingsOtpRequireAuthHelp,
-                child: SwitchListTile(
-                  secondary: const KkIconBox(icon: Icons.shield_rounded),
-                  title: Text(l10n.settingsOtpRequireAuth),
-                  value: settings?.otpRequireAuth ?? false,
-                  onChanged: settings == null
-                      ? null
-                      : (value) => _setOtpRequireAuth(value: value),
-                ),
+                secondary: const KkIconBox(icon: Icons.shield_rounded),
+                title: Text(l10n.settingsOtpRequireAuth),
+                value: settings?.otpRequireAuth ?? false,
+                onChanged: settings == null
+                    ? null
+                    : (value) => _setOtpRequireAuth(value: value),
               ),
               ListTile(
                 leading: const KkIconBox(icon: Icons.lock_rounded),
@@ -203,21 +200,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const BackupSection(),
           AutofillSetupSection(
             children: [
-              KkInfoRow(
+              KkSwitchTile(
                 infoTitle: l10n.settingsAutofillCopyOtp,
                 info: l10n.settingsAutofillCopyOtpHelp(
                   SensitiveClipboard.clearAfter.inSeconds,
                 ),
-                child: SwitchListTile(
-                  secondary: const KkIconBox(
-                    icon: Icons.content_paste_go_rounded,
-                  ),
-                  title: Text(l10n.settingsAutofillCopyOtp),
-                  value: settings?.autofillCopyOtp ?? false,
-                  onChanged: settings == null
-                      ? null
-                      : (value) => unawaited(_setAutofillCopyOtp(value: value)),
+                secondary: const KkIconBox(
+                  icon: Icons.content_paste_go_rounded,
                 ),
+                title: Text(l10n.settingsAutofillCopyOtp),
+                value: settings?.autofillCopyOtp ?? false,
+                onChanged: settings == null
+                    ? null
+                    : (value) => unawaited(_setAutofillCopyOtp(value: value)),
               ),
             ],
           ),

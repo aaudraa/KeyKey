@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keykey/app/ui/kk_switch.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/features/authenticator/data/otp_content.dart';
 import 'package:keykey/features/authenticator/data/otp_parameters.dart';
@@ -211,7 +212,7 @@ void main() {
     }
 
     Finder toggle() => find.widgetWithText(
-      SwitchListTile,
+      KkSwitchTile,
       '2FA kodlarını göstermeden önce doğrula',
     );
 
@@ -224,7 +225,7 @@ void main() {
 
       expect(find.byType(BottomSheet), findsNothing);
       expect(settings.settings.otpRequireAuth, isTrue);
-      expect(tester.widget<SwitchListTile>(toggle()).value, isTrue);
+      expect(tester.widget<KkSwitchTile>(toggle()).value, isTrue);
     });
 
     testWidgets('kapatmak doğrulama istiyor', (tester) async {
@@ -242,7 +243,7 @@ void main() {
       await enterPassword(tester, FakeVaultService.correctPassword);
 
       expect(settings.settings.otpRequireAuth, isFalse);
-      expect(tester.widget<SwitchListTile>(toggle()).value, isFalse);
+      expect(tester.widget<KkSwitchTile>(toggle()).value, isFalse);
     });
   });
 }

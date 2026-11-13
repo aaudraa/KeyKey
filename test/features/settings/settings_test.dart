@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/kk_section.dart';
+import 'package:keykey/app/ui/kk_switch.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/features/autofill/application/autofill_setup.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
@@ -54,10 +55,7 @@ void main() {
   }
 
   // Ayarlarda birden çok anahtar var, parmak izi anahtarı adıyla bulunur.
-  final biometricSwitch = find.widgetWithText(
-    SwitchListTile,
-    'Parmak iziyle aç',
-  );
+  final biometricSwitch = find.widgetWithText(KkSwitchTile, 'Parmak iziyle aç');
 
   group('düzen', () {
     testWidgets('ayarlar dört grup başlığını gösterir', (tester) async {
@@ -91,7 +89,7 @@ void main() {
       expect(find.text(hint), findsNothing);
       await tester.tap(
         find.descendant(
-          of: find.ancestor(of: biometricSwitch, matching: find.byType(Row)),
+          of: biometricSwitch,
           matching: find.byTooltip('Açıklama'),
         ),
       );
@@ -238,7 +236,7 @@ void main() {
       await tester.tap(biometricSwitch);
       await tester.pumpAndSettle();
       expect(service.biometricEnabled, isTrue);
-      expect(tester.widget<SwitchListTile>(biometricSwitch).value, isTrue);
+      expect(tester.widget<KkSwitchTile>(biometricSwitch).value, isTrue);
 
       await tester.tap(biometricSwitch);
       await tester.pumpAndSettle();
@@ -253,7 +251,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(service.biometricPrompts, 1);
-      expect(tester.widget<SwitchListTile>(biometricSwitch).value, isFalse);
+      expect(tester.widget<KkSwitchTile>(biometricSwitch).value, isFalse);
     });
 
     testWidgets('etkinleşmezse mesaj çıkıyor', (tester) async {
@@ -443,16 +441,16 @@ void main() {
     await tester.pumpAndSettle();
 
     final copySwitch = find.widgetWithText(
-      SwitchListTile,
+      KkSwitchTile,
       'Doldurduktan sonra 2FA kodunu kopyala',
     );
     await tester.scrollUntilVisible(copySwitch, 100);
     await tester.ensureVisible(copySwitch);
     await tester.pumpAndSettle();
-    expect(tester.widget<SwitchListTile>(copySwitch).value, isTrue);
+    expect(tester.widget<KkSwitchTile>(copySwitch).value, isTrue);
     await tester.tap(copySwitch);
     await tester.pumpAndSettle();
     expect(settings.settings.autofillCopyOtp, isFalse);
-    expect(tester.widget<SwitchListTile>(copySwitch).value, isFalse);
+    expect(tester.widget<KkSwitchTile>(copySwitch).value, isFalse);
   });
 }
