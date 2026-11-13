@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_menu.dart';
 import 'package:keykey/app/ui/kk_metrics.dart';
@@ -45,17 +46,52 @@ PreferredSizeWidget kkRootAppBar(
     titleSpacing: 20,
     title: Semantics(
       header: true,
-      child: Text(
-        title,
-        style: theme.textTheme.headlineMedium?.copyWith(
-          fontSize: KkMetrics.rootTitle,
-          fontWeight: FontWeight.w700,
-          color: theme.colorScheme.onSurface,
+      child: _CollapsingTitle(
+        child: Text(
+          title,
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontSize: KkMetrics.rootTitle,
+            fontWeight: FontWeight.w700,
+            color: theme.colorScheme.onSurface,
+          ),
         ),
       ),
     ),
     actions: [...actions, const SizedBox(width: 8)],
   );
+}
+
+/// Kök ekranın büyük başlığı: liste kaydıkça küçülüp alt ekran başlığı
+/// boyuna (17/22) iner (madde 1.9). Çubuğun boyu değişmez; yalnızca yazı
+/// ölçeklenir.
+class _CollapsingTitle extends StatelessWidget {
+  const new({required this.child});
+
+  /// Başlığın tamamen küçüldüğü kaydırma.
+  static const double _range = 40;
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final offset = KkScrollState.maybeOf(context)?.offset;
+    if (offset == null) return child;
+    return ValueListenableBuilder<double>(
+      valueListenable: offset,
+      builder: (context, pixels, child) {
+        final t = (pixels / _range).clamp(0.0, 1.0);
+        final scale = 1 - t * (1 - KkMetrics.subTitle / KkMetrics.rootTitle);
+        return Transform.scale(
+          scale: scale,
+          alignment: AlignmentDirectional.centerStart.resolve(
+            Directionality.of(context),
+          ),
+          child: child,
+        );
+      },
+      child: child,
+    );
+  }
 }
 
 /// Alt ekranların üst çubuğu: geri gidilebiliyorsa solda cam daire içinde

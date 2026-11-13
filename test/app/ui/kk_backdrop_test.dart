@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/theme.dart';
+import 'package:keykey/app/ui/kk_ambient.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
@@ -20,7 +21,12 @@ double _luminance(int r, int g, int b) {
 double _colorLuminance(Color c) =>
     _luminance((c.r * 255).round(), (c.g * 255).round(), (c.b * 255).round());
 
-Widget _host(ThemeData theme, Widget child, {bool disableAnimations = false}) {
+Widget _host(
+  ThemeData theme,
+  Widget child, {
+  bool disableAnimations = false,
+  bool ambient = false,
+}) {
   return MaterialApp(
     theme: theme,
     home: MediaQuery(
@@ -28,10 +34,13 @@ Widget _host(ThemeData theme, Widget child, {bool disableAnimations = false}) {
         size: const Size(360, 800),
         disableAnimations: disableAnimations,
       ),
-      child: child,
+      child: KkAmbient(enabled: ambient, child: child),
     ),
   );
 }
+
+bool _drifting(WidgetTester tester) =>
+    tester.state<KkBackdropState>(find.byType(KkBackdrop)).isDrifting;
 
 void main() {
   for (final (name, theme) in [
@@ -84,9 +93,11 @@ void main() {
     expect(tester.binding.hasScheduledFrame, isFalse);
   });
 
-  testWidgets('kayan zemin kare istiyor', (tester) async {
+  testWidgets('süren hareket açıkken zemin kayar, kare istiyor', (
+    tester,
+  ) async {
     await tester.pumpWidget(
-      _host(AppTheme.light, const KkBackdrop(drifting: true)),
+      _host(AppTheme.light, const KkBackdrop(), ambient: true),
     );
     await tester.pump(const Duration(seconds: 1));
     expect(tester.binding.hasScheduledFrame, isTrue);
@@ -98,7 +109,8 @@ void main() {
     await tester.pumpWidget(
       _host(
         AppTheme.light,
-        const TickerMode(enabled: false, child: KkBackdrop(drifting: true)),
+        const TickerMode(enabled: false, child: KkBackdrop()),
+        ambient: true,
       ),
     );
     await tester.pump(const Duration(seconds: 1));
@@ -112,8 +124,9 @@ void main() {
       await tester.pumpWidget(
         _host(
           AppTheme.light,
-          const KkBackdrop(drifting: true),
+          const KkBackdrop(),
           disableAnimations: off,
+          ambient: true,
         ),
       );
       await tester.pump(const Duration(milliseconds: 100));
@@ -126,12 +139,74 @@ void main() {
     await tester.pumpWidget(
       _host(
         AppTheme.light,
-        const KkBackdrop(drifting: true),
+        const KkBackdrop(),
         disableAnimations: true,
+        ambient: true,
       ),
     );
     await tester.pump();
     expect(tester.binding.hasScheduledFrame, isFalse);
+  });
+
+  testWidgets('KkAmbient yoksa zemin durgun (testler ve doldurma penceresi)', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: const KkScaffold(body: Text('içerik')),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(_drifting(tester), isFalse);
+  });
+
+  testWidgets('kilit ekranının zemini hızlı, diğerleri sakin döngüde', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(AppTheme.light, const KkBackdrop(), ambient: true),
+    );
+    expect(
+      tester.state<KkBackdropState>(find.byType(KkBackdrop)).period,
+      KkMotion.calmDrift,
+    );
+    await tester.pumpWidget(
+      _host(AppTheme.light, const KkBackdrop(lively: true), ambient: true),
+    );
+    expect(
+      tester.state<KkBackdropState>(find.byType(KkBackdrop)).period,
+      KkMotion.drift,
+    );
+  });
+
+  testWidgets('kaydırırken zemin durur, bırakınca devam eder', (tester) async {
+    await tester.pumpWidget(
+      _host(
+        AppTheme.light,
+        KkScaffold(
+          body: ListView(
+            children: [
+              for (var i = 0; i < 50; i++)
+                SizedBox(height: 60, child: Text('satır $i')),
+            ],
+          ),
+        ),
+        ambient: true,
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(_drifting(tester), isTrue);
+
+    final gesture = await tester.startGesture(const Offset(180, 400));
+    await gesture.moveBy(const Offset(0, -200));
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(_drifting(tester), isFalse);
+
+    await gesture.up();
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pump(const Duration(seconds: 1));
+    expect(_drifting(tester), isTrue);
   });
 
   testWidgets("KkScaffold zemini çizer ve kendi Scaffold'u saydam", (

@@ -261,7 +261,7 @@ class _LockScreenState extends ConsumerState<LockScreen>
       );
     }
     return KkScaffold(
-      driftingBackdrop: ambient,
+      livelyBackdrop: true,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(

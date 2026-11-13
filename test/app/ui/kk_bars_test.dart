@@ -120,4 +120,47 @@ void main() {
     expect(taps, 1);
     handle.dispose();
   });
+
+  testWidgets('kaydırınca büyük başlık küçülür, başlık olarak okunur', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Builder(
+          builder: (context) => KkScaffold(
+            appBar: kkRootAppBar(context, title: 'Kasa'),
+            body: ListView(
+              children: [
+                for (var i = 0; i < 50; i++)
+                  SizedBox(height: 60, child: Text('satır $i')),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    double scale() => tester
+        .widget<Transform>(
+          find
+              .ancestor(of: find.text('Kasa'), matching: find.byType(Transform))
+              .last,
+        )
+        .transform
+        .storage[0];
+
+    expect(scale(), 1);
+    await tester.drag(find.byType(ListView), const Offset(0, -20));
+    await tester.pumpAndSettle();
+    expect(scale(), allOf(lessThan(1), greaterThan(17 / 22)));
+    await tester.drag(find.byType(ListView), const Offset(0, -200));
+    await tester.pumpAndSettle();
+    expect(scale(), closeTo(17 / 22, 0.001));
+    expect(
+      tester.getSemantics(find.text('Kasa')),
+      matchesSemantics(label: 'Kasa', isHeader: true),
+    );
+    handle.dispose();
+  });
 }
