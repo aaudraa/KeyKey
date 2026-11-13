@@ -1,8 +1,6 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:keykey/app/theme.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/core/platform/app_packages.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 
@@ -14,26 +12,15 @@ String avatarInitial(String name) {
   return trimmed.characters.first.toUpperCase();
 }
 
-/// Addan türetilen kutu rengi: aynı ad hep aynı rengi alır. Kırpılmış ve
-/// küçük harfe çevrilmiş adın FNV-1a (32 bit) özeti renk takımında sıra
-/// seçer.
-Color avatarColorFor(String name) {
-  var hash = 0x811C9DC5;
-  for (final byte in utf8.encode(name.trim().toLowerCase())) {
-    hash ^= byte;
-    hash = (hash * 0x01000193) & 0xFFFFFFFF;
-  }
-  return KkColors.avatarPalette[hash % KkColors.avatarPalette.length];
-}
-
-/// Kaydın solundaki renkli kutu. Kayıt telefondaki bir uygulamaya bağlıysa o
-/// uygulamanın simgesi (Android'den o an okunur, diske yazılmaz), değilse
-/// addan renk alan kutuda baş harf. Süstür; ekran okuyucu okumaz.
+/// Kaydın solundaki simge. Kayıt telefondaki bir uygulamaya bağlıysa o
+/// uygulamanın simgesi, kutusuz ve siyah-beyaz (Android'den o an okunur,
+/// diske yazılmaz); değilse ince çizgili dairede baş harf. Süstür; ekran
+/// okuyucu okumaz.
 class RecordAvatar extends ConsumerWidget {
   const new({
     required this.login,
     required this.name,
-    this.size = 42,
+    this.size = 34,
     super.key,
   });
 
@@ -50,26 +37,25 @@ class RecordAvatar extends ConsumerWidget {
     final icon = packageName == null
         ? null
         : ref.watch(appIconProvider(packageName)).value;
-    final radius = BorderRadius.circular(size * 13 / 42);
+    final ink = Theme.of(context).colorScheme.onSurface;
 
     final Widget child;
     if (icon != null) {
-      child = ClipRRect(
-        borderRadius: radius,
+      child = ColorFiltered(
+        colorFilter: kkSaturation(0),
         child: Image.memory(
           icon,
           width: size,
           height: size,
-          fit: BoxFit.cover,
+          fit: BoxFit.contain,
           gaplessPlayback: true,
           excludeFromSemantics: true,
         ),
       );
     } else {
       child = DecoratedBox(
-        decoration: BoxDecoration(
-          color: avatarColorFor(name),
-          borderRadius: radius,
+        decoration: ShapeDecoration(
+          shape: CircleBorder(side: BorderSide(color: ink, width: 1.2)),
         ),
         child: Center(
           child: Text(
@@ -78,7 +64,7 @@ class RecordAvatar extends ConsumerWidget {
             // Kutu sabit boyda; büyük yazıda harf kutudan taşmasın.
             textScaler: TextScaler.noScaling,
             style: TextStyle(
-              color: Colors.white,
+              color: ink,
               fontSize: size * 0.42,
               fontWeight: FontWeight.w700,
               height: 1,

@@ -37,20 +37,6 @@ abstract final class KkColors {
 
   /// Turuncunun üstündeki yazı ve simge (iki temada).
   static const onBrand = Color(0xFF1A0D05);
-
-  /// Baş harf kutularının renkleri; hepsinde beyaz harf en az 5:1 okunur.
-  static const avatarPalette = [
-    Color(0xFFC2410C),
-    Color(0xFF2563EB),
-    Color(0xFF0F766E),
-    Color(0xFF7C3AED),
-    Color(0xFFBE185D),
-    Color(0xFF15803D),
-    Color(0xFFB45309),
-    Color(0xFF475569),
-    Color(0xFFB91C1C),
-    Color(0xFF0E7490),
-  ];
 }
 
 abstract final class AppTheme {

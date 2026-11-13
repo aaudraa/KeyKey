@@ -44,17 +44,12 @@ void main() {
     }
   });
 
-  test('uygulamadaki logoda K beyaz dairenin içinde', () {
+  test("uygulamadaki logoda K kutunun ortasında, boyunun %90'ı", () {
     final bounds = KeyKeyLogo.logoPath().getBounds();
-    for (final corner in [
-      bounds.topLeft,
-      bounds.topRight,
-      bounds.bottomLeft,
-      bounds.bottomRight,
-    ]) {
-      final x = corner.dx - 50;
-      final y = corner.dy - 50;
-      expect(sqrt(x * x + y * y), lessThan(50));
-    }
+    expect(bounds.center.dx, closeTo(50, 0.01));
+    expect(bounds.center.dy, closeTo(50, 0.01));
+    expect(bounds.height, closeTo(90, 0.01));
+    expect(bounds.left, greaterThanOrEqualTo(0));
+    expect(bounds.right, lessThanOrEqualTo(100));
   });
 }

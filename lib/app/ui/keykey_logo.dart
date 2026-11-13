@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:keykey/app/theme.dart';
 
-/// KeyKey'in logosu: beyaz daire içinde kalın, turuncu K.
+/// KeyKey'in logosu: kutusuz, kalın turuncu K.
 ///
-/// Uygulama simgesi (`resources/design/keykey-simge.svg`) aynı yolu
-/// kullanır; ikisinin aynı kaldığını bir test denetler.
+/// Uygulama simgesi (`resources/design/keykey-simge.svg`) aynı yolu beyaz
+/// daire içinde kullanır; yolun aynı kaldığını bir test denetler.
 class KeyKeyLogo extends StatelessWidget {
   const new({this.size = 96, super.key});
 
@@ -17,14 +17,13 @@ class KeyKeyLogo extends StatelessWidget {
 
   final double size;
 
-  /// K'nın dairenin içindeki ölçeği: uygulama simgesindeki oranla aynı
-  /// (108'lik tuvalde 0,64; maskenin görünen dairesi 72).
-  static const double _scale = 0.64 * 100 / 72;
+  /// K'nın ölçeği: yüksekliği (72) kutunun %90'ı.
+  static const double _scale = 0.9 * 100 / 72;
 
-  /// Dairenin ortasına gelen nokta: K'nın sınır kutusunun ortası.
+  /// Kutunun ortasına gelen nokta: K'nın sınır kutusunun ortası.
   static const Offset _center = Offset(57, 50);
 
-  /// 100×100 kutuda, beyaz dairenin içine yerleştirilmiş K.
+  /// 100×100 kutuya ortalanmış K.
   static Path logoPath() {
     final matrix = Matrix4.identity()
       ..translateByDouble(50, 50, 0, 1)
@@ -101,11 +100,6 @@ class _LogoPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final scale = size.shortestSide / 100;
     canvas
-      ..drawCircle(
-        size.center(Offset.zero),
-        size.shortestSide / 2,
-        Paint()..color = Colors.white,
-      )
       ..save()
       ..scale(scale)
       ..drawPath(_path, Paint()..color = KeyKeyLogo.color)

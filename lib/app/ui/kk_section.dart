@@ -121,25 +121,20 @@ class KkInfoRow extends StatelessWidget {
   }
 }
 
-/// Vurgu zeminli küçük simge kutusu: ayar satırlarında ve "+" kutusunda.
+/// Ayar satırlarındaki ve "+" kutusundaki simge: kutusuz, yazı renginde.
 class KkIconBox extends StatelessWidget {
-  const new({required this.icon, this.size = 36, super.key});
+  const new({required this.icon, this.size = 22, super.key});
 
   final IconData icon;
   final double size;
 
   @override
   Widget build(BuildContext context) {
-    final glass = KkGlass.of(context);
     return ExcludeSemantics(
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: glass.tint,
-          borderRadius: BorderRadius.circular(size * 0.3),
-        ),
-        child: Icon(icon, size: size * 0.55, color: glass.accent),
+      child: Icon(
+        icon,
+        size: size,
+        color: Theme.of(context).colorScheme.onSurface,
       ),
     );
   }

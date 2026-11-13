@@ -193,7 +193,7 @@ class GlassSurface extends StatelessWidget {
         child: BackdropFilter(
           filter: vibrant
               ? ui.ImageFilter.compose(
-                  outer: _saturation(vibrance),
+                  outer: kkSaturation(vibrance),
                   inner: ui.ImageFilter.blur(
                     sigmaX: navBlurSigma,
                     sigmaY: navBlurSigma,
@@ -211,8 +211,9 @@ class GlassSurface extends StatelessWidget {
   }
 }
 
-/// Renk doygunluğunu [amount] katına çıkaran süzgeç (1 değişmez).
-ColorFilter _saturation(double amount) {
+/// Renk doygunluğunu [amount] katına çıkaran süzgeç (1 değişmez, 0 gri
+/// tonlama).
+ColorFilter kkSaturation(double amount) {
   const r = 0.2126;
   const g = 0.7152;
   const b = 0.0722;

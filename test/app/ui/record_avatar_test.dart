@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/theme.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/core/platform/app_packages.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
@@ -75,26 +76,6 @@ void main() {
     });
   });
 
-  group('avatarColorFor', () {
-    test('aynı ad hep aynı renk, boşluk ve büyük harf fark etmez', () {
-      expect(avatarColorFor('GitHub'), avatarColorFor(' github '));
-    });
-
-    test('renk hep takımdan', () {
-      for (final name in ['GitHub', 'posta', '', 'Banka', 'ğüşiöç', '🙂']) {
-        expect(KkColors.avatarPalette, contains(avatarColorFor(name)));
-      }
-    });
-
-    test('farklı adlar farklı renklere dağılır', () {
-      final colors = {
-        for (final name in ['GitHub', 'Google', 'Banka', 'Posta', 'Oyun'])
-          avatarColorFor(name),
-      };
-      expect(colors.length, greaterThan(1));
-    });
-  });
-
   testWidgets('bağlı uygulamanın simgesi gösterilir', (tester) async {
     await _pump(
       tester,
@@ -104,6 +85,15 @@ void main() {
     );
     expect(find.byType(Image), findsOneWidget);
     expect(find.text('O'), findsNothing);
+    // Kutusuz ve siyah-beyaz: kırpma yok, doygunluğu sıfırlayan süzgeç var.
+    expect(find.byType(ClipRRect), findsNothing);
+    final filtered = tester.widget<ColorFiltered>(
+      find.ancestor(
+        of: find.byType(Image),
+        matching: find.byType(ColorFiltered),
+      ),
+    );
+    expect(filtered.colorFilter, kkSaturation(0));
   });
 
   testWidgets('simge okunamazsa baş harfe düşülür', (tester) async {
@@ -124,7 +114,22 @@ void main() {
     await _pump(tester, _FakePackages({}), null, 'GitHub');
     expect(find.text('G'), findsOneWidget);
     expect(find.bySemanticsLabel('G'), findsNothing);
-    expect(tester.getSize(find.byType(RecordAvatar)), const Size(42, 42));
+    expect(tester.getSize(find.byType(RecordAvatar)), const Size(34, 34));
     handle.dispose();
+  });
+
+  testWidgets('baş harf ince çizgili dairede, renkli kutu yok', (tester) async {
+    await _pump(tester, _FakePackages({}), null, 'GitHub');
+    final ink = AppTheme.light.colorScheme.onSurface;
+    final text = tester.widget<Text>(find.text('G'));
+    expect(text.style?.color, ink);
+    final box = tester.widget<DecoratedBox>(
+      find.ancestor(of: find.text('G'), matching: find.byType(DecoratedBox)),
+    );
+    final decoration = box.decoration as ShapeDecoration;
+    expect(decoration.color, isNull);
+    final shape = decoration.shape as CircleBorder;
+    expect(shape.side.color, ink);
+    expect(shape.side.width, 1.2);
   });
 }

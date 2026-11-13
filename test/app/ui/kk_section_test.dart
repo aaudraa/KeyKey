@@ -42,4 +42,28 @@ void main() {
     );
     handle.dispose();
   });
+
+  testWidgets('simge kutusuz, yazı renginde', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: const Scaffold(
+          body: Center(child: KkIconBox(icon: Icons.lock_rounded)),
+        ),
+      ),
+    );
+
+    final box = find.byType(KkIconBox);
+    expect(
+      find.descendant(of: box, matching: find.byType(Container)),
+      findsNothing,
+    );
+    expect(
+      find.descendant(of: box, matching: find.byType(DecoratedBox)),
+      findsNothing,
+    );
+    final icon = tester.widget<Icon>(find.byIcon(Icons.lock_rounded));
+    expect(icon.color, AppTheme.light.colorScheme.onSurface);
+    expect(tester.getSize(box), const Size(22, 22));
+  });
 }

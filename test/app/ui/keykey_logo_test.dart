@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/theme.dart';
 import 'package:keykey/app/ui/keykey_logo.dart';
@@ -31,6 +32,31 @@ void main() {
       () => KeyKeyLogo.parsePath('M0 0c1 1 2 2 3 3z'),
       throwsFormatException,
     );
+  });
+
+  testWidgets("logo kutusuz: K'nın dışı saydam", (tester) async {
+    final key = GlobalKey();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(
+          child: RepaintBoundary(key: key, child: const KeyKeyLogo(size: 100)),
+        ),
+      ),
+    );
+    final bytes = await tester.runAsync(() async {
+      final boundary =
+          key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+      final image = await boundary.toImage();
+      final data = await image.toByteData();
+      image.dispose();
+      return data!;
+    });
+    int alphaAt(int x, int y) => bytes!.getUint8((y * 100 + x) * 4 + 3);
+    // Köşe ve dairenin içinde kalan ama K'nın dışındaki nokta (kollar
+    // arası) saydam; gövde turuncu.
+    expect(alphaAt(2, 2), 0);
+    expect(alphaAt(50, 50 - 40), 0);
+    expect(alphaAt(15, 50), greaterThan(200));
   });
 
   test('logo rengi marka turuncusu', () {
