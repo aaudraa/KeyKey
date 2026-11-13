@@ -19,10 +19,11 @@ import 'package:keykey/l10n/generated/app_localizations.dart';
 /// Açık kasanın yedeğini üretir ve kullanıcının seçtiği yere kaydeder.
 ///
 /// Dosya kasa açıkken üretilir; seçici açıkken yalnızca şifreli baytlar
-/// bekler. Başarılıysa son yedek zamanı ayar kaydına yazılır.
-Future<void> backUpVault(BuildContext context, WidgetRef ref) async {
+/// bekler. Başarılıysa son yedek zamanı ayar kaydına yazılır ve `true`
+/// döner.
+Future<bool> backUpVault(BuildContext context, WidgetRef ref) async {
   final status = ref.read(vaultControllerProvider);
-  if (status is! VaultOpen) return;
+  if (status is! VaultOpen) return false;
   final l10n = AppLocalizations.of(context);
   final messenger = ScaffoldMessenger.of(context);
   final settings = ref.read(settingsControllerProvider.notifier);
@@ -32,7 +33,7 @@ Future<void> backUpVault(BuildContext context, WidgetRef ref) async {
   try {
     bytes = await ref.read(backupServiceProvider).create(status.session, now);
   } on VaultLockedException {
-    return;
+    return false;
   }
   final result = await ref
       .read(externalActivityGateProvider.notifier)
@@ -51,10 +52,12 @@ Future<void> backUpVault(BuildContext context, WidgetRef ref) async {
         // Dosya kaydedildi; kasa kilitlendiği için zaman yazılamadı.
       }
       messenger.showSnackBar(SnackBar(content: Text(l10n.backupSaved)));
+      return true;
     case DocumentSaveResult.cancelled:
-      break;
+      return false;
     case DocumentSaveResult.failed:
       messenger.showSnackBar(SnackBar(content: Text(l10n.backupFailed)));
+      return false;
   }
 }
 

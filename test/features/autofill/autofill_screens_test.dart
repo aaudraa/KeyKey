@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/ui/keykey_logo.dart';
+import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/features/authenticator/application/otp_clock.dart';
 import 'package:keykey/features/authenticator/application/otp_generator.dart';
@@ -175,6 +176,7 @@ void main() {
     WidgetTester tester, {
     required VaultStatus status,
     AutofillTarget? target = app,
+    bool settle = true,
   }) async {
     tester.platformDispatcher.localesTestValue = [const Locale('tr')];
     addTearDown(tester.platformDispatcher.clearLocalesTestValue);
@@ -195,7 +197,7 @@ void main() {
         child: const AutofillApp(),
       ),
     );
-    await tester.pumpAndSettle();
+    if (settle) await tester.pumpAndSettle();
     return bridge;
   }
 
@@ -742,6 +744,32 @@ void main() {
   group('yarım pencere', () {
     Finder inFrame(Finder finder) =>
         find.descendant(of: find.byType(AutofillSheetFrame), matching: finder);
+
+    testWidgets('pencere alttan yaylanarak açılır', (tester) async {
+      await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        settle: false,
+      );
+      double shownFrom() => tester
+          .widget<FractionalTranslation>(
+            find
+                .descendant(
+                  of: find.byType(AutofillSheetFrame),
+                  matching: find.byType(FractionalTranslation),
+                )
+                .first,
+          )
+          .translation
+          .dy;
+      expect(shownFrom(), closeTo(1, 0.01));
+      await tester.pump();
+      await tester.pump(KkMotion.panelOpen ~/ 8);
+      expect(shownFrom(), greaterThan(0));
+      expect(shownFrom(), lessThan(1));
+      await tester.pumpAndSettle();
+      expect(shownFrom(), 0);
+    });
 
     testWidgets('kilit ekranı pencerenin içinde', (tester) async {
       await pumpAutofill(tester, status: VaultLocked(service.header));

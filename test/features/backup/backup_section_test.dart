@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keykey/app/ui/kk_done_mark.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/features/backup/presentation/backup_status_card.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
@@ -81,6 +82,62 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.textContaining('Yedek dosyası şifrelidir'), findsOneWidget);
+  });
+
+  /// Ayarlara girişten sonraki 1,5 sn içinde kartın en büyük ölçeği.
+  Future<double> maxPulse(WidgetTester tester) async {
+    await pumpKeyKey(
+      tester,
+      status: VaultOpen(service.newSession()),
+      service: service,
+      settings: settings,
+      clock: () => now,
+    );
+    await tester.tap(find.byIcon(Icons.settings_outlined));
+    var most = 1.0;
+    for (var i = 0; i < 75; i++) {
+      await tester.pump(const Duration(milliseconds: 20));
+      final pulse = find.descendant(
+        of: find.byKey(BackupStatusCard.pulseKey),
+        matching: find.byType(Transform),
+      );
+      if (pulse.evaluate().isEmpty) continue;
+      final scale = tester.widget<Transform>(pulse.first).transform.storage[0];
+      if (scale > most) most = scale;
+    }
+    await tester.pumpAndSettle();
+    return most;
+  }
+
+  testWidgets('yedek hiç yoksa ayarlara girişte kart bir kez hafifçe atar', (
+    tester,
+  ) async {
+    final most = await maxPulse(tester);
+    expect(most, greaterThan(1.02));
+    expect(most, lessThanOrEqualTo(BackupStatusCard.pulseScale + 0.001));
+  });
+
+  testWidgets('yeni yedekte kart atmaz', (tester) async {
+    settings = FakeSettingsRepository(
+      AppSettings.defaults.copyWith(lastBackupAt: DateTime(2026, 11, 7, 9)),
+    );
+    expect(await maxPulse(tester), 1);
+  });
+
+  testWidgets('yedek bitince düğmede onay işareti çizilir, sonra yazı döner', (
+    tester,
+  ) async {
+    await pumpSettings(tester);
+    await tester.tap(find.text('Yedekle'));
+    var sawDone = false;
+    for (var i = 0; i < 60; i++) {
+      await tester.pump(const Duration(milliseconds: 20));
+      if (find.byType(KkDoneMark).evaluate().isNotEmpty) sawDone = true;
+    }
+    await tester.pumpAndSettle();
+    expect(sawDone, isTrue);
+    expect(find.byType(KkDoneMark), findsNothing);
+    expect(find.text('Yedekle'), findsOneWidget);
   });
 
   testWidgets('yedek kaydediliyor ve zamanı yazılıyor', (tester) async {

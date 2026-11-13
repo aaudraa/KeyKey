@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../../support/fake_vault_service.dart';
@@ -56,6 +57,39 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Doğrula ve kasayı aç'));
     await tester.pumpAndSettle();
   }
+
+  group('adım geçişi', () {
+    double progress(WidgetTester tester) => tester
+        .widget<LinearProgressIndicator>(
+          find.descendant(
+            of: find.byKey(OnboardingScreen.stepIndicatorKey),
+            matching: find.byType(LinearProgressIndicator),
+          ),
+        )
+        .value!;
+
+    testWidgets('yeni adım yandan kayarak gelir, gösterge dolarak ilerler', (
+      tester,
+    ) async {
+      await pumpSetup(tester);
+      expect(progress(tester), closeTo(1 / 3, 0.001));
+      await typePasswords(tester, password, password);
+      await tester.tap(find.widgetWithText(FilledButton, 'Kasayı oluştur'));
+      final next = find.widgetWithText(FilledButton, 'Yazdım');
+      for (var i = 0; i < 100 && next.evaluate().isEmpty; i++) {
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      await tester.pump(const Duration(milliseconds: 50));
+      final sliding = tester.getTopLeft(next).dx;
+      final midway = progress(tester);
+      await tester.pumpAndSettle();
+      final settled = tester.getTopLeft(next).dx;
+      expect(sliding, greaterThan(settled + 1));
+      expect(midway, greaterThan(1 / 3));
+      expect(midway, lessThan(2 / 3));
+      expect(progress(tester), closeTo(2 / 3, 0.001));
+    });
+  });
 
   group('ana parola adımı', () {
     testWidgets('kurulumun ilk adımında logo var', (tester) async {

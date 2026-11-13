@@ -2,10 +2,12 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/core/platform/qr_image_reader.dart';
 import 'package:keykey/features/authenticator/application/scanned_code.dart';
 import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/authenticator/data/otpauth_uri.dart';
+import 'package:keykey/features/authenticator/presentation/qr_scan_screen.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:sodium/sodium_sumo.dart';
 
@@ -109,6 +111,67 @@ void main() {
       await settle(tester);
       await openAddOtp(tester, option, settle: () => settle(tester));
     }
+
+    double frameScale(WidgetTester tester) => tester
+        .widget<Transform>(
+          find
+              .descendant(
+                of: find.byKey(QrScanScreen.frameKey),
+                matching: find.byType(Transform),
+              )
+              .first,
+        )
+        .transform
+        .storage[0];
+
+    Future<void> openCamera(
+      WidgetTester tester, {
+      required bool ambient,
+    }) async {
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        otps: otps,
+        qrImages: images,
+        camera: camera,
+        ambient: ambient,
+        clock: () => DateTime.fromMillisecondsSinceEpoch(30000, isUtc: true),
+        settle: false,
+      );
+      await settle(tester);
+      await tester.tap(find.byIcon(Icons.shield_outlined));
+      await settle(tester);
+      await openAddOtp(tester, 'QR kodu tara', settle: () => settle(tester));
+    }
+
+    testWidgets('tarama çerçevesi yavaşça nefes alır', (tester) async {
+      await openCamera(tester, ambient: true);
+      final first = frameScale(tester);
+      await tester.pump(KkMotion.breath ~/ 2);
+      final second = frameScale(tester);
+      expect((first - second).abs(), greaterThan(0.005));
+      await tester.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('süren hareket kapalıyken çerçeve durur', (tester) async {
+      await openCamera(tester, ambient: false);
+      expect(frameScale(tester), 1);
+      await tester.pump(KkMotion.breath ~/ 2);
+      expect(frameScale(tester), 1);
+    });
+
+    testWidgets('kod okununca çerçeve kodun üstüne kapanır', (tester) async {
+      await openCamera(tester, ambient: false);
+      camera.scan(link);
+      await tester.pump();
+      // Çerçeve kapanır, onay formu ardından açılır.
+      await tester.pump(KkMotion.base ~/ 2);
+      expect(frameScale(tester), lessThan(1));
+      expect(frameScale(tester), greaterThan(QrScanScreen.closedScale - 0.001));
+      expect(find.text('Yeni 2FA hesabı'), findsNothing);
+      await settle(tester);
+    });
 
     testWidgets('kamerayla okunan hesap onaydan sonra kaydediliyor', (
       tester,
