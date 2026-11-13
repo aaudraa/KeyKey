@@ -92,7 +92,7 @@ void main() {
     expect(find.byIcon(Icons.shield), findsOneWidget);
   });
 
-  testWidgets('şerit 64 dp, altta 16 dp boşluk, dokunma hedefleri yeterli', (
+  testWidgets('şerit 52 dp, altta 16 dp boşluk, dokunma hedefleri yeterli', (
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
@@ -101,7 +101,7 @@ void main() {
     final screen = tester.getRect(find.byType(Scaffold));
     final pill = tester.getRect(find.byKey(GlassNavBar.pillKey));
     expect(pill.height, GlassNavBar.height);
-    expect(GlassNavBar.height, 64);
+    expect(GlassNavBar.height, 52);
     expect(screen.bottom - pill.bottom, GlassNavBar.bottomGap);
     expect(tester.getSize(find.byKey(GlassNavBar.addKey)).width, 48);
 

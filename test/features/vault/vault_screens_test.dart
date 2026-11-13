@@ -283,7 +283,7 @@ void main() {
           .widgetList(cards())
           .map((w) => tester.getSize(find.byWidget(w)).height)
           .toSet();
-      expect(heights, {64.0});
+      expect(heights, {54.0});
     });
 
     testWidgets('son kart alt menünün altında kalmayacak kadar boşluk var', (

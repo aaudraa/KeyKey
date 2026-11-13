@@ -25,8 +25,8 @@ class KkFieldCard extends StatelessWidget {
         padding: EdgeInsetsDirectional.only(
           start: 4,
           end: onRemove == null ? 4 : 0,
-          top: 4,
-          bottom: 4,
+          top: 2,
+          bottom: 2,
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,

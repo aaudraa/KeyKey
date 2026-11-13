@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/kk_entrance.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_metrics.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/app/ui/kk_section.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
@@ -141,7 +142,7 @@ class _AddPanelState extends State<AddPanel> {
       key: AddPanel.boxKey,
       blur: true,
       strong: true,
-      borderRadius: const BorderRadius.all(Radius.circular(26)),
+      borderRadius: const BorderRadius.all(Radius.circular(20)),
       child: Material(
         type: MaterialType.transparency,
         child: AnimatedSize(
@@ -244,14 +245,14 @@ class _PanelRow extends StatelessWidget {
       opacity: enabled ? 1 : 0.45,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(14),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 64),
+          constraints: const BoxConstraints(minHeight: 52),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             child: Row(
               children: [
-                KkIconBox(icon: icon, size: 40),
+                KkIconBox(icon: icon),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
@@ -261,6 +262,7 @@ class _PanelRow extends StatelessWidget {
                       Text(
                         title,
                         style: theme.textTheme.titleSmall?.copyWith(
+                          fontSize: KkMetrics.cardTitle,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -268,6 +270,7 @@ class _PanelRow extends StatelessWidget {
                         Text(
                           hint!,
                           style: theme.textTheme.bodySmall?.copyWith(
+                            fontSize: KkMetrics.cardSubtitle,
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
                         ),

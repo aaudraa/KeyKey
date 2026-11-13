@@ -109,7 +109,6 @@ void main() {
             child: KkCircleButton(
               icon: Icons.edit_rounded,
               tooltip: 'Düzenle',
-              size: 40,
               onPressed: () => taps++,
             ),
           ),

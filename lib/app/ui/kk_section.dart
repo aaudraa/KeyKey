@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_metrics.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
@@ -13,7 +14,7 @@ class KkSection extends StatelessWidget {
   const new({required this.title, required this.children, super.key});
 
   /// Bir satırın en az boyu (normal yazıda).
-  static const double rowHeight = 64;
+  static const double rowHeight = KkMetrics.rowHeight;
 
   final String title;
   final List<Widget> children;
@@ -39,18 +40,33 @@ class KkSection extends StatelessWidget {
             ),
           ),
           GlassSurface(
-            borderRadius: const BorderRadius.all(Radius.circular(26)),
             child: ClipRRect(
-              borderRadius: const BorderRadius.all(Radius.circular(26)),
+              borderRadius: const BorderRadius.all(
+                Radius.circular(KkMetrics.cardRadius),
+              ),
               child: Material(
                 type: MaterialType.transparency,
                 child: ListTileTheme.merge(
                   minTileHeight: rowHeight,
+                  minVerticalPadding: 4,
+                  titleTextStyle: theme.textTheme.bodyLarge?.copyWith(
+                    fontSize: KkMetrics.rowTitle,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                  subtitleTextStyle: theme.textTheme.bodySmall?.copyWith(
+                    fontSize: KkMetrics.rowSubtitle,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                   child: Column(
                     children: [
                       for (var i = 0; i < children.length; i++) ...[
                         if (i > 0) const Divider(height: 1, indent: 16),
-                        children[i],
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            minHeight: rowHeight,
+                          ),
+                          child: children[i],
+                        ),
                       ],
                     ],
                   ),

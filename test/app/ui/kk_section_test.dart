@@ -4,7 +4,7 @@ import 'package:keykey/app/theme.dart';
 import 'package:keykey/app/ui/kk_section.dart';
 
 void main() {
-  testWidgets('grup tek cam kart, satırlar 64 dp, simge kutusu okunmaz', (
+  testWidgets('grup tek cam kart, satırlar 48 dp, simge kutusu okunmaz', (
     tester,
   ) async {
     final handle = tester.ensureSemantics();
@@ -33,7 +33,7 @@ void main() {
     );
 
     expect(find.text('Güvenlik'), findsOneWidget);
-    expect(tester.getSize(find.byKey(const Key('satir'))).height, 64);
+    expect(tester.getSize(find.byKey(const Key('satir'))).height, 48);
     expect(find.byType(BackdropFilter), findsNothing);
     expect(find.byType(Divider), findsOneWidget);
     expect(

@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:keykey/app/theme.dart';
+import 'package:keykey/app/ui/kk_metrics.dart';
 
 /// Cam yüzeylerin ve zeminin renkleri. Değerler
 /// `resources/docs/tasarim-siyah-beyaz-plani.md` belgesindeki tabloda.
@@ -122,7 +123,9 @@ class KkGlass extends ThemeExtension<KkGlass> {
 class GlassSurface extends StatelessWidget {
   const new({
     required this.child,
-    this.borderRadius = const BorderRadius.all(Radius.circular(22)),
+    this.borderRadius = const BorderRadius.all(
+      Radius.circular(KkMetrics.cardRadius),
+    ),
     this.blur = false,
     this.strong = false,
     this.padding,

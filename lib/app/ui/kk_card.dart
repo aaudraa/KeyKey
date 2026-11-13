@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_metrics.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
 
 /// Listelerdeki cam kart. Normal yazı boyutunda hepsi aynı boydadır:
@@ -16,7 +17,7 @@ class KkCard extends StatefulWidget {
     this.onTap,
     this.onLongPress,
     this.semanticLabel,
-    this.minHeight = 64,
+    this.minHeight = KkMetrics.cardHeight,
     this.customSemanticsActions,
     super.key,
   });
@@ -41,7 +42,9 @@ class KkCard extends StatefulWidget {
 }
 
 class _KkCardState extends State<KkCard> {
-  static const _radius = BorderRadius.all(Radius.circular(22));
+  static const _radius = BorderRadius.all(
+    Radius.circular(KkMetrics.cardRadius),
+  );
   var _pressed = false;
 
   @override
@@ -54,6 +57,7 @@ class _KkCardState extends State<KkCard> {
       children: [
         DefaultTextStyle.merge(
           style: theme.textTheme.titleSmall?.copyWith(
+            fontSize: KkMetrics.cardTitle,
             fontWeight: FontWeight.w600,
           ),
           maxLines: 1,
@@ -63,6 +67,7 @@ class _KkCardState extends State<KkCard> {
         if (widget.subtitle != null)
           DefaultTextStyle.merge(
             style: theme.textTheme.bodySmall?.copyWith(
+              fontSize: KkMetrics.cardSubtitle,
               color: theme.colorScheme.onSurfaceVariant,
             ),
             maxLines: 1,
@@ -76,8 +81,8 @@ class _KkCardState extends State<KkCard> {
       padding: EdgeInsetsDirectional.only(
         start: widget.leading == null ? 16 : 11,
         end: widget.trailing == null ? 16 : 4,
-        top: 8,
-        bottom: 8,
+        top: 3,
+        bottom: 3,
       ),
       child: Row(
         children: [

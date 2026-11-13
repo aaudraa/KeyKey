@@ -12,7 +12,7 @@ Widget _host(List<Widget> children, {double textScale = 1}) => MaterialApp(
 );
 
 void main() {
-  testWidgets('normal yazıda kart 64 dp, uzun ad kesilir ve boy değişmez', (
+  testWidgets('normal yazıda kart 54 dp, uzun ad kesilir ve boy değişmez', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -26,8 +26,8 @@ void main() {
       ]),
     );
 
-    expect(tester.getSize(find.byKey(const Key('kisa'))).height, 64);
-    expect(tester.getSize(find.byKey(const Key('uzun'))).height, 64);
+    expect(tester.getSize(find.byKey(const Key('kisa'))).height, 54);
+    expect(tester.getSize(find.byKey(const Key('uzun'))).height, 54);
     expect(tester.takeException(), isNull);
   });
 
@@ -51,7 +51,7 @@ void main() {
 
     expect(
       tester.getSize(find.byKey(const Key('kart'))).height,
-      greaterThan(64),
+      greaterThan(54),
     );
     expect(tester.takeException(), isNull);
   });

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_menu.dart';
+import 'package:keykey/app/ui/kk_metrics.dart';
 
 /// Cam daire içinde simge düğmesi (geri oku, düzenle). Görünen boyu [size],
 /// dokunma alanı en az 48 dp.
@@ -11,7 +12,7 @@ class KkCircleButton extends StatelessWidget {
     required this.icon,
     required this.tooltip,
     required this.onPressed,
-    this.size = 44,
+    this.size = KkMetrics.circleButton,
     super.key,
   });
 
@@ -40,14 +41,15 @@ PreferredSizeWidget kkRootAppBar(
   final theme = Theme.of(context);
   return AppBar(
     automaticallyImplyLeading: false,
-    toolbarHeight: 72,
+    toolbarHeight: 56,
     titleSpacing: 20,
     title: Semantics(
       header: true,
       child: Text(
         title,
         style: theme.textTheme.headlineMedium?.copyWith(
-          fontWeight: FontWeight.w800,
+          fontSize: KkMetrics.rootTitle,
+          fontWeight: FontWeight.w700,
           color: theme.colorScheme.onSurface,
         ),
       ),
@@ -73,13 +75,14 @@ PreferredSizeWidget kkAppBar(
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: theme.textTheme.titleLarge?.copyWith(
+            fontSize: KkMetrics.subTitle,
             fontWeight: FontWeight.w700,
             color: theme.colorScheme.onSurface,
           ),
         );
   return AppBar(
     automaticallyImplyLeading: false,
-    toolbarHeight: 64,
+    toolbarHeight: 52,
     leadingWidth: canPop ? 64 : null,
     titleSpacing: canPop ? 4 : 20,
     leading: canPop

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_metrics.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
 
 /// Pencerenin üst köşeleri.
-const _sheetRadius = BorderRadius.vertical(top: Radius.circular(30));
+const _sheetRadius = BorderRadius.vertical(top: Radius.circular(24));
 
 /// Alttan açılan cam pencere. Yaylanarak açılır, aşağı çekince parmağı
 /// izler. [expandable] ise kullanıcı yukarı çekerek büyütebilir (uzun
@@ -132,6 +133,7 @@ class KkSheetContent extends StatelessWidget {
             child: Text(
               title,
               style: theme.textTheme.titleLarge?.copyWith(
+                fontSize: KkMetrics.subTitle,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -176,6 +178,7 @@ Future<bool> showKkConfirm(
               child: Text(
                 title,
                 style: theme.textTheme.titleLarge?.copyWith(
+                  fontSize: KkMetrics.subTitle,
                   fontWeight: FontWeight.w700,
                 ),
               ),

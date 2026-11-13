@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_metrics.dart';
 
 /// KeyKey'in renkleri: siyah, beyaz ve gri; turuncu yalnızca dört yerde.
 /// Değerler ve kontrast oranları `resources/docs/tasarim-siyah-beyaz-plani.md`
@@ -105,9 +106,9 @@ abstract final class AppTheme {
       scrim: Colors.black,
     );
 
-    const cardRadius = BorderRadius.all(Radius.circular(22));
+    const cardRadius = BorderRadius.all(Radius.circular(KkMetrics.cardRadius));
     const buttonShape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.all(Radius.circular(14)),
+      borderRadius: BorderRadius.all(Radius.circular(KkMetrics.buttonRadius)),
     );
     final base = ThemeData(brightness: brightness);
     return ThemeData(
@@ -144,6 +145,10 @@ abstract final class AppTheme {
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 12,
+        ),
         filled: true,
         fillColor: glass.fill,
         border: const OutlineInputBorder(
@@ -169,7 +174,9 @@ abstract final class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: ButtonStyle(
-          minimumSize: const WidgetStatePropertyAll(Size(64, 44)),
+          minimumSize: const WidgetStatePropertyAll(
+            Size(64, KkMetrics.buttonHeight),
+          ),
           shape: const WidgetStatePropertyAll(buttonShape),
           elevation: const WidgetStatePropertyAll(0),
           backgroundColor: WidgetStateProperty.resolveWith(
@@ -196,7 +203,7 @@ abstract final class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          minimumSize: const Size(64, 44),
+          minimumSize: const Size(64, KkMetrics.buttonHeight),
           shape: buttonShape,
           foregroundColor: ink,
           backgroundColor: glass.fill,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_metrics.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
 
 /// Alt menüdeki bir sekme.
@@ -32,7 +33,7 @@ class GlassNavBar extends StatelessWidget {
     super.key,
   });
 
-  static const double height = 64;
+  static const double height = KkMetrics.navHeight;
 
   /// Ekranın altından boşluk.
   static const double bottomGap = 16;
@@ -41,8 +42,10 @@ class GlassNavBar extends StatelessWidget {
   static const pillKey = Key('glass-nav-pill');
   static const addKey = Key('glass-nav-add');
 
-  static const double _tabWidth = 52;
-  static const double _addSize = 48;
+  static const double _tabWidth = KkMetrics.minTouch;
+
+  /// "+" düğmesinin dokunma alanı; görünen daire [KkMetrics.addSize].
+  static const double _addSize = KkMetrics.minTouch;
   static const double _inner = 8;
 
   final int selectedIndex;
@@ -197,21 +200,21 @@ class _NavTab extends StatelessWidget {
       excludeSemantics: true,
       child: InkResponse(
         onTap: onTap,
-        radius: 28,
+        radius: 24,
         child: SizedBox(
           height: GlassNavBar.height,
           child: Center(
             child: AnimatedContainer(
               duration: duration,
               curve: Curves.easeOutCubic,
-              height: 48,
+              height: KkMetrics.navTab,
               constraints: const BoxConstraints(
                 minWidth: GlassNavBar._tabWidth,
               ),
               padding: EdgeInsets.symmetric(horizontal: withLabel ? 14 : 0),
               decoration: BoxDecoration(
                 color: selected ? glass.tint : glass.tint.withValues(alpha: 0),
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(KkMetrics.navTab / 2),
               ),
               child: AnimatedSize(
                 duration: duration,
@@ -260,22 +263,39 @@ class _AddButton extends StatelessWidget {
       button: true,
       onTap: onTap,
       excludeSemantics: true,
-      child: SizedBox.square(
-        key: GlassNavBar.addKey,
-        dimension: GlassNavBar._addSize,
-        child: DecoratedBox(
-          decoration: BoxDecoration(shape: BoxShape.circle, color: glass.brand),
-          child: Material(
-            type: MaterialType.transparency,
-            shape: const CircleBorder(),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: onTap,
-              child: AnimatedRotation(
-                turns: open ? 0.125 : 0,
-                duration: KkMotion.of(context, KkMotion.base),
-                curve: Curves.easeOutCubic,
-                child: Icon(Icons.add_rounded, color: glass.onBrand, size: 28),
+      // Görünen daire 40 dp; dokunma alanı çevresindeki 48 dp'lik kare.
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: SizedBox.square(
+          key: GlassNavBar.addKey,
+          dimension: GlassNavBar._addSize,
+          child: Center(
+            child: SizedBox.square(
+              dimension: KkMetrics.addSize,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: glass.brand,
+                ),
+                child: Material(
+                  type: MaterialType.transparency,
+                  shape: const CircleBorder(),
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: onTap,
+                    child: AnimatedRotation(
+                      turns: open ? 0.125 : 0,
+                      duration: KkMotion.of(context, KkMotion.base),
+                      curve: Curves.easeOutCubic,
+                      child: Icon(
+                        Icons.add_rounded,
+                        color: glass.onBrand,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
