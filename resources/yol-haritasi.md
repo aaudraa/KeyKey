@@ -457,6 +457,8 @@ Güvenlik ya da veri kaybı sorunu çıkmadı. Ayrıntılar [denetim belgesinde]
 
 Ölçüm: 1000 kayıtlı listede beş savurma (debug, aynı Android 14 emülatörü) cam öncesi 15,2-15,5 sn, cam sonrası 17,0-18,0 sn sürdü. Karttaki gölgeyi kapatmak 16,6 sn, alt menünün bulanıklığını kapatmak 17,1 sn verdi; kalan fark kart başına daha çok bileşenden. Emülatörde profil modu olmadığı için karar telefondaki denemeye bırakıldı; takılma görülürse önce gölge ucuzlatılır. Yazılımsal grafikli emülatör (`-gpu swiftshader_indirect` ve `guest`) bulanık yüzeylerde qemu erişim ihlaliyle çöktü; testler `-gpu host` ile çalıştırıldı. KeyKey ekran görüntüsünü engellediği için emülatörde görsel karşılaştırma yapılamadı; görsel denetim telefondaki denemede. Kalan: telefonda kullanıcıyla deneme, kılavuz (#104), dış inceleme çağrısı (#90).
 
+**Durum (2026-11-13, öğleden önce):** Kullanıcı cam tasarımı telefonda denedi: cam ve hareketler hoşuna gitti ama turuncu fazla, yazı ve düğmeler büyük geldi. Üçüncü tur konuşuldu: siyah-beyaz zemin ve simgeler, turuncu yalnızca dört yerde (K logosu, "+", ekranın ana düğmesi, 2FA halkası), cam korunuyor, ölçüler küçülüyor, ayarlarda (i) anahtarın solunda, kayıt simgeleri kutusuz; ayrıca dört katmanlı bir hareket planı ([siyah-beyaz tasarım belgesi](docs/tasarim-siyah-beyaz.md), [örnek ekranlar](design/siyah-beyaz-tasarim-ornekleri.html)). Belge taslak; kullanıcının onayını ve beş açık sorunun yanıtını bekliyor. Sıra: onay, uygulama planı, uygulama (altı aşama, üç telefon denemesi); kılavuz (#104) bunun arkasında.
+
 **Bitti sayılması için:** GitHub Release'teki APK dört emülatöre ve gerçek telefona kuruluyor; önceki sürümden yükseltmede veri korunuyor; README son durumu anlatıyor.
 
 ## 1.0 sonrası
