@@ -183,7 +183,6 @@ class _KkScrambleTextState extends State<KkScrambleText>
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      container: true,
       label: widget.text,
       excludeSemantics: true,
       child: AnimatedBuilder(
