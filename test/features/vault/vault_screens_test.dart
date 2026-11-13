@@ -319,6 +319,27 @@ void main() {
       await tester.pumpAndSettle();
     }
 
+    testWidgets('ayrıntı ekranı geçişle açılır, geri geçişle kapanır', (
+      tester,
+    ) async {
+      await pumpVault(tester);
+      await tester.tap(find.text('Posta'));
+      await tester.pump();
+      await tester.pump();
+      final route = ModalRoute.of(
+        tester.element(find.byType(LoginDetailScreen)),
+      )!;
+      expect(route, isA<PageRoute<dynamic>>());
+      expect(
+        (route as PageRoute).transitionDuration,
+        greaterThan(Duration.zero),
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(route.animation!.status, AnimationStatus.forward);
+      await tester.pumpAndSettle();
+      expect(route.animation!.status, AnimationStatus.completed);
+    });
+
     testWidgets('her alan kendi kartında', (tester) async {
       await openPosta(tester);
 
@@ -440,6 +461,26 @@ void main() {
         ),
         findsOneWidget,
       );
+    });
+
+    testWidgets('onay işareti sürerken geri: yalnızca form kapanır', (
+      tester,
+    ) async {
+      await openPosta(tester);
+      await tester.tap(find.byTooltip('Düzenle'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.widgetWithText(TextField, 'Ad'), 'Posta 2');
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Kaydet'));
+      for (var i = 0; i < 20; i++) {
+        await tester.pump(const Duration(milliseconds: 16));
+        if (find.byType(KkDoneMark).evaluate().isNotEmpty) break;
+      }
+      expect(find.byType(KkDoneMark), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.byType(LoginEditScreen), findsNothing);
+      expect(find.byType(LoginDetailScreen), findsOneWidget);
     });
 
     testWidgets('"Düzenle" formu açar, alt menü görünmez', (tester) async {

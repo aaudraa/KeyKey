@@ -255,8 +255,12 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
             label: l10n.loginSave,
             busy: _saving,
             done: _done,
+            // Kullanıcı onay sürerken geri döndüyse ekran zaten kapanıyor;
+            // ikinci kez kapatmak alttaki ekranı da kapatırdı.
             onDone: () {
-              if (mounted) context.pop();
+              if (mounted && (ModalRoute.of(context)?.isCurrent ?? false)) {
+                context.pop();
+              }
             },
             onPressed: _name.text.trim().isEmpty ? null : _save,
           ),

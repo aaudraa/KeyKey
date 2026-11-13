@@ -173,6 +173,20 @@ void main() {
       await settle(tester);
     });
 
+    testWidgets('okunduktan hemen sonra geri: liste kalır, form açılmaz', (
+      tester,
+    ) async {
+      await openCamera(tester, ambient: false);
+      camera.scan(link);
+      await tester.pump();
+      await tester.binding.handlePopRoute();
+      await settle(tester);
+      await settle(tester);
+      expect(find.byType(QrScanScreen), findsNothing);
+      expect(find.text('Yeni 2FA hesabı'), findsNothing);
+      expect(find.byIcon(Icons.shield), findsOneWidget);
+    });
+
     testWidgets('kamerayla okunan hesap onaydan sonra kaydediliyor', (
       tester,
     ) async {
@@ -189,6 +203,8 @@ void main() {
       expect(find.widgetWithText(TextField, 'ali@example.com'), findsOneWidget);
 
       await tester.tap(find.text('Kaydet'));
+      await settle(tester);
+      // Onay işareti, ardından kapanış geçişi.
       await settle(tester);
 
       expect(otps.items.single.content.issuer, 'GitHub');

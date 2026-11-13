@@ -440,6 +440,8 @@ void main() {
       );
       await tester.tap(find.text('Kaydet'));
       await settle(tester);
+      // Onay işareti, ardından kapanış geçişi.
+      await settle(tester);
 
       expect(find.text('E-posta'), findsOneWidget);
       expect(otps.items[1].content.issuer, 'E-posta');
@@ -466,6 +468,8 @@ void main() {
         'jbsw y3dp ehpk 3pxp',
       );
       await tester.tap(find.text('Kaydet'));
+      await settle(tester);
+      // Onay işareti, ardından kapanış geçişi.
       await settle(tester);
 
       final added = otps.items.last.content;

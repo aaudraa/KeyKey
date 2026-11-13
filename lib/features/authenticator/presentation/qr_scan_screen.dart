@@ -121,7 +121,9 @@ class _QrScanScreenState extends ConsumerState<QrScanScreen> {
     setState(() => _handled = true);
     // Kapanış görünsün diye form, çerçeve kapanınca açılır.
     await Future<void>.delayed(KkMotion.of(context, KkMotion.base));
-    if (!mounted) return;
+    // Bu arada geri dönüldüyse ekran kapanıyor; form, açan ekranın yerine
+    // geçmesin.
+    if (!mounted || !(ModalRoute.of(context)?.isCurrent ?? false)) return;
     final opened = await handleScannedCode(
       context,
       ScannedCode.classify(text),
