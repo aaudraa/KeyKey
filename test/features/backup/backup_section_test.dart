@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,6 +12,19 @@ import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../../support/fake_vault_service.dart';
+
+/// Ayarları testin istediği an veren depo: "ayarlar yükleniyor" anı.
+class _GatedSettingsRepository extends FakeSettingsRepository {
+  new(super.settings);
+
+  final gate = Completer<void>();
+
+  @override
+  Future<AppSettings> load() async {
+    await gate.future;
+    return settings;
+  }
+}
 
 void main() {
   late SodiumSumo sodium;
@@ -138,6 +153,57 @@ void main() {
     expect(sawDone, isTrue);
     expect(find.byType(KkDoneMark), findsNothing);
     expect(find.text('Yedekle'), findsOneWidget);
+  });
+
+  /// Ayarlar yüklenmeden ayarlara girilir, sonra ayarlar gelir; kartın en
+  /// büyük ölçeği.
+  Future<double> maxPulseLoadingLate(
+    WidgetTester tester,
+    AppSettings stored,
+  ) async {
+    final gated = _GatedSettingsRepository(stored);
+    settings = gated;
+    await pumpKeyKey(
+      tester,
+      status: VaultOpen(service.newSession()),
+      service: service,
+      settings: settings,
+      clock: () => now,
+      settle: false,
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.tap(find.byIcon(Icons.settings_outlined));
+    var most = 1.0;
+    for (var i = 0; i < 100; i++) {
+      if (i == 10) gated.gate.complete();
+      await tester.pump(const Duration(milliseconds: 20));
+      final pulse = find.descendant(
+        of: find.byKey(BackupStatusCard.pulseKey),
+        matching: find.byType(Transform),
+      );
+      if (pulse.evaluate().isEmpty) continue;
+      final scale = tester.widget<Transform>(pulse.first).transform.storage[0];
+      if (scale > most) most = scale;
+    }
+    await tester.pumpAndSettle();
+    return most;
+  }
+
+  testWidgets('ayarlar geç yüklenirse yeni yedekte kart boşuna atmaz', (
+    tester,
+  ) async {
+    final most = await maxPulseLoadingLate(
+      tester,
+      AppSettings.defaults.copyWith(lastBackupAt: DateTime(2026, 11, 7, 9)),
+    );
+    expect(most, 1);
+  });
+
+  testWidgets('ayarlar geç yüklenince hiç yedek yoksa kart yine atar', (
+    tester,
+  ) async {
+    final most = await maxPulseLoadingLate(tester, AppSettings.defaults);
+    expect(most, greaterThan(1.02));
   });
 
   testWidgets('yedek kaydediliyor ve zamanı yazılıyor', (tester) async {

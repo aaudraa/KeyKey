@@ -42,21 +42,28 @@ class _BackupStatusCardState extends ConsumerState<BackupStatusCard>
   );
   bool _visible = false;
 
+  /// Girişte ayarlar henüz yüklenmemişti; yüklenince karar verilir.
+  bool _waitingForSettings = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final visible = TickerMode.valuesOf(context).enabled;
-    if (visible && !_visible && _isStale()) {
-      if (!MediaQuery.disableAnimationsOf(context)) _pulse.forward(from: 0);
-    }
+    if (visible && !_visible) _checkPulse();
     _visible = visible;
   }
 
-  bool _isStale() {
-    final last = ref.read(settingsControllerProvider)?.lastBackupAt;
-    if (last == null) return true;
+  /// Yedek eskiyse bir kez atar. Ayarlar yüklenmediyse "hiç yedek yok"
+  /// sanılmaz; yüklenince yeniden bakılır.
+  void _checkPulse() {
+    final settings = ref.read(settingsControllerProvider);
+    _waitingForSettings = settings == null;
+    if (settings == null || MediaQuery.disableAnimationsOf(context)) return;
+    final last = settings.lastBackupAt;
     final now = ref.read(backupClockProvider)();
-    return now.difference(last) >= BackupReminderRule.staleAfter;
+    final stale =
+        last == null || now.difference(last) >= BackupReminderRule.staleAfter;
+    if (stale) _pulse.forward(from: 0);
   }
 
   @override
@@ -119,6 +126,9 @@ class _BackupStatusCardState extends ConsumerState<BackupStatusCard>
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(settingsControllerProvider, (_, settings) {
+      if (_waitingForSettings && settings != null && _visible) _checkPulse();
+    });
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final last = ref.watch(settingsControllerProvider)?.lastBackupAt;
