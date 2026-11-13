@@ -48,7 +48,7 @@ class KkSection extends StatelessWidget {
                 type: MaterialType.transparency,
                 child: ListTileTheme.merge(
                   minTileHeight: rowHeight,
-                  minVerticalPadding: 7,
+                  minVerticalPadding: 9,
                   titleTextStyle: theme.textTheme.bodyLarge?.copyWith(
                     fontSize: KkMetrics.rowTitle,
                     color: theme.colorScheme.onSurface,
@@ -129,7 +129,7 @@ class KkInfoButton extends StatelessWidget {
 
 /// Ayar satırlarındaki ve "+" kutusundaki simge: kutusuz, yazı renginde.
 class KkIconBox extends StatelessWidget {
-  const new({required this.icon, this.size = 22, super.key});
+  const new({required this.icon, this.size = 24, super.key});
 
   final IconData icon;
   final double size;

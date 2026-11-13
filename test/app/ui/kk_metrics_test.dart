@@ -62,8 +62,13 @@ void main() {
   test('ölçü değerleri belgedeki gibi', () {
     expect(KkMetrics.rootTitle, 22);
     expect(KkMetrics.subTitle, 17);
-    expect(KkMetrics.cardHeight, 54);
-    expect(KkMetrics.rowHeight, 48);
+    expect(KkMetrics.largeTitle, 26);
+    expect(KkMetrics.cardHeight, 64);
+    expect(KkMetrics.cardTitle, 15);
+    expect(KkMetrics.cardSubtitle, 12.5);
+    expect(KkMetrics.rowHeight, 56);
+    expect(KkMetrics.rowTitle, 14.5);
+    expect(KkMetrics.avatar, 40);
     expect(KkMetrics.buttonHeight, 44);
     expect(KkMetrics.buttonRadius, 14);
     expect(KkMetrics.cardRadius, 16);
@@ -73,16 +78,18 @@ void main() {
     expect(KkMetrics.minFont, greaterThanOrEqualTo(11));
   });
 
-  testWidgets('kart 54, ayar satırları 48 dp', (tester) async {
+  // Telefon denemesi 4: kartlar küçük ve okunaksız geldi, cam turundaki
+  // boylarına döndü.
+  testWidgets('kart 64, ayar satırları 56 dp', (tester) async {
     await tester.pumpWidget(_host(_card()));
-    expect(tester.getSize(find.byKey(const Key('kart'))).height, 54);
+    expect(tester.getSize(find.byKey(const Key('kart'))).height, 64);
 
     await tester.pumpWidget(_host(_settings()));
     expect(
       tester.getSize(find.byKey(const Key('alt-yazili'))).height,
-      inInclusiveRange(48, 50),
+      inInclusiveRange(56, 60),
     );
-    expect(tester.getSize(find.byKey(const Key('yalin'))).height, 48);
+    expect(tester.getSize(find.byKey(const Key('yalin'))).height, 56);
   });
 
   testWidgets('kart ve satır yazıları küçük', (tester) async {

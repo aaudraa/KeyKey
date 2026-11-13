@@ -28,8 +28,8 @@ void main() {
       ]),
     );
 
-    expect(tester.getSize(find.byKey(const Key('kisa'))).height, 54);
-    expect(tester.getSize(find.byKey(const Key('uzun'))).height, 54);
+    expect(tester.getSize(find.byKey(const Key('kisa'))).height, 64);
+    expect(tester.getSize(find.byKey(const Key('uzun'))).height, 64);
     expect(tester.takeException(), isNull);
   });
 

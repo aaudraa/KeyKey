@@ -190,8 +190,13 @@ class KkItemsView<T> extends StatelessWidget {
     required this.itemBuilder,
     required this.empty,
     required this.padding,
+    this.header,
     super.key,
   });
+
+  /// Listenin üstünde onunla birlikte kayan baş kısım (büyük başlık, arama
+  /// kutusu, süzgeçler).
+  final Widget? header;
 
   final List<T> items;
   final Object Function(T item) keyOf;
@@ -211,6 +216,7 @@ class KkItemsView<T> extends StatelessWidget {
     return KkEntranceScope(
       child: CustomScrollView(
         slivers: [
+          if (header != null) SliverToBoxAdapter(child: header),
           SliverPadding(
             padding: padding.copyWith(
               bottom: math.max(0, padding.bottom - KkAnimatedItems.gap),

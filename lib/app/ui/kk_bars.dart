@@ -38,63 +38,108 @@ class KkCircleButton extends StatelessWidget {
   }
 }
 
-/// Sekmelerin kök ekranlarındaki üst çubuk: solda büyük, kalın başlık.
+/// Kök ekranlardaki üst çubuk: solda kalın başlık.
+///
+/// [largeTitle] açıksa başlık çubukta değil, listenin başındaki
+/// [KkLargeTitle]'dadır ve arama kutusuyla birlikte kayar; o kayıp gidince
+/// çubukta küçük başlık belirir (madde 1.9, telefon denemesi 4).
 PreferredSizeWidget kkRootAppBar(
   BuildContext context, {
   required String title,
   List<Widget> actions = const [],
+  bool largeTitle = false,
 }) {
   final theme = Theme.of(context);
   return AppBar(
     automaticallyImplyLeading: false,
     toolbarHeight: 56,
     titleSpacing: 20,
-    title: Semantics(
-      header: true,
-      child: _CollapsingTitle(
-        child: Text(
-          title,
-          style: theme.textTheme.headlineMedium?.copyWith(
-            fontSize: KkMetrics.rootTitle,
-            fontWeight: FontWeight.w700,
-            color: theme.colorScheme.onSurface,
+    title: largeTitle
+        ? _BarTitle(title: title)
+        : Semantics(
+            header: true,
+            child: Text(
+              title,
+              style: theme.textTheme.headlineMedium?.copyWith(
+                fontSize: KkMetrics.rootTitle,
+                fontWeight: FontWeight.w700,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
           ),
-        ),
-      ),
-    ),
     actions: [...actions, const SizedBox(width: 8)],
   );
 }
 
-/// Kök ekranın büyük başlığı: liste kaydıkça küçülüp alt ekran başlığı
-/// boyuna (17/22) iner (madde 1.9). Çubuğun boyu değişmez; yalnızca yazı
-/// ölçeklenir.
-class _CollapsingTitle extends StatelessWidget {
-  const new({required this.child});
+/// Sekmenin listeyle birlikte kayan büyük başlığı. Listenin ilk öğesi olur;
+/// üst çubuğu `kkRootAppBar(largeTitle: true)` ile kurulur.
+class KkLargeTitle extends StatelessWidget {
+  const new(this.title, {super.key});
 
-  /// Başlığın tamamen küçüldüğü kaydırma.
-  static const double _range = 40;
+  final String title;
 
-  final Widget child;
+  /// Çubuktaki küçük başlığın belirmeye başladığı ve tamamen göründüğü
+  /// kaydırma: büyük başlık bu arada üst çubuğun altına girer.
+  static const double barFadeStart = 24;
+  static const double barFadeEnd = 44;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+      child: Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: Semantics(
+          header: true,
+          child: Text(
+            title,
+            style: theme.textTheme.headlineMedium?.copyWith(
+              fontSize: KkMetrics.largeTitle,
+              fontWeight: FontWeight.w700,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Büyük başlık kayıp gidince çubukta solarak beliren küçük başlık. Büyük
+/// başlık görünürken ağaçta yoktur; başlık iki kez okunmaz.
+class _BarTitle extends StatelessWidget {
+  const new({required this.title});
+
+  final String title;
 
   @override
   Widget build(BuildContext context) {
     final offset = KkScrollState.maybeOf(context)?.offset;
-    if (offset == null) return child;
+    if (offset == null) return const SizedBox.shrink();
+    final theme = Theme.of(context);
+    final text = Semantics(
+      header: true,
+      child: Text(
+        title,
+        style: theme.textTheme.titleLarge?.copyWith(
+          fontSize: KkMetrics.subTitle,
+          fontWeight: FontWeight.w700,
+          color: theme.colorScheme.onSurface,
+        ),
+      ),
+    );
     return ValueListenableBuilder<double>(
       valueListenable: offset,
       builder: (context, pixels, child) {
-        final t = (pixels / _range).clamp(0.0, 1.0);
-        final scale = 1 - t * (1 - KkMetrics.subTitle / KkMetrics.rootTitle);
-        return Transform.scale(
-          scale: scale,
-          alignment: AlignmentDirectional.centerStart.resolve(
-            Directionality.of(context),
-          ),
-          child: child,
-        );
+        final t =
+            ((pixels - KkLargeTitle.barFadeStart) /
+                    (KkLargeTitle.barFadeEnd - KkLargeTitle.barFadeStart))
+                .clamp(0.0, 1.0);
+        if (t == 0) return const SizedBox.shrink();
+        return Opacity(opacity: t, child: child);
       },
-      child: child,
+      child: text,
     );
   }
 }

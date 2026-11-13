@@ -70,6 +70,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
       appBar: kkRootAppBar(
         context,
         title: l10n.navVault,
+        largeTitle: true,
         actions: [
           KkMenuButton<_VaultAction>(
             tooltip: l10n.screenMore,
@@ -103,7 +104,13 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
         ],
       ),
       body: switch (state) {
-        LoginsLoading() => const Center(child: CircularProgressIndicator()),
+        LoginsLoading() => Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            KkLargeTitle(l10n.navVault),
+            const Expanded(child: Center(child: CircularProgressIndicator())),
+          ],
+        ),
         LoginsLoaded() => _loaded(context, l10n, state),
       },
     );
@@ -129,8 +136,10 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
     final visible = filterLogins(state.indexed, _filter);
     final glass = KkGlass.of(context);
 
-    return Column(
+    final header = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        KkLargeTitle(l10n.navVault),
         const BackupReminderBanner(),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
@@ -196,20 +205,20 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
             ),
           ),
         const SizedBox(height: 8),
-        Expanded(
-          child: KkItemsView<LoginItem>(
-            items: visible,
-            keyOf: (item) => loginIdHex(item.id),
-            // Altta yüzen menü için boşluk.
-            padding: EdgeInsets.fromLTRB(16, 4, 16, navClearance(context)),
-            empty: Text(
-              count > 0 ? l10n.vaultNoResults : l10n.vaultEmpty,
-              textAlign: TextAlign.center,
-            ),
-            itemBuilder: (context, item, index) => _LoginTile(item: item),
-          ),
-        ),
       ],
+    );
+
+    return KkItemsView<LoginItem>(
+      header: header,
+      items: visible,
+      keyOf: (item) => loginIdHex(item.id),
+      // Altta yüzen menü için boşluk.
+      padding: EdgeInsets.fromLTRB(16, 4, 16, navClearance(context)),
+      empty: Text(
+        count > 0 ? l10n.vaultNoResults : l10n.vaultEmpty,
+        textAlign: TextAlign.center,
+      ),
+      itemBuilder: (context, item, index) => _LoginTile(item: item),
     );
   }
 }

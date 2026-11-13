@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/kk_animated_items.dart';
+import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_card.dart';
 import 'package:keykey/app/ui/kk_done_mark.dart';
 import 'package:keykey/app/ui/kk_form.dart';
@@ -287,7 +288,50 @@ void main() {
           .widgetList(cards())
           .map((w) => tester.getSize(find.byWidget(w)).height)
           .toSet();
-      expect(heights, {54.0});
+      expect(heights, {64.0});
+    });
+
+    // Telefon denemesi 4: arama kutusu kaydırınca yukarı gitmiyordu.
+    testWidgets('büyük başlık ve arama kutusu listeyle birlikte kayar', (
+      tester,
+    ) async {
+      logins = FakeLoginRepository(
+        items: [
+          for (var i = 0; i < 30; i++)
+            FakeLoginRepository.item(
+              LoginContent(name: 'Kayıt $i', password: 'p$i'),
+              id: 10 + i,
+            ),
+        ],
+      );
+      await pumpVault(tester);
+      final bar = find.descendant(
+        of: find.byType(AppBar),
+        matching: find.text('Kasa'),
+      );
+      expect(bar, findsNothing);
+      final large = find.descendant(
+        of: find.byType(KkLargeTitle),
+        matching: find.text('Kasa'),
+      );
+      final titleTop = tester.getTopLeft(large).dy;
+      final searchTop = tester.getTopLeft(searchField()).dy;
+
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, -30));
+      await tester.pumpAndSettle();
+      // Kartlar dokunuşu da dinlediği için sürükleme payı düşer; başlık
+      // ve arama kutusu listeyle aynı miktarda kayar.
+      final moved = titleTop - tester.getTopLeft(large).dy;
+      expect(moved, greaterThan(5));
+      expect(
+        tester.getTopLeft(searchField()).dy,
+        closeTo(searchTop - moved, 1),
+      );
+
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, -400));
+      await tester.pumpAndSettle();
+      expect(bar, findsOneWidget);
+      expect(searchField().hitTestable(), findsNothing);
     });
 
     testWidgets('son kart alt menünün altında kalmayacak kadar boşluk var', (

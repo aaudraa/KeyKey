@@ -52,8 +52,8 @@ void main() {
       expect(glass.brandStroke, const Color(0xFFC2470C));
       expect(glass.onBrand, const Color(0xFF1A0D05));
       expect(glass.accent, theme.colorScheme.onSurface);
-      // Kartın içi gri değil beyaz görünsün (proje sahibinin isteği).
-      expect(glass.fill.a, greaterThanOrEqualTo(0.85));
+      // Telefon denemesi 4: kartlar buzlu cam değil, dolu beyaz.
+      expect(glass.fill, Colors.white);
     });
 
     test('koyu tema', () {
@@ -73,6 +73,8 @@ void main() {
       expect(glass.brandStroke, const Color(0xFFFF8A4C));
       expect(glass.onBrand, const Color(0xFF1A0D05));
       expect(glass.accent, theme.colorScheme.onSurface);
+      // Kartlar dolu koyu gri; arkadaki lekeler kartın içinden görünmez.
+      expect(glass.fill, const Color(0xFF1C1C1E));
     });
 
     test('zemin saydam, ekranlar kendi zeminini çizer', () {

@@ -112,6 +112,7 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
       appBar: kkRootAppBar(
         context,
         title: l10n.navAuthenticator,
+        largeTitle: true,
         actions: [
           KkMenuButton<_ScreenAction>(
             tooltip: l10n.screenMore,
@@ -139,15 +140,30 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
         ],
       ),
       body: switch (state) {
-        OtpsLoading() => const Center(child: CircularProgressIndicator()),
+        OtpsLoading() => _titled(
+          l10n,
+          const Center(child: CircularProgressIndicator()),
+        ),
         OtpsLoaded() => switch (ref.watch(otpCodesVisibleProvider)) {
-          null => const Center(child: CircularProgressIndicator()),
-          false => const OtpGate(),
+          null => _titled(
+            l10n,
+            const Center(child: CircularProgressIndicator()),
+          ),
+          false => _titled(l10n, const OtpGate()),
           true => _loaded(context, l10n, state),
         },
       },
     );
   }
+
+  /// Liste yokken de büyük başlık yerinde durur.
+  Widget _titled(AppLocalizations l10n, Widget child) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      KkLargeTitle(l10n.navAuthenticator),
+      Expanded(child: child),
+    ],
+  );
 
   Widget _loaded(
     BuildContext context,
@@ -157,8 +173,10 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
     final visible = visibleOtps(state.items, _search.text);
     final hasAccounts = state.active.isNotEmpty;
 
-    return Column(
+    final header = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        KkLargeTitle(l10n.navAuthenticator),
         if (hasAccounts)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
@@ -190,49 +208,49 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
               ),
             ),
           ),
-        Expanded(
-          child: OtpClockBuilder(
-            // TOTP yoksa saati izlemeye gerek yok, pil harcanmaz.
-            active: visible.any(
-              (item) => item.content.parameters.kind == OtpKind.totp,
-            ),
-            builder: (context, now) => KkItemsView<OtpItem>(
-              items: visible,
-              keyOf: otpIdHex,
-              // Altta yüzen menü için boşluk.
-              padding: EdgeInsets.fromLTRB(16, 4, 16, navClearance(context)),
-              empty: Text(
-                hasAccounts ? l10n.otpNoResults : l10n.otpEmpty,
-                textAlign: TextAlign.center,
-              ),
-              // Kart kendi Consumer'ında izler: öğeler saatle her saniye
-              // yeniden kurulur ve ekranın ref'iyle yapılan seçici
-              // izlemeler her seferinde yeni dinleyici bırakırdı.
-              itemBuilder: (context, item, index) => Consumer(
-                builder: (context, ref, _) {
-                  final loginId = item.content.loginId;
-                  return OtpCodeTile(
-                    key: ValueKey(otpIdHex(item)),
-                    item: item,
-                    now: now,
-                    flash: watchLastSaved(ref, savedOtpKey(otpIdHex(item))),
-                    linkedLogin: loginId == null
-                        ? null
-                        : findLogin(
-                            ref.watch(loginsControllerProvider),
-                            loginIdHex(loginId),
-                          )?.content,
-                    hotpCode: _hotpCodes[otpIdHex(item)],
-                    onCopy: _copy,
-                    onGenerate: () => unawaited(_generate(item)),
-                    onAction: (action) => unawaited(_onAction(item, action)),
-                  );
-                },
-              ),
-            ),
-          ),
-        ),
       ],
+    );
+
+    return OtpClockBuilder(
+      // TOTP yoksa saati izlemeye gerek yok, pil harcanmaz.
+      active: visible.any(
+        (item) => item.content.parameters.kind == OtpKind.totp,
+      ),
+      builder: (context, now) => KkItemsView<OtpItem>(
+        header: header,
+        items: visible,
+        keyOf: otpIdHex,
+        // Altta yüzen menü için boşluk.
+        padding: EdgeInsets.fromLTRB(16, 4, 16, navClearance(context)),
+        empty: Text(
+          hasAccounts ? l10n.otpNoResults : l10n.otpEmpty,
+          textAlign: TextAlign.center,
+        ),
+        // Kart kendi Consumer'ında izler: öğeler saatle her saniye
+        // yeniden kurulur ve ekranın ref'iyle yapılan seçici
+        // izlemeler her seferinde yeni dinleyici bırakırdı.
+        itemBuilder: (context, item, index) => Consumer(
+          builder: (context, ref, _) {
+            final loginId = item.content.loginId;
+            return OtpCodeTile(
+              key: ValueKey(otpIdHex(item)),
+              item: item,
+              now: now,
+              flash: watchLastSaved(ref, savedOtpKey(otpIdHex(item))),
+              linkedLogin: loginId == null
+                  ? null
+                  : findLogin(
+                      ref.watch(loginsControllerProvider),
+                      loginIdHex(loginId),
+                    )?.content,
+              hotpCode: _hotpCodes[otpIdHex(item)],
+              onCopy: _copy,
+              onGenerate: () => unawaited(_generate(item)),
+              onAction: (action) => unawaited(_onAction(item, action)),
+            );
+          },
+        ),
+      ),
     );
   }
 }

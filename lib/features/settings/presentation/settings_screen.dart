@@ -148,12 +148,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final settings = ref.watch(settingsControllerProvider);
     final version = ref.watch(appVersionProvider).value;
     return KkScaffold(
-      appBar: kkRootAppBar(context, title: l10n.navSettings),
+      appBar: kkRootAppBar(context, title: l10n.navSettings, largeTitle: true),
       body: KkEntranceScope(
         child: ListView(
           // Altta: yüzen menü.
           padding: EdgeInsets.only(bottom: navClearance(context)),
           children: [
+            KkLargeTitle(l10n.navSettings),
             for (final (i, section) in [
               const BackupStatusCard(),
               KkSection(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:keykey/app/ui/kk_metrics.dart';
 import 'package:keykey/core/platform/app_packages.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 
@@ -19,7 +20,7 @@ class RecordAvatar extends ConsumerWidget {
   const new({
     required this.login,
     required this.name,
-    this.size = 34,
+    this.size = KkMetrics.avatar,
     super.key,
   });
 

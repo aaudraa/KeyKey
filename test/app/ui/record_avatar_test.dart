@@ -108,7 +108,7 @@ void main() {
     await _pump(tester, _FakePackages({}), null, 'GitHub');
     expect(find.text('G'), findsOneWidget);
     expect(find.bySemanticsLabel('G'), findsNothing);
-    expect(tester.getSize(find.byType(RecordAvatar)), const Size(34, 34));
+    expect(tester.getSize(find.byType(RecordAvatar)), const Size(40, 40));
     handle.dispose();
   });
 

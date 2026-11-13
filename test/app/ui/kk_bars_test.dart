@@ -157,16 +157,13 @@ void main() {
     handle.dispose();
   });
 
-  testWidgets('kaydırınca büyük başlık küçülür, başlık olarak okunur', (
-    tester,
-  ) async {
-    final handle = tester.ensureSemantics();
+  testWidgets('kökte başlık sabit durur, kaydırınca küçülmez', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.light,
         home: Builder(
           builder: (context) => KkScaffold(
-            appBar: kkRootAppBar(context, title: 'Kasa'),
+            appBar: kkRootAppBar(context, title: 'Kurulum'),
             body: ListView(
               children: [
                 for (var i = 0; i < 50; i++)
@@ -177,26 +174,66 @@ void main() {
         ),
       ),
     );
-    double scale() => tester
-        .widget<Transform>(
-          find
-              .ancestor(of: find.text('Kasa'), matching: find.byType(Transform))
-              .last,
-        )
-        .transform
-        .storage[0];
-
-    expect(scale(), 1);
-    await tester.drag(find.byType(ListView), const Offset(0, -20));
-    await tester.pumpAndSettle();
-    expect(scale(), allOf(lessThan(1), greaterThan(17 / 22)));
+    final before = tester.getRect(find.text('Kurulum'));
     await tester.drag(find.byType(ListView), const Offset(0, -200));
     await tester.pumpAndSettle();
-    expect(scale(), closeTo(17 / 22, 0.001));
+    expect(tester.getRect(find.text('Kurulum')), before);
+  });
+
+  // Telefon denemesi 4: küçülen başlığın bir anlamı yoktu. Büyük başlık
+  // arama kutusuyla birlikte listenin içinde kayar; kayıp gidince üst
+  // çubukta küçük başlık belirir.
+  testWidgets('büyük başlık listeyle kayar, gidince üst çubukta belirir', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Builder(
+          builder: (context) => KkScaffold(
+            appBar: kkRootAppBar(context, title: 'Kasa', largeTitle: true),
+            body: ListView(
+              children: [
+                const KkLargeTitle('Kasa'),
+                for (var i = 0; i < 50; i++)
+                  SizedBox(height: 60, child: Text('satır $i')),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    final barTitle = find.descendant(
+      of: find.byType(AppBar),
+      matching: find.text('Kasa'),
+    );
+    expect(find.text('Kasa'), findsOneWidget);
+    expect(barTitle, findsNothing);
+    expect(tester.widget<Text>(find.text('Kasa')).style?.fontSize, 26);
     expect(
       tester.getSemantics(find.text('Kasa')),
       matchesSemantics(label: 'Kasa', isHeader: true),
     );
+
+    final top = tester.getTopLeft(find.text('Kasa')).dy;
+    await tester.drag(find.byType(ListView), const Offset(0, -10));
+    await tester.pumpAndSettle();
+    expect(tester.getTopLeft(find.text('Kasa')).dy, closeTo(top - 10, 1));
+    expect(barTitle, findsNothing);
+
+    await tester.drag(find.byType(ListView), const Offset(0, -300));
+    await tester.pumpAndSettle();
+    expect(barTitle, findsOneWidget);
+    expect(tester.widget<Text>(barTitle).style?.fontSize, 17);
+    expect(
+      tester.getSemantics(barTitle),
+      matchesSemantics(label: 'Kasa', isHeader: true),
+    );
+
+    await tester.drag(find.byType(ListView), const Offset(0, 400));
+    await tester.pumpAndSettle();
+    expect(barTitle, findsNothing);
     handle.dispose();
   });
 

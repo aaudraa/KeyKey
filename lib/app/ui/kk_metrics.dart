@@ -8,17 +8,19 @@ abstract final class KkMetrics {
   /// Alt ekranların başlığı.
   static const double subTitle = 17;
 
-  /// Listelerdeki kartın normal yazıdaki boyu.
-  static const double cardHeight = 54;
-  static const double cardTitle = 13.5;
-  static const double cardSubtitle = 11.5;
+  /// Sekmelerin listeyle birlikte kayan büyük başlığı.
+  static const double largeTitle = 26;
+
+  /// Listelerdeki kartın normal yazıdaki boyu. Telefon denemesi 4'te küçük
+  /// kartlar okunaksız geldi; cam turundaki boylara dönüldü.
+  static const double cardHeight = 64;
+  static const double cardTitle = 15;
+  static const double cardSubtitle = 12.5;
 
   /// Ayar satırının normal yazıdaki boyu.
-  /// Belgede 46; satırın kendisi dokunma alanı olduğu için 48 dp kuralına
-  /// uyar.
-  static const double rowHeight = 48;
-  static const double rowTitle = 13;
-  static const double rowSubtitle = 11.5;
+  static const double rowHeight = 56;
+  static const double rowTitle = 14.5;
+  static const double rowSubtitle = 12.5;
 
   /// Form alanının boyu.
   static const double fieldHeight = 52;
@@ -36,7 +38,7 @@ abstract final class KkMetrics {
   static const double addSize = 40;
 
   /// Kayıt simgesi.
-  static const double avatar = 34;
+  static const double avatar = 40;
 
   /// Geri oku gibi cam daire düğmeler.
   static const double circleButton = 40;

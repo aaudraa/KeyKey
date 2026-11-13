@@ -26,7 +26,8 @@ class KkGlass extends ThemeExtension<KkGlass> {
     required this.blobAlpha,
   });
 
-  /// Kartların yarı saydam dolgusu.
+  /// Kartların dolu (saydam olmayan) dolgusu: telefon denemesi 4'te buzlu
+  /// cam kartların okunurluğu düşürdüğü görüldü.
   final Color fill;
 
   /// Menü, kutu ve pencere gibi bulanık yüzeylerin dolgusu.

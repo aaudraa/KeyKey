@@ -29,6 +29,9 @@ abstract final class KkColors {
   static const darkInkMuted = Color(0xFFADADAD);
   static const darkError = Color(0xFFFFB4AB);
   static const darkSurface = Color(0xFF161617);
+
+  /// Koyu temada kartların dolu rengi (telefon denemesi 4: buzlu cam değil).
+  static const darkCard = Color(0xFF1C1C1E);
   static const darkBrand = Color(0xFFFF8A4C);
   static const blobsDark = [
     Color(0xFF5A5A5E),
@@ -54,7 +57,7 @@ abstract final class AppTheme {
     final brand = isDark ? KkColors.darkBrand : KkColors.brandOrange;
 
     final glass = KkGlass(
-      fill: Colors.white.withValues(alpha: isDark ? 0.07 : 0.88),
+      fill: isDark ? KkColors.darkCard : Colors.white,
       fillStrong: Colors.white.withValues(alpha: isDark ? 0.12 : 0.92),
       navFill: Colors.white.withValues(alpha: isDark ? 0.03 : 0.05),
       border: Colors.white.withValues(alpha: isDark ? 0.17 : 0.70),
