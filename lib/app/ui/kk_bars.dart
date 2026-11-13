@@ -5,6 +5,7 @@ import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_menu.dart';
 import 'package:keykey/app/ui/kk_metrics.dart';
+import 'package:keykey/app/ui/kk_pressable.dart';
 
 /// Cam daire içinde simge düğmesi (geri oku, düzenle). Görünen boyu [size],
 /// dokunma alanı en az 48 dp.
@@ -24,11 +25,14 @@ class KkCircleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      tooltip: tooltip,
-      icon: Icon(icon),
-      style: kkCircleButtonStyle(KkGlass.of(context), size),
-      onPressed: onPressed,
+    return KkPressable(
+      pressedScale: KkPressable.smallScale,
+      child: IconButton(
+        tooltip: tooltip,
+        icon: Icon(icon),
+        style: kkCircleButtonStyle(KkGlass.of(context), size),
+        onPressed: onPressed,
+      ),
     );
   }
 }
@@ -167,19 +171,23 @@ class KkBottomAction extends StatelessWidget {
     );
     return Padding(
       padding: EdgeInsets.fromLTRB(16, 8, 16, bottom + 16),
-      child: SizedBox(
-        width: double.infinity,
-        child: FilledButton(
-          onPressed: busy ? null : onPressed,
-          child: busy
-              ? Semantics(
-                  label: label,
-                  child: const SizedBox.square(
-                    dimension: 22,
-                    child: CircularProgressIndicator(strokeWidth: 2.5),
-                  ),
-                )
-              : Text(label),
+      child: KkRiseIn(
+        child: SizedBox(
+          width: double.infinity,
+          child: KkPressable(
+            child: FilledButton(
+              onPressed: busy ? null : onPressed,
+              child: busy
+                  ? Semantics(
+                      label: label,
+                      child: const SizedBox.square(
+                        dimension: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2.5),
+                      ),
+                    )
+                  : Text(label),
+            ),
+          ),
         ),
       ),
     );

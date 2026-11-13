@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/theme.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
+import 'package:keykey/app/ui/kk_motion.dart';
+import 'package:keykey/app/ui/kk_pressable.dart';
 
 void main() {
   testWidgets('kök ekranda geri düğmesi yok, itilmiş ekranda var ve döner', (
@@ -72,6 +74,8 @@ void main() {
         ),
       ),
     );
+    // Düğme açılışta alttan yaylanarak gelir; yerine oturunca ölçülür.
+    await tester.pumpAndSettle();
     final rect = tester.getRect(find.widgetWithText(FilledButton, 'Kaydet'));
     expect(rect.bottom, lessThanOrEqualTo(800 - 300));
     expect(rect.width, greaterThan(300));
@@ -162,5 +166,36 @@ void main() {
       matchesSemantics(label: 'Kasa', isHeader: true),
     );
     handle.dispose();
+  });
+
+  testWidgets('alttaki ana düğme açılışta alttan yaylanarak gelir', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Scaffold(
+          bottomNavigationBar: KkBottomAction(
+            label: 'Kaydet',
+            onPressed: () {},
+          ),
+          body: const SizedBox(),
+        ),
+      ),
+    );
+    double dy() => tester
+        .widget<Transform>(
+          find
+              .descendant(
+                of: find.byType(KkRiseIn),
+                matching: find.byType(Transform),
+              )
+              .first,
+        )
+        .transform
+        .storage[13];
+    expect(dy(), closeTo(24, 0.01));
+    await tester.pump(KkMotion.enter);
+    expect(dy(), closeTo(0, 0.01));
   });
 }

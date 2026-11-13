@@ -1,7 +1,10 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_metrics.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
+import 'package:keykey/app/ui/kk_pressable.dart';
 
 /// Alt menüdeki bir sekme.
 class GlassNavItem {
@@ -119,47 +122,49 @@ class GlassNavBar extends StatelessWidget {
           return Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              GlassSurface(
-                key: pillKey,
-                blur: true,
-                vibrant: true,
-                sheen: true,
-                fill: glass.navFill,
-                borderRadius: radius,
-                child: SizedBox(
-                  height: height,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: _inner),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        for (var i = 0; i < items.length; i++)
-                          ExcludeSemantics(
-                            excluding: tabsHidden,
-                            child: _NavTab(
-                              item: items[i],
-                              selected: i == selectedIndex,
-                              showLabel: showLabel,
-                              semanticLabel: _semanticLabel(localizations, i),
-                              onTap: () => onSelected(i),
+              KkRiseIn(
+                child: GlassSurface(
+                  key: pillKey,
+                  blur: true,
+                  vibrant: true,
+                  sheen: true,
+                  fill: glass.navFill,
+                  borderRadius: radius,
+                  child: SizedBox(
+                    height: height,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: _inner),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          for (var i = 0; i < items.length; i++)
+                            ExcludeSemantics(
+                              excluding: tabsHidden,
+                              child: _NavTab(
+                                item: items[i],
+                                selected: i == selectedIndex,
+                                showLabel: showLabel,
+                                semanticLabel: _semanticLabel(localizations, i),
+                                onTap: () => onSelected(i),
+                              ),
+                            ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: _inner,
+                            ),
+                            child: SizedBox(
+                              width: 1,
+                              height: 28,
+                              child: ColoredBox(color: glass.border),
                             ),
                           ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: _inner,
+                          _AddButton(
+                            open: addOpen,
+                            label: addOpen ? closeLabel : addLabel,
+                            onTap: onAdd,
                           ),
-                          child: SizedBox(
-                            width: 1,
-                            height: 28,
-                            child: ColoredBox(color: glass.border),
-                          ),
-                        ),
-                        _AddButton(
-                          open: addOpen,
-                          label: addOpen ? closeLabel : addLabel,
-                          onTap: onAdd,
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -172,7 +177,7 @@ class GlassNavBar extends StatelessWidget {
   }
 }
 
-class _NavTab extends StatelessWidget {
+class _NavTab extends StatefulWidget {
   const new({
     required this.item,
     required this.selected,
@@ -188,57 +193,102 @@ class _NavTab extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
+  State<_NavTab> createState() => _NavTabState();
+}
+
+/// Seçilen sekmenin simgesi küçük bir zıplama yapar (madde 1.5):
+/// %100 → %118 → %100.
+class _NavTabState extends State<_NavTab> with SingleTickerProviderStateMixin {
+  static const double _bounce = 0.18;
+
+  late final AnimationController _jump = AnimationController(
+    vsync: this,
+    duration: KkMotion.base,
+  );
+
+  @override
+  void didUpdateWidget(_NavTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selected && !oldWidget.selected) {
+      _jump.duration = KkMotion.of(context, KkMotion.base);
+      if (_jump.duration == Duration.zero) return;
+      _jump.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _jump.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final item = widget.item;
+    final selected = widget.selected;
+    final onTap = widget.onTap;
     final theme = Theme.of(context);
     final glass = KkGlass.of(context);
     final duration = KkMotion.of(context, KkMotion.base);
-    final withLabel = selected && showLabel;
+    final withLabel = selected && widget.showLabel;
     return Semantics(
-      label: semanticLabel,
+      label: widget.semanticLabel,
       selected: selected,
       button: true,
       onTap: onTap,
       excludeSemantics: true,
-      child: InkResponse(
-        onTap: onTap,
-        radius: 24,
-        child: SizedBox(
-          height: GlassNavBar.height,
-          child: Center(
-            child: AnimatedContainer(
-              duration: duration,
-              curve: Curves.easeOutCubic,
-              height: KkMetrics.navTab,
-              constraints: const BoxConstraints(
-                minWidth: GlassNavBar._tabWidth,
-              ),
-              padding: EdgeInsets.symmetric(horizontal: withLabel ? 14 : 0),
-              decoration: BoxDecoration(
-                color: selected ? glass.tint : glass.tint.withValues(alpha: 0),
-                borderRadius: BorderRadius.circular(KkMetrics.navTab / 2),
-              ),
-              child: AnimatedSize(
+      child: KkPressable(
+        pressedScale: KkPressable.smallScale,
+        child: InkResponse(
+          onTap: onTap,
+          radius: 24,
+          child: SizedBox(
+            height: GlassNavBar.height,
+            child: Center(
+              child: AnimatedContainer(
                 duration: duration,
                 curve: Curves.easeOutCubic,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      selected ? item.selectedIcon : item.icon,
-                      color: selected
-                          ? glass.accent
-                          : theme.colorScheme.onSurface,
-                    ),
-                    if (withLabel) ...[
-                      const SizedBox(width: 8),
-                      Text(
-                        item.label,
-                        maxLines: 1,
-                        style: GlassNavBar._labelStyle(context),
+                height: KkMetrics.navTab,
+                constraints: const BoxConstraints(
+                  minWidth: GlassNavBar._tabWidth,
+                ),
+                padding: EdgeInsets.symmetric(horizontal: withLabel ? 14 : 0),
+                decoration: BoxDecoration(
+                  color: selected
+                      ? glass.tint
+                      : glass.tint.withValues(alpha: 0),
+                  borderRadius: BorderRadius.circular(KkMetrics.navTab / 2),
+                ),
+                child: AnimatedSize(
+                  duration: duration,
+                  curve: Curves.easeOutCubic,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      AnimatedBuilder(
+                        animation: _jump,
+                        builder: (context, child) => Transform.scale(
+                          scale: 1 + _bounce * math.sin(math.pi * _jump.value),
+                          child: child,
+                        ),
+                        child: Icon(
+                          selected ? item.selectedIcon : item.icon,
+                          color: selected
+                              ? glass.accent
+                              : theme.colorScheme.onSurface,
+                        ),
                       ),
+                      if (withLabel) ...[
+                        const SizedBox(width: 8),
+                        Text(
+                          item.label,
+                          maxLines: 1,
+                          style: GlassNavBar._labelStyle(context),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -265,34 +315,37 @@ class _AddButton extends StatelessWidget {
       onTap: onTap,
       excludeSemantics: true,
       // Görünen daire 40 dp; dokunma alanı çevresindeki 48 dp'lik kare.
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: SizedBox.square(
-          key: GlassNavBar.addKey,
-          dimension: GlassNavBar._addSize,
-          child: Center(
-            child: SizedBox.square(
-              dimension: KkMetrics.addSize,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: glass.brand,
-                ),
-                child: Material(
-                  type: MaterialType.transparency,
-                  shape: const CircleBorder(),
-                  clipBehavior: Clip.antiAlias,
-                  child: InkWell(
-                    onTap: onTap,
-                    child: AnimatedRotation(
-                      turns: open ? 0.125 : 0,
-                      duration: KkMotion.of(context, KkMotion.base),
-                      curve: Curves.easeOutCubic,
-                      child: Icon(
-                        Icons.add_rounded,
-                        color: glass.onBrand,
-                        size: 24,
+      child: KkPressable(
+        pressedScale: KkPressable.smallScale,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: SizedBox.square(
+            key: GlassNavBar.addKey,
+            dimension: GlassNavBar._addSize,
+            child: Center(
+              child: SizedBox.square(
+                dimension: KkMetrics.addSize,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: glass.brand,
+                  ),
+                  child: Material(
+                    type: MaterialType.transparency,
+                    shape: const CircleBorder(),
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      onTap: onTap,
+                      child: AnimatedRotation(
+                        turns: open ? 0.125 : 0,
+                        duration: KkMotion.of(context, KkMotion.base),
+                        curve: Curves.easeOutCubic,
+                        child: Icon(
+                          Icons.add_rounded,
+                          color: glass.onBrand,
+                          size: 24,
+                        ),
                       ),
                     ),
                   ),

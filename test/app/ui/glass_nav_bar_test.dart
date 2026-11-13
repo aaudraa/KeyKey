@@ -6,6 +6,7 @@ import 'package:keykey/app/theme.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_motion.dart';
 
 const _items = [
   GlassNavItem(
@@ -92,11 +93,55 @@ void main() {
     expect(find.byIcon(Icons.shield), findsOneWidget);
   });
 
+  testWidgets('seçilen sekmenin simgesi küçük bir zıplama yapar', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const _Switcher());
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.shield_outlined));
+    await tester.pump();
+    await tester.pump(KkMotion.base ~/ 2);
+    double scale() => tester
+        .widget<Transform>(
+          find
+              .ancestor(
+                of: find.byIcon(Icons.shield),
+                matching: find.byType(Transform),
+              )
+              .first,
+        )
+        .transform
+        .storage[0];
+    expect(scale(), greaterThan(1.1));
+    await tester.pumpAndSettle();
+    expect(scale(), 1);
+  });
+
+  testWidgets('alt menü açılışta alttan yaylanarak gelir', (tester) async {
+    await tester.pumpWidget(_host());
+    double dy() => tester
+        .widget<Transform>(
+          find
+              .ancestor(
+                of: find.byKey(GlassNavBar.pillKey),
+                matching: find.byType(Transform),
+              )
+              .first,
+        )
+        .transform
+        .storage[13];
+    expect(dy(), closeTo(24, 0.01));
+    await tester.pump(KkMotion.enter);
+    expect(dy(), closeTo(0, 0.01));
+  });
+
   testWidgets('şerit 52 dp, altta 16 dp boşluk, dokunma hedefleri yeterli', (
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
     await tester.pumpWidget(_host());
+    // Menü açılışta alttan yaylanarak gelir; yerine oturunca ölçülür.
+    await tester.pumpAndSettle();
 
     final screen = tester.getRect(find.byType(Scaffold));
     final pill = tester.getRect(find.byKey(GlassNavBar.pillKey));

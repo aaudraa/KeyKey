@@ -8,6 +8,7 @@ import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/keykey_logo.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
+import 'package:keykey/app/ui/kk_entrance.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_section.dart';
 import 'package:keykey/app/ui/kk_switch.dart';
@@ -148,91 +149,102 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final version = ref.watch(appVersionProvider).value;
     return KkScaffold(
       appBar: kkRootAppBar(context, title: l10n.navSettings),
-      body: ListView(
-        // Altta: yüzen menü.
-        padding: EdgeInsets.only(bottom: navClearance(context)),
-        children: [
-          const BackupStatusCard(),
-          KkSection(
-            title: l10n.settingsGroupSecurity,
-            children: [
-              ListTile(
-                leading: const KkIconBox(icon: Icons.password_rounded),
-                title: Text(l10n.changePasswordTitle),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => context.push(AppRoutes.changePassword),
+      body: KkEntranceScope(
+        child: ListView(
+          // Altta: yüzen menü.
+          padding: EdgeInsets.only(bottom: navClearance(context)),
+          children: [
+            for (final (i, section) in [
+              const BackupStatusCard(),
+              KkSection(
+                title: l10n.settingsGroupSecurity,
+                children: [
+                  ListTile(
+                    leading: const KkIconBox(icon: Icons.password_rounded),
+                    title: Text(l10n.changePasswordTitle),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () => context.push(AppRoutes.changePassword),
+                  ),
+                  if (_support == BiometricSupport.available)
+                    KkSwitchTile(
+                      infoTitle: l10n.settingsBiometric,
+                      info: l10n.settingsBiometricHint,
+                      secondary: const KkIconBox(
+                        icon: Icons.fingerprint_rounded,
+                      ),
+                      title: Text(l10n.settingsBiometric),
+                      value: _biometricEnabled,
+                      onChanged: _busy
+                          ? null
+                          : (value) => _setBiometric(enable: value),
+                    ),
+                  if (_support == BiometricSupport.notEnrolled)
+                    ListTile(
+                      enabled: false,
+                      leading: const KkIconBox(icon: Icons.fingerprint_rounded),
+                      title: Text(l10n.settingsBiometric),
+                      subtitle: KkRowSubtitle(
+                        l10n.settingsBiometricNotEnrolled,
+                      ),
+                    ),
+                  KkSwitchTile(
+                    infoTitle: l10n.settingsOtpRequireAuth,
+                    info: l10n.settingsOtpRequireAuthHelp,
+                    secondary: const KkIconBox(icon: Icons.shield_rounded),
+                    title: Text(l10n.settingsOtpRequireAuth),
+                    value: settings?.otpRequireAuth ?? false,
+                    onChanged: settings == null
+                        ? null
+                        : (value) => _setOtpRequireAuth(value: value),
+                  ),
+                  ListTile(
+                    leading: const KkIconBox(icon: Icons.lock_rounded),
+                    title: Text(l10n.settingsLockNow),
+                    onTap: () =>
+                        ref.read(vaultControllerProvider.notifier).lock(),
+                  ),
+                ],
               ),
-              if (_support == BiometricSupport.available)
-                KkSwitchTile(
-                  infoTitle: l10n.settingsBiometric,
-                  info: l10n.settingsBiometricHint,
-                  secondary: const KkIconBox(icon: Icons.fingerprint_rounded),
-                  title: Text(l10n.settingsBiometric),
-                  value: _biometricEnabled,
-                  onChanged: _busy
-                      ? null
-                      : (value) => _setBiometric(enable: value),
-                ),
-              if (_support == BiometricSupport.notEnrolled)
-                ListTile(
-                  enabled: false,
-                  leading: const KkIconBox(icon: Icons.fingerprint_rounded),
-                  title: Text(l10n.settingsBiometric),
-                  subtitle: KkRowSubtitle(l10n.settingsBiometricNotEnrolled),
-                ),
-              KkSwitchTile(
-                infoTitle: l10n.settingsOtpRequireAuth,
-                info: l10n.settingsOtpRequireAuthHelp,
-                secondary: const KkIconBox(icon: Icons.shield_rounded),
-                title: Text(l10n.settingsOtpRequireAuth),
-                value: settings?.otpRequireAuth ?? false,
-                onChanged: settings == null
-                    ? null
-                    : (value) => _setOtpRequireAuth(value: value),
+              const BackupSection(),
+              AutofillSetupSection(
+                children: [
+                  KkSwitchTile(
+                    infoTitle: l10n.settingsAutofillCopyOtp,
+                    info: l10n.settingsAutofillCopyOtpHelp(
+                      SensitiveClipboard.clearAfter.inSeconds,
+                    ),
+                    secondary: const KkIconBox(
+                      icon: Icons.content_paste_go_rounded,
+                    ),
+                    title: Text(l10n.settingsAutofillCopyOtp),
+                    value: settings?.autofillCopyOtp ?? false,
+                    onChanged: settings == null
+                        ? null
+                        : (value) =>
+                              unawaited(_setAutofillCopyOtp(value: value)),
+                  ),
+                ],
               ),
-              ListTile(
-                leading: const KkIconBox(icon: Icons.lock_rounded),
-                title: Text(l10n.settingsLockNow),
-                onTap: () => ref.read(vaultControllerProvider.notifier).lock(),
+              KkSection(
+                title: l10n.settingsGroupAbout,
+                children: [
+                  ListTile(
+                    leading: const KkIconBox(icon: Icons.info_rounded),
+                    title: Text(l10n.settingsVersion),
+                    trailing: Text(version ?? ''),
+                  ),
+                  ListTile(
+                    leading: const KkIconBox(icon: Icons.description_rounded),
+                    title: Text(l10n.settingsLicenses),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () => _openLicenses(version),
+                  ),
+                ],
               ),
-            ],
-          ),
-          const BackupSection(),
-          AutofillSetupSection(
-            children: [
-              KkSwitchTile(
-                infoTitle: l10n.settingsAutofillCopyOtp,
-                info: l10n.settingsAutofillCopyOtpHelp(
-                  SensitiveClipboard.clearAfter.inSeconds,
-                ),
-                secondary: const KkIconBox(
-                  icon: Icons.content_paste_go_rounded,
-                ),
-                title: Text(l10n.settingsAutofillCopyOtp),
-                value: settings?.autofillCopyOtp ?? false,
-                onChanged: settings == null
-                    ? null
-                    : (value) => unawaited(_setAutofillCopyOtp(value: value)),
-              ),
-            ],
-          ),
-          KkSection(
-            title: l10n.settingsGroupAbout,
-            children: [
-              ListTile(
-                leading: const KkIconBox(icon: Icons.info_rounded),
-                title: Text(l10n.settingsVersion),
-                trailing: Text(version ?? ''),
-              ),
-              ListTile(
-                leading: const KkIconBox(icon: Icons.description_rounded),
-                title: Text(l10n.settingsLicenses),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => _openLicenses(version),
-              ),
-            ],
-          ),
-        ],
+            ].indexed)
+              KkEntrance(index: i, child: section),
+          ],
+        ),
       ),
     );
   }

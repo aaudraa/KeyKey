@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/theme.dart';
 import 'package:keykey/app/ui/kk_card.dart';
+import 'package:keykey/app/ui/kk_pressable.dart';
 
 Widget _host(List<Widget> children, {double textScale = 1}) => MaterialApp(
   theme: AppTheme.light,
@@ -115,7 +116,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(
       tester.widget<AnimatedScale>(find.byType(AnimatedScale)).scale,
-      lessThan(1),
+      KkPressable.cardScale,
     );
     await gesture.up();
     await tester.pumpAndSettle();

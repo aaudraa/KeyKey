@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_metrics.dart';
-import 'package:keykey/app/ui/kk_motion.dart';
+import 'package:keykey/app/ui/kk_pressable.dart';
 
 /// Listelerdeki cam kart. Normal yazı boyutunda hepsi aynı boydadır:
 /// başlık ve alt yazı tek satırda kesilir. Telefonun yazı boyutu büyüyünce
@@ -45,7 +45,6 @@ class _KkCardState extends State<KkCard> {
   static const _radius = BorderRadius.all(
     Radius.circular(KkMetrics.cardRadius),
   );
-  var _pressed = false;
 
   @override
   Widget build(BuildContext context) {
@@ -97,33 +96,27 @@ class _KkCardState extends State<KkCard> {
     );
 
     final interactive = widget.onTap != null || widget.onLongPress != null;
-    return Semantics(
-      label: widget.semanticLabel,
-      container: widget.semanticLabel != null,
-      child: AnimatedScale(
-        scale: _pressed ? 0.98 : 1,
-        duration: KkMotion.of(context, KkMotion.fast),
-        child: GlassSurface(
-          child: Material(
-            type: MaterialType.transparency,
-            child: Semantics(
-              customSemanticsActions: widget.customSemanticsActions,
-              child: InkWell(
-                borderRadius: _radius,
-                onTap: widget.onTap,
-                onLongPress: widget.onLongPress,
-                onHighlightChanged: interactive
-                    ? (value) => setState(() => _pressed = value)
-                    : null,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: widget.minHeight),
-                  child: content,
-                ),
-              ),
+    final Widget card = GlassSurface(
+      child: Material(
+        type: MaterialType.transparency,
+        child: Semantics(
+          customSemanticsActions: widget.customSemanticsActions,
+          child: InkWell(
+            borderRadius: _radius,
+            onTap: widget.onTap,
+            onLongPress: widget.onLongPress,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: widget.minHeight),
+              child: content,
             ),
           ),
         ),
       ),
+    );
+    return Semantics(
+      label: widget.semanticLabel,
+      container: widget.semanticLabel != null,
+      child: interactive ? KkPressable(child: card) : card,
     );
   }
 }
