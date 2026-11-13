@@ -65,6 +65,22 @@ void main() {
     expect(generated(tester), isNot(first));
   });
 
+  testWidgets('gizleyip yeniden göstermek parolayı karıştırmaz', (
+    tester,
+  ) async {
+    await openGenerator(tester);
+    final value = generated(tester);
+    await tester.tap(find.byTooltip('Gizle'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(generated(tester), '•' * 12);
+    // Formdaki parola alanının da "Göster" düğmesi var; pencere üstte.
+    await tester.tap(find.byTooltip('Göster').last);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(generated(tester), value);
+  });
+
   testWidgets('parola cümlesi seçilebiliyor', (tester) async {
     await openGenerator(tester);
 

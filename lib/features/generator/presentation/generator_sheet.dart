@@ -118,6 +118,9 @@ class _GeneratorSheetState extends ConsumerState<GeneratorSheet> {
                       ? _value
                       : '•' * 12,
                   textKey: const Key('generator-value'),
+                  // Gizle/göster karıştırmaz; yalnızca yeni parola.
+                  trigger: _value,
+                  enabled: _visible && _value.isNotEmpty,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontFamily: 'monospace',
                     fontWeight: FontWeight.w600,

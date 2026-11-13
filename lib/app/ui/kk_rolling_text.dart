@@ -127,8 +127,19 @@ class _KkRollingTextState extends State<KkRollingText>
 /// sonra gerçek değer. Süs karakterler gerçek parola değildir; ekran
 /// okuyucuya gitmez, ekran okuyucu hep gerçek değeri okur. İlk kurulumda ve
 /// animasyonlar kapalıyken karışmaz.
+///
+/// Yalnızca [trigger] değişince ve [enabled] önce de sonra da açıkken
+/// karışır; böylece gizle/göster gibi aynı değerin yeniden çizilmesi
+/// karıştırmaz. [trigger] verilmezse metnin kendisidir.
 class KkScrambleText extends StatefulWidget {
-  const new({required this.text, this.style, this.textKey, super.key});
+  const new({
+    required this.text,
+    this.style,
+    this.textKey,
+    this.trigger,
+    this.enabled = true,
+    super.key,
+  });
 
   static const Duration duration = KkMotion.scramble;
 
@@ -137,6 +148,12 @@ class KkScrambleText extends StatefulWidget {
 
   /// İçteki [Text]'in anahtarı (testler için).
   final Key? textKey;
+
+  /// Değişince karışma başlar (ör. üretilen parola).
+  final Object? trigger;
+
+  /// Kapalıyken (ör. değer gizliyken) karışmaz.
+  final bool enabled;
 
   @override
   State<KkScrambleText> createState() => _KkScrambleTextState();
@@ -157,8 +174,14 @@ class _KkScrambleTextState extends State<KkScrambleText>
   @override
   void didUpdateWidget(KkScrambleText oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.text == oldWidget.text) return;
-    if (widget.text.isEmpty || MediaQuery.disableAnimationsOf(context)) {
+    final trigger = widget.trigger ?? widget.text;
+    final oldTrigger = oldWidget.trigger ?? oldWidget.text;
+    if (trigger == oldTrigger && widget.enabled == oldWidget.enabled) return;
+    if (trigger == oldTrigger ||
+        !widget.enabled ||
+        !oldWidget.enabled ||
+        widget.text.isEmpty ||
+        MediaQuery.disableAnimationsOf(context)) {
       _motion.stop();
       return;
     }
