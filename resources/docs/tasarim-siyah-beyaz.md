@@ -1,6 +1,6 @@
 # KeyKey Siyah-Beyaz Tasarım ve Hareket Planı
 
-Tasarım incelemesinin ([#103](https://github.com/aaudraa/KeyKey/issues/103)) üçüncü turunun tasarım belgesi. 2026-11-13'te proje sahibiyle örnek ekranlar üzerinden konuşuldu. **Durum: kodda bitti (2026-11-13). Planın 15 görevi tamam; telefonda üçüncü deneme ve #103'ün kapanışı proje sahibinin onayını bekliyor.** Açık sorular 2026-11-13'te yanıtlandı; proje sahibi kullanım sırasında süren hareket istedi (1.10, 1.11, kural 3). Uygulamada verilen kararlar ilgili maddelerin yanında italik notlar olarak duruyor. Uygulama planı: [`tasarim-siyah-beyaz-plani.md`](tasarim-siyah-beyaz-plani.md).
+Tasarım incelemesinin ([#103](https://github.com/aaudraa/KeyKey/issues/103)) üçüncü turunun tasarım belgesi. 2026-11-13'te proje sahibiyle örnek ekranlar üzerinden konuşuldu. **Durum: kodda bitti (2026-11-13). Planın 15 görevi tamam; telefonda deneme ve #103'ün kapanışı proje sahibinin onayını bekliyor.** Açık sorular 2026-11-13'te yanıtlandı; proje sahibi kullanım sırasında süren hareket istedi (1.10, 1.11, kural 3). Uygulamada verilen kararlar ilgili maddelerin yanında italik notlar olarak duruyor. Uygulama planı: [`tasarim-siyah-beyaz-plani.md`](tasarim-siyah-beyaz-plani.md).
 
 Bu belge [cam tasarım belgesinin](tasarim-cam.md) "Renkler", "Zemin" ve "Hareket" bölümlerinin yerine geçer ve ölçüleri küçültür. O belgenin geri kalanı (ekranların düzeni, tek "+", sade formlar, davranış değişiklikleri, kısıtlar) ve [ilk belgenin](tasarim-yenileme.md) otomatik doldurma kuralları aynen geçerlidir.
 
@@ -238,6 +238,7 @@ Takılan ya da fazla gelen hareket, denemede sadeleştirilir ya da çıkarılır
 ## Denetim
 
 - Format, analiz, birim ve entegrasyon testleri (Android 11, 14, 17 emülatörleri, `-gpu host`).
+  - *Sonuç (2026-11-13, 582b20b):* format, analiz ve 1206 birim testi temiz; entegrasyon testlerinin 11 dosyası Android 11, 14 ve 17 emülatörlerinde geçti.
 - Kontrast testi yeni renklerle, lekelerin en kötü noktasında.
 - Taşma testleri %200 yazı boyutunda yeni ölçülerle.
 - Her hareket için: "animasyonları kaldır" açıkken anında bittiğini ve süren hareketin durduğunu gösteren test.
