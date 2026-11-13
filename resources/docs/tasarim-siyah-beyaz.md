@@ -1,6 +1,6 @@
 # KeyKey Siyah-Beyaz Tasarım ve Hareket Planı
 
-Tasarım incelemesinin ([#103](https://github.com/aaudraa/KeyKey/issues/103)) üçüncü turunun tasarım belgesi. 2026-11-13'te proje sahibiyle örnek ekranlar üzerinden konuşuldu. **Durum: açık sorular 2026-11-13'te yanıtlandı; proje sahibi kullanım sırasında süren hareket istedi (1.10, 1.11, kural 3).** Onaydan sonra görev görev uygulama planı ayrı bir belgede yazılır.
+Tasarım incelemesinin ([#103](https://github.com/aaudraa/KeyKey/issues/103)) üçüncü turunun tasarım belgesi. 2026-11-13'te proje sahibiyle örnek ekranlar üzerinden konuşuldu. **Durum: açık sorular 2026-11-13'te yanıtlandı; proje sahibi kullanım sırasında süren hareket istedi (1.10, 1.11, kural 3).** Uygulama planı: [`tasarim-siyah-beyaz-plani.md`](tasarim-siyah-beyaz-plani.md).
 
 Bu belge [cam tasarım belgesinin](tasarim-cam.md) "Renkler", "Zemin" ve "Hareket" bölümlerinin yerine geçer ve ölçüleri küçültür. O belgenin geri kalanı (ekranların düzeni, tek "+", sade formlar, davranış değişiklikleri, kısıtlar) ve [ilk belgenin](tasarim-yenileme.md) otomatik doldurma kuralları aynen geçerlidir.
 
@@ -179,7 +179,7 @@ En küçük yazı 11 sp'nin altına inmez. %200 yazı boyutunda taşma testleri 
 | 2.4 | Hata | Yanlış ana parolada ve boş zorunlu alanda kutu üç kısa salınımla titrer (±8 dp); hata metni solarak gelir | 300 ms | `lock_screen` (var), `kk_form.dart` (yeni) |
 | 2.5 | Hata titreşimi | 2.4 ile birlikte hafif dokunsal titreşim | — | `HapticFeedback`; onaylandı |
 | 2.6 | "Daha fazla seçenek" | Ok 180° döner, yongalar sırayla küçükten büyür; dokunulan yonga kaybolur, alan yükseklik açarak gelir | `base`, `spring`, `stagger` | `login_edit_screen`, `kk_form.dart` |
-| 2.7 | Liste içi değişim | Süzgeç ya da sıralama değişince kartlar yeni yerine kayar | `base`, `standard` | `vault_screen` |
+| 2.7 | Liste içi değişim | Süzgeç ya da sıralama değişince kartlar yeni yerine kayar. *Uygulamada yer değiştiren kart eski yerinden solup yenisinde belirir: gerçek kaydırma 1000 kayıtlı listede pahalı. (Benim kararım, plan Görev 10.)* | `base`, `standard` | `vault_screen` |
 
 ### Katman 3: İçerik
 
