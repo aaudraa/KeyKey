@@ -37,6 +37,9 @@ class LockScreen extends ConsumerStatefulWidget {
   /// Başlığın altında gösterilen açıklama, örneğin neyin doldurulacağı.
   final String? subtitle;
 
+  /// Nefes alan parmak izi simgesi (testler için).
+  static const Key breathKey = ValueKey('kk-lock-breath');
+
   @override
   ConsumerState<LockScreen> createState() => _LockScreenState();
 }
@@ -197,7 +200,9 @@ class _LockScreenState extends ConsumerState<LockScreen> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Center(child: ambient ? _FloatingLogo(child: logo) : logo),
+        Center(
+          child: _LogoIntro(child: ambient ? _FloatingLogo(child: logo) : logo),
+        ),
         const SizedBox(height: 16),
         Text(
           l10n.lockTitle,
@@ -224,11 +229,14 @@ class _LockScreenState extends ConsumerState<LockScreen> {
         if (_biometricReady) ...[
           const SizedBox(height: 16),
           Center(
-            child: KkCircleButton(
-              icon: Icons.fingerprint_rounded,
-              tooltip: l10n.lockUseBiometric,
-              size: 56,
-              onPressed: _busy ? null : _unlockWithBiometric,
+            child: _Breathing(
+              enabled: ambient,
+              child: KkCircleButton(
+                icon: Icons.fingerprint_rounded,
+                tooltip: l10n.lockUseBiometric,
+                size: 56,
+                onPressed: _busy ? null : _unlockWithBiometric,
+              ),
             ),
           ),
         ],
@@ -291,4 +299,123 @@ class _FloatingLogoState extends State<_FloatingLogo>
     ),
     child: widget.child,
   );
+}
+
+/// Açılışta K logosu %80 ölçekten ve solarak belirir (madde 4.1).
+class _LogoIntro extends StatefulWidget {
+  const new({required this.child});
+
+  static const double startScale = 0.8;
+
+  final Widget child;
+
+  @override
+  State<_LogoIntro> createState() => _LogoIntroState();
+}
+
+class _LogoIntroState extends State<_LogoIntro>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _motion = AnimationController(
+    vsync: this,
+    duration: KkMotion.enter,
+  );
+  bool _started = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _motion.value = 1;
+    } else {
+      _motion.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _motion.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: _motion,
+    builder: (context, child) {
+      final t = KkMotion.standard.transform(_motion.value);
+      return Opacity(
+        opacity: t,
+        child: Transform.scale(
+          scale: _LogoIntro.startScale + (1 - _LogoIntro.startScale) * t,
+          child: child,
+        ),
+      );
+    },
+    child: widget.child,
+  );
+}
+
+/// Parmak izi simgesinin yavaş nefesi (madde 4.2): ölçek 1 ↔ 1,06,
+/// [KkMotion.breath]'te bir tur. Süren hareket kapalıyken çocuğu olduğu
+/// gibi çizer.
+class _Breathing extends StatefulWidget {
+  const new({required this.enabled, required this.child});
+
+  static const double depth = 0.06;
+
+  final bool enabled;
+  final Widget child;
+
+  @override
+  State<_Breathing> createState() => _BreathingState();
+}
+
+class _BreathingState extends State<_Breathing>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _motion = AnimationController(
+    vsync: this,
+    duration: KkMotion.breath,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.enabled) _motion.repeat();
+  }
+
+  @override
+  void didUpdateWidget(_Breathing oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.enabled && !_motion.isAnimating) {
+      _motion.repeat();
+    } else if (!widget.enabled) {
+      _motion.stop();
+    }
+  }
+
+  @override
+  void dispose() {
+    _motion.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.enabled) return widget.child;
+    return KeyedSubtree(
+      key: LockScreen.breathKey,
+      child: AnimatedBuilder(
+        animation: _motion,
+        builder: (context, child) => Transform.scale(
+          scale:
+              1 +
+              _Breathing.depth *
+                  (0.5 - 0.5 * math.cos(_motion.value * 2 * math.pi)),
+          child: child,
+        ),
+        child: widget.child,
+      ),
+    );
+  }
 }

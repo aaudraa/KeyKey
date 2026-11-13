@@ -48,6 +48,9 @@ abstract final class KkMotion {
   static const calmDrift = Duration(seconds: 36);
   static const float = Duration(seconds: 3);
 
+  /// Kilit ekranında parmak izi simgesinin bir nefesi (madde 4.2).
+  static const breath = Duration(milliseconds: 2400);
+
   /// Hafifçe hedefi geçip yerine oturan yay eğrisi.
   static const Curve spring = Cubic(0.2, 1.35, 0.4, 1);
 

@@ -7,6 +7,7 @@ import 'package:keykey/app/router.dart';
 import 'package:keykey/app/ui/add_panel.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
+import 'package:keykey/app/ui/kk_unlock_reveal.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/presentation/scanned_code_handler.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
@@ -18,6 +19,9 @@ class AppShell extends ConsumerStatefulWidget {
   const new({required this.navigationShell, super.key});
 
   final StatefulNavigationShell navigationShell;
+
+  /// Kilit açılışında kasanın üstünde solan logo katmanı (testler için).
+  static const Key revealKey = ValueKey('kk-unlock-reveal');
 
   @override
   ConsumerState<AppShell> createState() => _AppShellState();
@@ -171,6 +175,10 @@ class _AppShellState extends ConsumerState<AppShell>
                   onDismiss: _closePanel,
                 ),
               ),
+            // Kilit açılışı: logo kasanın üstünde solar (madde 4.3).
+            const Positioned.fill(
+              child: KkUnlockReveal(contentKey: AppShell.revealKey),
+            ),
           ],
         ),
         bottomNavigationBar: GlassNavBar(
