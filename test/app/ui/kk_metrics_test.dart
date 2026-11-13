@@ -78,7 +78,10 @@ void main() {
     expect(tester.getSize(find.byKey(const Key('kart'))).height, 54);
 
     await tester.pumpWidget(_host(_settings()));
-    expect(tester.getSize(find.byKey(const Key('alt-yazili'))).height, 48);
+    expect(
+      tester.getSize(find.byKey(const Key('alt-yazili'))).height,
+      inInclusiveRange(48, 50),
+    );
     expect(tester.getSize(find.byKey(const Key('yalin'))).height, 48);
   });
 

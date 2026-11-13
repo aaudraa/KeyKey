@@ -164,29 +164,36 @@ void main() {
     );
   });
 
-  testWidgets('menü camı kartlardan saydam ve daha çok bulanıklaştırır', (
+  testWidgets('menü buzlu cam: çok saydam, hafif bulanık, üstte parıltı', (
     tester,
   ) async {
     await tester.pumpWidget(_host());
     final glass = AppTheme.light.extension<KkGlass>()!;
     final pill = find.byKey(GlassNavBar.pillKey);
-    final fills = tester
+    final decorations = tester
         .widgetList<DecoratedBox>(
           find.descendant(of: pill, matching: find.byType(DecoratedBox)),
         )
         .map((box) => box.decoration)
         .whereType<BoxDecoration>()
-        .map((d) => d.color);
-    expect(fills, contains(glass.navFill));
+        .toList();
+    expect(decorations.map((d) => d.color), contains(glass.navFill));
+    // Arkadaki içerik seçilsin: dolgu çok saydam.
+    expect(glass.navFill.a, lessThanOrEqualTo(0.16));
+    // Üstten aşağı sönen beyaz parıltı.
+    final sheen = decorations
+        .map((d) => d.gradient)
+        .whereType<LinearGradient>()
+        .single;
+    expect(sheen.colors.first.a, greaterThan(sheen.colors.last.a));
     final filter = tester
         .widget<BackdropFilter>(
           find.descendant(of: pill, matching: find.byType(BackdropFilter)),
         )
         .filter;
-    // Güçlü bulanıklık ve renk doygunluğu (alttan kayan içerik canlı ama
-    // okunmaz görünür).
+    // Buzlu: şekiller dağılır ama arkada bir şey olduğu anlaşılır.
+    expect(GlassSurface.navBlurSigma, inInclusiveRange(10, 20));
     expect(filter.toString(), contains('blur(${GlassSurface.navBlurSigma}'));
-    expect(filter.toString(), contains('compose'));
   });
 
   testWidgets('dar ekranda ve %200 yazıda şerit sığar, "+" görünür', (

@@ -89,6 +89,7 @@ Geri kalan her şey siyah-beyazdır *(benim kararlarım, örneklerde gösterildi
 - Kartlar yarı saydamdır, arkalarını canlı bulanıklaştırmaz (liste takılmasın diye; bugünkü gibi).
 - Gerçek bulanıklık yalnızca şuralarda: alt menü, "+" kutusu ve arkasındaki perde, alttan açılan pencereler, bildirim.
 - "+" açılınca arka plan bulanıklaşır ve hafifçe kararır (bugünkü davranış korunur).
+- Alt menü buzlu camdır: dolgusu çok saydam (açıkta beyaz %14, koyuda %6), bulanıklık hafif (14), üstten aşağı sönen beyaz parıltı. Proje sahibi ilk denemede "camsı his yok" dedi (2026-11-13); renksiz zeminde güçlü bulanıklık menüyü düz gri bir kutuya çeviriyordu.
 
 ### Ölçüler
 
@@ -113,7 +114,7 @@ En küçük yazı 11 sp'nin altına inmez. %200 yazı boyutunda taşma testleri 
 ### Simgeler ve logolar
 
 - Kayıt simgesinin arkasındaki renkli kutu kalkar. Simgesi olmayan kayıtta harf, ince çizgili bir dairenin içinde durur (yazı renginde, saydam zeminde; proje sahibinin seçimi).
-- Bağlı uygulamanın simgesi kutusuz ve siyah-beyaz (renk doygunluğu sıfır) çizilir. *(Benim kararım: "logoların renkleri siyah beyaz olacak" sözünden.)*
+- Bağlı uygulamanın simgesi kutusuz ve kendi renkleriyle çizilir. (İlk denemede siyah-beyazdı; proje sahibi telefonda görünce renkli istedi, 2026-11-13.)
 - Ayarlardaki ve "+" kutusundaki simgelerin turuncu zeminli kutuları kalkar; simge yazı renginde, tek başına durur.
 - K logosu beyaz kutusuz, yalnızca turuncu harf olarak çizilir. Uygulamanın başlatıcıdaki simgesi değişmez.
 - Kodda: `record_avatar.dart`, `kk_section.dart` (`KkIconBox`), `keykey_logo.dart`, `add_panel.dart`.

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/theme.dart';
-import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/core/platform/app_packages.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
@@ -85,15 +84,10 @@ void main() {
     );
     expect(find.byType(Image), findsOneWidget);
     expect(find.text('O'), findsNothing);
-    // Kutusuz ve siyah-beyaz: kırpma yok, doygunluğu sıfırlayan süzgeç var.
+    // Kutusuz ve renkli (proje sahibinin telefondaki isteği): kırpma ve
+    // renk süzgeci yok.
     expect(find.byType(ClipRRect), findsNothing);
-    final filtered = tester.widget<ColorFiltered>(
-      find.ancestor(
-        of: find.byType(Image),
-        matching: find.byType(ColorFiltered),
-      ),
-    );
-    expect(filtered.colorFilter, kkSaturation(0));
+    expect(find.byType(ColorFiltered), findsNothing);
   });
 
   testWidgets('simge okunamazsa baş harfe düşülür', (tester) async {

@@ -131,13 +131,15 @@ class GlassSurface extends StatelessWidget {
     this.padding,
     this.fill,
     this.vibrant = false,
+    this.sheen = false,
     super.key,
   });
 
   static const double blurSigma = 20;
 
-  /// Alt menünün bulanıklığı: içerik daha çok dağılır, yazı seçilmez.
-  static const double navBlurSigma = 36;
+  /// Alt menünün buzlu camı: arkadaki şekiller dağılır ama seçilir; yazı
+  /// okunmaz.
+  static const double navBlurSigma = 14;
 
   /// Bulanık arkaplanın renk doygunluğu artışı ([vibrant]).
   static const double vibrance = 2.1;
@@ -148,6 +150,9 @@ class GlassSurface extends StatelessWidget {
   /// Arkadaki içeriği daha güçlü bulanıklaştırıp renklerini canlandırır
   /// (yalnızca [blur] ile).
   final bool vibrant;
+
+  /// Üstten aşağı sönen beyaz parıltı: buzlu camın ışığı (alt menü).
+  final bool sheen;
 
   final Widget child;
   final BorderRadius borderRadius;
@@ -180,6 +185,26 @@ class GlassSurface extends StatelessWidget {
                 ? child
                 : Padding(padding: padding!, child: child),
           ),
+          if (sheen)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: borderRadius,
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        glass.highlight.withValues(
+                          alpha: glass.highlight.a * 0.4,
+                        ),
+                        glass.highlight.withValues(alpha: 0),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
           Positioned(
             top: 0,
             left: inset,

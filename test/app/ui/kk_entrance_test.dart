@@ -58,6 +58,34 @@ void main() {
     expect(_opacity(tester, 'öğe 0'), 1);
   });
 
+  testWidgets('ilk karedeki bütün öğeler belirir, dokuzuncu ve sonrası da', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Scaffold(
+          body: KkEntranceScope(
+            child: ListView(
+              children: [
+                for (var i = 0; i < 14; i++)
+                  KkEntrance(index: i, child: Text('öğe $i')),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    expect(_opacity(tester, 'öğe 8'), lessThan(1));
+    expect(_opacity(tester, 'öğe 13'), lessThan(1));
+    // Gecikme sekizinci öğede durur: sonrakiler onunla birlikte gelir,
+    // liste uzun da olsa giriş yarım saniyeyi aşmaz.
+    await tester.pump(
+      KkEntrance.step * KkEntrance.maxStaggered + KkMotion.base,
+    );
+    expect(_opacity(tester, 'öğe 13'), 1);
+  });
+
   testWidgets('sonradan kurulan öğe hareketsiz, hemen görünür', (tester) async {
     await tester.pumpWidget(const _Grow(disable: false));
     await tester.pumpAndSettle();

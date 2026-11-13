@@ -43,6 +43,38 @@ void main() {
     handle.dispose();
   });
 
+  testWidgets('alt yazılı satırda yazılar dikeyde ortalı', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Scaffold(
+          body: ListView(
+            children: const [
+              KkSection(
+                title: 'Yedek',
+                children: [
+                  ListTile(
+                    key: Key('satir'),
+                    leading: KkIconBox(icon: Icons.input_rounded),
+                    title: Text('Yedekten geri yükle'),
+                    subtitle: KkRowSubtitle('Bir yedek dosyası aç.'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    final row = tester.getRect(find.byKey(const Key('satir')));
+    final title = tester.getRect(find.text('Yedekten geri yükle'));
+    final subtitle = tester.getRect(find.text('Bir yedek dosyası aç.'));
+    expect(
+      (title.top - row.top) - (row.bottom - subtitle.bottom),
+      inInclusiveRange(-1.5, 1.5),
+    );
+  });
+
   testWidgets('simge kutusuz, yazı renginde', (tester) async {
     await tester.pumpWidget(
       MaterialApp(

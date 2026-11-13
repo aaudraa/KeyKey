@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/core/platform/app_packages.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 
@@ -13,7 +12,7 @@ String avatarInitial(String name) {
 }
 
 /// Kaydın solundaki simge. Kayıt telefondaki bir uygulamaya bağlıysa o
-/// uygulamanın simgesi, kutusuz ve siyah-beyaz (Android'den o an okunur,
+/// uygulamanın kendi renkli simgesi, kutusuz (Android'den o an okunur,
 /// diske yazılmaz); değilse ince çizgili dairede baş harf. Süstür; ekran
 /// okuyucu okumaz.
 class RecordAvatar extends ConsumerWidget {
@@ -41,16 +40,13 @@ class RecordAvatar extends ConsumerWidget {
 
     final Widget child;
     if (icon != null) {
-      child = ColorFiltered(
-        colorFilter: kkSaturation(0),
-        child: Image.memory(
-          icon,
-          width: size,
-          height: size,
-          fit: BoxFit.contain,
-          gaplessPlayback: true,
-          excludeFromSemantics: true,
-        ),
+      child = Image.memory(
+        icon,
+        width: size,
+        height: size,
+        fit: BoxFit.contain,
+        gaplessPlayback: true,
+        excludeFromSemantics: true,
       );
     } else {
       child = DecoratedBox(

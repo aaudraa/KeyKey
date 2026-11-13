@@ -48,7 +48,7 @@ class KkSection extends StatelessWidget {
                 type: MaterialType.transparency,
                 child: ListTileTheme.merge(
                   minTileHeight: rowHeight,
-                  minVerticalPadding: 4,
+                  minVerticalPadding: 7,
                   titleTextStyle: theme.textTheme.bodyLarge?.copyWith(
                     fontSize: KkMetrics.rowTitle,
                     color: theme.colorScheme.onSurface,

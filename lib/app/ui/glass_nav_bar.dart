@@ -123,6 +123,7 @@ class GlassNavBar extends StatelessWidget {
                 key: pillKey,
                 blur: true,
                 vibrant: true,
+                sheen: true,
                 fill: glass.navFill,
                 borderRadius: radius,
                 child: SizedBox(

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
 
@@ -40,12 +42,14 @@ class _EntranceInherited extends InheritedWidget {
   bool updateShouldNotify(_EntranceInherited old) => false;
 }
 
-/// Liste öğesi: saydamlık 0'dan 1'e ve 12 dp aşağıdan yerine. Sıradaki her
-/// öğe 40 ms sonra başlar; yalnızca ilk sekiz öğe hareket eder.
+/// Liste öğesi: saydamlık 0'dan 1'e ve 12 dp aşağıdan yerine. İlk karede
+/// kurulan bütün öğeler hareket eder; sıradaki her öğe 40 ms sonra başlar,
+/// gecikme sekizinci öğede durur (sonrakiler onunla birlikte gelir).
 class KkEntrance extends StatefulWidget {
   const new({required this.index, required this.child, super.key});
 
-  static const int maxAnimated = 8;
+  /// Gecikmenin büyüdüğü öğe sayısı.
+  static const int maxStaggered = 8;
   static const Duration step = Duration(milliseconds: 40);
 
   final int index;
@@ -68,11 +72,9 @@ class _KkEntranceState extends State<KkEntrance>
         .getInheritedWidgetOfExactType<_EntranceInherited>()
         ?.gate;
     final animate =
-        gate != null &&
-        gate.open &&
-        widget.index < KkEntrance.maxAnimated &&
-        !MediaQuery.disableAnimationsOf(context);
-    final delay = KkEntrance.step * widget.index;
+        gate != null && gate.open && !MediaQuery.disableAnimationsOf(context);
+    final delay =
+        KkEntrance.step * math.min(widget.index, KkEntrance.maxStaggered);
     final total = delay + KkMotion.base;
     final controller = AnimationController(
       vsync: this,
