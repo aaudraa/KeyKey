@@ -129,9 +129,7 @@ void main() {
                 key: const Key('kart'),
                 child: TextField(
                   controller: TextEditingController(text: 'ali'),
-                  decoration: const InputDecoration(
-                    labelText: 'Kullanıcı adı',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Kullanıcı adı'),
                 ),
               ),
             ),
