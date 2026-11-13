@@ -55,9 +55,9 @@ void showKkSnack(
 }
 
 /// Gizli bir değeri (parola, kod) güvenli panoya kopyalar ve bildirir. Pano
-/// 30 saniye sonra temizlenir. Kasa bu arada kilitlenirse sessizce geçer:
-/// yönlendirme zaten kilit ekranına gidiyor.
-Future<void> copySensitive(
+/// 30 saniye sonra temizlenir. Kasa bu arada kilitlenirse sessizce geçer
+/// (`false`): yönlendirme zaten kilit ekranına gidiyor.
+Future<bool> copySensitive(
   BuildContext context,
   WidgetRef ref,
   String value,
@@ -66,11 +66,12 @@ Future<void> copySensitive(
   try {
     await ref.read(sensitiveClipboardProvider).copy(value);
   } on VaultLockedException {
-    return;
+    return false;
   }
-  if (!context.mounted) return;
+  if (!context.mounted) return true;
   showKkSnack(
     context,
     l10n.copiedWillClear(SensitiveClipboard.clearAfter.inSeconds),
   );
+  return true;
 }

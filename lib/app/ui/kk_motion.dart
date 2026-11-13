@@ -25,6 +25,9 @@ abstract final class KkMotion {
   static const stagger = Duration(milliseconds: 40);
   static const staggerMax = 8;
 
+  /// Kopyala simgesinin onay işareti olarak kaldığı süre.
+  static const copyHold = Duration(seconds: 1);
+
   /// Hatada kutunun titremesi (üç salınım).
   static const shake = Duration(milliseconds: 300);
 

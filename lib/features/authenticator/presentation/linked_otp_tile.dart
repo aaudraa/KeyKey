@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:keykey/app/ui/kk_copy_icon.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otp_generator.dart';
@@ -41,7 +42,7 @@ class LinkedOtpTile extends ConsumerStatefulWidget {
 class _LinkedOtpTileState extends ConsumerState<LinkedOtpTile> {
   String? _hotpCode;
 
-  Future<void> _copy(String code) => copySensitive(context, ref, code);
+  Future<bool> _copy(String code) => copySensitive(context, ref, code);
 
   Future<void> _generate() async {
     try {
@@ -110,10 +111,9 @@ class _LinkedOtpTileState extends ConsumerState<LinkedOtpTile> {
                   icon: const Icon(Icons.refresh),
                   onPressed: _generate,
                 ),
-              IconButton(
+              KkCopyIcon(
                 tooltip: l10n.copy,
-                icon: const Icon(Icons.copy_outlined),
-                onPressed: code == null ? null : () => _copy(code),
+                onCopy: code == null ? null : () => _copy(code),
               ),
             ],
           ),

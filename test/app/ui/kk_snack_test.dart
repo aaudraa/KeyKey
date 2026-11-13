@@ -73,7 +73,7 @@ void main() {
   testWidgets('copySensitive kopyalar ve bildirir', (tester) async {
     final clipboard = _Clipboard();
     final (ctx, ref) = await _pump(tester, clipboard);
-    await copySensitive(ctx, ref, 'gizli');
+    expect(await copySensitive(ctx, ref, 'gizli'), isTrue);
     await tester.pumpAndSettle();
     expect(clipboard.copied, ['gizli']);
     expect(
@@ -87,7 +87,7 @@ void main() {
   ) async {
     final clipboard = _Clipboard()..locked = true;
     final (ctx, ref) = await _pump(tester, clipboard);
-    await copySensitive(ctx, ref, 'gizli');
+    expect(await copySensitive(ctx, ref, 'gizli'), isFalse);
     await tester.pumpAndSettle();
     expect(clipboard.copied, isEmpty);
     expect(find.byType(SnackBar), findsNothing);

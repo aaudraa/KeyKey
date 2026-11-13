@@ -9,6 +9,7 @@ import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_card.dart';
+import 'package:keykey/app/ui/kk_copy_icon.dart';
 import 'package:keykey/app/ui/kk_entrance.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_menu.dart';
@@ -263,10 +264,10 @@ class _LoginTile extends ConsumerWidget {
       ),
       trailing: content.password.isEmpty
           ? null
-          : IconButton(
+          : KkCopyIcon(
               tooltip: l10n.vaultCopyPassword,
-              icon: Icon(Icons.copy_rounded, color: glass.accent),
-              onPressed: () => copySensitive(context, ref, content.password),
+              color: glass.accent,
+              onCopy: () => copySensitive(context, ref, content.password),
             ),
       onTap: () => context.push(AppRoutes.vaultItem(idHex)),
     );

@@ -7,6 +7,7 @@ import 'package:keykey/app/router.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
+import 'package:keykey/app/ui/kk_copy_icon.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_menu.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
@@ -261,10 +262,10 @@ class _FieldState extends ConsumerState<_Field> {
               ),
               onPressed: () => setState(() => _revealed = !_revealed),
             ),
-          IconButton(
+          KkCopyIcon(
             tooltip: l10n.copy,
-            icon: Icon(Icons.copy_rounded, color: accent),
-            onPressed: () => copySensitive(context, ref, widget.value),
+            color: accent,
+            onCopy: () => copySensitive(context, ref, widget.value),
           ),
         ],
       ),
