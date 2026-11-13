@@ -304,8 +304,8 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
                           const SizedBox(width: 12),
                           TextButton.icon(
                             style: TextButton.styleFrom(
-                              backgroundColor: glass.accentContainer,
-                              foregroundColor: theme.colorScheme.primary,
+                              backgroundColor: glass.tint,
+                              foregroundColor: theme.colorScheme.onSurface,
                             ),
                             onPressed: () async {
                               final generated = await showGeneratorSheet(

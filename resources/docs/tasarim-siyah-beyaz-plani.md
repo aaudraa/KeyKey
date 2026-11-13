@@ -32,10 +32,10 @@
 | `blobs` | `#FFFFFF`, `#A9A9AE`, `#FFFFFF` | `#5A5A5E`, `#3A3A3E`, `#4A4A4E` | |
 | `blobAlpha` | 0,45 | 0,50 | en kötü nokta açıkta `#CBCBCE`, koyuda `#2D2D2F` |
 | `ink` | `#111111` | `#F4F4F4` | 11,6:1 / 12,5:1 |
-| `inkMuted` | `#525252` | `#A3A3A3` | belgedeki `#6B6B6B` 3,3:1 kaldı, koyulaştı (4,8:1 / 5,5:1) |
+| `inkMuted` | `#525252` | `#ADADAD` | belgedeki `#6B6B6B` 3,3:1 kaldı, koyulaştı; koyuda cam kart üstü 4,9:1 |
 | `brand` | `#F26B1D` | `#FF8A4C` | dolgu: "+" ve ana düğme |
 | `onBrand` | `#1A0D05` | `#1A0D05` | 6,2:1 / 8,1:1 |
-| `brandStroke` | `#D9560F` | `#FF8A4C` | ince çizgi (2FA halkası): açıkta `#F26B1D` 2,4:1 kalıyordu, 3,2:1 |
+| `brandStroke` | `#C2470C` | `#FF8A4C` | ince çizgi (2FA halkası): gri lekenin üstünde `#F26B1D` 1,9:1, `#C2470C` 3,1:1 |
 | `tint` (seçili/basılı zemin) | siyah %6 | beyaz %9 | eski `accentContainer` |
 | `error` | `#A1201A` | `#FFB4AB` | değişmez (4,7:1 / 8,1:1) |
 | cam kart `fill` | beyaz %52 | beyaz %7 | |

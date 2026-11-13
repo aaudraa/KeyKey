@@ -100,6 +100,7 @@ class _BackupStatusCardState extends ConsumerState<BackupStatusCard> {
               onPressed: () => _showHelp(l10n),
             ),
             FilledButton(
+              style: kkNeutralButtonStyle(context),
               onPressed: _busy ? null : () => unawaited(_backUp()),
               child: _busy
                   ? Semantics(

@@ -16,7 +16,7 @@ class GlassNavItem {
 }
 
 /// Ekranın altında, kenarlardan ayrık cam şerit: sekmeler, ince bir ayraç ve
-/// en uçta turuncu "+". Seçili sekme simgesi ve adıyla parlak bir kapsülde,
+/// en uçta turuncu "+". Seçili sekme simgesi ve adıyla hafif koyu bir kapsülde,
 /// diğerleri yalnızca simge. `Scaffold(extendBody: true)` ile kullanılır,
 /// içerik arkasından kayar.
 class GlassNavBar extends StatelessWidget {
@@ -210,9 +210,7 @@ class _NavTab extends StatelessWidget {
               ),
               padding: EdgeInsets.symmetric(horizontal: withLabel ? 14 : 0),
               decoration: BoxDecoration(
-                color: selected
-                    ? glass.capsule
-                    : glass.capsule.withValues(alpha: 0),
+                color: selected ? glass.tint : glass.tint.withValues(alpha: 0),
                 borderRadius: BorderRadius.circular(24),
               ),
               child: AnimatedSize(
@@ -266,10 +264,7 @@ class _AddButton extends StatelessWidget {
         key: GlassNavBar.addKey,
         dimension: GlassNavBar._addSize,
         child: DecoratedBox(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: glass.ctaGradient,
-          ),
+          decoration: BoxDecoration(shape: BoxShape.circle, color: glass.brand),
           child: Material(
             type: MaterialType.transparency,
             shape: const CircleBorder(),
@@ -280,7 +275,7 @@ class _AddButton extends StatelessWidget {
                 turns: open ? 0.125 : 0,
                 duration: KkMotion.of(context, KkMotion.base),
                 curve: Curves.easeOutCubic,
-                child: Icon(Icons.add_rounded, color: glass.onCta, size: 28),
+                child: Icon(Icons.add_rounded, color: glass.onBrand, size: 28),
               ),
             ),
           ),

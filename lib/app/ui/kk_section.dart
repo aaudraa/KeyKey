@@ -136,7 +136,7 @@ class KkIconBox extends StatelessWidget {
         width: size,
         height: size,
         decoration: BoxDecoration(
-          color: glass.accentContainer,
+          color: glass.tint,
           borderRadius: BorderRadius.circular(size * 0.3),
         ),
         child: Icon(icon, size: size * 0.55, color: glass.accent),

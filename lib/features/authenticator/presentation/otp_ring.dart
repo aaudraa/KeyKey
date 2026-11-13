@@ -31,7 +31,7 @@ class OtpRing extends StatelessWidget {
     final glass = KkGlass.of(context);
     final seconds = (remaining.inMilliseconds / 1000).ceil();
     final warning = remaining <= warningThreshold;
-    final color = warning ? theme.colorScheme.error : glass.accent;
+    final color = warning ? theme.colorScheme.error : glass.brandStroke;
     final fraction = (remaining.inMilliseconds / (period * 1000)).clamp(
       0.0,
       1.0,

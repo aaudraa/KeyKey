@@ -18,10 +18,15 @@ class PasswordStrengthMeter extends ConsumerWidget {
     final common = ref.watch(commonPasswordsProvider).value ?? const {};
     final strength = PasswordPolicy.strengthOf(password, common: common);
     final (value, color, label) = switch (strength) {
-      PasswordStrength.tooShort => (0.1, colors.error, l10n.strengthTooShort),
-      PasswordStrength.weak => (0.35, colors.error, l10n.strengthWeak),
-      PasswordStrength.fair => (0.65, colors.tertiary, l10n.strengthFair),
-      PasswordStrength.strong => (1.0, colors.primary, l10n.strengthStrong),
+      // Renksiz: güç, çubuğun boyu ve yanındaki metinle anlaşılır.
+      PasswordStrength.tooShort => (
+        0.1,
+        colors.onSurface,
+        l10n.strengthTooShort,
+      ),
+      PasswordStrength.weak => (0.35, colors.onSurface, l10n.strengthWeak),
+      PasswordStrength.fair => (0.65, colors.onSurface, l10n.strengthFair),
+      PasswordStrength.strong => (1.0, colors.onSurface, l10n.strengthStrong),
     };
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

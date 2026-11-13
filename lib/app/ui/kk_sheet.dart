@@ -203,17 +203,32 @@ Future<bool> showKkConfirm(
   return result ?? false;
 }
 
-/// Geri alınamayan ya da tehlikeli işin düğmesi: temadaki turuncu geçiş
-/// yerine düz hata rengi.
+/// Geri alınamayan ya da tehlikeli işin düğmesi: temadaki turuncu yerine
+/// düz hata rengi.
 ButtonStyle kkDangerButtonStyle(ColorScheme scheme) => ButtonStyle(
   foregroundColor: WidgetStatePropertyAll(scheme.onError),
-  backgroundBuilder: (context, states, child) => DecoratedBox(
-    decoration: ShapeDecoration(
-      shape: const StadiumBorder(),
-      color: states.contains(WidgetState.disabled)
-          ? scheme.error.withValues(alpha: 0.38)
-          : scheme.error,
-    ),
-    child: child,
+  iconColor: WidgetStatePropertyAll(scheme.onError),
+  backgroundColor: WidgetStateProperty.resolveWith(
+    (states) => states.contains(WidgetState.disabled)
+        ? scheme.error.withValues(alpha: 0.38)
+        : scheme.error,
   ),
 );
+
+/// Ekranın ana düğmesi olmayan dolu düğme (ör. ayarlardaki "Yedekle"):
+/// turuncu yerine yazı renginde dolgu. Turuncu ekranda en çok bir yerde.
+ButtonStyle kkNeutralButtonStyle(BuildContext context) {
+  final scheme = Theme.of(context).colorScheme;
+  return ButtonStyle(
+    foregroundColor: WidgetStatePropertyAll(scheme.onPrimary),
+    iconColor: WidgetStatePropertyAll(scheme.onPrimary),
+    overlayColor: WidgetStatePropertyAll(
+      scheme.onPrimary.withValues(alpha: 0.10),
+    ),
+    backgroundColor: WidgetStateProperty.resolveWith(
+      (states) => states.contains(WidgetState.disabled)
+          ? scheme.onSurface.withValues(alpha: 0.12)
+          : scheme.onSurface,
+    ),
+  );
+}

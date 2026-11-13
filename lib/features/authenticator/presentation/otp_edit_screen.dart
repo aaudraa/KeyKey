@@ -432,11 +432,10 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
                         alignment: AlignmentDirectional.centerEnd,
                         child: TextButton.icon(
                           style: TextButton.styleFrom(
-                            backgroundColor: KkGlass.of(context)
-                                .accentContainer,
+                            backgroundColor: KkGlass.of(context).tint,
                             foregroundColor: Theme.of(context)
                                 .colorScheme
-                                .primary,
+                                .onSurface,
                           ),
                           onPressed: _pasteSecret,
                           icon: const Icon(Icons.content_paste_rounded),

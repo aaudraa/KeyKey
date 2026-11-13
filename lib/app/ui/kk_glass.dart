@@ -3,23 +3,23 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:keykey/app/theme.dart';
 
-/// Cam yüzeylerin ve renkli zeminin renkleri. Değerler
-/// `resources/docs/tasarim-cam-plani.md` belgesindeki tabloda.
+/// Cam yüzeylerin ve zeminin renkleri. Değerler
+/// `resources/docs/tasarim-siyah-beyaz-plani.md` belgesindeki tabloda.
 @immutable
 class KkGlass extends ThemeExtension<KkGlass> {
   const new({
     required this.fill,
     required this.fillStrong,
     required this.navFill,
-    required this.capsule,
     required this.border,
     required this.highlight,
     required this.shadow,
     required this.scrim,
     required this.accent,
-    required this.accentContainer,
-    required this.onCta,
-    required this.ctaGradient,
+    required this.tint,
+    required this.brand,
+    required this.onBrand,
+    required this.brandStroke,
     required this.ground,
     required this.blobs,
     required this.blobAlpha,
@@ -35,8 +35,6 @@ class KkGlass extends ThemeExtension<KkGlass> {
   /// ve canlı görünsün.
   final Color navFill;
 
-  /// Alt menüde seçili sekmenin kapsülü.
-  final Color capsule;
   final Color border;
 
   /// Cam yüzeyin üst kenarındaki ince parlak çizgi.
@@ -46,20 +44,27 @@ class KkGlass extends ThemeExtension<KkGlass> {
   /// Açılan kutuların arkasındaki karartma.
   final Color scrim;
 
-  /// Vurgulu simge ve çizimler. Yazı için `colorScheme.primary` kullanılır.
+  /// Simge ve çizimler: siyah-beyaz temada yazı rengiyle aynı.
   final Color accent;
 
-  /// Simge kutularının ve "Üret" gibi düğmelerin zemini.
-  final Color accentContainer;
+  /// Seçili ya da basılı zemin (seçili sekme, "Üret" düğmesi).
+  final Color tint;
 
-  /// Ana düğmenin üstündeki yazı ve simge.
-  final Color onCta;
-  final LinearGradient ctaGradient;
+  /// Turuncu. Yalnızca "+" düğmesinde ve ekranın ana düğmesinde dolgu
+  /// olarak kullanılır.
+  final Color brand;
+
+  /// Turuncunun üstündeki yazı ve simge.
+  final Color onBrand;
+
+  /// İnce turuncu çizgi (2FA halkası): zeminde 3:1 görünsün diye açık
+  /// temada daha koyu.
+  final Color brandStroke;
 
   /// Zeminin düz rengi.
   final Color ground;
 
-  /// Şeftali, lila ve pembe lekeler.
+  /// Renksiz ışık lekeleri.
   final List<Color> blobs;
 
   /// Lekenin merkezindeki görünürlük.
@@ -93,15 +98,15 @@ class KkGlass extends ThemeExtension<KkGlass> {
       fill: c(fill, other.fill),
       fillStrong: c(fillStrong, other.fillStrong),
       navFill: c(navFill, other.navFill),
-      capsule: c(capsule, other.capsule),
       border: c(border, other.border),
       highlight: c(highlight, other.highlight),
       shadow: c(shadow, other.shadow),
       scrim: c(scrim, other.scrim),
       accent: c(accent, other.accent),
-      accentContainer: c(accentContainer, other.accentContainer),
-      onCta: c(onCta, other.onCta),
-      ctaGradient: LinearGradient.lerp(ctaGradient, other.ctaGradient, t)!,
+      tint: c(tint, other.tint),
+      brand: c(brand, other.brand),
+      onBrand: c(onBrand, other.onBrand),
+      brandStroke: c(brandStroke, other.brandStroke),
       ground: c(ground, other.ground),
       blobs: [
         for (var i = 0; i < blobs.length; i++) c(blobs[i], other.blobs[i]),

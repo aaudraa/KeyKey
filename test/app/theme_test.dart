@@ -37,14 +37,40 @@ void main() {
   group('sabit renkler', () {
     test('açık tema', () {
       final theme = AppTheme.light;
-      expect(theme.colorScheme.primary, const Color(0xFF9A3A08));
-      expect(theme.extension<KkGlass>()!.ground, const Color(0xFFF3EEF4));
+      final glass = theme.extension<KkGlass>()!;
+      expect(theme.colorScheme.primary, const Color(0xFF111111));
+      expect(theme.colorScheme.onSurface, const Color(0xFF111111));
+      expect(theme.colorScheme.onSurfaceVariant, const Color(0xFF525252));
+      expect(glass.ground, const Color(0xFFE6E6E8));
+      expect(glass.blobs, const [
+        Color(0xFFFFFFFF),
+        Color(0xFFA9A9AE),
+        Color(0xFFFFFFFF),
+      ]);
+      expect(glass.blobAlpha, 0.45);
+      expect(glass.brand, const Color(0xFFF26B1D));
+      expect(glass.brandStroke, const Color(0xFFC2470C));
+      expect(glass.onBrand, const Color(0xFF1A0D05));
+      expect(glass.accent, theme.colorScheme.onSurface);
     });
 
     test('koyu tema', () {
       final theme = AppTheme.dark;
-      expect(theme.colorScheme.primary, const Color(0xFFFFA873));
-      expect(theme.extension<KkGlass>()!.ground, const Color(0xFF0C0B10));
+      final glass = theme.extension<KkGlass>()!;
+      expect(theme.colorScheme.primary, const Color(0xFFF4F4F4));
+      expect(theme.colorScheme.onSurface, const Color(0xFFF4F4F4));
+      expect(theme.colorScheme.onSurfaceVariant, const Color(0xFFADADAD));
+      expect(glass.ground, const Color(0xFF000000));
+      expect(glass.blobs, const [
+        Color(0xFF5A5A5E),
+        Color(0xFF3A3A3E),
+        Color(0xFF4A4A4E),
+      ]);
+      expect(glass.blobAlpha, 0.5);
+      expect(glass.brand, const Color(0xFFFF8A4C));
+      expect(glass.brandStroke, const Color(0xFFFF8A4C));
+      expect(glass.onBrand, const Color(0xFF1A0D05));
+      expect(glass.accent, theme.colorScheme.onSurface);
     });
 
     test('zemin saydam, ekranlar kendi zeminini çizer', () {
@@ -75,7 +101,6 @@ void main() {
       for (final (role, color) in [
         ('yazı', scheme.onSurface),
         ('ikincil yazı', scheme.onSurfaceVariant),
-        ('vurgulu yazı', scheme.primary),
         ('hata', scheme.error),
       ]) {
         test('$role zeminin ve kartın her yerinde okunur', () {
@@ -100,7 +125,7 @@ void main() {
             reason: '$bg',
           );
           expect(
-            contrast(glass.accent, over(bar, glass.capsule)),
+            contrast(glass.accent, over(bar, glass.tint)),
             greaterThanOrEqualTo(3.0),
             reason: '$bg',
           );
@@ -132,11 +157,37 @@ void main() {
         );
       });
 
-      test('ana düğmenin yazısı geçişin iki ucunda okunur', () {
-        for (final c in glass.ctaGradient.colors) {
-          expect(contrast(glass.onCta, c), greaterThanOrEqualTo(4.5));
+      test('turuncu düğmenin yazısı okunur', () {
+        expect(contrast(glass.onBrand, glass.brand), greaterThanOrEqualTo(4.5));
+      });
+
+      test('ince turuncu çizgi (2FA halkası) her yerde görünür', () {
+        for (final bg in grounds) {
+          expect(
+            contrast(glass.brandStroke, bg),
+            greaterThanOrEqualTo(3.0),
+            reason: '$bg',
+          );
         }
-        expect(glass.ctaGradient.colors, [KkColors.ctaStart, KkColors.ctaEnd]);
+      });
+
+      test('ana düğme düz turuncu, köşeli ve alçak', () {
+        final style = theme.filledButtonTheme.style!;
+        expect(style.minimumSize?.resolve({}), const Size(64, 44));
+        expect(
+          style.shape?.resolve({}),
+          const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(14)),
+          ),
+        );
+        expect(style.foregroundColor?.resolve({}), glass.onBrand);
+      });
+
+      test('seçili anahtar siyah-beyaz', () {
+        final track = theme.switchTheme.trackColor!.resolve({
+          WidgetState.selected,
+        });
+        expect(track, scheme.onSurface);
       });
     });
   }
@@ -157,12 +208,5 @@ void main() {
         .firstMatch(manifest)!
         .group(0)!;
     expect(main, contains('android:enableOnBackInvokedCallback="true"'));
-  });
-
-  test('baş harf kutularında beyaz harf okunur', () {
-    expect(KkColors.avatarPalette, hasLength(10));
-    for (final c in KkColors.avatarPalette) {
-      expect(contrast(Colors.white, c), greaterThanOrEqualTo(4.5));
-    }
   });
 }

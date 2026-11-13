@@ -666,18 +666,13 @@ void main() {
 
       expect(find.text('Bu uygulama sahte olabilir'), findsOneWidget);
       expect(find.text('Uygulamayı bu kayda bağla'), findsNothing);
-      // Tehlikeli seçenek turuncu geçişli ana düğme gibi görünmemeli.
+      // Tehlikeli seçenek turuncu ana düğme gibi görünmemeli.
       final fill = find.widgetWithText(FilledButton, 'Yine de doldur');
       final error = Theme.of(tester.element(fill)).colorScheme.error;
-      final painted = tester
-          .widgetList<DecoratedBox>(
-            find.descendant(of: fill, matching: find.byType(DecoratedBox)),
-          )
-          .map((box) => box.decoration)
-          .whereType<ShapeDecoration>()
-          .toList();
-      expect(painted.any((d) => d.gradient != null), isFalse);
-      expect(painted.any((d) => d.color == error), isTrue);
+      final material = tester.widget<Material>(
+        find.descendant(of: fill, matching: find.byType(Material)).first,
+      );
+      expect(material.color, error);
       await tester.tap(find.text('Vazgeç'));
       await tester.pumpAndSettle();
       expect(bridge.filled, isNull);
