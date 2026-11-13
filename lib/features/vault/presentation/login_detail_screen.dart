@@ -10,6 +10,7 @@ import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_copy_icon.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_menu.dart';
+import 'package:keykey/app/ui/kk_secret_text.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
@@ -241,12 +242,13 @@ class _FieldState extends ConsumerState<_Field> {
       subtitle: Semantics(
         label: concealed ? l10n.secretConcealed : null,
         excludeSemantics: concealed,
-        child: Text(
-          concealed ? '••••••••' : widget.value,
-          style: widget.hidden
-              ? const TextStyle(fontFamily: 'monospace')
-              : null,
-        ),
+        child: widget.hidden
+            ? KkSecretText(
+                text: widget.value,
+                revealed: _revealed,
+                style: const TextStyle(fontFamily: 'monospace'),
+              )
+            : Text(widget.value),
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_rolling_text.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/app/ui/kk_switch.dart';
 import 'package:keykey/features/generator/application/password_generator.dart';
@@ -109,13 +110,14 @@ class _GeneratorSheetState extends ConsumerState<GeneratorSheet> {
                   8,
                   8,
                 ),
-                title: Text(
-                  _value.isEmpty
+                // Yeni parola kısa süre karışıp yerine oturur (madde 3.2).
+                title: KkScrambleText(
+                  text: _value.isEmpty
                       ? '—'
                       : _visible
                       ? _value
                       : '•' * 12,
-                  key: const Key('generator-value'),
+                  textKey: const Key('generator-value'),
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontFamily: 'monospace',
                     fontWeight: FontWeight.w600,

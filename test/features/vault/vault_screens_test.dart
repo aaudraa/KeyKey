@@ -9,6 +9,7 @@ import 'package:keykey/app/ui/kk_card.dart';
 import 'package:keykey/app/ui/kk_done_mark.dart';
 import 'package:keykey/app/ui/kk_form.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_secret_text.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
@@ -341,6 +342,8 @@ void main() {
 
       await tester.tap(find.byTooltip('Göster'));
       await tester.pump();
+      // Karakterler sırayla açılır (madde 3.1).
+      await tester.pump(KkSecretText.maxTotal);
       expect(find.text('posta-parolasi'), findsOneWidget);
     });
 

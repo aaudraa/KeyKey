@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:keykey/app/ui/kk_card.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_rolling_text.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/features/authenticator/application/otp_generator.dart';
@@ -189,9 +190,9 @@ class OtpCodeTile extends StatelessWidget {
             label: spokenOtpCode(code),
             hint: l10n.otpCopyCode,
             excludeSemantics: true,
-            child: Text(
-              formatOtpCode(code),
-              maxLines: 1,
+            // Kod yenilenince değişen rakamlar kayar (madde 3.4).
+            child: KkRollingText(
+              text: formatOtpCode(code),
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontFamily: 'monospace',
                 fontWeight: FontWeight.w600,
@@ -220,7 +221,7 @@ class OtpCodeTile extends StatelessWidget {
       );
     }
 
-    final Widget? trailing = remaining != null
+    final trailing = remaining != null
         ? OtpRing(remaining: remaining, period: parameters.period!)
         : code == null
         ? null

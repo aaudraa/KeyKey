@@ -31,6 +31,17 @@ abstract final class KkMotion {
   /// Hatada kutunun titremesi (üç salınım).
   static const shake = Duration(milliseconds: 300);
 
+  /// Parola göster/gizle: karakter başına adım, toplamda en çok
+  /// [secretMax] (madde 3.1).
+  static const secretPerChar = Duration(milliseconds: 12);
+  static const secretMax = Duration(milliseconds: 300);
+
+  /// Üretilen parolanın süs karakterlerle karışma süresi (madde 3.2).
+  static const scramble = Duration(milliseconds: 250);
+
+  /// 2FA kodunda değişen rakamlar arası gecikme (madde 3.4).
+  static const rollStagger = Duration(milliseconds: 20);
+
   /// Süren hareketler: kilit ekranında lekelerin ve logonun döngüsü,
   /// diğer ekranlarda daha sakin kayan zemin.
   static const drift = Duration(seconds: 24);

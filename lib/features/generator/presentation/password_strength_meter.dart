@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/core/vault/password_policy.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
@@ -32,7 +33,14 @@ class PasswordStrengthMeter extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ExcludeSemantics(
-          child: LinearProgressIndicator(value: value, color: color),
+          // Değer değiştikçe boy yumuşak kayar (madde 3.3).
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(end: value),
+            duration: KkMotion.of(context, KkMotion.base),
+            curve: KkMotion.standard,
+            builder: (context, width, _) =>
+                LinearProgressIndicator(value: width, color: color),
+          ),
         ),
         const SizedBox(height: 4),
         Text(
