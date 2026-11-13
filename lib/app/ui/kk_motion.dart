@@ -1,16 +1,47 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Hareketlerin ortak süreleri ve eğrisi (`resources/docs/tasarim-cam.md`,
-/// "Hareket").
+/// Hareketlerin ortak süreleri ve eğrileri
+/// (`resources/docs/tasarim-siyah-beyaz.md`, "Ortak değerler"). Ekranlar
+/// süre ya da eğri yazmaz; bir tarama testi bunu denetler.
 abstract final class KkMotion {
+  /// Basma, simge değişimi.
   static const fast = Duration(milliseconds: 150);
+
+  /// Solma, kayma, anahtar.
   static const base = Duration(milliseconds: 250);
+
+  /// Öğe girişi, ekran geçişi.
+  static const enter = Duration(milliseconds: 350);
+
+  /// Kutu ve pencerelerin açılışı ve kapanışı.
   static const panelOpen = Duration(milliseconds: 400);
   static const panelClose = Duration(milliseconds: 200);
 
+  /// Kilit açılışı, kaydetme onayı.
+  static const emphasis = Duration(milliseconds: 450);
+
+  /// Sıradaki öğeler arası gecikme; gecikme [staggerMax]. öğede durur.
+  static const stagger = Duration(milliseconds: 40);
+  static const staggerMax = 8;
+
+  /// Hatada kutunun titremesi (üç salınım).
+  static const shake = Duration(milliseconds: 300);
+
+  /// Süren hareketler: kilit ekranında lekelerin ve logonun döngüsü,
+  /// diğer ekranlarda daha sakin kayan zemin.
+  static const drift = Duration(seconds: 24);
+  static const calmDrift = Duration(seconds: 36);
+  static const float = Duration(seconds: 3);
+
   /// Hafifçe hedefi geçip yerine oturan yay eğrisi.
   static const Curve spring = Cubic(0.2, 1.35, 0.4, 1);
+
+  /// Kayma ve solma.
+  static const Curve standard = Curves.easeOutCubic;
+
+  /// Çıkışlar.
+  static const Curve exit = Curves.easeInCubic;
 
   /// Telefonda "animasyonları kaldır" açıksa sıfır, değilse [duration].
   static Duration of(BuildContext context, Duration duration) =>

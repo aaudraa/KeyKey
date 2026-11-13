@@ -47,7 +47,7 @@ class _LockScreenState extends ConsumerState<LockScreen>
   /// Yanlış parolada kutunun yana titremesi.
   late final _shake = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 300),
+    duration: KkMotion.shake,
   );
   Timer? _waitTimer;
   Duration _wait = Duration.zero;
@@ -286,10 +286,8 @@ class _FloatingLogo extends StatefulWidget {
 
 class _FloatingLogoState extends State<_FloatingLogo>
     with SingleTickerProviderStateMixin {
-  late final _float = AnimationController(
-    vsync: this,
-    duration: const Duration(seconds: 3),
-  )..repeat();
+  late final _float = AnimationController(vsync: this, duration: KkMotion.float)
+    ..repeat();
 
   @override
   void dispose() {

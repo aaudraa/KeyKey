@@ -49,8 +49,8 @@ class KkEntrance extends StatefulWidget {
   const new({required this.index, required this.child, super.key});
 
   /// Gecikmenin büyüdüğü öğe sayısı.
-  static const int maxStaggered = 8;
-  static const Duration step = Duration(milliseconds: 40);
+  static const int maxStaggered = KkMotion.staggerMax;
+  static const Duration step = KkMotion.stagger;
 
   final int index;
   final Widget child;

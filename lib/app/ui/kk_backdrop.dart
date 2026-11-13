@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_motion.dart';
 
 /// Ekranların renkli zemini: düz renk ve üstünde üç büyük, yumuşak kenarlı
 /// leke. Lekeler içerikle birlikte kaymaz. Bulanıklaştırma yerine yumuşak
@@ -10,7 +11,7 @@ class KkBackdrop extends StatefulWidget {
   const new({this.drifting = false, super.key});
 
   /// Bir kayma döngüsünün süresi.
-  static const driftPeriod = Duration(seconds: 24);
+  static const Duration driftPeriod = KkMotion.drift;
 
   /// Lekenin merkezinden en çok kayacağı yol, genişliğin oranı olarak.
   static const double driftAmount = 0.06;
