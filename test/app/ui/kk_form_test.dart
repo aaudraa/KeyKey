@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/theme.dart';
 import 'package:keykey/app/ui/kk_form.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
@@ -108,6 +109,49 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
+
+  // Telefon denemesi 5: alanın sol üstündeki etiket çerçeve çizgisine
+  // oturuyor, kart yarısını kesiyordu.
+  for (final (name, theme) in [
+    ('açık', AppTheme.light),
+    ('koyu', AppTheme.dark),
+  ]) {
+    testWidgets('$name: dolu alanın etiketi kartın içinde kalır', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: theme,
+          home: Scaffold(
+            body: Padding(
+              padding: const EdgeInsets.all(16),
+              child: KkFieldCard(
+                key: const Key('kart'),
+                child: TextField(
+                  controller: TextEditingController(text: 'ali'),
+                  decoration: const InputDecoration(
+                    labelText: 'Kullanıcı adı',
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final card = tester.getRect(
+        find.descendant(
+          of: find.byKey(const Key('kart')),
+          matching: find.byType(GlassSurface),
+        ),
+      );
+      final label = tester.getRect(find.text('Kullanıcı adı'));
+      final value = tester.getRect(find.text('ali'));
+      expect(label.top, greaterThanOrEqualTo(card.top + 4));
+      expect(value.top, greaterThan(label.bottom - 1));
+      expect(value.bottom, lessThanOrEqualTo(card.bottom - 4));
+    });
+  }
 
   testWidgets('alan kartının kaldırma düğmesi çağırır ve 48 dp', (
     tester,

@@ -196,7 +196,7 @@ void main() {
     expect(tester.getSize(circle.first), const Size(40, 40));
   });
 
-  testWidgets('form alanı en çok 54 dp', (tester) async {
+  testWidgets('form alanı en çok 60 dp, etiket içinde', (tester) async {
     await tester.pumpWidget(
       _host(
         const Scaffold(
@@ -212,7 +212,7 @@ void main() {
     );
     expect(
       tester.getSize(find.byType(KkFieldCard)).height - 10,
-      lessThanOrEqualTo(54),
+      lessThanOrEqualTo(KkMetrics.fieldHeight),
     );
   });
 

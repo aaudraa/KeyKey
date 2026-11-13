@@ -145,30 +145,34 @@ abstract final class AppTheme {
           side: BorderSide(color: glass.border),
         ),
       ),
+      // Etiket çerçeve çizgisine değil, kutunun içine oturur: alanlar cam
+      // kartın içinde durduğu için çizgideki etiketin yarısı kesiliyordu
+      // (telefon denemesi 5). Odak ve hata alt çizgiyle gösterilir.
       inputDecorationTheme: InputDecorationTheme(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 12,
-        ),
+        contentPadding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
         filled: true,
         fillColor: glass.fill,
-        border: const OutlineInputBorder(
+        border: const UnderlineInputBorder(
           borderRadius: cardRadius,
           borderSide: BorderSide.none,
         ),
-        enabledBorder: const OutlineInputBorder(
+        enabledBorder: const UnderlineInputBorder(
           borderRadius: cardRadius,
           borderSide: BorderSide.none,
         ),
-        focusedBorder: OutlineInputBorder(
+        disabledBorder: const UnderlineInputBorder(
+          borderRadius: cardRadius,
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: UnderlineInputBorder(
           borderRadius: cardRadius,
           borderSide: BorderSide(color: ink, width: 1.5),
         ),
-        errorBorder: OutlineInputBorder(
+        errorBorder: UnderlineInputBorder(
           borderRadius: cardRadius,
           borderSide: BorderSide(color: error),
         ),
-        focusedErrorBorder: OutlineInputBorder(
+        focusedErrorBorder: UnderlineInputBorder(
           borderRadius: cardRadius,
           borderSide: BorderSide(color: error, width: 1.5),
         ),
