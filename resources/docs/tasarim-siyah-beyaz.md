@@ -1,6 +1,6 @@
 # KeyKey Siyah-Beyaz Tasarım ve Hareket Planı
 
-Tasarım incelemesinin ([#103](https://github.com/aaudraa/KeyKey/issues/103)) üçüncü turunun tasarım belgesi. 2026-11-13'te proje sahibiyle örnek ekranlar üzerinden konuşuldu. **Durum: taslak, proje sahibinin onayını bekliyor.** Onaydan sonra görev görev uygulama planı ayrı bir belgede yazılır.
+Tasarım incelemesinin ([#103](https://github.com/aaudraa/KeyKey/issues/103)) üçüncü turunun tasarım belgesi. 2026-11-13'te proje sahibiyle örnek ekranlar üzerinden konuşuldu. **Durum: açık sorular 2026-11-13'te yanıtlandı; proje sahibi kullanım sırasında süren hareket istedi (1.10, 1.11, kural 3).** Onaydan sonra görev görev uygulama planı ayrı bir belgede yazılır.
 
 Bu belge [cam tasarım belgesinin](tasarim-cam.md) "Renkler", "Zemin" ve "Hareket" bölümlerinin yerine geçer ve ölçüleri küçültür. O belgenin geri kalanı (ekranların düzeni, tek "+", sade formlar, davranış değişiklikleri, kısıtlar) ve [ilk belgenin](tasarim-yenileme.md) otomatik doldurma kuralları aynen geçerlidir.
 
@@ -81,8 +81,8 @@ Geri kalan her şey siyah-beyazdır *(benim kararlarım, örneklerde gösterildi
 - Seçili sekme, bağlantılar ("Parolamı unuttum" altı çizili), grup başlıkları: yazı rengi.
 - İkincil düğmeler ("Yedekle", "Üret", "Geri yükle"): dolu siyah/beyaz ya da ince kenarlı.
 - Anahtarlar (switch): açıkken dolu siyah/beyaz.
-- Parola gücü çubuğu ve "kopyalandı" bildirimi: renksiz; güç metinle de yazılır ("Zayıf", "Güçlü").
-- Hata metni ve hata kenarı kırmızı kalır: hata rengi süs değil, bilgi. *(Benim kararım; "Açık sorular"da.)*
+- Parola gücü çubuğu ve "kopyalandı" bildirimi: renksiz; güç metinle de yazılır ("Zayıf", "Güçlü"). Proje sahibi renksiz güç çubuğunu onayladı.
+- Hata metni ve hata kenarı kırmızı kalır: hata rengi süs değil, bilgi.
 
 ### Cam
 
@@ -112,7 +112,7 @@ En küçük yazı 11 sp'nin altına inmez. %200 yazı boyutunda taşma testleri 
 
 ### Simgeler ve logolar
 
-- Kayıt simgesinin arkasındaki renkli kutu kalkar. Simgesi olmayan kayıtta yalnızca kalın harf durur (yazı renginde, saydam zeminde).
+- Kayıt simgesinin arkasındaki renkli kutu kalkar. Simgesi olmayan kayıtta harf, ince çizgili bir dairenin içinde durur (yazı renginde, saydam zeminde; proje sahibinin seçimi).
 - Bağlı uygulamanın simgesi kutusuz ve siyah-beyaz (renk doygunluğu sıfır) çizilir. *(Benim kararım: "logoların renkleri siyah beyaz olacak" sözünden.)*
 - Ayarlardaki ve "+" kutusundaki simgelerin turuncu zeminli kutuları kalkar; simge yazı renginde, tek başına durur.
 - K logosu beyaz kutusuz, yalnızca turuncu harf olarak çizilir. Uygulamanın başlatıcıdaki simgesi değişmez.
@@ -130,7 +130,7 @@ En küçük yazı 11 sp'nin altına inmez. %200 yazı boyutunda taşma testleri 
 
 1. Her hareket 150-450 ms sürer. Hiçbiri bekletmez: hareket sürerken dokunuşlar çalışır, yeni hareket eskisini yarıda keser.
 2. Aynı anda tek ana hareket; diğerleri ona eşlik eder (daha kısa, daha küçük).
-3. Kendi kendine süren hareket yalnızca üç yerde: kilit ekranı, 2FA halkası, ilerleme göstergeleri.
+3. Hareket yalnızca ilk girişte kalmaz, uygulama kullanılırken de sürer (proje sahibinin isteği): her dokunuşun bir karşılığı vardır (Katman 2 ve 3), ekrana her dönüşte giriş hareketi oynar (1.10) ve zemin bütün ekranlarda çok yavaş kayar (1.11). Kendi kendine süren öteki hareketler: kilit ekranı, 2FA halkası, ilerleme göstergeleri. Sürekli kayan zemin, alt menünün bulanıklığını her karede yeniden çizdirir; telefonda pil ya da takılma görülürse önce zeminin hızı ve kare sıklığı düşürülür, gerekirse 1.11 çıkarılır.
 4. Kaydırma sırasında yeni hareket başlamaz (küçülen başlık dışında).
 5. Yalnızca ucuz hareketler: yer, ölçek, saydamlık, döndürme. Bulanıklık ya da gölge canlandırılmaz.
 6. Telefonda "animasyonları kaldır" açıksa hepsi anında olur (`KkMotion.of`), süren hareketler durur (`ambientMotionProvider`).
@@ -165,7 +165,9 @@ En küçük yazı 11 sp'nin altına inmez. %200 yazı boyutunda taşma testleri 
 | 1.6 | "+" kutusu | Yaylanarak açılır, satırlar sırayla belirir, "+" çarpıya döner, arka plan bulanıklaşır | `panelOpen` / `panelClose` | `add_panel.dart` | Var; korunur |
 | 1.7 | Anahtarlar | Topuz yaylanarak kayar, zemin rengi yumuşak değişir | `base`, `spring` | Tema `switchTheme` ya da ortak `KkSwitch` | Yeni |
 | 1.8 | Alttan açılan pencereler ve (i) | Yaylanarak açılır, aşağı çekince parmağı izler | `panelOpen` | `kk_sheet.dart` | Var; korunur |
-| 1.9 | Büyük başlık | Kaydırınca küçülüp üst çubuğa oturur | Kaydırmaya bağlı | `vault_screen`, `authenticator_screen`, `settings_screen` | Yeni; **onay bekliyor** |
+| 1.9 | Büyük başlık | Kaydırınca küçülüp üst çubuğa oturur | Kaydırmaya bağlı | `vault_screen`, `authenticator_screen`, `settings_screen` | Yeni; onaylandı |
+| 1.10 | Her dönüş | Giriş hareketi (1.1) yalnızca ekranın ilk açılışında değil, her sekme değişiminde ve alt ekrandan geri dönüşte de oynar | `enter`, `spring`, `stagger` | `kk_entrance.dart`, `app_shell.dart` | Bugün yalnızca ilk açılışta; proje sahibinin isteği |
+| 1.11 | Zemin | Işık lekeleri bütün ekranlarda çok yavaş kayar (kilit ekranındaki gibi, daha sakin). Kaydırırken, uygulama arka plandayken ve "animasyonları kaldır" açıkken durur | Sürekli, 30-40 sn döngü | `kk_backdrop.dart` | Bugün yalnızca kilit ekranında; proje sahibinin isteği |
 
 ### Katman 2: Geri bildirim
 
@@ -175,7 +177,7 @@ En küçük yazı 11 sp'nin altına inmez. %200 yazı boyutunda taşma testleri 
 | 2.2 | Kaydetme | Düğmedeki yazı onay işaretine döner, ekran kapanır, listede yeni/değişen kart bir kez parlar (zemin %0 → %10 → %0) | `emphasis` | `login_edit_screen`, `otp_edit_screen`, `kk_form.dart`, liste ekranları |
 | 2.3 | Silme / çöpe atma | Kart sola kayıp solar, yüksekliği sıfıra iner, alttakiler yukarı kayar | `base`, `exit` | `vault_screen`, `authenticator_screen`, `trash_screen`, `otp_trash_screen` |
 | 2.4 | Hata | Yanlış ana parolada ve boş zorunlu alanda kutu üç kısa salınımla titrer (±8 dp); hata metni solarak gelir | 300 ms | `lock_screen` (var), `kk_form.dart` (yeni) |
-| 2.5 | Hata titreşimi | 2.4 ile birlikte hafif dokunsal titreşim | — | `HapticFeedback`; **onay bekliyor** |
+| 2.5 | Hata titreşimi | 2.4 ile birlikte hafif dokunsal titreşim | — | `HapticFeedback`; onaylandı |
 | 2.6 | "Daha fazla seçenek" | Ok 180° döner, yongalar sırayla küçükten büyür; dokunulan yonga kaybolur, alan yükseklik açarak gelir | `base`, `spring`, `stagger` | `login_edit_screen`, `kk_form.dart` |
 | 2.7 | Liste içi değişim | Süzgeç ya da sıralama değişince kartlar yeni yerine kayar | `base`, `standard` | `vault_screen` |
 
@@ -243,13 +245,15 @@ Takılan ya da fazla gelen hareket, denemede sadeleştirilir ya da çıkarılır
 - 1000 kayıtlı listede savurma ölçümü, cam turundaki sayılarla karşılaştırılır.
 - Samsung telefonda proje sahibiyle üç deneme (yukarıdaki tablo).
 
-## Açık sorular (onayda yanıtlanacak)
+## Açık soruların yanıtları (2026-11-13)
 
-1. **Küçülen büyük başlık (1.9):** eklensin mi? Ekranın üst düzenini değiştirir.
-2. **Hata titreşimi (2.5):** eklensin mi?
-3. **Kutusuz harfler:** listede çıplak duruyorsa alternatif ince çizgili daire içinde harf. Hangisi?
-4. **Parola gücü ve hata rengi:** güç çubuğu renksiz, hata kırmızı önerildi. Güçte yeşil/kırmızı geri gelsin mi?
-5. Örnek ekranlar için ekran ekran yorum henüz gelmedi (yalnızca "cam kalsın" ve "hareket artsın" söylendi).
+1. Küçülen büyük başlık (1.9): eklenir.
+2. Hata titreşimi (2.5): eklenir.
+3. Simgesiz kayıtta harf: ince çizgili daire içinde.
+4. Parola gücü çubuğu: renksiz kalır; hata kırmızısı kalır.
+5. Örnek ekranlara ekran ekran yorum yok; telefonda denedikçe değişebilir.
+
+Ek istek: hareketler yalnızca ilk girişle sınırlı kalmasın, uygulama kullanılırken de sürsün. Karşılığı: kural 3, 1.10 ve 1.11.
 
 ## Uygulayıcıya bırakılanlar
 
