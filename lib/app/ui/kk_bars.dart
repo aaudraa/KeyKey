@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
+import 'package:keykey/app/ui/kk_done_mark.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_menu.dart';
 import 'package:keykey/app/ui/kk_metrics.dart';
@@ -154,6 +155,8 @@ class KkBottomAction extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.busy = false,
+    this.done = false,
+    this.onDone,
     super.key,
   });
 
@@ -162,6 +165,13 @@ class KkBottomAction extends StatelessWidget {
 
   /// İşlem sürüyor: düğmede ilerleme halkası, dokunuş etkisiz.
   final bool busy;
+
+  /// İş bitti (madde 2.2): yazı çizilerek beliren onay işaretine döner,
+  /// düğme soluklaşmadan etkisizleşir; işaret bitince [onDone] (ekran kapanır).
+  final bool done;
+  final VoidCallback? onDone;
+
+  static void _ignore() {}
 
   @override
   Widget build(BuildContext context) {
@@ -176,8 +186,10 @@ class KkBottomAction extends StatelessWidget {
           width: double.infinity,
           child: KkPressable(
             child: FilledButton(
-              onPressed: busy ? null : onPressed,
-              child: busy
+              onPressed: done ? _ignore : (busy ? null : onPressed),
+              child: done
+                  ? KkDoneMark(semanticLabel: label, onDone: onDone)
+                  : busy
                   ? Semantics(
                       label: label,
                       child: const SizedBox.square(

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/kk_card.dart';
+import 'package:keykey/app/ui/kk_done_mark.dart';
 import 'package:keykey/app/ui/kk_form.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
@@ -480,6 +481,40 @@ void main() {
       expect(added.password, 'yeni-parola');
       expect(added.urls, ['https://yeni.example.com']);
       expect(visibleNames(tester), contains('Yeni Site'));
+    });
+
+    testWidgets('kaydedince onay işareti, çift basış tek kayıt, ekran '
+        'kapanır ve kart listede bir kez parlar', (tester) async {
+      await pumpVault(tester);
+      final before = logins.items.length;
+      await openAddPassword(tester);
+      await tester.enterText(find.widgetWithText(TextField, 'Ad'), 'Yeni Site');
+      await tester.pump();
+      final save = find.widgetWithText(FilledButton, 'Kaydet');
+      await tester.tap(save);
+      await tester.tap(save);
+
+      var sawDone = false;
+      var maxFlash = 0.0;
+      final flash = find.descendant(
+        of: find.widgetWithText(KkCard, 'Yeni Site'),
+        matching: find.byKey(KkCard.flashKey),
+      );
+      for (var i = 0; i < 150; i++) {
+        await tester.pump(const Duration(milliseconds: 20));
+        if (find.byType(KkDoneMark).evaluate().isNotEmpty) sawDone = true;
+        if (flash.evaluate().isNotEmpty) {
+          final box = tester.widget<DecoratedBox>(flash);
+          final alpha = (box.decoration as BoxDecoration).color!.a;
+          if (alpha > maxFlash) maxFlash = alpha;
+        }
+      }
+      await tester.pumpAndSettle();
+
+      expect(sawDone, isTrue);
+      expect(logins.items, hasLength(before + 1));
+      expect(find.byType(LoginEditScreen), findsNothing);
+      expect(maxFlash, greaterThan(0.05));
     });
 
     testWidgets('yeni kayıtta yalnızca dört temel alan', (tester) async {

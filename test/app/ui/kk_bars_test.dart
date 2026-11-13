@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/theme.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
+import 'package:keykey/app/ui/kk_done_mark.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/app/ui/kk_pressable.dart';
 
@@ -100,6 +101,37 @@ void main() {
     await tester.tap(find.byType(FilledButton), warnIfMissed: false);
     await tester.pump();
     expect(taps, 0);
+  });
+
+  testWidgets('kaydedilince yazı onay işaretine döner, ikinci dokunuş '
+      'çağırmaz, bitince onDone', (tester) async {
+    var taps = 0;
+    var done = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: KkScaffold(
+          body: const SizedBox.expand(),
+          bottomNavigationBar: KkBottomAction(
+            label: 'Kaydet',
+            done: true,
+            onDone: () => done++,
+            onPressed: () => taps++,
+          ),
+        ),
+      ),
+    );
+    expect(find.byType(KkDoneMark), findsOneWidget);
+    expect(find.text('Kaydet'), findsNothing);
+    // Düğme soluklaşmaz: etkisiz ama marka renginde kalır.
+    expect(
+      tester.widget<FilledButton>(find.byType(FilledButton)).enabled,
+      true,
+    );
+    await tester.tap(find.byType(FilledButton));
+    await tester.pumpAndSettle();
+    expect(taps, 0);
+    expect(done, 1);
   });
 
   testWidgets('yuvarlak düğme en az 48 dp ve ipucu taşır', (tester) async {

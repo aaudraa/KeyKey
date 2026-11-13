@@ -30,8 +30,12 @@ class OtpCodeTile extends StatelessWidget {
     this.hotpCode,
     this.onGenerate,
     this.linkedLogin,
+    this.flash = false,
     super.key,
   });
+
+  /// Son kaydedilen hesap: kart bir kez parlar ([KkCard.flash]).
+  final bool flash;
 
   /// Kalan süre bundan azsa sıradaki kod gösterilir.
   static const nextCodeThreshold = Duration(seconds: 10);
@@ -227,6 +231,7 @@ class OtpCodeTile extends StatelessWidget {
           );
 
     return KkCard(
+      flash: flash,
       minHeight: height,
       title: heading,
       subtitle: codeLine,

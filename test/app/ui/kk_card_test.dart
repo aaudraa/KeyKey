@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/theme.dart';
 import 'package:keykey/app/ui/kk_card.dart';
+import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/app/ui/kk_pressable.dart';
 
 Widget _host(List<Widget> children, {double textScale = 1}) => MaterialApp(
@@ -104,6 +105,47 @@ void main() {
     await tester.pumpAndSettle();
     expect(copies, 1);
     expect(taps, 0);
+  });
+
+  double flashAlpha(WidgetTester tester) =>
+      (tester.widget<DecoratedBox>(find.byKey(KkCard.flashKey)).decoration
+              as BoxDecoration)
+          .color!
+          .a;
+
+  testWidgets('son kaydedilen kart bir kez parlar: zemin %0→%10→%0', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host([const KkCard(title: Text('GitHub'), flash: true)]),
+    );
+    expect(flashAlpha(tester), 0);
+    await tester.pump();
+    // Ekran geçişi biter, sonra parlama.
+    await tester.pump(KkCard.flashDelay);
+    expect(flashAlpha(tester), closeTo(0, 0.01));
+    await tester.pump(KkMotion.emphasis ~/ 2);
+    expect(flashAlpha(tester), closeTo(0.10, 0.01));
+    await tester.pumpAndSettle();
+    expect(flashAlpha(tester), 0);
+  });
+
+  testWidgets('görünmeyen listede parlamaz, görünür olunca parlar', (
+    tester,
+  ) async {
+    Widget host({required bool visible, required bool flash}) => TickerMode(
+      enabled: visible,
+      child: _host([KkCard(title: const Text('GitHub'), flash: flash)]),
+    );
+    await tester.pumpWidget(host(visible: false, flash: true));
+    await tester.pump(KkCard.flashDelay + KkMotion.emphasis);
+    expect(flashAlpha(tester), 0);
+    // Kimlik okununca temizlenir; kart bekleyen parlamayı unutmaz.
+    await tester.pumpWidget(host(visible: false, flash: false));
+    await tester.pumpWidget(host(visible: true, flash: false));
+    await tester.pump();
+    await tester.pump(KkCard.flashDelay + KkMotion.emphasis ~/ 2);
+    expect(flashAlpha(tester), closeTo(0.10, 0.01));
   });
 
   testWidgets('basılıyken kart hafifçe küçülür', (tester) async {

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:keykey/app/last_saved.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
@@ -243,6 +244,7 @@ class _LoginTile extends ConsumerWidget {
     final idHex = loginIdHex(item.id);
     final title = Text(name.isEmpty ? '—' : name);
     return KkCard(
+      flash: watchLastSaved(ref, savedLoginKey(idHex)),
       title: content.favorite
           ? Row(
               children: [

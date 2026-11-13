@@ -5,6 +5,8 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
+import 'package:keykey/app/ui/kk_card.dart';
+import 'package:keykey/app/ui/kk_done_mark.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/app/ui/kk_shake.dart';
 import 'package:keykey/features/authenticator/data/base32.dart';
@@ -437,6 +439,41 @@ void main() {
         OtpParameters.totp(secret: Base32.decodeCanonical('JBSWY3DPEHPK3PXP')),
       );
       expect(find.text('Yeni'), findsOneWidget);
+    });
+
+    testWidgets('kaydedince onay işareti, çift basış tek hesap, kart '
+        'listede bir kez parlar', (tester) async {
+      await openForm(tester);
+      final before = otps.items.length;
+      await tester.enterText(find.widgetWithText(TextField, 'Servis'), 'Yeni');
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Gizli anahtar'),
+        'jbsw y3dp ehpk 3pxp',
+      );
+      await tester.tap(find.text('Kaydet'));
+      await tester.tap(find.text('Kaydet'));
+
+      var sawDone = false;
+      var maxFlash = 0.0;
+      final flash = find.descendant(
+        of: find.widgetWithText(KkCard, 'Yeni'),
+        matching: find.byKey(KkCard.flashKey),
+      );
+      for (var i = 0; i < 150; i++) {
+        await tester.pump(const Duration(milliseconds: 20));
+        if (find.byType(KkDoneMark).evaluate().isNotEmpty) sawDone = true;
+        if (flash.evaluate().isNotEmpty) {
+          final box = tester.widget<DecoratedBox>(flash);
+          final alpha = (box.decoration as BoxDecoration).color!.a;
+          if (alpha > maxFlash) maxFlash = alpha;
+        }
+      }
+      await settle(tester);
+
+      expect(sawDone, isTrue);
+      expect(otps.items, hasLength(before + 1));
+      expect(find.text('Yeni 2FA hesabı'), findsNothing);
+      expect(maxFlash, greaterThan(0.05));
     });
 
     testWidgets('geri tuşu kaydedilmemişi sormadan silmiyor', (tester) async {

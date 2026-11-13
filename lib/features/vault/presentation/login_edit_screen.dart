@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:keykey/app/last_saved.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
@@ -59,6 +60,9 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
   bool _initialized = false;
   bool _dirty = false;
   bool _saving = false;
+
+  /// Kaydedildi: düğmede onay işareti, işaret bitince ekran kapanır.
+  bool _done = false;
 
   /// Klasör ve not alanı görünüyor mu: doluysa ya da yongadan eklendiyse.
   bool _showFolder = false;
@@ -142,7 +146,7 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
   }
 
   Future<void> _save() async {
-    if (_saving || _name.text.trim().isEmpty) return;
+    if (_saving || _done || _name.text.trim().isEmpty) return;
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
     final controller = ref.read(loginsControllerProvider.notifier);
@@ -150,13 +154,14 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
     try {
       final content = _collect();
       final original = _original;
-      if (original == null) {
-        await controller.add(content);
-      } else {
-        await controller.update(original, content);
-      }
+      final saved = original == null
+          ? await controller.add(content)
+          : await controller.update(original, content);
       _dirty = false;
-      if (mounted) context.pop();
+      ref
+          .read(lastSavedProvider.notifier)
+          .mark(savedLoginKey(loginIdHex(saved.id)));
+      if (mounted) setState(() => _done = true);
     } on VaultLockedException {
       // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.
     } on Exception {
@@ -249,6 +254,10 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
           builder: (context, _) => KkBottomAction(
             label: l10n.loginSave,
             busy: _saving,
+            done: _done,
+            onDone: () {
+              if (mounted) context.pop();
+            },
             onPressed: _name.text.trim().isEmpty ? null : _save,
           ),
         ),

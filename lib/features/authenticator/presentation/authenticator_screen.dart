@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:keykey/app/last_saved.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
@@ -226,6 +227,10 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
                             key: ValueKey(otpIdHex(item)),
                             item: item,
                             now: now,
+                            flash: watchLastSaved(
+                              ref,
+                              savedOtpKey(otpIdHex(item)),
+                            ),
                             linkedLogin: loginId == null
                                 ? null
                                 : findLogin(

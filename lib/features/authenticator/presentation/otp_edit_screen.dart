@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:keykey/app/last_saved.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
@@ -60,6 +61,9 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
   bool _initialized = false;
   bool _dirty = false;
   bool _saving = false;
+
+  /// Kaydedildi: düğmede onay işareti, işaret bitince ekran kapanır.
+  bool _done = false;
   bool _showAdvanced = false;
 
   /// Not ve eşleşme alanı görünüyor mu: doluysa ya da yongadan eklendiyse.
@@ -293,7 +297,7 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
   }
 
   Future<void> _save() async {
-    if (_saving) return;
+    if (_saving || _done) return;
     final content = _collect();
     if (content == null) {
       setState(() {
@@ -315,13 +319,12 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
     setState(() => _saving = true);
     try {
       final original = _original;
-      if (original == null) {
-        await controller.add(content);
-      } else {
-        await controller.update(original, content);
-      }
+      final saved = original == null
+          ? await controller.add(content)
+          : await controller.update(original, content);
       _dirty = false;
-      if (mounted) context.pop();
+      ref.read(lastSavedProvider.notifier).mark(savedOtpKey(otpIdHex(saved)));
+      if (mounted) setState(() => _done = true);
     } on VaultLockedException {
       // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.
     } on Exception {
@@ -388,6 +391,10 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
         bottomNavigationBar: KkBottomAction(
           label: l10n.loginSave,
           busy: _saving,
+          done: _done,
+          onDone: () {
+            if (mounted) context.pop();
+          },
           onPressed: _save,
         ),
         // Form kısa; bütün alanlar hep kurulu kalsın.
