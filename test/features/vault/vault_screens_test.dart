@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
+import 'package:keykey/app/ui/kk_animated_items.dart';
 import 'package:keykey/app/ui/kk_card.dart';
 import 'package:keykey/app/ui/kk_done_mark.dart';
 import 'package:keykey/app/ui/kk_form.dart';
@@ -11,6 +12,7 @@ import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
+import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:keykey/features/vault/presentation/login_detail_screen.dart';
 import 'package:keykey/features/vault/presentation/login_edit_screen.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
@@ -292,16 +294,13 @@ void main() {
     ) async {
       await pumpVault(tester);
 
-      final list = tester.widget<ListView>(
+      final list = tester.widget<KkItemsView<LoginItem>>(
         find.descendant(
           of: find.byType(VaultScreen),
-          matching: find.byType(ListView),
+          matching: find.byType(KkItemsView<LoginItem>),
         ),
       );
-      expect(
-        (list.padding! as EdgeInsets).bottom,
-        greaterThanOrEqualTo(kNavClearance),
-      );
+      expect(list.padding.bottom, greaterThanOrEqualTo(kNavClearance));
     });
 
     testWidgets('okunamayan kayıt sayısı gösteriliyor', (tester) async {

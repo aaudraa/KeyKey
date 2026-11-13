@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
@@ -131,11 +133,18 @@ class _KkMoreOptionsState extends State<KkMoreOptions> {
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      for (final option in widget.options)
-                        ActionChip(
-                          avatar: Icon(Icons.add_rounded, color: glass.accent),
-                          label: Text(option.label),
-                          onPressed: option.onAdd,
+                      for (final (i, option) in widget.options.indexed)
+                        _StaggeredChip(
+                          key: ValueKey(option.label),
+                          index: i,
+                          child: ActionChip(
+                            avatar: Icon(
+                              Icons.add_rounded,
+                              color: glass.accent,
+                            ),
+                            label: Text(option.label),
+                            onPressed: option.onAdd,
+                          ),
                         ),
                     ],
                   ),
@@ -144,4 +153,64 @@ class _KkMoreOptionsState extends State<KkMoreOptions> {
       ],
     );
   }
+}
+
+/// Yonganın girişi (madde 2.6): sırası gelince küçükten yaylanarak büyür
+/// ve belirir. Kalan yongalar bir yonga kaldırılınca yeniden oynamaz.
+class _StaggeredChip extends StatefulWidget {
+  const new({required this.index, required this.child, super.key});
+
+  final int index;
+  final Widget child;
+
+  @override
+  State<_StaggeredChip> createState() => _StaggeredChipState();
+}
+
+class _StaggeredChipState extends State<_StaggeredChip>
+    with SingleTickerProviderStateMixin {
+  static const double _startScale = 0.8;
+
+  late final AnimationController _motion = AnimationController(vsync: this);
+  late Interval _window;
+  bool _started = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    final delay =
+        KkMotion.stagger * math.min(widget.index, KkMotion.staggerMax);
+    final total = delay + KkMotion.base;
+    _window = Interval(delay.inMicroseconds / total.inMicroseconds, 1);
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _motion.value = 1;
+    } else {
+      _motion
+        ..duration = total
+        ..forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _motion.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: _motion,
+    builder: (context, child) {
+      final t = _window.transform(_motion.value);
+      final scale =
+          _startScale + (1 - _startScale) * KkMotion.spring.transform(t);
+      return Opacity(
+        opacity: KkMotion.standard.transform(t),
+        child: Transform.scale(scale: scale, child: child),
+      );
+    },
+    child: widget.child,
+  );
 }

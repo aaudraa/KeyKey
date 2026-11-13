@@ -7,11 +7,11 @@ import 'package:keykey/app/last_saved.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
+import 'package:keykey/app/ui/kk_animated_items.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_card.dart';
 import 'package:keykey/app/ui/kk_copy_icon.dart';
-import 'package:keykey/app/ui/kk_entrance.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_menu.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
@@ -197,33 +197,17 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
           ),
         const SizedBox(height: 8),
         Expanded(
-          child: visible.isEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Text(
-                      count > 0 ? l10n.vaultNoResults : l10n.vaultEmpty,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                )
-              : KkEntranceScope(
-                  child: ListView.separated(
-                    // Altta yüzen menü için boşluk.
-                    padding: EdgeInsets.fromLTRB(
-                      16,
-                      4,
-                      16,
-                      navClearance(context),
-                    ),
-                    itemCount: visible.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 8),
-                    itemBuilder: (context, index) => KkEntrance(
-                      index: index,
-                      child: _LoginTile(item: visible[index]),
-                    ),
-                  ),
-                ),
+          child: KkItemsView<LoginItem>(
+            items: visible,
+            keyOf: (item) => loginIdHex(item.id),
+            // Altta yüzen menü için boşluk.
+            padding: EdgeInsets.fromLTRB(16, 4, 16, navClearance(context)),
+            empty: Text(
+              count > 0 ? l10n.vaultNoResults : l10n.vaultEmpty,
+              textAlign: TextAlign.center,
+            ),
+            itemBuilder: (context, item, index) => _LoginTile(item: item),
+          ),
         ),
       ],
     );

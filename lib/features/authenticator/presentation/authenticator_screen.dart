@@ -8,9 +8,9 @@ import 'package:keykey/app/last_saved.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
+import 'package:keykey/app/ui/kk_animated_items.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
-import 'package:keykey/app/ui/kk_entrance.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_menu.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
@@ -191,63 +191,41 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
             ),
           ),
         Expanded(
-          child: visible.isEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Text(
-                      hasAccounts ? l10n.otpNoResults : l10n.otpEmpty,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                )
-              : OtpClockBuilder(
-                  // TOTP yoksa saati izlemeye gerek yok, pil harcanmaz.
-                  active: visible.any(
-                    (item) => item.content.parameters.kind == OtpKind.totp,
-                  ),
-                  builder: (context, now) => KkEntranceScope(
-                    child: ListView.separated(
-                      // Altta yüzen menü için boşluk.
-                      padding: EdgeInsets.fromLTRB(
-                        16,
-                        4,
-                        16,
-                        navClearance(context),
-                      ),
-                      itemCount: visible.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 8),
-                      itemBuilder: (context, index) {
-                        final item = visible[index];
-                        final loginId = item.content.loginId;
-                        return KkEntrance(
-                          index: index,
-                          child: OtpCodeTile(
-                            key: ValueKey(otpIdHex(item)),
-                            item: item,
-                            now: now,
-                            flash: watchLastSaved(
-                              ref,
-                              savedOtpKey(otpIdHex(item)),
-                            ),
-                            linkedLogin: loginId == null
-                                ? null
-                                : findLogin(
-                                    ref.watch(loginsControllerProvider),
-                                    loginIdHex(loginId),
-                                  )?.content,
-                            hotpCode: _hotpCodes[otpIdHex(item)],
-                            onCopy: _copy,
-                            onGenerate: () => unawaited(_generate(item)),
-                            onAction: (action) =>
-                                unawaited(_onAction(item, action)),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
+          child: OtpClockBuilder(
+            // TOTP yoksa saati izlemeye gerek yok, pil harcanmaz.
+            active: visible.any(
+              (item) => item.content.parameters.kind == OtpKind.totp,
+            ),
+            builder: (context, now) => KkItemsView<OtpItem>(
+              items: visible,
+              keyOf: otpIdHex,
+              // Altta yüzen menü için boşluk.
+              padding: EdgeInsets.fromLTRB(16, 4, 16, navClearance(context)),
+              empty: Text(
+                hasAccounts ? l10n.otpNoResults : l10n.otpEmpty,
+                textAlign: TextAlign.center,
+              ),
+              itemBuilder: (context, item, index) {
+                final loginId = item.content.loginId;
+                return OtpCodeTile(
+                  key: ValueKey(otpIdHex(item)),
+                  item: item,
+                  now: now,
+                  flash: watchLastSaved(ref, savedOtpKey(otpIdHex(item))),
+                  linkedLogin: loginId == null
+                      ? null
+                      : findLogin(
+                          ref.watch(loginsControllerProvider),
+                          loginIdHex(loginId),
+                        )?.content,
+                  hotpCode: _hotpCodes[otpIdHex(item)],
+                  onCopy: _copy,
+                  onGenerate: () => unawaited(_generate(item)),
+                  onAction: (action) => unawaited(_onAction(item, action)),
+                );
+              },
+            ),
+          ),
         ),
       ],
     );

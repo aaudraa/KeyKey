@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/theme.dart';
 import 'package:keykey/app/ui/kk_form.dart';
+import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 Widget _host(Widget child, {double textScale = 1}) => MaterialApp(
@@ -41,6 +42,49 @@ void main() {
     await tester.tap(find.text('Not'));
     await tester.pumpAndSettle();
     expect(added, ['not']);
+  });
+
+  testWidgets('açılınca ok 180° döner, yongalar sırayla küçükten büyür', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        KkMoreOptions(
+          options: [
+            KkOption(label: 'Not', onAdd: () {}),
+            KkOption(label: 'Klasör', onAdd: () {}),
+          ],
+        ),
+      ),
+    );
+    await tester.tap(find.text('Daha fazla seçenek'));
+    await tester.pump();
+    await tester.pump(KkMotion.stagger);
+    double opacity(String label) => tester
+        .widget<Opacity>(
+          find
+              .ancestor(of: find.text(label), matching: find.byType(Opacity))
+              .first,
+        )
+        .opacity;
+    double scale(String label) => tester
+        .widget<Transform>(
+          find
+              .ancestor(of: find.text(label), matching: find.byType(Transform))
+              .first,
+        )
+        .transform
+        .storage[0];
+    expect(opacity('Not'), greaterThan(opacity('Klasör')));
+    expect(scale('Not'), lessThan(1.2));
+    expect(scale('Klasör'), lessThan(1));
+    await tester.pumpAndSettle();
+    expect(opacity('Klasör'), 1);
+    expect(scale('Klasör'), closeTo(1, 0.001));
+    expect(
+      tester.widget<AnimatedRotation>(find.byType(AnimatedRotation)).turns,
+      0.5,
+    );
   });
 
   testWidgets('seçenek yoksa hiçbir şey çizilmez', (tester) async {

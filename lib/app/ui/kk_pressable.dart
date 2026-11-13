@@ -58,9 +58,20 @@ class _KkPressableState extends State<KkPressable> {
 /// Ekran açılırken alttan [rise] dp yaylanarak yerine gelen öğe (madde 1.2:
 /// alt menü ve alttaki ana düğme). Yalnızca ilk kurulumda oynar.
 class KkRiseIn extends StatefulWidget {
-  const new({required this.child, super.key});
+  const new({
+    required this.child,
+    this.rise = defaultRise,
+    this.fade = false,
+    super.key,
+  });
 
-  static const double rise = 24;
+  static const double defaultRise = 24;
+
+  /// Başlangıçta ne kadar aşağıda.
+  final double rise;
+
+  /// `true` ise yükselirken saydamdan belirir de.
+  final bool fade;
 
   final Widget child;
 
@@ -98,14 +109,22 @@ class _KkRiseInState extends State<KkRiseIn>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _controller,
-      builder: (context, child) => Transform(
-        transform: Matrix4.translationValues(
-          0,
-          KkRiseIn.rise * (1 - KkMotion.spring.transform(_controller.value)),
-          0,
-        ),
-        child: child,
-      ),
+      builder: (context, child) {
+        final moved = Transform(
+          transform: Matrix4.translationValues(
+            0,
+            widget.rise * (1 - KkMotion.spring.transform(_controller.value)),
+            0,
+          ),
+          child: child,
+        );
+        return widget.fade
+            ? Opacity(
+                opacity: KkMotion.standard.transform(_controller.value),
+                child: moved,
+              )
+            : moved;
+      },
       child: widget.child,
     );
   }
