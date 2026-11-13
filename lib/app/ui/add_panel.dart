@@ -24,6 +24,9 @@ class AddPanel extends StatefulWidget {
     super.key,
   });
 
+  /// Seçeneklerin durduğu cam kutu.
+  static const boxKey = Key('add-panel-box');
+
   /// Kayıtlar yüklenmeden "Parola" etkisizdir.
   final bool passwordEnabled;
 
@@ -48,10 +51,12 @@ class _AddPanelState extends State<AddPanel> {
     final glass = KkGlass.of(context);
     final theme = Theme.of(context);
     final animation = widget.animation;
+    // Kabuk içeriği menünün altına uzattığı için buradaki MediaQuery alt
+    // boşluğu menünün boyunu zaten içerir; sistem çubuğu pencereden okunur.
     final bottom =
         GlassNavBar.height +
         GlassNavBar.bottomGap +
-        MediaQuery.paddingOf(context).bottom +
+        MediaQueryData.fromView(View.of(context)).padding.bottom +
         12;
     final spring = CurvedAnimation(
       parent: animation,
@@ -133,6 +138,7 @@ class _AddPanelState extends State<AddPanel> {
     );
 
     final box = GlassSurface(
+      key: AddPanel.boxKey,
       blur: true,
       strong: true,
       borderRadius: const BorderRadius.all(Radius.circular(26)),

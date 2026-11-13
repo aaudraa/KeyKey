@@ -108,6 +108,24 @@ void main() {
     });
   }
 
+  for (final (name, inset) in [
+    ('düğmeli gezinme', 48.0),
+    ('hareketli gezinme', 24.0),
+  ]) {
+    testWidgets('$name: kutu menünün hemen üstünde açılır', (tester) async {
+      tester.view.padding = FakeViewPadding(
+        bottom: inset * tester.view.devicePixelRatio,
+      );
+      addTearDown(tester.view.reset);
+      await pumpApp(tester);
+      await openPanel(tester);
+
+      final box = tester.getRect(find.byKey(AddPanel.boxKey));
+      final pill = tester.getRect(find.byKey(GlassNavBar.pillKey));
+      expect(pill.top - box.bottom, moreOrLessEquals(12, epsilon: 0.5));
+    });
+  }
+
   testWidgets('"2FA kodu" dört yolu gösterir, geri oku döner', (tester) async {
     await pumpApp(tester);
     await openPanel(tester);

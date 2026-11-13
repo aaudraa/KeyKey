@@ -129,10 +129,10 @@ class GlassSurface extends StatelessWidget {
   static const double blurSigma = 20;
 
   /// Alt menünün bulanıklığı: içerik daha çok dağılır, yazı seçilmez.
-  static const double navBlurSigma = 30;
+  static const double navBlurSigma = 36;
 
   /// Bulanık arkaplanın renk doygunluğu artışı ([vibrant]).
-  static const double vibrance = 1.8;
+  static const double vibrance = 2.1;
 
   /// Temadaki dolgu yerine kullanılacak renk (ör. alt menü).
   final Color? fill;
