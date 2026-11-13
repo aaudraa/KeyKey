@@ -37,7 +37,15 @@ void main() {
       await tester
           .pump(const Duration(milliseconds: 100))
           .timeout(const Duration(seconds: 10));
-      if (finder.evaluate().isNotEmpty) return;
+      if (finder.evaluate().isNotEmpty) {
+        // Ekran geçişi bitsin: önceki ekranın kutuları kaybolsun.
+        for (var i = 0; i < 10; i++) {
+          await tester
+              .pump(const Duration(milliseconds: 100))
+              .timeout(const Duration(seconds: 10));
+        }
+        return;
+      }
     }
     final visible = find
         .byType(Text)
