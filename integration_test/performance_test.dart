@@ -108,6 +108,21 @@ void main() {
     }
     scroll.stop();
 
+    // Arama kutusu listeyle birlikte kayar (telefon denemesi 4); yazmadan
+    // önce başa dönülür. Süreye sayılmaz.
+    tester
+        .state<ScrollableState>(
+          find
+              .descendant(
+                of: find.byType(CustomScrollView),
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        )
+        .position
+        .jumpTo(0);
+    await tester.pumpAndSettle();
+
     final typing = Stopwatch()..start();
     await tester.enterText(
       find.widgetWithText(TextField, '1000 kayıtta ara'),
