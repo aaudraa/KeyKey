@@ -11,6 +11,7 @@ import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
+import 'package:keykey/app/ui/kk_shake.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
@@ -40,15 +41,11 @@ class LockScreen extends ConsumerStatefulWidget {
   ConsumerState<LockScreen> createState() => _LockScreenState();
 }
 
-class _LockScreenState extends ConsumerState<LockScreen>
-    with SingleTickerProviderStateMixin {
+class _LockScreenState extends ConsumerState<LockScreen> {
   final _password = TextEditingController();
 
   /// Yanlış parolada kutunun yana titremesi.
-  late final _shake = AnimationController(
-    vsync: this,
-    duration: KkMotion.shake,
-  );
+  final _shake = KkShakeController();
   Timer? _waitTimer;
   Duration _wait = Duration.zero;
   bool _busy = false;
@@ -155,9 +152,7 @@ class _LockScreenState extends ConsumerState<LockScreen>
         case PasswordRejected(:final wait):
           _password.clear();
           setState(() => _error = l10n.lockWrongPassword);
-          if (!MediaQuery.disableAnimationsOf(context)) {
-            _shake.forward(from: 0);
-          }
+          _shake.shake();
           _startWait(wait);
         case PasswordMustWait(:final wait):
           _startWait(wait);
@@ -184,16 +179,8 @@ class _LockScreenState extends ConsumerState<LockScreen>
         ref.watch(ambientMotionProvider) &&
         !MediaQuery.disableAnimationsOf(context);
     final logo = KeyKeyLogo(size: widget.compact ? 56 : 88);
-    final field = AnimatedBuilder(
-      animation: _shake,
-      // Sönen bir sinüs: iki buçuk gidip gelme, 8 dp'den sıfıra.
-      builder: (context, child) => Transform.translate(
-        offset: Offset(
-          math.sin(_shake.value * math.pi * 5) * 8 * (1 - _shake.value),
-          0,
-        ),
-        child: child,
-      ),
+    final field = KkShake(
+      controller: _shake,
       child: GlassSurface(
         padding: const EdgeInsets.all(4),
         child: SecretField(

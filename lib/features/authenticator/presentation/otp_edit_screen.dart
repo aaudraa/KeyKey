@@ -9,6 +9,7 @@ import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_form.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_shake.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
@@ -67,6 +68,9 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
 
   /// Kaydetmeye basıldıktan sonra hatalar gösterilir.
   bool _validate = false;
+
+  /// Kaydetmede hatalı alanların titremesi.
+  final _shake = KkShakeController();
   String? _linkError;
 
   bool get _isNew => widget.idHex == null;
@@ -74,6 +78,7 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
   @override
   void dispose() {
     _notesFocus.dispose();
+    _shake.dispose();
     for (final controller in [
       _issuer,
       _account,
@@ -298,6 +303,10 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
           _showAdvanced = true;
         }
       });
+      // Hata metinleri çizildikten sonra hatalı alanlar titrer.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _shake.shake();
+      });
       return;
     }
     final l10n = AppLocalizations.of(context);
@@ -387,15 +396,19 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              KkFieldCard(
-                child: SecretField(
-                  controller: _issuer,
-                  label: l10n.otpIssuer,
-                  obscure: false,
-                  autofocus: _isNew && widget.initial == null,
-                  errorText: nameError,
-                  textInputAction: TextInputAction.next,
-                  onChanged: _changed,
+              KkShake(
+                controller: _shake,
+                enabled: nameError != null,
+                child: KkFieldCard(
+                  child: SecretField(
+                    controller: _issuer,
+                    label: l10n.otpIssuer,
+                    obscure: false,
+                    autofocus: _isNew && widget.initial == null,
+                    errorText: nameError,
+                    textInputAction: TextInputAction.next,
+                    onChanged: _changed,
+                  ),
                 ),
               ),
               KkFieldCard(
@@ -407,43 +420,48 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
                   onChanged: _changed,
                 ),
               ),
-              KkFieldCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    SecretField(
-                      controller: _secret,
-                      label: l10n.otpSecret,
-                      helperText: l10n.otpSecretHelper,
-                      errorText: secretError,
-                      // Elle eklenen yeni anahtar servisin ekranından okunarak
-                      // yazılır; körlemesine yazmak hataya yol açıyordu.
-                      initiallyVisible: _isNew && widget.initial == null,
-                      inputFormatters: [SecretKeyFormatter()],
-                      // Eş genişlikli yazı tipinde 0 ile O, 1 ile I daha
-                      // kolay ayrılır.
-                      style: const TextStyle(fontFamily: 'monospace'),
-                      textInputAction: TextInputAction.next,
-                      onChanged: _onSecretChanged,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
-                      child: Align(
-                        alignment: AlignmentDirectional.centerEnd,
-                        child: TextButton.icon(
-                          style: TextButton.styleFrom(
-                            backgroundColor: KkGlass.of(context).tint,
-                            foregroundColor: Theme.of(context)
-                                .colorScheme
-                                .onSurface,
+              KkShake(
+                controller: _shake,
+                enabled: secretError != null,
+                child: KkFieldCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SecretField(
+                        controller: _secret,
+                        label: l10n.otpSecret,
+                        helperText: l10n.otpSecretHelper,
+                        errorText: secretError,
+                        // Elle eklenen yeni anahtar servisin ekranından
+                        // okunarak yazılır; körlemesine yazmak hataya yol
+                        // açıyordu.
+                        initiallyVisible: _isNew && widget.initial == null,
+                        inputFormatters: [SecretKeyFormatter()],
+                        // Eş genişlikli yazı tipinde 0 ile O, 1 ile I daha
+                        // kolay ayrılır.
+                        style: const TextStyle(fontFamily: 'monospace'),
+                        textInputAction: TextInputAction.next,
+                        onChanged: _onSecretChanged,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
+                        child: Align(
+                          alignment: AlignmentDirectional.centerEnd,
+                          child: TextButton.icon(
+                            style: TextButton.styleFrom(
+                              backgroundColor: KkGlass.of(context).tint,
+                              foregroundColor: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface,
+                            ),
+                            onPressed: _pasteSecret,
+                            icon: const Icon(Icons.content_paste_rounded),
+                            label: Text(l10n.otpSecretPaste),
                           ),
-                          onPressed: _pasteSecret,
-                          icon: const Icon(Icons.content_paste_rounded),
-                          label: Text(l10n.otpSecretPaste),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               if (_showNotes)
@@ -591,20 +609,23 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
         }),
       ),
       const SizedBox(height: 16),
-      if (_kind == OtpKind.totp)
-        _NumberField(
-          controller: _period,
-          label: l10n.otpPeriod,
-          errorText: periodError,
-          onChanged: _changed,
-        )
-      else
-        _NumberField(
-          controller: _counter,
-          label: l10n.otpCounter,
-          errorText: counterError,
-          onChanged: _changed,
-        ),
+      KkShake(
+        controller: _shake,
+        enabled: (periodError ?? counterError) != null,
+        child: _kind == OtpKind.totp
+            ? _NumberField(
+                controller: _period,
+                label: l10n.otpPeriod,
+                errorText: periodError,
+                onChanged: _changed,
+              )
+            : _NumberField(
+                controller: _counter,
+                label: l10n.otpCounter,
+                errorText: counterError,
+                onChanged: _changed,
+              ),
+      ),
     ];
   }
 }

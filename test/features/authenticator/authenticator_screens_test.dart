@@ -5,6 +5,8 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
+import 'package:keykey/app/ui/kk_motion.dart';
+import 'package:keykey/app/ui/kk_shake.dart';
 import 'package:keykey/features/authenticator/data/base32.dart';
 import 'package:keykey/features/authenticator/data/otp_content.dart';
 import 'package:keykey/features/authenticator/data/otp_parameters.dart';
@@ -486,6 +488,51 @@ void main() {
       );
       expect(find.text('Servis veya hesap adı gir.'), findsOneWidget);
       expect(otps.items, hasLength(3));
+    });
+
+    testWidgets('hatalı alanlar titrer, telefon bir kez titreşir', (
+      tester,
+    ) async {
+      final haptics = <Object?>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'HapticFeedback.vibrate') {
+            haptics.add(call.arguments);
+          }
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          null,
+        ),
+      );
+      await openForm(tester);
+      await tester.tap(find.text('Kaydet'));
+      // Hata metinleri çizilir, titreme kareden sonra başlar.
+      await tester.pump();
+      await tester.pump();
+      await tester.pump(KkMotion.shake ~/ 4);
+      final shaking = tester
+          .widgetList<KkShake>(find.byType(KkShake))
+          .where((s) => s.enabled);
+      expect(shaking, isNotEmpty);
+      final dx = tester
+          .widget<Transform>(
+            find
+                .descendant(
+                  of: find.byWidget(shaking.first),
+                  matching: find.byType(Transform),
+                )
+                .first,
+          )
+          .transform
+          .storage[12];
+      expect(dx.abs(), greaterThan(0.5));
+      expect(haptics, hasLength(1));
+      await settle(tester);
     });
 
     testWidgets('çok kısa anahtar kaydederken reddediliyor', (tester) async {
