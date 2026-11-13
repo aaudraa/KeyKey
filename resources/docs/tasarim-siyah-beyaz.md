@@ -86,7 +86,7 @@ Geri kalan her şey siyah-beyazdır *(benim kararlarım, örneklerde gösterildi
 
 ### Cam
 
-- Kartlar yarı saydamdır, arkalarını canlı bulanıklaştırmaz (liste takılmasın diye; bugünkü gibi).
+- Kartlar yarı saydamdır, arkalarını canlı bulanıklaştırmaz (liste takılmasın diye; bugünkü gibi). *Dördüncü telefon denemesinde (2026-11-13) proje sahibi buzlu cam kartların okunurluğu düşürdüğünü söyledi: bütün kartlar artık dolu (açık temada beyaz, koyu temada #1C1C1E). Alt menü, "+" kutusu ve açılan pencereler cam kalıyor.*
 - Gerçek bulanıklık yalnızca şuralarda: alt menü, "+" kutusu ve arkasındaki perde, alttan açılan pencereler, bildirim.
 - "+" açılınca arka plan bulanıklaşır ve hafifçe kararır (bugünkü davranış korunur).
 - Alt menü buzlu camdır: dolgusu çok saydam (açıkta beyaz %5, koyuda %3), bulanıklık hafif (10), üstten aşağı sönen beyaz parıltı. İkinci denemede proje sahibi daha saydam istedi. Proje sahibi ilk denemede "camsı his yok" dedi (2026-11-13); renksiz zeminde güçlü bulanıklık menüyü düz gri bir kutuya çeviriyordu.
@@ -99,9 +99,9 @@ Geri kalan her şey siyah-beyazdır *(benim kararlarım, örneklerde gösterildi
 |---|---|---|
 | Ekran başlığı ("Kasa") | 30, çok kalın | 22, kalın |
 | Alt ekran başlığı | 21 | 17 |
-| Kart satırı yüksekliği | 64 | 54 |
-| Kart başlığı / alt yazı | 15 / 12,5 | 13,5 / 11,5 |
-| Ayar satırı yüksekliği / yazısı | 56 / 14,5 | 46 / 13 |
+| Kart satırı yüksekliği | 64 | 54 → 64 *(telefon denemesi 4)* |
+| Kart başlığı / alt yazı | 15 / 12,5 | 13,5 / 11,5 → 15 / 12,5 *(telefon denemesi 4)* |
+| Ayar satırı yüksekliği / yazısı | 56 / 14,5 | 46 / 13 → 56 / 14,5 *(telefon denemesi 4)* |
 | Form alanı yüksekliği | 60-64 | 52-54 |
 | Ana düğme yüksekliği | 54-56, tam yuvarlak | 44-46, 14 köşe |
 | Alt menü yüksekliği | 60 | 52 |
@@ -166,7 +166,7 @@ En küçük yazı 11 sp'nin altına inmez. %200 yazı boyutunda taşma testleri 
 | 1.6 | "+" kutusu | Yaylanarak açılır, satırlar sırayla belirir, "+" çarpıya döner, arka plan bulanıklaşır | `panelOpen` / `panelClose` | `add_panel.dart` | Var; korunur |
 | 1.7 | Anahtarlar | Topuz yaylanarak kayar, zemin rengi yumuşak değişir | `base`, `spring` | Tema `switchTheme` ya da ortak `KkSwitch` | Yeni |
 | 1.8 | Alttan açılan pencereler ve (i) | Yaylanarak açılır, aşağı çekince parmağı izler | `panelOpen` | `kk_sheet.dart` | Var; korunur |
-| 1.9 | Büyük başlık | Kaydırınca küçülüp üst çubuğa oturur | Kaydırmaya bağlı | `vault_screen`, `authenticator_screen`, `settings_screen` | Yeni; onaylandı |
+| 1.9 | Büyük başlık | Kaydırınca küçülüp üst çubuğa oturur. *Telefon denemesi 4'te çubuktaki yazının küçülmesi anlamsız bulundu. Yeni hali: Kasa, 2FA ve Ayarlar'da büyük başlık (26) arama kutusu ve süzgeçlerle birlikte listenin içinde kayar; kayıp gidince üst çubukta küçük başlık (17) solarak belirir.* | Kaydırmaya bağlı | `vault_screen`, `authenticator_screen`, `settings_screen` | Yeni; onaylandı |
 | 1.10 | Her dönüş | Giriş hareketi (1.1) yalnızca ekranın ilk açılışında değil, her sekme değişiminde ve alt ekrandan geri dönüşte de oynar | `enter`, `spring`, `stagger` | `kk_entrance.dart`, `app_shell.dart` | Bugün yalnızca ilk açılışta; proje sahibinin isteği |
 | 1.11 | Zemin | Işık lekeleri bütün ekranlarda çok yavaş kayar (kilit ekranındaki gibi, daha sakin). Kaydırırken, uygulama arka plandayken ve "animasyonları kaldır" açıkken durur | Sürekli, 30-40 sn döngü | `kk_backdrop.dart` | Bugün yalnızca kilit ekranında; proje sahibinin isteği |
 
@@ -247,6 +247,14 @@ Takılan ya da fazla gelen hareket, denemede sadeleştirilir ya da çıkarılır
 - 1000 kayıtlı listede savurma ölçümü, cam turundaki sayılarla karşılaştırılır.
   - *Ölçüm (2026-11-13, Görev 11, Android 14 emülatörü, debug, `KKPERF`):* yükleme 408 ms, dört arama toplam 9 ms, yazıp süzme 374 ms, beş savurma ve durulma 17,4 sn. Cam turunda savurma ölçülmemişti; karşılaştırma için en yakın sayılar [güvenlik denetimindeki](guvenlik-denetimi.md) telefon ölçümü: yükleme 310 ms, arama 26 ms, yazıp süzme 363 ms. Yazıp süzme aynı düzeyde kaldı; savurma sayısı bundan sonraki turlar için dayanak.
 - Samsung telefonda proje sahibiyle üç deneme (yukarıdaki tablo).
+
+## Telefon denemesi 4 (2026-11-13)
+
+Proje sahibi dördüncü deneme sürümünü telefonda denedi:
+
+- Kasa ve Ayarlar gibi sekmelerdeki kartlar buzlu cam olmasın, biraz büyüsün; okunurluk düşmüş. Karar: bütün kartlar dolu, ölçüler cam turundaki boylara döner (kart 64, ayar satırı 56, yazılar 15/12,5 ve 14,5/12,5, kayıt simgesi 40).
+- Arama kutusu kaydırınca yukarı gitmiyordu. Karar: arama kutusu ve süzgeçler listenin içinde, onunla birlikte kayar.
+- Küçülen başlığın bir anlamı yoktu. Karar: büyük başlık listeyle birlikte kayar, gidince üst çubukta küçük başlık belirir (1.9).
 
 ## Açık soruların yanıtları (2026-11-13)
 
