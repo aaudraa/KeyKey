@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:keykey/app/ui/kk_motion.dart';
 
 /// Son kaydedilen kaydın anahtarı (madde 2.2): form kapanınca listede o
 /// kart bir kez parlar. Kart okuyunca temizlenir. Anahtarlar türle başlar
@@ -10,12 +13,24 @@ String savedLoginKey(String idHex) => 'login:$idHex';
 String savedOtpKey(String idHex) => 'otp:$idHex';
 
 class LastSaved extends Notifier<String?> {
-  @override
-  String? build() => null;
+  /// Okunmayan anahtarın unutulduğu süre.
+  static const Duration window = KkMotion.savedFlashWindow;
 
-  // Riverpod'da durum yöntemle değişir; ayarlayıcı (setter) gerekmez.
-  // ignore: use_setters_to_change_properties
-  void mark(String key) => state = key;
+  Timer? _expiry;
+
+  @override
+  String? build() {
+    ref.onDispose(() => _expiry?.cancel());
+    return null;
+  }
+
+  /// [key] son kaydedilen olur; [window] içinde okunmazsa unutulur (kart
+  /// ekran dışında kaldıysa dakikalar sonra kaydırılınca parlamasın).
+  void mark(String key) {
+    _expiry?.cancel();
+    state = key;
+    _expiry = Timer(window, () => take(key));
+  }
 
   /// Anahtar hâlâ [key] ise temizler.
   void take(String key) {

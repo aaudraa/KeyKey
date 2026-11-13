@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/theme.dart';
 import 'package:keykey/app/ui/kk_entrance.dart';
@@ -119,6 +120,52 @@ void main() {
     await tester.pump(KkMotion.enter ~/ 2);
     expect(_opacity(tester, 'öğe 0'), 1);
     expect(_transform(tester, 'öğe 0').storage[13], closeTo(0, 0.01));
+  });
+
+  testWidgets('ekran dışında bekleyen öğe ekran okuyucuya açık', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(_list(80));
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(ListView), const Offset(0, -600));
+    await tester.pumpAndSettle();
+    // Kaydırmadan sonra kurulup ekran altında (önbellekte) bekleyenler.
+    double opacityOf(String label) => tester
+        .widget<Opacity>(
+          find
+              .ancestor(
+                of: find.text(label, skipOffstage: false),
+                matching: find.byType(Opacity, skipOffstage: false),
+              )
+              .last,
+        )
+        .opacity;
+    final waiting = [
+      for (var i = 0; i < 80; i++)
+        if (find.text('öğe $i', skipOffstage: false).evaluate().isNotEmpty &&
+            opacityOf('öğe $i') == 0)
+          'öğe $i',
+    ];
+    expect(waiting, isNotEmpty);
+    var spoken = false;
+    bool visit(SemanticsNode node) {
+      if (node.label == waiting.last) spoken = true;
+      node.visitChildren(visit);
+      return true;
+    }
+
+    visit(
+      tester
+          .binding
+          .renderViews
+          .first
+          .owner!
+          .semanticsOwner!
+          .rootSemanticsNode!,
+    );
+    expect(spoken, isTrue);
+    handle.dispose();
   });
 
   testWidgets('kaydırınca ekrana giren öğe de belirerek gelir', (tester) async {

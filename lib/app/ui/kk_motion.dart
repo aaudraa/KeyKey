@@ -28,6 +28,10 @@ abstract final class KkMotion {
   /// Kopyala simgesinin onay işareti olarak kaldığı süre.
   static const copyHold = Duration(seconds: 1);
 
+  /// Son kaydedilen kartın parlamak için beklediği en uzun süre; kart bu
+  /// sürede ekrana gelmezse parlamaz.
+  static const savedFlashWindow = Duration(seconds: 3);
+
   /// Hatada kutunun titremesi (üç salınım).
   static const shake = Duration(milliseconds: 300);
 

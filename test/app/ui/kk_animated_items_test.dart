@@ -103,6 +103,45 @@ void main() {
     expect(ys[1], lessThan(ys[2]));
   });
 
+  testWidgets('sıra değişince ya da çok öğe gidince liste bir an boşalmaz', (
+    tester,
+  ) async {
+    Widget view(List<String> items) => MaterialApp(
+      theme: AppTheme.light,
+      home: Scaffold(
+        body: KkItemsView<String>(
+          items: items,
+          keyOf: (item) => item,
+          padding: EdgeInsets.zero,
+          empty: const Text('boş'),
+          itemBuilder: (context, item, index) => _Row(item),
+        ),
+      ),
+    );
+    double opacityOf(String label) => tester
+        .widget<Opacity>(
+          find
+              .ancestor(of: find.text(label), matching: find.byType(Opacity))
+              .last,
+        )
+        .opacity;
+    final items = [
+      for (var i = 0; i < 200; i++) 'öğe ${i.toString().padLeft(3, '0')}',
+    ];
+    await tester.pumpWidget(view(items));
+    await tester.pumpAndSettle();
+    // Sıralama tersine döndü.
+    await tester.pumpWidget(view(items.reversed.toList()));
+    await tester.pump();
+    expect(opacityOf('öğe 199'), 1);
+    // Aramada 190 öğe birden gitti.
+    await tester.pumpWidget(view(items.sublist(190)));
+    await tester.pump();
+    expect(opacityOf('öğe 190'), 1);
+    await tester.pumpAndSettle();
+    expect(find.text('öğe 000'), findsNothing);
+  });
+
   testWidgets('1000 öğede yalnızca görünenler kurulur', (tester) async {
     final items = [for (var i = 0; i < 1000; i++) 'öğe $i'];
     await tester.pumpWidget(_host(items));

@@ -49,6 +49,7 @@ class KkAnimatedItems<T> extends StatefulWidget {
 
 class _KkAnimatedItemsState<T> extends State<KkAnimatedItems<T>> {
   GlobalKey<SliverAnimatedListState> _listKey = GlobalKey();
+  final _skip = KkEntranceSkip();
   late List<Object> _keys;
 
   @override
@@ -85,7 +86,11 @@ class _KkAnimatedItemsState<T> extends State<KkAnimatedItems<T>> {
     if (list == null ||
         !listEquals(keptOld, keptNew) ||
         changes > KkAnimatedItems.maxAnimatedChanges) {
+      // Liste baştan kurulur; bu karede kurulan kartlar giriş hareketini
+      // atlayıp hemen görünür, liste bir an bile boşalmaz.
       _listKey = GlobalKey();
+      _skip.active = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _skip.active = false);
       return;
     }
 
@@ -117,13 +122,16 @@ class _KkAnimatedItemsState<T> extends State<KkAnimatedItems<T>> {
 
   @override
   Widget build(BuildContext context) {
-    return SliverAnimatedList(
-      key: _listKey,
-      initialItemCount: widget.items.length,
-      itemBuilder: (context, index, animation) => _Slot(
-        presence: animation.drive(CurveTween(curve: KkMotion.standard)),
-        removing: false,
-        child: widget.itemBuilder(context, widget.items[index], index),
+    return KkEntranceSkipScope(
+      skip: _skip,
+      child: SliverAnimatedList(
+        key: _listKey,
+        initialItemCount: widget.items.length,
+        itemBuilder: (context, index, animation) => _Slot(
+          presence: animation.drive(CurveTween(curve: KkMotion.standard)),
+          removing: false,
+          child: widget.itemBuilder(context, widget.items[index], index),
+        ),
       ),
     );
   }

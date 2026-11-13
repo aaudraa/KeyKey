@@ -137,6 +137,14 @@ class _KkEntranceState extends State<KkEntrance>
     _scope?.replay.removeListener(_onReplay);
     _scope = scope?..replay.addListener(_onReplay);
     if (!first || scope == null || !_enabled) return;
+    final skip = context
+        .getInheritedWidgetOfExactType<KkEntranceSkipScope>()
+        ?.skip
+        .active;
+    if (skip ?? false) {
+      _controller.value = 1;
+      return;
+    }
     if (scope.gate.open) {
       _play(_delay);
     } else {
@@ -214,6 +222,9 @@ class _KkEntranceState extends State<KkEntrance>
             KkEntrance.startScale + (1 - KkEntrance.startScale) * motion;
         return Opacity(
           opacity: fade,
+          // Ekranın altında görünmeyi bekleyen kart ekran okuyucudan
+          // gizlenmesin; TalkBack sıradakine geçebilsin.
+          alwaysIncludeSemantics: true,
           child: Transform(
             alignment: Alignment.center,
             transform: Matrix4.identity()
@@ -226,4 +237,23 @@ class _KkEntranceState extends State<KkEntrance>
       child: widget.child,
     );
   }
+}
+
+/// Giriş hareketini bir kerelik atlatan işaret: açıkken kurulan
+/// [KkEntrance]'lar hemen görünür. Liste baştan kurulduğunda (sıralama,
+/// büyük arama değişikliği) kartlar bir kare boşalıp yeniden girmesin diye.
+class KkEntranceSkip {
+  bool active = false;
+}
+
+/// [KkEntranceSkip]'i alttaki girişlere verir; değişince kimseyi yeniden
+/// kurmaz, girişler yalnızca kurulurken bakar.
+class KkEntranceSkipScope extends InheritedWidget {
+  const new({required this.skip, required super.child, super.key});
+
+  final KkEntranceSkip skip;
+
+  @override
+  bool updateShouldNotify(KkEntranceSkipScope oldWidget) =>
+      skip != oldWidget.skip;
 }
