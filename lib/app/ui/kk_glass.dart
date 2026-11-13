@@ -10,6 +10,7 @@ class KkGlass extends ThemeExtension<KkGlass> {
   const new({
     required this.fill,
     required this.fillStrong,
+    required this.navFill,
     required this.capsule,
     required this.border,
     required this.highlight,
@@ -29,6 +30,10 @@ class KkGlass extends ThemeExtension<KkGlass> {
 
   /// Menü, kutu ve pencere gibi bulanık yüzeylerin dolgusu.
   final Color fillStrong;
+
+  /// Alt menünün dolgusu: kartlardan saydam, altından kayan içerik bulanık
+  /// ve canlı görünsün.
+  final Color navFill;
 
   /// Alt menüde seçili sekmenin kapsülü.
   final Color capsule;
@@ -87,6 +92,7 @@ class KkGlass extends ThemeExtension<KkGlass> {
     return KkGlass(
       fill: c(fill, other.fill),
       fillStrong: c(fillStrong, other.fillStrong),
+      navFill: c(navFill, other.navFill),
       capsule: c(capsule, other.capsule),
       border: c(border, other.border),
       highlight: c(highlight, other.highlight),
@@ -115,10 +121,25 @@ class GlassSurface extends StatelessWidget {
     this.blur = false,
     this.strong = false,
     this.padding,
+    this.fill,
+    this.vibrant = false,
     super.key,
   });
 
   static const double blurSigma = 20;
+
+  /// Alt menünün bulanıklığı: içerik daha çok dağılır, yazı seçilmez.
+  static const double navBlurSigma = 30;
+
+  /// Bulanık arkaplanın renk doygunluğu artışı ([vibrant]).
+  static const double vibrance = 1.8;
+
+  /// Temadaki dolgu yerine kullanılacak renk (ör. alt menü).
+  final Color? fill;
+
+  /// Arkadaki içeriği daha güçlü bulanıklaştırıp renklerini canlandırır
+  /// (yalnızca [blur] ile).
+  final bool vibrant;
 
   final Widget child;
   final BorderRadius borderRadius;
@@ -134,7 +155,7 @@ class GlassSurface extends StatelessWidget {
     final inset = borderRadius.topLeft.x.clamp(0.0, 40.0);
     Widget surface = DecoratedBox(
       decoration: BoxDecoration(
-        color: strong ? glass.fillStrong : glass.fill,
+        color: fill ?? (strong ? glass.fillStrong : glass.fill),
         borderRadius: borderRadius,
         border: Border.all(color: glass.border),
       ),
@@ -165,7 +186,15 @@ class GlassSurface extends StatelessWidget {
       surface = ClipRRect(
         borderRadius: borderRadius,
         child: BackdropFilter(
-          filter: ui.ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+          filter: vibrant
+              ? ui.ImageFilter.compose(
+                  outer: _saturation(vibrance),
+                  inner: ui.ImageFilter.blur(
+                    sigmaX: navBlurSigma,
+                    sigmaY: navBlurSigma,
+                  ),
+                )
+              : ui.ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
           child: surface,
         ),
       );
@@ -175,6 +204,20 @@ class GlassSurface extends StatelessWidget {
       child: surface,
     );
   }
+}
+
+/// Renk doygunluğunu [amount] katına çıkaran süzgeç (1 değişmez).
+ColorFilter _saturation(double amount) {
+  const r = 0.2126;
+  const g = 0.7152;
+  const b = 0.0722;
+  final s = amount;
+  return ColorFilter.matrix([
+    r * (1 - s) + s, g * (1 - s), b * (1 - s), 0, 0, //
+    r * (1 - s), g * (1 - s) + s, b * (1 - s), 0, 0, //
+    r * (1 - s), g * (1 - s), b * (1 - s) + s, 0, 0, //
+    0, 0, 0, 1, 0, //
+  ]);
 }
 
 /// Gölgeyi yalnızca yüzeyin dışına çizer. `BoxShadow` yarı saydam kartın

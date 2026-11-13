@@ -74,6 +74,9 @@ abstract final class AppTheme {
     final glass = KkGlass(
       fill: Colors.white.withValues(alpha: isDark ? 0.08 : 0.50),
       fillStrong: Colors.white.withValues(alpha: isDark ? 0.12 : 0.62),
+      navFill: isDark
+          ? KkColors.darkGround.withValues(alpha: 0.40)
+          : Colors.white.withValues(alpha: 0.38),
       capsule: Colors.white.withValues(alpha: isDark ? 0.16 : 0.72),
       border: Colors.white.withValues(alpha: isDark ? 0.17 : 0.70),
       highlight: Colors.white.withValues(alpha: isDark ? 0.28 : 0.95),

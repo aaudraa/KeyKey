@@ -89,6 +89,24 @@ void main() {
         });
       }
 
+      test('alt menü camı kartlardan saydam, simgeleri yine okunur', () {
+        // Menü altından kayan içerik bulanık da olsa görünsün.
+        expect(glass.navFill.a, lessThan(0.5));
+        for (final bg in grounds) {
+          final bar = over(bg, glass.navFill);
+          expect(
+            contrast(scheme.onSurface, bar),
+            greaterThanOrEqualTo(4.5),
+            reason: '$bg',
+          );
+          expect(
+            contrast(glass.accent, over(bar, glass.capsule)),
+            greaterThanOrEqualTo(3.0),
+            reason: '$bg',
+          );
+        }
+      });
+
       test('vurgulu simge her yerde görünür', () {
         for (final bg in grounds) {
           expect(

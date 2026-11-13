@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/theme.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 
 const _items = [
   GlassNavItem(
@@ -161,6 +162,31 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('menü camı kartlardan saydam ve daha çok bulanıklaştırır', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_host());
+    final glass = AppTheme.light.extension<KkGlass>()!;
+    final pill = find.byKey(GlassNavBar.pillKey);
+    final fills = tester
+        .widgetList<DecoratedBox>(
+          find.descendant(of: pill, matching: find.byType(DecoratedBox)),
+        )
+        .map((box) => box.decoration)
+        .whereType<BoxDecoration>()
+        .map((d) => d.color);
+    expect(fills, contains(glass.navFill));
+    final filter = tester
+        .widget<BackdropFilter>(
+          find.descendant(of: pill, matching: find.byType(BackdropFilter)),
+        )
+        .filter;
+    // Güçlü bulanıklık ve renk doygunluğu (alttan kayan içerik canlı ama
+    // okunmaz görünür).
+    expect(filter.toString(), contains('blur(${GlassSurface.navBlurSigma}'));
+    expect(filter.toString(), contains('compose'));
   });
 
   testWidgets('dar ekranda ve %200 yazıda şerit sığar, "+" görünür', (
