@@ -1,6 +1,6 @@
 # KeyKey Siyah-Beyaz Tasarım ve Hareket Planı
 
-Tasarım incelemesinin ([#103](https://github.com/aaudraa/KeyKey/issues/103)) üçüncü turunun tasarım belgesi. 2026-11-13'te proje sahibiyle örnek ekranlar üzerinden konuşuldu. **Durum: açık sorular 2026-11-13'te yanıtlandı; proje sahibi kullanım sırasında süren hareket istedi (1.10, 1.11, kural 3).** Uygulama planı: [`tasarim-siyah-beyaz-plani.md`](tasarim-siyah-beyaz-plani.md).
+Tasarım incelemesinin ([#103](https://github.com/aaudraa/KeyKey/issues/103)) üçüncü turunun tasarım belgesi. 2026-11-13'te proje sahibiyle örnek ekranlar üzerinden konuşuldu. **Durum: kodda bitti (2026-11-13). Planın 15 görevi tamam; telefonda üçüncü deneme ve #103'ün kapanışı proje sahibinin onayını bekliyor.** Açık sorular 2026-11-13'te yanıtlandı; proje sahibi kullanım sırasında süren hareket istedi (1.10, 1.11, kural 3). Uygulamada verilen kararlar ilgili maddelerin yanında italik notlar olarak duruyor. Uygulama planı: [`tasarim-siyah-beyaz-plani.md`](tasarim-siyah-beyaz-plani.md).
 
 Bu belge [cam tasarım belgesinin](tasarim-cam.md) "Renkler", "Zemin" ve "Hareket" bölümlerinin yerine geçer ve ölçüleri küçültür. O belgenin geri kalanı (ekranların düzeni, tek "+", sade formlar, davranış değişiklikleri, kısıtlar) ve [ilk belgenin](tasarim-yenileme.md) otomatik doldurma kuralları aynen geçerlidir.
 
