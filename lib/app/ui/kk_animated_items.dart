@@ -191,8 +191,11 @@ class KkItemsView<T> extends StatelessWidget {
     required this.empty,
     required this.padding,
     this.header,
+    this.controller,
     super.key,
   });
+
+  final ScrollController? controller;
 
   /// Listenin üstünde onunla birlikte kayan baş kısım (büyük başlık, arama
   /// kutusu, süzgeçler).
@@ -215,6 +218,7 @@ class KkItemsView<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     return KkEntranceScope(
       child: CustomScrollView(
+        controller: controller,
         slivers: [
           if (header != null) SliverToBoxAdapter(child: header),
           SliverPadding(

@@ -3,13 +3,11 @@
 /// Küçülen görünüştür; dokunma alanı hiçbir yerde [minTouch]'ın altına inmez.
 abstract final class KkMetrics {
   /// Sekmelerin kök ekran başlığı ("Kasa").
-  static const double rootTitle = 22;
+  /// Telefon denemesi 5: biraz büyük ve kalın (w800), sabit.
+  static const double rootTitle = 24;
 
   /// Alt ekranların başlığı.
-  static const double subTitle = 17;
-
-  /// Sekmelerin listeyle birlikte kayan büyük başlığı.
-  static const double largeTitle = 26;
+  static const double subTitle = 19;
 
   /// Listelerdeki kartın normal yazıdaki boyu. Telefon denemesi 4'te küçük
   /// kartlar okunaksız geldi; cam turundaki boylara dönüldü.

@@ -39,11 +39,15 @@ class VaultScreen extends ConsumerStatefulWidget {
 
 class _VaultScreenState extends ConsumerState<VaultScreen> {
   final _search = TextEditingController();
+  final _searchFocus = FocusNode();
+  final _scroll = ScrollController();
   LoginFilter _filter = const LoginFilter();
 
   @override
   void dispose() {
     _search.dispose();
+    _searchFocus.dispose();
+    _scroll.dispose();
     super.dispose();
   }
 
@@ -70,8 +74,12 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
       appBar: kkRootAppBar(
         context,
         title: l10n.navVault,
-        largeTitle: true,
         actions: [
+          KkBarSearchButton(
+            tooltip: l10n.vaultSearch,
+            scrollController: _scroll,
+            focusNode: _searchFocus,
+          ),
           KkMenuButton<_VaultAction>(
             tooltip: l10n.screenMore,
             onSelected: _onAction,
@@ -104,13 +112,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
         ],
       ),
       body: switch (state) {
-        LoginsLoading() => Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            KkLargeTitle(l10n.navVault),
-            const Expanded(child: Center(child: CircularProgressIndicator())),
-          ],
-        ),
+        LoginsLoading() => const Center(child: CircularProgressIndicator()),
         LoginsLoaded() => _loaded(context, l10n, state),
       },
     );
@@ -139,12 +141,11 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
     final header = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        KkLargeTitle(l10n.navVault),
-        const BackupReminderBanner(),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
           child: SecretField(
             controller: _search,
+            focusNode: _searchFocus,
             label: count > 0 ? l10n.vaultSearchCount(count) : l10n.vaultSearch,
             obscure: false,
             search: true,
@@ -153,6 +154,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
                 setState(() => _filter = _filter.copyWith(query: query)),
           ),
         ),
+        const BackupReminderBanner(),
         if (hasFavorites || folders.isNotEmpty)
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -210,6 +212,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
 
     return KkItemsView<LoginItem>(
       header: header,
+      controller: _scroll,
       items: visible,
       keyOf: (item) => loginIdHex(item.id),
       // Altta yüzen menü için boşluk.

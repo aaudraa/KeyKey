@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/kk_animated_items.dart';
-import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_card.dart';
 import 'package:keykey/app/ui/kk_done_mark.dart';
 import 'package:keykey/app/ui/kk_form.dart';
@@ -291,8 +290,9 @@ void main() {
       expect(heights, {64.0});
     });
 
-    // Telefon denemesi 4: arama kutusu kaydırınca yukarı gitmiyordu.
-    testWidgets('büyük başlık ve arama kutusu listeyle birlikte kayar', (
+    // Telefon denemesi 4-5: arama kutusu listeyle kayar, gidince üst
+    // çubukta simge olur; başlık çubukta sabit durur.
+    testWidgets('arama kutusu listeyle kayar, gidince çubukta simge olur', (
       tester,
     ) async {
       logins = FakeLoginRepository(
@@ -309,29 +309,32 @@ void main() {
         of: find.byType(AppBar),
         matching: find.text('Kasa'),
       );
-      expect(bar, findsNothing);
-      final large = find.descendant(
-        of: find.byType(KkLargeTitle),
-        matching: find.text('Kasa'),
+      final searchIcon = find.descendant(
+        of: find.byType(VaultScreen),
+        matching: find.byTooltip('Ara'),
       );
-      final titleTop = tester.getTopLeft(large).dy;
+      expect(bar, findsOneWidget);
+      expect(searchIcon, findsNothing);
+      final titleRect = tester.getRect(bar);
       final searchTop = tester.getTopLeft(searchField()).dy;
 
       await tester.drag(find.byType(CustomScrollView), const Offset(0, -30));
       await tester.pumpAndSettle();
-      // Kartlar dokunuşu da dinlediği için sürükleme payı düşer; başlık
-      // ve arama kutusu listeyle aynı miktarda kayar.
-      final moved = titleTop - tester.getTopLeft(large).dy;
-      expect(moved, greaterThan(5));
-      expect(
-        tester.getTopLeft(searchField()).dy,
-        closeTo(searchTop - moved, 1),
-      );
+      expect(tester.getTopLeft(searchField()).dy, lessThan(searchTop - 5));
+      expect(tester.getRect(bar), titleRect);
 
       await tester.drag(find.byType(CustomScrollView), const Offset(0, -400));
       await tester.pumpAndSettle();
-      expect(bar, findsOneWidget);
-      expect(searchField().hitTestable(), findsNothing);
+      expect(searchIcon, findsOneWidget);
+      expect(tester.getRect(bar), titleRect);
+
+      await tester.tap(searchIcon);
+      await tester.pumpAndSettle();
+      expect(tester.getTopLeft(searchField()).dy, closeTo(searchTop, 1));
+      expect(
+        tester.widget<TextField>(searchField()).focusNode?.hasFocus,
+        isTrue,
+      );
     });
 
     testWidgets('son kart alt menünün altında kalmayacak kadar boşluk var', (

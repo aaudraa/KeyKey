@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
-import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_section.dart';
 import 'package:keykey/app/ui/kk_switch.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
@@ -60,28 +59,23 @@ void main() {
   final biometricSwitch = find.widgetWithText(KkSwitchTile, 'Parmak iziyle aç');
 
   group('düzen', () {
-    // Telefon denemesi 4: küçülen başlığın anlamı yoktu; büyük başlık
-    // listeyle kayar, gidince üst çubukta küçük başlık belirir.
-    testWidgets('büyük başlık listeyle kayar', (tester) async {
+    // Telefon denemesi 5: başlık üst çubukta sabit, kaydırınca değişmez.
+    testWidgets('başlık çubukta sabit durur', (tester) async {
       await pumpSettings(tester);
       final screen = find.byType(SettingsScreen);
-      final large = find.descendant(
-        of: screen,
-        matching: find.byType(KkLargeTitle),
-      );
       final bar = find.descendant(
         of: find.descendant(of: screen, matching: find.byType(AppBar)),
         matching: find.text('Ayarlar'),
       );
-      expect(large, findsOneWidget);
-      expect(bar, findsNothing);
+      expect(bar, findsOneWidget);
+      final before = tester.getRect(bar);
 
       await tester.drag(
         find.descendant(of: screen, matching: find.byType(Scrollable)).first,
         const Offset(0, -400),
       );
       await tester.pumpAndSettle();
-      expect(bar, findsOneWidget);
+      expect(tester.getRect(bar), before);
     });
 
     testWidgets('ayarlar dört grup başlığını gösterir', (tester) async {

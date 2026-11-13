@@ -47,6 +47,8 @@ class AuthenticatorScreen extends ConsumerStatefulWidget {
 
 class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
   final _search = TextEditingController();
+  final _searchFocus = FocusNode();
+  final _scroll = ScrollController();
 
   /// Bu ekranda üretilmiş HOTP kodları, hesap kimliğine göre. Kasa
   /// kilitlenince ekran kapanır ve bunlar da gider.
@@ -55,6 +57,8 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
   @override
   void dispose() {
     _search.dispose();
+    _searchFocus.dispose();
+    _scroll.dispose();
     super.dispose();
   }
 
@@ -112,8 +116,15 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
       appBar: kkRootAppBar(
         context,
         title: l10n.navAuthenticator,
-        largeTitle: true,
         actions: [
+          if (state is OtpsLoaded &&
+              state.active.isNotEmpty &&
+              ref.watch(otpCodesVisibleProvider) == true)
+            KkBarSearchButton(
+              tooltip: l10n.vaultSearch,
+              scrollController: _scroll,
+              focusNode: _searchFocus,
+            ),
           KkMenuButton<_ScreenAction>(
             tooltip: l10n.screenMore,
             onSelected: (action) => switch (action) {
@@ -140,30 +151,15 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
         ],
       ),
       body: switch (state) {
-        OtpsLoading() => _titled(
-          l10n,
-          const Center(child: CircularProgressIndicator()),
-        ),
+        OtpsLoading() => const Center(child: CircularProgressIndicator()),
         OtpsLoaded() => switch (ref.watch(otpCodesVisibleProvider)) {
-          null => _titled(
-            l10n,
-            const Center(child: CircularProgressIndicator()),
-          ),
-          false => _titled(l10n, const OtpGate()),
+          null => const Center(child: CircularProgressIndicator()),
+          false => const OtpGate(),
           true => _loaded(context, l10n, state),
         },
       },
     );
   }
-
-  /// Liste yokken de büyük başlık yerinde durur.
-  Widget _titled(AppLocalizations l10n, Widget child) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      KkLargeTitle(l10n.navAuthenticator),
-      Expanded(child: child),
-    ],
-  );
 
   Widget _loaded(
     BuildContext context,
@@ -176,12 +172,12 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
     final header = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        KkLargeTitle(l10n.navAuthenticator),
         if (hasAccounts)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
             child: SecretField(
               controller: _search,
+              focusNode: _searchFocus,
               label: l10n.vaultSearch,
               obscure: false,
               search: true,
@@ -218,6 +214,7 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
       ),
       builder: (context, now) => KkItemsView<OtpItem>(
         header: header,
+        controller: _scroll,
         items: visible,
         keyOf: otpIdHex,
         // Altta yüzen menü için boşluk.

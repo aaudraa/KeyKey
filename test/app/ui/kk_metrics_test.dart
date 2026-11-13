@@ -60,9 +60,8 @@ Widget _card() => const Scaffold(
 
 void main() {
   test('ölçü değerleri belgedeki gibi', () {
-    expect(KkMetrics.rootTitle, 22);
-    expect(KkMetrics.subTitle, 17);
-    expect(KkMetrics.largeTitle, 26);
+    expect(KkMetrics.rootTitle, 24);
+    expect(KkMetrics.subTitle, 19);
     expect(KkMetrics.cardHeight, 64);
     expect(KkMetrics.cardTitle, 15);
     expect(KkMetrics.cardSubtitle, 12.5);
@@ -109,7 +108,8 @@ void main() {
     expect(row.text.style?.fontSize, KkMetrics.rowTitle);
   });
 
-  testWidgets('başlıklar 22 ve 17', (tester) async {
+  // Telefon denemesi 5: başlıklar sabit, biraz büyük ve daha kalın.
+  testWidgets('başlıklar 24 ve 19, kalın', (tester) async {
     await tester.pumpWidget(
       _host(
         Builder(
@@ -120,7 +120,11 @@ void main() {
         ),
       ),
     );
-    expect(tester.widget<Text>(find.text('Kasa')).style?.fontSize, 22);
+    expect(tester.widget<Text>(find.text('Kasa')).style?.fontSize, 24);
+    expect(
+      tester.widget<Text>(find.text('Kasa')).style?.fontWeight,
+      FontWeight.w800,
+    );
 
     await tester.pumpWidget(
       _host(
@@ -132,7 +136,11 @@ void main() {
         ),
       ),
     );
-    expect(tester.widget<Text>(find.text('Ayrıntı')).style?.fontSize, 17);
+    expect(tester.widget<Text>(find.text('Ayrıntı')).style?.fontSize, 19);
+    expect(
+      tester.widget<Text>(find.text('Ayrıntı')).style?.fontWeight,
+      FontWeight.w800,
+    );
   });
 
   testWidgets('ana düğme 44 dp görünür, 48 dp dokunulur', (tester) async {

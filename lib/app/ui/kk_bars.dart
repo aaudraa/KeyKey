@@ -6,6 +6,7 @@ import 'package:keykey/app/ui/kk_done_mark.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_menu.dart';
 import 'package:keykey/app/ui/kk_metrics.dart';
+import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/app/ui/kk_pressable.dart';
 
 /// Cam daire içinde simge düğmesi (geri oku, düzenle). Görünen boyu [size],
@@ -38,108 +39,94 @@ class KkCircleButton extends StatelessWidget {
   }
 }
 
-/// Kök ekranlardaki üst çubuk: solda kalın başlık.
-///
-/// [largeTitle] açıksa başlık çubukta değil, listenin başındaki
-/// [KkLargeTitle]'dadır ve arama kutusuyla birlikte kayar; o kayıp gidince
-/// çubukta küçük başlık belirir (madde 1.9, telefon denemesi 4).
+/// Kök ekranlardaki üst çubuk: solda kalın başlık. Başlık sabittir;
+/// kaydırınca büyüyüp küçülmez (telefon denemesi 5).
 PreferredSizeWidget kkRootAppBar(
   BuildContext context, {
   required String title,
   List<Widget> actions = const [],
-  bool largeTitle = false,
 }) {
   final theme = Theme.of(context);
   return AppBar(
     automaticallyImplyLeading: false,
     toolbarHeight: 56,
     titleSpacing: 20,
-    title: largeTitle
-        ? _BarTitle(title: title)
-        : Semantics(
-            header: true,
-            child: Text(
-              title,
-              style: theme.textTheme.headlineMedium?.copyWith(
-                fontSize: KkMetrics.rootTitle,
-                fontWeight: FontWeight.w700,
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
-          ),
+    title: Semantics(
+      header: true,
+      child: Text(
+        title,
+        style: theme.textTheme.headlineMedium?.copyWith(
+          fontSize: KkMetrics.rootTitle,
+          fontWeight: FontWeight.w800,
+          color: theme.colorScheme.onSurface,
+        ),
+      ),
+    ),
     actions: [...actions, const SizedBox(width: 8)],
   );
 }
 
-/// Sekmenin listeyle birlikte kayan büyük başlığı. Listenin ilk öğesi olur;
-/// üst çubuğu `kkRootAppBar(largeTitle: true)` ile kurulur.
-class KkLargeTitle extends StatelessWidget {
-  const new(this.title, {super.key});
+/// Listenin başındaki arama kutusu kayıp gidince üst çubukta, üç noktanın
+/// solunda beliren arama simgesi. Dokununca liste başa döner ve kutu
+/// odaklanır (telefon denemesi 5).
+class KkBarSearchButton extends StatelessWidget {
+  const new({
+    required this.tooltip,
+    required this.scrollController,
+    required this.focusNode,
+    super.key,
+  });
 
-  final String title;
+  /// Simgenin belirdiği kaydırma: arama kutusunun çoğu çubuğun altına
+  /// girmiştir.
+  static const double showAfter = 48;
 
-  /// Çubuktaki küçük başlığın belirmeye başladığı ve tamamen göründüğü
-  /// kaydırma: büyük başlık bu arada üst çubuğun altına girer.
-  static const double barFadeStart = 24;
-  static const double barFadeEnd = 44;
+  final String tooltip;
+  final ScrollController scrollController;
+  final FocusNode focusNode;
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-      child: Align(
-        alignment: AlignmentDirectional.centerStart,
-        child: Semantics(
-          header: true,
-          child: Text(
-            title,
-            style: theme.textTheme.headlineMedium?.copyWith(
-              fontSize: KkMetrics.largeTitle,
-              fontWeight: FontWeight.w700,
-              color: theme.colorScheme.onSurface,
-            ),
-          ),
-        ),
-      ),
-    );
+  Future<void> _search(BuildContext context) async {
+    final duration = KkMotion.of(context, KkMotion.base);
+    if (scrollController.hasClients) {
+      if (duration == Duration.zero) {
+        scrollController.jumpTo(0);
+      } else {
+        await scrollController.animateTo(
+          0,
+          duration: duration,
+          curve: KkMotion.standard,
+        );
+      }
+    }
+    focusNode.requestFocus();
   }
-}
-
-/// Büyük başlık kayıp gidince çubukta solarak beliren küçük başlık. Büyük
-/// başlık görünürken ağaçta yoktur; başlık iki kez okunmaz.
-class _BarTitle extends StatelessWidget {
-  const new({required this.title});
-
-  final String title;
 
   @override
   Widget build(BuildContext context) {
     final offset = KkScrollState.maybeOf(context)?.offset;
     if (offset == null) return const SizedBox.shrink();
-    final theme = Theme.of(context);
-    final text = Semantics(
-      header: true,
-      child: Text(
-        title,
-        style: theme.textTheme.titleLarge?.copyWith(
-          fontSize: KkMetrics.subTitle,
-          fontWeight: FontWeight.w700,
-          color: theme.colorScheme.onSurface,
-        ),
+    final button = KkPressable(
+      key: const ValueKey('ara'),
+      pressedScale: KkPressable.smallScale,
+      child: IconButton(
+        tooltip: tooltip,
+        icon: const Icon(Icons.search_rounded),
+        style: kkCircleButtonStyle(KkGlass.of(context), 44),
+        onPressed: () => _search(context),
       ),
     );
     return ValueListenableBuilder<double>(
       valueListenable: offset,
-      builder: (context, pixels, child) {
-        final t =
-            ((pixels - KkLargeTitle.barFadeStart) /
-                    (KkLargeTitle.barFadeEnd - KkLargeTitle.barFadeStart))
-                .clamp(0.0, 1.0);
-        if (t == 0) return const SizedBox.shrink();
-        return Opacity(opacity: t, child: child);
-      },
-      child: text,
+      builder: (context, pixels, _) => AnimatedSwitcher(
+        duration: KkMotion.of(context, KkMotion.fast),
+        transitionBuilder: (child, animation) => FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(scale: animation, child: child),
+        ),
+        child: pixels > showAfter
+            ? button
+            : const SizedBox.shrink(key: ValueKey('yok')),
+      ),
     );
   }
 }
@@ -162,7 +149,7 @@ PreferredSizeWidget kkAppBar(
           overflow: TextOverflow.ellipsis,
           style: theme.textTheme.titleLarge?.copyWith(
             fontSize: KkMetrics.subTitle,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
             color: theme.colorScheme.onSurface,
           ),
         );

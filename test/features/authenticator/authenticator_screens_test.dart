@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/last_saved.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
-import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_card.dart';
 import 'package:keykey/app/ui/kk_done_mark.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
@@ -131,8 +130,9 @@ void main() {
   }
 
   group('liste', () {
-    // Telefon denemesi 4: arama kutusu kaydırınca yukarı gitmiyordu.
-    testWidgets('büyük başlık ve arama kutusu listeyle birlikte kayar', (
+    // Telefon denemesi 4-5: arama kutusu listeyle kayar, gidince üst
+    // çubukta simge olur; başlık çubukta sabit durur.
+    testWidgets('arama kutusu listeyle kayar, gidince çubukta simge olur', (
       tester,
     ) async {
       otps = FakeOtpRepository(
@@ -143,38 +143,39 @@ void main() {
       );
       await openAuthenticator(tester);
       final screen = find.byType(AuthenticatorScreen);
-      final large = find.descendant(
-        of: screen,
-        matching: find.byType(KkLargeTitle),
-      );
       final bar = find.descendant(
         of: find.descendant(of: screen, matching: find.byType(AppBar)),
         matching: find.text('2FA'),
+      );
+      final searchIcon = find.descendant(
+        of: screen,
+        matching: find.byTooltip('Ara'),
       );
       final search = find.descendant(
         of: screen,
         matching: find.byType(TextField),
       );
-      expect(large, findsOneWidget);
-      expect(bar, findsNothing);
-      final titleTop = tester.getTopLeft(large).dy;
+      final list = find.descendant(
+        of: screen,
+        matching: find.byType(CustomScrollView),
+      );
+      expect(bar, findsOneWidget);
+      expect(searchIcon, findsNothing);
       final searchTop = tester.getTopLeft(search).dy;
 
-      await tester.drag(
-        find.descendant(of: screen, matching: find.byType(CustomScrollView)),
-        const Offset(0, -40),
-      );
+      await tester.drag(list, const Offset(0, -40));
       await settle(tester);
-      final moved = titleTop - tester.getTopLeft(large).dy;
-      expect(moved, greaterThan(5));
-      expect(tester.getTopLeft(search).dy, closeTo(searchTop - moved, 1));
+      expect(tester.getTopLeft(search).dy, lessThan(searchTop - 5));
 
-      await tester.drag(
-        find.descendant(of: screen, matching: find.byType(CustomScrollView)),
-        const Offset(0, -400),
-      );
+      await tester.drag(list, const Offset(0, -400));
       await settle(tester);
+      expect(searchIcon, findsOneWidget);
       expect(bar, findsOneWidget);
+
+      await tester.tap(searchIcon);
+      await settle(tester);
+      expect(tester.getTopLeft(search).dy, closeTo(searchTop, 1));
+      expect(tester.widget<TextField>(search).focusNode?.hasFocus, isTrue);
     });
 
     testWidgets('saat ilerledikçe dinleyiciler birikmez', (tester) async {
