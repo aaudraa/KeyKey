@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/onboarding/presentation/intro_art.dart';
 import 'package:keykey/features/onboarding/presentation/intro_screen.dart';
 import 'package:keykey/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:sodium/sodium_sumo.dart';
@@ -137,5 +138,99 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(IntroScreen), findsNothing);
     expect(row, findsOneWidget);
+  });
+
+  group('çizimler', () {
+    Future<void> goToPage(WidgetTester tester, int index) async {
+      await pumpFresh(tester);
+      for (var i = 0; i < index; i++) {
+        await next(tester);
+      }
+    }
+
+    Finder inArt(Finder finder) =>
+        find.descendant(of: find.byType(IntroArt), matching: finder);
+
+    testWidgets('Nerede ne var: menünün simgeleri ve ne oldukları', (
+      tester,
+    ) async {
+      await goToPage(tester, 2);
+      for (final icon in [
+        Icons.lock_outline,
+        Icons.shield_outlined,
+        Icons.settings_outlined,
+        Icons.add_rounded,
+      ]) {
+        expect(inArt(find.byIcon(icon)), findsWidgets);
+      }
+      for (final caption in [
+        'Parolaların',
+        'Doğrulama kodların',
+        'Yedek, doldurma ve tema',
+        'Yeni parola ya da 2FA kodu',
+      ]) {
+        expect(inArt(find.text(caption)), findsOneWidget);
+      }
+    });
+
+    testWidgets('Geçiş: KeePassXC logosu ve uygulama adları', (tester) async {
+      await goToPage(tester, 4);
+      expect(
+        inArt(
+          find.byWidgetPredicate(
+            (w) =>
+                w is Image &&
+                w.image is AssetImage &&
+                (w.image as AssetImage).assetName ==
+                    'resources/assets/logos/keepassxc.png',
+          ),
+        ),
+        findsOneWidget,
+      );
+      for (final name in [
+        'Bitwarden',
+        'Chrome',
+        'Firefox',
+        'KeePassXC',
+        'Google Authenticator',
+        'Aegis',
+        '2FAS',
+      ]) {
+        expect(inArt(find.text(name)), findsOneWidget);
+      }
+    });
+
+    testWidgets('animasyonlar kapalıyken çizimler hemen son hallerinde', (
+      tester,
+    ) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(tester.platformDispatcher.clearAllTestValues);
+      await pumpFresh(tester);
+      for (var page = 0; page < titles.length; page++) {
+        // Sayfa geçişinin birkaç karesinden sonra hiçbir şey dönmüyor.
+        for (var i = 0; i < 3; i++) {
+          await tester.pump(const Duration(milliseconds: 50));
+        }
+        expect(tester.binding.hasScheduledFrame, isFalse, reason: '$page');
+        if (page < titles.length - 1) {
+          await tester.tap(find.widgetWithText(FilledButton, 'İleri'));
+          await tester.pump();
+        }
+      }
+      // Son sayfanın çizimi gizli ya da yarım kalmamış.
+      final opacities = tester.widgetList<Opacity>(inArt(find.byType(Opacity)));
+      expect(opacities.every((o) => o.opacity == 1), isTrue);
+    });
+
+    testWidgets('%200 yazıda hiçbir sayfa taşmaz', (tester) async {
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.platformDispatcher.clearAllTestValues);
+      await pumpFresh(tester);
+      for (var page = 0; page < titles.length; page++) {
+        expect(tester.takeException(), isNull, reason: '$page');
+        if (page < titles.length - 1) await next(tester);
+      }
+    });
   });
 }

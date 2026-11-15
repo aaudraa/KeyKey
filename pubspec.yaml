@@ -43,6 +43,7 @@ flutter:
     - resources/assets/licenses/zint.txt
     - resources/assets/licenses/apache-2.0.txt
     - resources/assets/autofill/public_suffix_list.dat
+    - resources/assets/logos/keepassxc.png
   generate: true
 
 # Uygulamadaki SQLite hazır kütüphane olarak indirilmez, repodaki kaynaktan

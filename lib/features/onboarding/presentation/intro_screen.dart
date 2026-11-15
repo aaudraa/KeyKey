@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
-import 'package:keykey/app/ui/kk_metrics.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
@@ -49,10 +48,15 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
     }
   }
 
-  Future<void> _next() => _pages.nextPage(
-    duration: KkMotion.of(context, KkMotion.enter),
-    curve: KkMotion.standard,
-  );
+  Future<void> _next() async {
+    final duration = KkMotion.of(context, KkMotion.enter);
+    // Animasyonlar kapalıyken süre sıfırdır; sıfır süreli kaydırma olmaz.
+    if (duration == Duration.zero) {
+      _pages.jumpToPage(_page + 1);
+      return;
+    }
+    await _pages.nextPage(duration: duration, curve: KkMotion.standard);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -134,7 +138,7 @@ class _IntroPage extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 8),
-          SizedBox(height: KkMetrics.introArtHeight, child: art),
+          art,
           const SizedBox(height: 24),
           Semantics(
             header: true,

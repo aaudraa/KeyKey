@@ -51,11 +51,11 @@
 
 **Arayüzler:** `class IntroArt extends StatefulWidget { const new({required this.page, required this.active}); final int page; final bool active; }`.
 
-- [ ] **Adım 1: Başarısız testler.** Üçüncü sayfada dört menü simgesi ve dört açıklama (Kasa, 2FA, Ayarlar, Ekle); beşinci sayfada KeePassXC görseli ve yedi uygulama adı; animasyonlar kapalıyken her sayfa ilk karede son halini gösterir ve bekleyen kare kalmaz; lisanslarda "KeePassXC logo" girdisi; altı sayfa %200 yazıda taşmaz.
-- [ ] **Adım 2:** Testler düşer.
-- [ ] **Adım 3:** Çizimler: (1) `KeyKeyLogo.logoPath()` çizgiyle çizilir sonra dolar; (2) telefon simgesi, bulut yukarı kayıp solar, üstüne çizgi çekilir; (3) menü kapsülünün kopyası, simgeler sırayla vurgulanır, yanlarındaki açıklamalar sırayla gelir; (4) giriş kutusu, altından "KeyKey ile doldur" önerisi kalkar, kutular dolar; (5) KeePassXC logosu ve ad rozetleri süzülüp ortadaki K'ye yaklaşır; (6) yedek bulutu yukarı ok ile nefes alır. Sayfa görününce baştan oynar.
-- [ ] **Adım 4:** Testler ve tüm kontroller yeşil.
-- [ ] **Adım 5:** Commit `özellik(tanıtım): hareketli çizimler ve KeePassXC logosu`.
+- [x] **Adım 1: Başarısız testler.** Üçüncü sayfada dört menü simgesi ve dört açıklama (Kasa, 2FA, Ayarlar, Ekle); beşinci sayfada KeePassXC görseli ve yedi uygulama adı; animasyonlar kapalıyken her sayfa ilk karede son halini gösterir ve bekleyen kare kalmaz; lisanslarda "KeePassXC logo" girdisi; altı sayfa %200 yazıda taşmaz.
+- [x] **Adım 2:** Testler düşer.
+- [x] **Adım 3:** Çizimler: (1) `KeyKeyLogo.logoPath()` çizgiyle çizilir sonra dolar; (2) telefon simgesi, bulut yukarı kayıp solar, üstüne çizgi çekilir; (3) menü kapsülünün kopyası, simgeler sırayla vurgulanır, yanlarındaki açıklamalar sırayla gelir; (4) giriş kutusu, altından "KeyKey ile doldur" önerisi kalkar, kutular dolar; (5) KeePassXC logosu ve ad rozetleri süzülüp ortadaki K'ye yaklaşır; (6) yedek bulutu yukarı ok ile nefes alır. Sayfa görününce baştan oynar.
+- [x] **Adım 4:** Testler ve tüm kontroller yeşil.
+- [x] **Adım 5:** Commit `özellik(tanıtım): hareketli çizimler ve KeePassXC logosu`.
 
 ### Görev 3: Belgeler ve deneme
 

@@ -19,6 +19,21 @@ void registerDataLicenses() {
       'Used unchanged as the word list for passphrases.',
     );
     yield const LicenseEntryWithLineBreaks(['SecLists'], _secListsMit);
+    // Tanıtımın geçiş sayfasındaki logo. KeePassXC'nin COPYING dosyası
+    // aynı dosyayı iki kayıtta listeliyor; ikisi de yazılır.
+    yield const LicenseEntryWithLineBreaks(
+      ['KeePassXC logo'],
+      'KeePassXC logo (share/icons/application/scalable/apps/keepassxc.svg), '
+      'https://keepassxc.org/\n\n'
+      'Copyright 2016, Lorenzo Stella <lorenzo.stl@gmail.com>. '
+      'License: LGPL-2.\n\n'
+      'The KeePassXC COPYING file also lists this file under '
+      'Copyright 2023 Pictogrammers, License: Apache-2.0.\n\n'
+      'Shown unchanged (rendered to PNG) on the introduction page that '
+      'lists apps KeePassXC can import from. The source is '
+      'resources/design/keepassxc.svg in the KeyKey repository. KeePassXC '
+      'is not affiliated with KeyKey.',
+    );
     yield const LicenseEntryWithLineBreaks(
       ['Public Suffix List'],
       'Public Suffix List, https://publicsuffix.org/\n\n'

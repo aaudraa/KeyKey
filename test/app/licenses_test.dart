@@ -22,5 +22,10 @@ void main() {
     expect(textOf('SQLite'), contains('public domain'));
     expect(textOf('Android libraries'), contains('AndroidX'));
     expect(textOf('Android libraries'), contains('Version 2.0, January 2004'));
+    // Tanıtımdaki KeePassXC logosu: KeePassXC'nin COPYING dosyası aynı
+    // dosyayı iki kayıtta listeliyor, iki not birden.
+    expect(textOf('KeePassXC logo'), contains('Lorenzo Stella'));
+    expect(textOf('KeePassXC logo'), contains('LGPL-2'));
+    expect(textOf('KeePassXC logo'), contains('Apache-2.0'));
   });
 }
