@@ -11,13 +11,14 @@ Faz 9 (1.0 yayını) sürüyor.
 - Firefox'un parola dışa aktarmasını (CSV) içe aktarma (#95).
 - Etiketten imzalı APK, AAB ve taslak GitHub Release üreten yayın iş akışı (#96).
 - Türkçe ve İngilizce gizlilik bildirimi (#102).
+- Ayarlar'da tema seçimi: Sistem, Açık ya da Koyu (#103). Seçim kilit ekranında ve otomatik doldurma penceresinde de geçerli; kasanın dışında, şifresiz küçük bir dosyada saklanıyor.
 
 ### Değişenler
 
 - Sürümler kalıcı yayın anahtarıyla imzalanıyor (#97). Hata ayıklama anahtarıyla imzalı `v0.x` sürümlerinin üstüne kurulamaz: yedek al, eski uygulamayı kaldır, yeni sürümü kur ve yedeği geri yükle. Bu yol emülatörde denendi (#101), adımlar [yayın belgesinde](docs/yayin.md#eski-sürümlerden-geçiş).
 - SQLite hazır kütüphane olarak indirilmiyor, repodaki 3.54.1 kaynağından derleniyor (#99).
 - Aynı koddan aynı yolda yapılan iki derleme aynı APK'yı veriyor: Android Gradle eklentisinin APK'ya gömdüğü şifreli bağımlılık listesi kaldırıldı (#99).
-- Yeni görünüm (#103): renkli, yumuşak lekeli zemin ve yarı saydam cam kartlar; telefonun koyu temasına uyan koyu tema. Alt menü ekranın altında yüzen cam; seçili sekme kapsülde adıyla görünür. Ayarlar dört grupta (Güvenlik, Yedek ve aktarım, Otomatik doldurma, Hakkında); uzun açıklamalar (i) düğmesinde, sürüm Hakkında'da. Onay ve uyarı pencereleri alttan, yaylanarak açılıyor; hareketler telefonda "animasyonları kaldır" açıksa kapanıyor.
+- Yeni görünüm (#103): açık temada krem zemin ve kartlar, koyu temada koyu gri; turuncu yalnızca K logosunda, "+" düğmesinde, ekranın ana düğmesinde ve 2FA halkasında. Zeminde yavaş kayan soluk lekeler. Alt menü ekranın altında yüzen buzlu cam; seçili sekme kapsülde adıyla görünür. Ayarlar beş grupta (Güvenlik, Yedek ve aktarım, Otomatik doldurma, Görünüm, Hakkında); uzun açıklamalar (i) düğmesinde, sürüm Hakkında'da. Onay ve uyarı pencereleri alttan, yaylanarak açılıyor; hareketler telefonda "animasyonları kaldır" açıksa kapanıyor.
 - Tek "+" (#103): her sekmede menünün ucundaki "+" düğmesi parola ya da 2FA kodu eklemeyi sorar; 2FA için QR tarama, resimden okuma, dosyadan içe aktarma ve elle girme aynı kutuda.
 - Listeden kopyalama (#103): kasa listesinde her kaydın yanında parolayı kopyalama düğmesi var; 2FA kartına dokunmak kodu kopyalar, süre kartın sağındaki halkada.
 - Sade formlar (#103): yeni parola ve 2FA formunda yalnızca temel alanlar görünür; klasör, not, özel alan, ek site, parola kaydı ve gelişmiş 2FA ayarları "Daha fazla seçenek" ile eklenir. Kaydet düğmesi ekranın altında, klavyenin üstünde.
@@ -31,6 +32,8 @@ Faz 9 (1.0 yayını) sürüyor.
 ### Belgeler
 
 - Giriş kutularını Android'in doldurma sistemine bildirmeyen uygulamalar bilinen sınır olarak yazıldı; örnek HoYoLAB'ın giriş ekranı (#94).
+- Ekran görüntülü kullanım kılavuzu: kurulum, ilk kasa, parolalar, 2FA, otomatik doldurma, yedekleme, geçiş ve bilinen sınırlar (#104).
+- Gizlilik bildirimi tema dosyasıyla güncellendi.
 
 ## 0.8.0 (2026-11-09): Güvenlik sertleştirme ve denetim
 

@@ -1,6 +1,6 @@
 # Privacy policy
 
-**Applies to:** KeyKey 1.0 and later · **Last updated:** 2026-11-09 · Türkçe: [gizlilik.md](gizlilik.md)
+**Applies to:** KeyKey 1.0 and later · **Last updated:** 2026-11-15 · Türkçe: [gizlilik.md](gizlilik.md)
 
 KeyKey collects no data and sends nothing anywhere. The app has no internet permission, so it could not send data off the device even if it tried. Anyone can verify this from the installed app's permissions or from the source code.
 
@@ -15,6 +15,7 @@ KeyKey collects no data and sends nothing anywhere. The app has no internet perm
 
 - Your passwords, 2FA accounts, notes and settings live only on your device, in a database encrypted with a key derived from your master password. Encryption details are in the [security summary](security-summary.md).
 - Android cloud backup is disabled; the vault is not backed up to your Google account.
+- The one exception is your theme choice (system, light or dark): it is kept in a small, separate, unencrypted file in the app's own folder so the lock screen can open in your chosen theme. The file holds nothing else.
 - Uninstalling the app deletes all of its data. Without a backup it cannot be recovered.
 
 ## Permissions

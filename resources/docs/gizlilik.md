@@ -1,6 +1,6 @@
 # Gizlilik bildirimi
 
-**Geçerlilik:** KeyKey 1.0 ve sonrası · **Son güncelleme:** 2026-11-09 · English: [privacy.md](privacy.md)
+**Geçerlilik:** KeyKey 1.0 ve sonrası · **Son güncelleme:** 2026-11-15 · English: [privacy.md](privacy.md)
 
 KeyKey hiçbir veri toplamaz ve hiçbir yere göndermez. Uygulamanın internet izni yoktur, bu yüzden istese de cihazdan veri çıkaramaz. Bunu kurulu uygulamanın izinlerinden ya da kaynak koddan herkes doğrulayabilir.
 
@@ -15,6 +15,7 @@ KeyKey hiçbir veri toplamaz ve hiçbir yere göndermez. Uygulamanın internet i
 
 - Girdiğin parolalar, 2FA hesapları, notlar ve ayarlar yalnızca senin cihazında, ana parolandan türetilen anahtarla şifrelenmiş bir veritabanında durur. Şifreleme ayrıntıları [güvenlik tasarımında](guvenlik-tasarimi.md).
 - Android'in bulut yedeği kapalıdır; kasa Google hesabına yedeklenmez.
+- Tek istisna tema seçimin (sistem, açık ya da koyu): kilit ekranı da seçtiğin temayla açılsın diye uygulamanın kendi klasöründe ayrı, şifresiz küçük bir dosyada durur. Bu dosya başka hiçbir bilgi içermez.
 - Uygulamayı kaldırınca bütün verisi silinir. Önce bir yedek almazsan veri geri getirilemez.
 
 ## İzinler
