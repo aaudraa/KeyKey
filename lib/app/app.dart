@@ -5,6 +5,7 @@ import 'package:keykey/app/theme.dart';
 import 'package:keykey/app/ui/kk_ambient.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/features/lock/presentation/auto_lock_scope.dart';
+import 'package:keykey/features/settings/application/theme_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 class KeyKeyApp extends ConsumerWidget {
@@ -16,6 +17,7 @@ class KeyKeyApp extends ConsumerWidget {
       title: 'KeyKey',
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
+      themeMode: ref.watch(themeModeProvider),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: ref.watch(routerProvider),

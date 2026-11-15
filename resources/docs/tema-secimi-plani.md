@@ -43,11 +43,11 @@
 - `initialThemeModeProvider: Provider<ThemeMode>` (varsayılan `ThemeMode.system`)
 - `themeModeProvider: NotifierProvider<ThemeModeController, ThemeMode>`; `Future<void> select(ThemeMode mode)` önce durumu değiştirir, sonra yazar; yazma hatası (`FileSystemException`) yutulur, seçim oturumda kalır.
 
-- [ ] **Adım 1: Başarısız testler.** `parseThemeMode('light')==light`, `('dark\n')==dark`, `('')==system`, `('mavi')==system`; dosya yokken `read()==system`; `write(dark)` sonra `read()==dark` ve dosya içeriği `'dark'`; denetleyici `select(light)` sonrası durum `light` ve sahte depoya `light` yazılmış; yazamayan depoyla `select(dark)` hata atmaz, durum `dark`.
-- [ ] **Adım 2:** `flutter test test/features/settings/theme_preference_test.dart` → derleme hatasıyla düşer.
-- [ ] **Adım 3:** Arayüzleri yaz; `bootstrap` `File('${directory.path}/theme')` ile depoyu ve `await read()` sonucunu iki dönüş yolunda da geçirir (dizin `VaultDatabase` açılmadan önce alınır). `KeyKeyApp` ve `AutofillApp` `themeMode: ref.watch(themeModeProvider)` alır; `AutofillApp` `ConsumerWidget` olur.
-- [ ] **Adım 4:** Test geçer; `flutter test` tümü yeşil.
-- [ ] **Adım 5:** Commit `özellik(ayarlar): tema seçimi kasanın dışında saklanıyor`.
+- [x] **Adım 1: Başarısız testler.** `parseThemeMode('light')==light`, `('dark\n')==dark`, `('')==system`, `('mavi')==system`; dosya yokken `read()==system`; `write(dark)` sonra `read()==dark` ve dosya içeriği `'dark'`; denetleyici `select(light)` sonrası durum `light` ve sahte depoya `light` yazılmış; yazamayan depoyla `select(dark)` hata atmaz, durum `dark`.
+- [x] **Adım 2:** `flutter test test/features/settings/theme_preference_test.dart` → derleme hatasıyla düşer.
+- [x] **Adım 3:** Arayüzleri yaz; `bootstrap` `File('${directory.path}/theme')` ile depoyu ve `await read()` sonucunu iki dönüş yolunda da geçirir (dizin `VaultDatabase` açılmadan önce alınır). `KeyKeyApp` ve `AutofillApp` `themeMode: ref.watch(themeModeProvider)` alır; `AutofillApp` `ConsumerWidget` olur.
+- [x] **Adım 4:** Test geçer; `flutter test` tümü yeşil.
+- [x] **Adım 5:** Commit `özellik(ayarlar): tema seçimi kasanın dışında saklanıyor`.
 
 ### Görev 2: Ayarlar'daki Tema satırı ve belgeler
 

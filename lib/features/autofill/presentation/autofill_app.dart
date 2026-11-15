@@ -9,6 +9,7 @@ import 'package:keykey/features/autofill/presentation/autofill_save_screen.dart'
 import 'package:keykey/features/autofill/presentation/autofill_sheet_frame.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/lock_screen.dart';
+import 'package:keykey/features/settings/application/theme_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Doldurma veya kaydetme bitti; ekran kapanırken kilit ekranı yeniden
@@ -26,15 +27,16 @@ class AutofillDone extends Notifier<bool> {
 
 /// Otomatik doldurma ekranının uygulaması. Ana uygulamadan ayrı bir Flutter
 /// motorunda, `autofillMain` giriş noktasıyla çalışır.
-class AutofillApp extends StatelessWidget {
+class AutofillApp extends ConsumerWidget {
   const new({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
       title: 'KeyKey',
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
+      themeMode: ref.watch(themeModeProvider),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: const AutofillHome(),
