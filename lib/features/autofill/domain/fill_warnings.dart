@@ -55,3 +55,24 @@ bool canBindApp({
     target.certsSha256.isNotEmpty &&
     warnings.contains(FillWarning.noMatch) &&
     !warnings.contains(FillWarning.signatureMismatch);
+
+/// Seçme penceresi açılmadan doğrudan doldurulacak kayıt; yoksa `null`.
+///
+/// Yalnızca tek bir kesin eşleşme varsa ve hiçbir uyarı yoksa: başka bir
+/// kayıtta imza tutmuyor olmamalı, sayfa WebView'da ya da `http` ile
+/// açılmamış olmalı. Kurallar güvenlik tasarımı belgesinin "Akış"
+/// bölümünde.
+LoginItem? directFillCandidate({
+  required AutofillTarget target,
+  required LoginMatches matches,
+}) {
+  if (matches.matches.length != 1) return null;
+  if (matches.signatureMismatches.isNotEmpty) return null;
+  if (target.showsWebPage) return null;
+  // Sitede yalnızca https sorulmadan doldurulur; bildirilmeyen bağlantı türü
+  // http sayılmaz ama kesin de değildir, liste açılır.
+  if (target.isWeb && target.webScheme?.toLowerCase() != 'https') return null;
+  final single = matches.matches.single.item;
+  final warnings = fillWarnings(target: target, item: single, matches: matches);
+  return warnings.isEmpty ? single : null;
+}

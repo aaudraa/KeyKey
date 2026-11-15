@@ -7,6 +7,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:keykey/app/app.dart';
+import 'package:keykey/app/ui/glass_nav_bar.dart';
+import 'package:keykey/app/ui/kk_motion.dart';
+import 'package:keykey/app/ui/kk_switch.dart';
 import 'package:keykey/core/platform/pigeon_biometric_bridge.dart';
 import 'package:keykey/core/storage/vault_database.dart';
 import 'package:keykey/core/storage/vault_store.dart';
@@ -35,7 +38,8 @@ void main() {
 
   const password = 'dogru-Ana-Parola-47';
   const texts = BiometricTexts(title: 'KeyKey testi', negativeButton: 'Vazgeç');
-  const vaultText = "Henüz parola yok. İlkini kaydetmek için Ekle'ye dokun.";
+  const vaultText =
+      'Henüz parola yok. İlkini kaydetmek için alttaki + düğmesine dokun.';
   const testTimeout = Timeout(Duration(minutes: 3));
 
   // Betik olmadan pencerede boşuna beklememek için yalnızca betikle çalışır.
@@ -168,6 +172,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            ambientMotionProvider.overrideWithValue(false),
             vaultServiceProvider.overrideWithValue(service),
             loginRepositoryFactoryProvider.overrideWithValue(
               (session) => LoginRepository(
@@ -197,7 +202,7 @@ void main() {
       await tester.tap(find.byIcon(Icons.settings_outlined));
       // Ayarlarda birden çok anahtar var, parmak izi anahtarı adıyla bulunur.
       final biometricSwitch = find.widgetWithText(
-        SwitchListTile,
+        KkSwitchTile,
         'Parmak iziyle aç',
       );
       await pumpUntil(
@@ -339,6 +344,6 @@ void main() {
 /// Alt çubuktaki 2FA sekmesi. Ayarlardaki ek onay satırı da aynı simgeyi
 /// kullandığı için yalnızca simgeyle aramak iki sonuç verir.
 Finder _otpTab() => find.descendant(
-  of: find.byType(NavigationBar),
+  of: find.byType(GlassNavBar),
   matching: find.byIcon(Icons.shield_outlined),
 );

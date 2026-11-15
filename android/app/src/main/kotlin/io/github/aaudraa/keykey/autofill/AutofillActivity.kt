@@ -9,8 +9,12 @@ import android.view.MotionEvent
 import android.view.autofill.AutofillManager
 import android.view.autofill.AutofillValue
 import android.widget.RemoteViews
+import android.widget.Toast
+import io.flutter.embedding.android.FlutterActivityLaunchConfigs.BackgroundMode
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
+import io.github.aaudraa.keykey.AppPackages
+import io.github.aaudraa.keykey.AppPackagesApi
 import io.github.aaudraa.keykey.AutofillApi
 import io.github.aaudraa.keykey.AutofillRequestInfo
 import io.github.aaudraa.keykey.BiometricApi
@@ -50,12 +54,16 @@ class AutofillActivity : FlutterFragmentActivity(), AutofillApi {
 
     override fun getDartEntrypointFunctionName(): String = "autofillMain"
 
+    /** Pencere saydam; karartmayı ve yarım pencereyi Flutter çizer. */
+    override fun getBackgroundMode(): BackgroundMode = BackgroundMode.transparent
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         val messenger = flutterEngine.dartExecutor.binaryMessenger
         BiometricApi.setUp(messenger, BiometricVault(this))
         ClipboardApi.setUp(messenger, SecureClipboard(this))
         AutofillApi.setUp(messenger, this)
+        AppPackagesApi.setUp(messenger, AppPackages(this))
     }
 
     private fun readRequest(intent: Intent) {
@@ -87,7 +95,7 @@ class AutofillActivity : FlutterFragmentActivity(), AutofillApi {
     override fun hasSigningCertificates(packageName: String, certsSha256: List<String>): Boolean =
         SigningCerts.hasAll(packageManager, packageName, certsSha256)
 
-    override fun fill(username: String, password: String) {
+    override fun fill(username: String, password: String, notice: String) {
         val form = parsed
         if (form == null) {
             cancel()
@@ -119,6 +127,9 @@ class AutofillActivity : FlutterFragmentActivity(), AutofillApi {
             cancel()
             return
         }
+        // Yalnızca kaydın adı; kullanıcı adı ve parola bildirime girmez. Bu
+        // pencere güvenli değildir, bkz. güvenlik tasarımı "Bilinen ödünler".
+        Toast.makeText(applicationContext, notice, Toast.LENGTH_SHORT).show()
         setResult(
             RESULT_OK,
             Intent().putExtra(AutofillManager.EXTRA_AUTHENTICATION_RESULT, builder.build()),

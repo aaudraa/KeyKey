@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/secret_field.dart';
+import 'package:keykey/app/ui/kk_backdrop.dart';
+import 'package:keykey/app/ui/kk_bars.dart';
+import 'package:keykey/app/ui/kk_form.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/new_password_fields.dart';
@@ -76,15 +80,23 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.changePasswordTitle)),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SecretField(
+    return KkScaffold(
+      appBar: kkAppBar(context, title: l10n.changePasswordTitle),
+      bottomNavigationBar: ListenableBuilder(
+        listenable: Listenable.merge([_current, _password, _confirmation]),
+        builder: (context, _) => KkBottomAction(
+          label: l10n.changePasswordSave,
+          busy: _busy,
+          onPressed: _canSubmit ? _submit : null,
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            KkFieldCard(
+              child: SecretField(
                 controller: _current,
                 label: l10n.changePasswordCurrent,
                 autofocus: true,
@@ -92,27 +104,17 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                 errorText: _error,
                 textInputAction: TextInputAction.next,
               ),
-              const SizedBox(height: 16),
-              NewPasswordFields(
+            ),
+            GlassSurface(
+              padding: const EdgeInsets.all(12),
+              child: NewPasswordFields(
                 password: _password,
                 confirmation: _confirmation,
                 enabled: !_busy,
                 onSubmitted: _submit,
               ),
-              const SizedBox(height: 16),
-              ListenableBuilder(
-                listenable: Listenable.merge([
-                  _current,
-                  _password,
-                  _confirmation,
-                ]),
-                builder: (context, _) => FilledButton(
-                  onPressed: _canSubmit ? _submit : null,
-                  child: Text(l10n.changePasswordSave),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

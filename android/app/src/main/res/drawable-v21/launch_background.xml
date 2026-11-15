@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Modify this file to customize your launch splash screen -->
+<!-- Android 11 açılış ekranı: krem zemin, ortada beyaz daire içinde K.
+     Android 12+ values-v31 temasını kullanır. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="?android:colorBackground" />
-
-    <!-- You can insert your own image assets here -->
-    <!-- <item>
-        <bitmap
-            android:gravity="center"
-            android:src="@mipmap/launch_image" />
-    </item> -->
+    <item android:drawable="@color/kk_launch_background" />
+    <item
+        android:width="96dp"
+        android:height="96dp"
+        android:gravity="center">
+        <shape android:shape="oval">
+            <solid android:color="@color/ic_launcher_background" />
+        </shape>
+    </item>
+    <item
+        android:width="144dp"
+        android:height="144dp"
+        android:drawable="@drawable/ic_launcher_foreground"
+        android:gravity="center" />
 </layer-list>

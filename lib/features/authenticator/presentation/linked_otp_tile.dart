@@ -3,7 +3,8 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:keykey/core/platform/sensitive_clipboard.dart';
+import 'package:keykey/app/ui/kk_copy_icon.dart';
+import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otp_generator.dart';
 import 'package:keykey/features/authenticator/application/otp_visibility.dart';
@@ -13,6 +14,7 @@ import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/authenticator/presentation/otp_clock_builder.dart';
 import 'package:keykey/features/authenticator/presentation/otp_display.dart';
 import 'package:keykey/features/authenticator/presentation/otp_gate.dart';
+import 'package:keykey/features/authenticator/presentation/otp_ring.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// [loginId] ile eşleştirilmiş, çöp kutusunda olmayan 2FA hesapları.
@@ -40,20 +42,7 @@ class LinkedOtpTile extends ConsumerStatefulWidget {
 class _LinkedOtpTileState extends ConsumerState<LinkedOtpTile> {
   String? _hotpCode;
 
-  Future<void> _copy(String code) async {
-    final l10n = AppLocalizations.of(context);
-    final messenger = ScaffoldMessenger.of(context);
-    await ref.read(sensitiveClipboardProvider).copy(code);
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            l10n.copiedWillClear(SensitiveClipboard.clearAfter.inSeconds),
-          ),
-        ),
-      );
-  }
+  Future<bool> _copy(String code) => copySensitive(context, ref, code);
 
   Future<void> _generate() async {
     try {
@@ -92,11 +81,6 @@ class _LinkedOtpTileState extends ConsumerState<LinkedOtpTile> {
       active: isTotp,
       builder: (context, now) {
         final code = isTotp ? OtpGenerator.codeFor(parameters, now) : _hotpCode;
-        final seconds = isTotp
-            ? (OtpGenerator.remaining(now, parameters.period!).inMilliseconds /
-                      1000)
-                  .ceil()
-            : null;
         return ListTile(
           title: Text(l10n.loginOtpCode, style: theme.textTheme.labelMedium),
           subtitle: Semantics(
@@ -104,10 +88,11 @@ class _LinkedOtpTileState extends ConsumerState<LinkedOtpTile> {
             excludeSemantics: true,
             child: Text(
               formatOtpCode(code ?? '•' * parameters.digits),
-              style: theme.textTheme.titleLarge?.copyWith(
+              style: theme.textTheme.headlineMedium?.copyWith(
                 fontFamily: 'monospace',
+                fontWeight: FontWeight.w600,
                 letterSpacing: 2,
-                color: code == null ? null : theme.colorScheme.primary,
+                color: theme.colorScheme.onSurface,
               ),
             ),
           ),
@@ -115,10 +100,10 @@ class _LinkedOtpTileState extends ConsumerState<LinkedOtpTile> {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (seconds != null)
-                Semantics(
-                  label: l10n.otpSecondsLeft(seconds),
-                  child: ExcludeSemantics(child: Text('$seconds')),
+              if (isTotp)
+                OtpRing(
+                  remaining: OtpGenerator.remaining(now, parameters.period!),
+                  period: parameters.period!,
                 )
               else
                 IconButton(
@@ -126,10 +111,9 @@ class _LinkedOtpTileState extends ConsumerState<LinkedOtpTile> {
                   icon: const Icon(Icons.refresh),
                   onPressed: _generate,
                 ),
-              IconButton(
+              KkCopyIcon(
                 tooltip: l10n.copy,
-                icon: const Icon(Icons.copy_outlined),
-                onPressed: code == null ? null : () => _copy(code),
+                onCopy: code == null ? null : () => _copy(code),
               ),
             ],
           ),

@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../../support/fake_vault_service.dart';
 
 void main() {
   const password = 'kırmızı-Bisiklet-47-Deniz';
-  const vaultText = "Henüz parola yok. İlkini kaydetmek için Ekle'ye dokun.";
+  const vaultText =
+      'Henüz parola yok. İlkini kaydetmek için alttaki + düğmesine dokun.';
 
   late SodiumSumo sodium;
   late FakeVaultService service;
@@ -56,7 +59,99 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  group('adım geçişi', () {
+    /// Ekran okuyucunun gördüğü ağaçta bu etiket var mı.
+    bool spoken(WidgetTester tester, String label) {
+      var found = false;
+      bool visit(SemanticsNode node) {
+        if (node.label.contains(label)) found = true;
+        node.visitChildren(visit);
+        return !found;
+      }
+
+      visit(
+        tester
+            .binding
+            .renderViews
+            .first
+            .owner!
+            .semanticsOwner!
+            .rootSemanticsNode!,
+      );
+      return found;
+    }
+
+    testWidgets('çıkan adım dokunuşa ve ekran okuyucuya kapalı', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await goToShowKey(tester);
+      final keyText = find.byWidgetPredicate(
+        (widget) => widget is Text && widget.style?.fontFamily == 'monospace',
+      );
+      final key = tester.widget<Text>(keyText).data!;
+      expect(spoken(tester, key), isTrue);
+      await tester.tap(find.widgetWithText(FilledButton, 'Yazdım'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      // Kayıp giden adım hâlâ çiziliyor ama okunmuyor, dokunulmuyor.
+      expect(keyText, findsOneWidget);
+      expect(spoken(tester, key), isFalse);
+      expect(
+        find.ancestor(of: keyText, matching: find.byType(IgnorePointer)),
+        findsWidgets,
+      );
+      expect(
+        tester
+            .widgetList<IgnorePointer>(
+              find.ancestor(of: keyText, matching: find.byType(IgnorePointer)),
+            )
+            .any((w) => w.ignoring),
+        isTrue,
+      );
+      await tester.pumpAndSettle();
+      handle.dispose();
+    });
+
+    double progress(WidgetTester tester) => tester
+        .widget<LinearProgressIndicator>(
+          find.descendant(
+            of: find.byKey(OnboardingScreen.stepIndicatorKey),
+            matching: find.byType(LinearProgressIndicator),
+          ),
+        )
+        .value!;
+
+    testWidgets('yeni adım yandan kayarak gelir, gösterge dolarak ilerler', (
+      tester,
+    ) async {
+      await pumpSetup(tester);
+      expect(progress(tester), closeTo(1 / 3, 0.001));
+      await typePasswords(tester, password, password);
+      await tester.tap(find.widgetWithText(FilledButton, 'Kasayı oluştur'));
+      final next = find.widgetWithText(FilledButton, 'Yazdım');
+      for (var i = 0; i < 100 && next.evaluate().isEmpty; i++) {
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      await tester.pump(const Duration(milliseconds: 50));
+      final sliding = tester.getTopLeft(next).dx;
+      final midway = progress(tester);
+      await tester.pumpAndSettle();
+      final settled = tester.getTopLeft(next).dx;
+      expect(sliding, greaterThan(settled + 1));
+      expect(midway, greaterThan(1 / 3));
+      expect(midway, lessThan(2 / 3));
+      expect(progress(tester), closeTo(2 / 3, 0.001));
+    });
+  });
+
   group('ana parola adımı', () {
+    testWidgets('kurulumun ilk adımında logo var', (tester) async {
+      await pumpSetup(tester);
+
+      expect(find.bySemanticsLabel('KeyKey'), findsOneWidget);
+    });
+
     testWidgets('geri alınamaz uyarısı görünüyor', (tester) async {
       await pumpSetup(tester);
 

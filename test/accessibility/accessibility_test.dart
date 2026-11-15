@@ -187,7 +187,7 @@ void main() {
 
       testWidgets('parola üretici', (tester) async {
         await openAt(tester, AppRoutes.vaultNew);
-        await tester.tap(find.byTooltip('Parola üret'));
+        await tester.tap(find.text('Üret'));
         await settle(tester);
         expect(find.text('Parola cümlesi'), findsOneWidget);
         await checkGuidelines(

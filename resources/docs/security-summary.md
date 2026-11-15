@@ -199,6 +199,16 @@ The project audited itself against OWASP MASVS v2 with release builds ([summary 
 - **Out of scope on purpose:** anti-tampering, root detection and obfuscation. The project is open source, and its security rests on cryptography rather than on hiding code.
 - **Tested on a real device:** a Samsung Galaxy S20 FE (Android 13). The fingerprint key is in StrongBox, and enrolling a new fingerprint invalidates it.
 
+## Release signing
+
+Releases are built and signed by a GitHub Actions workflow when a `v*` tag is pushed; the signing key lives only in a GitHub environment that accepts `v*` tags and needs the maintainer's approval for each run. Two CI builds of the same commit produce byte-identical APKs. Signing certificate SHA-256:
+
+```
+66ff7b5c0c009a8530d0a55dd1d80a3af35de48bd0667c456a0cf86a6d1129a0
+```
+
+The key (RSA 4096) was generated on the maintainer's machine; encrypted backups are kept offline and off-site. Details: [Yayın](yayin.md).
+
 ## Reporting a vulnerability
 
 Please don't open a public issue. Use GitHub's [private security advisory form](https://github.com/aaudraa/KeyKey/security/advisories/new); see [`SECURITY.md`](../../.github/SECURITY.md). Design criticism that isn't a vulnerability is welcome as a regular issue, in English or Turkish.

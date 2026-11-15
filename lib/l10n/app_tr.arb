@@ -68,12 +68,11 @@
   "biometricEnableLockedOut": "Çok fazla deneme yapıldı. Lütfen sonra yeniden dene.",
   "biometricEnableFailed": "Parmak iziyle açma etkinleştirilemedi.",
   "vaultSearch": "Ara",
-  "vaultSort": "Sırala",
-  "vaultSortName": "Ada göre",
-  "vaultSortRecent": "Son değişene göre",
+  "vaultSortName": "Ada göre sırala",
+  "vaultSortRecent": "Son değişene göre sırala",
   "vaultAdd": "Ekle",
   "vaultFavorites": "Favoriler",
-  "vaultEmpty": "Henüz parola yok. İlkini kaydetmek için Ekle'ye dokun.",
+  "vaultEmpty": "Henüz parola yok. İlkini kaydetmek için alttaki + düğmesine dokun.",
   "vaultNoResults": "Eşleşen kayıt yok.",
   "vaultUnreadable": "{count, plural, other{{count} kayıt okunamadı. Bu kayıtlara dokunulmadı.}}",
   "loginNotFound": "Bu kayıt artık yok.",
@@ -97,7 +96,6 @@
   "loginDiscardTitle": "Değişiklikler silinsin mi?",
   "loginKeepEditing": "Düzenlemeye devam et",
   "loginDiscard": "Sil",
-  "loginAddUrl": "Web adresi ekle",
   "loginApp": "Uygulama",
   "loginAppSignature": "İmza {fingerprint}",
   "loginRemoveApp": "Uygulamayı kaldır",
@@ -106,8 +104,6 @@
   "loginFieldValue": "Değer",
   "loginFieldHidden": "Değeri gizle",
   "loginFieldVisible": "Değeri açık göster",
-  "loginRemoveField": "Alanı kaldır",
-  "loginAddField": "Alan ekle",
   "trashTitle": "Çöp kutusu",
   "trashInfo": "Çöp kutusundaki kayıtlar {days} gün sonra kalıcı olarak silinir.",
   "trashEmpty": "Çöp kutusu boş.",
@@ -128,11 +124,21 @@
   "generatorNeedClass": "En az bir karakter türü seç.",
   "generatorWords": "Sözcük sayısı: {count}",
   "generatorPassphraseNote": "Sözcükler EFF'nin İngilizce listesinden seçilir.",
-  "generatorOpen": "Parola üret",
   "settingsLicenses": "Lisanslar",
+  "settingsGroupSecurity": "Güvenlik",
+  "settingsGroupBackup": "Yedek ve aktarım",
+  "settingsGroupAutofill": "Otomatik doldurma",
+  "settingsGroupAbout": "Hakkında",
+  "settingsGroupAppearance": "Görünüm",
+  "settingsTheme": "Tema",
+  "themeSystem": "Sistem",
+  "themeLight": "Açık",
+  "themeDark": "Koyu",
+  "settingsVersion": "Sürüm",
+  "settingsMoreInfo": "Açıklama",
   "copy": "Kopyala",
   "copiedWillClear": "Kopyalandı. Pano {seconds} saniye sonra temizlenecek.",
-  "otpEmpty": "Henüz 2FA hesabı yok. İlkini kurmak için Ekle'ye dokun.",
+  "otpEmpty": "Henüz 2FA hesabı yok. İlkini kurmak için alttaki + düğmesine dokun.",
   "otpNoResults": "Eşleşen hesap yok.",
   "otpUnnamed": "Adsız",
   "otpNext": "Sıradaki: {code}",
@@ -144,7 +150,6 @@
   "otpClockHelpBody": "Kodlar bu cihazın saatine göre hesaplanır. KeyKey internete bağlanmadığı için saati kendisi doğrulayamaz. Servisler kodlarını kabul etmiyorsa Android ayarlarından otomatik tarih ve saati aç.",
   "otpClockNow": "Cihaz saati: {time}",
   "otpClose": "Kapat",
-  "otpAddTitle": "2FA hesabı ekle",
   "otpAddManual": "Anahtarı elle gir",
   "otpNewTitle": "Yeni 2FA hesabı",
   "otpIssuer": "Servis",
@@ -206,13 +211,15 @@
   "otpConfirmButton": "Doğrula",
   "settingsOtpRequireAuth": "2FA kodlarını göstermeden önce doğrula",
   "settingsOtpRequireAuthHelp": "Kilidi açık telefonun başkasının eline geçerse kodları korur. Cihazdaki zararlı yazılıma karşı korumaz.",
-  "autofillTitle": "KeyKey ile doldur",
   "autofillFor": "{target} için",
   "autofillNoRequest": "Doldurulacak bir form yok.",
   "autofillNoVault": "Önce KeyKey'de bir kasa oluştur.",
   "autofillVaultUnavailable": "Kasa burada açılamıyor. Durumu görmek için KeyKey'i aç.",
   "autofillEmpty": "Kasada henüz parola yok.",
   "autofillClose": "Kapat",
+  "autofillSearchOther": "Başka bir kayıt ara",
+  "autofillFilledNotice": "{name} dolduruldu",
+  "autofillFilledNoticeUnnamed": "Kayıt dolduruldu",
   "autofillMatching": "Eşleşen kayıtlar",
   "autofillOtherLogins": "Diğer kayıtlar",
   "autofillAllLogins": "Bütün kayıtlar",
@@ -243,7 +250,7 @@
   "autofillSaveNoApp": "{app} uygulaması doğrulanamadığı için kayda bağlanmadı. Bu uygulamada ilk doldurmada bağlayabilirsin.",
   "settingsAutofillCopyOtp": "Doldurduktan sonra 2FA kodunu kopyala",
   "settingsAutofillCopyOtpHelp": "Doldurulan kayda bağlı bir 2FA hesabı varsa güncel kodu panoya kopyalanır ve {seconds} saniye sonra silinir.",
-  "autofillSetupTitle": "Otomatik doldurma",
+  "autofillSetupTitle": "Doldurma servisi",
   "autofillSetupEnabled": "KeyKey seçili.",
   "autofillSetupDisabled": "Kapalı. Dokun ve KeyKey'i seç.",
   "autofillSetupUnsupported": "Bu cihaz otomatik doldurmayı desteklemiyor.",
@@ -253,8 +260,6 @@
   "autofillSetupOpenFailed": "Ayar açılamadı.",
   "autofillWarnWebViewUnknown": "Bu uygulama içinde bir web sayfası gösteriyor. KeyKey sayfanın kime ait olduğunu doğrulayamaz; doldurulan parolayı uygulama okuyabilir.",
   "backupCreate": "Yedek al",
-  "backupLast": "Son yedek: {time}",
-  "backupNever": "Henüz yedek alınmadı.",
   "backupHelp": "Yedek dosyası şifrelidir; şu anki ana parolanla veya kurtarma anahtarınla açılır. Bu telefon kaybolursa verini geri almanın tek yolu budur.",
   "backupSaved": "Yedek kaydedildi.",
   "backupFailed": "Yedek kaydedilemedi. Başka bir konum dene.",
@@ -326,5 +331,56 @@
   "reportOpenHint": "Parolasını değiştirmek için kayda dokun.",
   "otpNoCode": "Henüz kod yok",
   "secretConcealed": "Gizli",
-  "favoriteMark": "Favori"
+  "favoriteMark": "Favori",
+  "addTitle": "Ne eklemek istiyorsun?",
+  "addPassword": "Parola",
+  "addPasswordHint": "Site ya da uygulama girişi",
+  "addOtp": "2FA kodu",
+  "addOtpHint": "QR tara, elle gir ya da içe aktar",
+  "addBack": "Geri",
+  "addClose": "Kapat",
+  "vaultSearchCount": "{count, plural, other{{count} kayıtta ara}}",
+  "@vaultSearchCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "vaultCopyPassword": "Parolayı kopyala",
+  "screenMore": "Diğer işlemler",
+  "loginLastChanged": "Son değişiklik: {date}",
+  "@loginLastChanged": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "formMoreOptions": "Daha fazla seçenek",
+  "formFolder": "Klasör",
+  "formNote": "Not",
+  "formCustomField": "Özel alan",
+  "formAnotherSite": "Başka site",
+  "formRemoveField": "Alanı kaldır",
+  "loginGenerate": "Üret",
+  "backupStatusNever": "Henüz yedek yok",
+  "backupStatusToday": "Son yedek bugün",
+  "backupStatusDays": "{count, plural, other{Son yedek {count} gün önce}}",
+  "@backupStatusDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupStatusAction": "Yedekle",
+  "autofillMatchCount": "{count, plural, other{{count} eşleşme}}",
+  "@autofillMatchCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

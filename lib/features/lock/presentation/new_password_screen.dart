@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:keykey/app/ui/kk_backdrop.dart';
+import 'package:keykey/app/ui/kk_bars.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/new_password_fields.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
@@ -49,25 +52,35 @@ class _NewPasswordScreenState extends ConsumerState<NewPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.newPasswordTitle),
-        automaticallyImplyLeading: false,
+    return KkScaffold(
+      // Kurtarmada geri dönülmez; yeni parola zorunlu.
+      appBar: kkRootAppBar(context, title: l10n.newPasswordTitle),
+      bottomNavigationBar: ListenableBuilder(
+        listenable: Listenable.merge([_password, _confirmation]),
+        builder: (context, _) => KkBottomAction(
+          label: l10n.newPasswordSave,
+          busy: _busy,
+          onPressed: _canSubmit ? _submit : null,
+        ),
       ),
       body: SafeArea(
+        bottom: false,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(l10n.newPasswordIntro),
               const SizedBox(height: 16),
-              NewPasswordFields(
-                password: _password,
-                confirmation: _confirmation,
-                enabled: !_busy,
-                autofocus: true,
-                onSubmitted: _submit,
+              GlassSurface(
+                padding: const EdgeInsets.all(12),
+                child: NewPasswordFields(
+                  password: _password,
+                  confirmation: _confirmation,
+                  enabled: !_busy,
+                  autofocus: true,
+                  onSubmitted: _submit,
+                ),
               ),
               if (_error != null) ...[
                 const SizedBox(height: 12),
@@ -76,14 +89,6 @@ class _NewPasswordScreenState extends ConsumerState<NewPasswordScreen> {
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ],
-              const SizedBox(height: 16),
-              ListenableBuilder(
-                listenable: Listenable.merge([_password, _confirmation]),
-                builder: (context, _) => FilledButton(
-                  onPressed: _canSubmit ? _submit : null,
-                  child: Text(l10n.newPasswordSave),
-                ),
-              ),
             ],
           ),
         ),

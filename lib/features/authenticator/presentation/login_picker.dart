@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/secret_field.dart';
+import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/features/vault/application/login_search.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
@@ -25,8 +26,8 @@ final class LoginUnlinked extends LoginPick {
 
 /// Bir parola kaydı seçtirir. Pencere kapatılırsa `null` döner.
 Future<LoginPick?> pickLogin(BuildContext context, {required bool linked}) {
-  return showDialog<LoginPick>(
-    context: context,
+  return showKkSheet<LoginPick>(
+    context,
     builder: (context) => _LoginPickerDialog(linked: linked),
   );
 }
@@ -58,10 +59,20 @@ class _LoginPickerDialogState extends ConsumerState<_LoginPickerDialog> {
         ? filterLogins(state.indexed, LoginFilter(query: _search.text))
         : null;
 
-    return AlertDialog(
-      title: Text(l10n.otpLinkChoose),
-      contentPadding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
-      content: SizedBox(
+    return KkSheetContent(
+      title: l10n.otpLinkChoose,
+      actions: [
+        if (widget.linked)
+          TextButton(
+            onPressed: () => Navigator.pop(context, const LoginUnlinked()),
+            child: Text(l10n.otpLinkRemove),
+          ),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.biometricCancel),
+        ),
+      ],
+      child: SizedBox(
         width: double.maxFinite,
         height: 360,
         child: Column(
@@ -106,17 +117,6 @@ class _LoginPickerDialogState extends ConsumerState<_LoginPickerDialog> {
           ],
         ),
       ),
-      actions: [
-        if (widget.linked)
-          TextButton(
-            onPressed: () => Navigator.pop(context, const LoginUnlinked()),
-            child: Text(l10n.otpLinkRemove),
-          ),
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(l10n.biometricCancel),
-        ),
-      ],
     );
   }
 }

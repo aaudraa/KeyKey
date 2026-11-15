@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:keykey/app/app.dart';
+import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/core/storage/vault_database.dart';
 import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/vault_service.dart';
@@ -75,6 +76,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          ambientMotionProvider.overrideWithValue(false),
           vaultServiceProvider.overrideWithValue(service),
           initialVaultStatusProvider.overrideWithValue(VaultOpen(session)),
           loginRepositoryFactoryProvider.overrideWithValue((_) => repository),
@@ -97,13 +99,35 @@ void main() {
 
     final scroll = Stopwatch()..start();
     for (var i = 0; i < 5; i++) {
-      await tester.fling(find.byType(ListView), const Offset(0, -2000), 4000);
+      await tester.fling(
+        find.byType(CustomScrollView),
+        const Offset(0, -2000),
+        4000,
+      );
       await tester.pumpAndSettle();
     }
     scroll.stop();
 
+    // Arama kutusu listeyle birlikte kayar (telefon denemesi 4); yazmadan
+    // önce başa dönülür. Süreye sayılmaz.
+    tester
+        .state<ScrollableState>(
+          find
+              .descendant(
+                of: find.byType(CustomScrollView),
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        )
+        .position
+        .jumpTo(0);
+    await tester.pumpAndSettle();
+
     final typing = Stopwatch()..start();
-    await tester.enterText(find.widgetWithText(TextField, 'Ara'), 'kayıt 999');
+    await tester.enterText(
+      find.widgetWithText(TextField, '1000 kayıtta ara'),
+      'kayıt 999',
+    );
     await tester.pump();
     typing.stop();
     expect(find.text('Kayıt 999'), findsOneWidget);

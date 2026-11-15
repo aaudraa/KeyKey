@@ -4,6 +4,7 @@ import 'package:keykey/features/generator/application/password_generator.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:sodium/sodium_sumo.dart';
 
+import '../../support/add_flow.dart';
 import '../../support/fake_vault_service.dart';
 
 void main() {
@@ -27,9 +28,8 @@ void main() {
       service: service,
       logins: logins,
     );
-    await tester.tap(find.text('Ekle'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Parola üret'));
+    await openAddPassword(tester);
+    await tester.tap(find.text('Üret'));
     await tester.pumpAndSettle();
   }
 
@@ -63,6 +63,22 @@ void main() {
     await tester.pump();
 
     expect(generated(tester), isNot(first));
+  });
+
+  testWidgets('gizleyip yeniden göstermek parolayı karıştırmaz', (
+    tester,
+  ) async {
+    await openGenerator(tester);
+    final value = generated(tester);
+    await tester.tap(find.byTooltip('Gizle'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(generated(tester), '•' * 12);
+    // Formdaki parola alanının da "Göster" düğmesi var; pencere üstte.
+    await tester.tap(find.byTooltip('Göster').last);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(generated(tester), value);
   });
 
   testWidgets('parola cümlesi seçilebiliyor', (tester) async {

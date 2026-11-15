@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- KeyKey uygulama simgesi: beyaz zeminde turuncu K. 108x108 tuval
+     (Android uyarlanabilir simge). K, 100x100 kutudaki yoluyla yazılır ve
+     66 dp güvenli dairenin içine ölçeklenir. Yol lib/app/ui/keykey_logo.dart
+     ile aynıdır; test/app/logo_path_test.dart denetler. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="108" height="108" viewBox="0 0 108 108">
+  <rect width="108" height="108" fill="#FFFFFF"/>
+  <g transform="translate(17.52 22) scale(0.64)">
+    <path fill="#F26B1D" d="M24 14h16v30l28-30h20L57 47l33 39H69L46 58l-6 6v22H24z"/>
+  </g>
+</svg>

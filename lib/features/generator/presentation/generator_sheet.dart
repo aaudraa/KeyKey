@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_rolling_text.dart';
+import 'package:keykey/app/ui/kk_sheet.dart';
+import 'package:keykey/app/ui/kk_switch.dart';
 import 'package:keykey/features/generator/application/password_generator.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Parola üretici. Seçilen parolayı döndürür, vazgeçilirse `null`.
 Future<String?> showGeneratorSheet(BuildContext context) {
-  return showModalBottomSheet<String>(
-    context: context,
-    isScrollControlled: true,
-    showDragHandle: true,
+  return showKkSheet<String>(
+    context,
     builder: (context) => const GeneratorSheet(),
   );
 }
@@ -100,16 +102,29 @@ class _GeneratorSheetState extends ConsumerState<GeneratorSheet> {
                   _update(() => _mode = selection.single),
             ),
             const SizedBox(height: 16),
-            Card(
+            GlassSurface(
               child: ListTile(
-                title: Text(
-                  _value.isEmpty
+                contentPadding: const EdgeInsetsDirectional.fromSTEB(
+                  16,
+                  8,
+                  8,
+                  8,
+                ),
+                // Yeni parola kısa süre karışıp yerine oturur (madde 3.2).
+                title: KkScrambleText(
+                  text: _value.isEmpty
                       ? '—'
                       : _visible
                       ? _value
                       : '•' * 12,
-                  key: const Key('generator-value'),
-                  style: const TextStyle(fontFamily: 'monospace'),
+                  textKey: const Key('generator-value'),
+                  // Gizle/göster karıştırmaz; yalnızca yeni parola.
+                  trigger: _value,
+                  enabled: _visible && _value.isNotEmpty,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontFamily: 'monospace',
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 subtitle: Text(l10n.generatorBits(bits.round())),
                 trailing: Row(
@@ -126,7 +141,10 @@ class _GeneratorSheetState extends ConsumerState<GeneratorSheet> {
                     ),
                     IconButton(
                       tooltip: l10n.generatorRegenerate,
-                      icon: const Icon(Icons.refresh),
+                      icon: Icon(
+                        Icons.refresh_rounded,
+                        color: KkGlass.of(context).accent,
+                      ),
                       onPressed: () => _update(() {}),
                     ),
                   ],
@@ -163,25 +181,25 @@ class _GeneratorSheetState extends ConsumerState<GeneratorSheet> {
               () => _password = _password.copyWith(length: value.round()),
             ),
           ),
-          SwitchListTile(
+          KkSwitchTile(
             title: Text(l10n.generatorLowercase),
             value: _password.lowercase,
             onChanged: (value) =>
                 _update(() => _password = _password.copyWith(lowercase: value)),
           ),
-          SwitchListTile(
+          KkSwitchTile(
             title: Text(l10n.generatorUppercase),
             value: _password.uppercase,
             onChanged: (value) =>
                 _update(() => _password = _password.copyWith(uppercase: value)),
           ),
-          SwitchListTile(
+          KkSwitchTile(
             title: Text(l10n.generatorDigits),
             value: _password.digits,
             onChanged: (value) =>
                 _update(() => _password = _password.copyWith(digits: value)),
           ),
-          SwitchListTile(
+          KkSwitchTile(
             title: Text(l10n.generatorSymbols),
             value: _password.symbols,
             onChanged: (value) =>

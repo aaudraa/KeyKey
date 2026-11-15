@@ -17,3 +17,7 @@
 
 # İçe aktarma örnekleri bayt bayt korunur; Chrome örneği CRLF kullanıyor.
 test/fixtures/import/logins/*.csv -text
+
+# Dışarıdan alınan kaynaklar bayt bayt korunur, özetleri kaynağıyla
+# karşılaştırılabilsin. Fark gösterilmez, GitHub dil istatistiğine girmez.
+android/third_party/** -text -diff linguist-vendored

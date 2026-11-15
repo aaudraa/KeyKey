@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:keykey/app/app.dart';
+import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/core/storage/vault_database.dart';
 import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/vault_service.dart';
@@ -25,7 +26,8 @@ void main() {
   const firstPassword = 'kırmızı-Bisiklet-47-Deniz';
   const secondPassword = 'mavi-Tren-58-Orman-Yolu';
   const thirdPassword = 'sarı-Kalem-69-Dağ-Evi';
-  const vaultText = "Henüz parola yok. İlkini kaydetmek için Ekle'ye dokun.";
+  const vaultText =
+      'Henüz parola yok. İlkini kaydetmek için alttaki + düğmesine dokun.';
   const lockedTitle = 'KeyKey kilitli';
 
   /// Argon2id ayrı isolate'te çalıştığı için `pumpAndSettle` beklemez.
@@ -35,7 +37,15 @@ void main() {
       await tester
           .pump(const Duration(milliseconds: 100))
           .timeout(const Duration(seconds: 10));
-      if (finder.evaluate().isNotEmpty) return;
+      if (finder.evaluate().isNotEmpty) {
+        // Ekran geçişi bitsin: önceki ekranın kutuları kaybolsun.
+        for (var i = 0; i < 10; i++) {
+          await tester
+              .pump(const Duration(milliseconds: 100))
+              .timeout(const Duration(seconds: 10));
+        }
+        return;
+      }
     }
     final visible = find
         .byType(Text)
@@ -111,6 +121,7 @@ void main() {
         ProviderScope(
           key: UniqueKey(),
           overrides: [
+            ambientMotionProvider.overrideWithValue(false),
             vaultServiceProvider.overrideWithValue(service),
             settingsRepositoryFactoryProvider.overrideWithValue(
               (session) => SettingsRepository(
@@ -171,7 +182,7 @@ void main() {
 
     await tapButton(tester, 'Yazdım');
     await pumpUntilFound(tester, find.text('Doğrula ve kasayı aç'));
-    await tester.enterText(find.byType(TextField), recoveryKey);
+    await tester.enterText(find.byType(TextField).last, recoveryKey);
     await tester.pump();
     await tapButton(tester, 'Doğrula ve kasayı aç');
     await pumpUntilFound(tester, find.text(vaultText));

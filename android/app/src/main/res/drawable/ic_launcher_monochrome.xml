@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Simgenin tek renkli katmanı (Android 13+ temalı simge). Yol resources/design/keykey-simge.svg ile aynı. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:translateX="17.52"
+        android:translateY="22"
+        android:scaleX="0.64"
+        android:scaleY="0.64">
+        <path
+            android:fillColor="#FF000000"
+            android:pathData="M24 14h16v30l28-30h20L57 47l33 39H69L46 58l-6 6v22H24z" />
+    </group>
+</vector>

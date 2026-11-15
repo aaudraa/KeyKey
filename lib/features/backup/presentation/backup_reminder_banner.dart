@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/backup/application/backup_reminder.dart';
 import 'package:keykey/features/backup/application/backup_service.dart';
@@ -48,53 +49,40 @@ class _BackupReminderBannerState extends ConsumerState<BackupReminderBanner> {
     final reminder = ref.watch(backupReminderProvider).value;
     if (reminder == null) return const SizedBox.shrink();
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      child: Card(
-        margin: EdgeInsets.zero,
-        color: theme.colorScheme.secondaryContainer,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 8, 4),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.backup_outlined,
-                    color: theme.colorScheme.onSecondaryContainer,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      switch (reminder) {
-                        BackupReminder.never => l10n.backupReminderNever,
-                        BackupReminder.stale => l10n.backupReminderStale,
-                      },
-                      style: TextStyle(
-                        color: theme.colorScheme.onSecondaryContainer,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              OverflowBar(
-                alignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: _busy ? null : () => unawaited(_later()),
-                    child: Text(l10n.backupReminderLater),
-                  ),
-                  TextButton(
-                    onPressed: _busy ? null : () => unawaited(_backUp()),
-                    child: Text(l10n.backupCreate),
-                  ),
-                ],
-              ),
-            ],
-          ),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      child: GlassSurface(
+        padding: const EdgeInsets.fromLTRB(16, 12, 8, 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.backup_outlined, color: KkGlass.of(context).accent),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(switch (reminder) {
+                    BackupReminder.never => l10n.backupReminderNever,
+                    BackupReminder.stale => l10n.backupReminderStale,
+                  }),
+                ),
+              ],
+            ),
+            OverflowBar(
+              alignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: _busy ? null : () => unawaited(_later()),
+                  child: Text(l10n.backupReminderLater),
+                ),
+                TextButton(
+                  onPressed: _busy ? null : () => unawaited(_backUp()),
+                  child: Text(l10n.backupCreate),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

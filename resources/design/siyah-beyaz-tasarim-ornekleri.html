@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeyKey siyah-beyaz tasarım örnekleri</title>
+<style>
+body{margin:0;padding:24px;background:#1d1d1f;color:#f5f5f7;font-family:"Segoe UI",Roboto,system-ui,sans-serif}
+h2{margin:0 0 6px;font-size:22px}
+.subtitle{color:#a1a1a6;margin:0 0 8px;font-size:14px}
+.mock-button{background:#0a84ff;color:#fff;border:0;border-radius:6px;padding:8px 14px;font-weight:600;cursor:pointer}
+.card{background:#2d2d2f;border:1px solid #3d3d3f;border-radius:12px;overflow:hidden}
+.card-body{padding:4px 14px 12px}
+.card-body h3{margin:0 0 4px;font-size:15px}
+.card-body p{margin:0;font-size:12.5px;color:#a1a1a6;line-height:1.45}
+</style>
+<script>function toggleSelect(){}</script>
+</head>
+<body>
+<style>
+.kk-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:8px 0 18px}
+.kk-grid{display:flex;flex-wrap:wrap;gap:18px;justify-content:center}
+.kk-grid .card{width:326px;padding-top:6px;cursor:pointer}
+.kk .ph{width:292px;height:620px;border-radius:38px;position:relative;overflow:hidden;margin:18px auto 14px;
+  font-family:Roboto,"Segoe UI",system-ui,sans-serif;color:var(--ink);background:var(--bg);
+  box-shadow:0 0 0 7px #111,0 0 0 8px #3a3a3a,0 22px 40px rgba(0,0,0,.28);text-align:left;
+  --bg:#F3EEF4;--ink:#1B1A1F;--mut:#5F5B68;--glass:rgba(255,255,255,.5);--gb:rgba(255,255,255,.9);--hi:rgba(255,255,255,.7);--acc:#D4500E;--sh:rgba(40,20,70,.10);--of:#fff;--line:rgba(60,40,90,.12);--tint:rgba(236,85,18,.12);--solid:rgba(255,255,255,.72)}
+.kk.dark .ph{--bg:#0C0B10;--ink:#F5F2F8;--mut:#B1ABBC;--glass:rgba(255,255,255,.08);--gb:rgba(255,255,255,.17);--hi:rgba(255,255,255,.14);--acc:#FF9457;--sh:rgba(0,0,0,.35);--of:#1a0d05;--line:rgba(255,255,255,.12);--tint:rgba(255,148,87,.18);--solid:rgba(40,36,48,.78)}
+.kk .ph *{box-sizing:border-box}
+.kk .sb{height:30px;display:flex;justify-content:space-between;align-items:center;padding:0 24px;font-size:12px;font-weight:600;position:relative;z-index:3}
+.kk .i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.kk .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.kk .tx b{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kk .tx span{font-size:12.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kk .av{flex:none;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;background:var(--c);width:42px;height:42px;border-radius:14px;font-size:17px;box-shadow:0 3px 8px rgba(0,0,0,.18)}
+.kk .body{position:relative;z-index:2}
+.kk .blob{position:absolute;border-radius:50%;filter:blur(48px);z-index:0}
+.kk .b1{width:250px;height:250px;left:-90px;top:30px;background:#FF9A5A;opacity:.6}
+.kk .b2{width:230px;height:230px;right:-100px;top:240px;background:#B48CFF;opacity:.5}
+.kk .b3{width:270px;height:270px;left:-50px;bottom:-90px;background:#FF6FA3;opacity:.42}
+.kk.dark .b1{background:#F26B1D;opacity:.55}
+.kk.dark .b2{background:#6B3BFF;opacity:.5}
+.kk.dark .b3{background:#E0336E;opacity:.4}
+.kk .gl{background:var(--glass);-webkit-backdrop-filter:blur(20px) saturate(170%);backdrop-filter:blur(20px) saturate(170%);
+  border:1px solid var(--gb);box-shadow:inset 0 1px 0 var(--hi),0 6px 18px var(--sh)}
+.kk .hd{padding:14px 22px 12px;display:flex;align-items:flex-end;justify-content:space-between}
+.kk .hd h4{margin:0;font-size:30px;font-weight:800;letter-spacing:-.5px;color:var(--ink)}
+.kk .hd small{font-size:12.5px;color:var(--mut)}
+.kk .srch{margin:0 14px 12px;height:46px;border-radius:23px;display:flex;align-items:center;gap:10px;padding:0 16px;color:var(--mut);font-size:14px}
+.kk .row{height:64px;margin:0 14px 8px;border-radius:22px;display:flex;align-items:center;padding:0 14px 0 11px;gap:12px}
+.kk .row.o{height:72px}
+.kk .cp{color:var(--mut);width:20px;height:20px}
+.kk .code{font-size:22px;font-weight:700;letter-spacing:1.5px;color:var(--ink);font-family:"Roboto Mono",ui-monospace,Consolas,monospace}
+.kk .ring{width:30px;height:30px;transform:rotate(-90deg);flex:none}
+.kk .ring circle{fill:none;stroke-width:3.2;stroke-linecap:round}
+.kk .ring .tr{stroke:var(--line)}
+.kk .ring .pr{stroke:var(--acc);stroke-dasharray:69.1;animation:kkring 30s linear infinite;animation-delay:-11s}
+@keyframes kkring{from{stroke-dashoffset:0}to{stroke-dashoffset:69.1}}
+.kk .dock{position:absolute;z-index:8;left:16px;right:16px;bottom:18px;display:flex;justify-content:center}
+.kk .nav{height:60px;padding:6px;border-radius:30px;display:flex;gap:2px;align-items:center;
+  background:rgba(255,255,255,.28);-webkit-backdrop-filter:blur(26px) saturate(200%);backdrop-filter:blur(26px) saturate(200%);
+  border:1px solid rgba(255,255,255,.85);box-shadow:inset 0 1.5px 0 rgba(255,255,255,.9),inset 0 -8px 16px rgba(255,255,255,.18),0 12px 30px rgba(40,20,70,.22)}
+.kk.dark .nav{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.22);box-shadow:inset 0 1.5px 0 rgba(255,255,255,.28),0 12px 30px rgba(0,0,0,.5)}
+.kk .nav div{height:48px;min-width:48px;border-radius:24px;display:flex;align-items:center;justify-content:center;gap:7px;color:var(--mut);font-size:13.5px;font-weight:600}
+.kk .nav .on{padding:0 16px 0 13px;color:var(--acc);background:rgba(255,255,255,.75);box-shadow:0 2px 8px rgba(40,20,70,.12)}
+.kk.dark .nav .on{background:rgba(255,255,255,.16)}
+.kk .nav .sep{min-width:1px;width:1px;height:26px;border-radius:0;background:var(--gb);margin:0 6px}
+.kk .nav .add{min-width:48px;width:48px;border-radius:50%;color:var(--of);cursor:pointer;
+  background:linear-gradient(145deg,#FF9A52,#EC5512);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 18px rgba(236,85,18,.38)}
+.kk .nav .add .i{stroke-width:2.3;width:24px;height:24px;transition:transform .45s cubic-bezier(.2,1.5,.4,1)}
+
+/* + seçici */
+.kk .scrim{position:absolute;inset:0;z-index:6;background:rgba(30,15,45,.22);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);opacity:0;transition:opacity .3s;pointer-events:none}
+.kk .pick{position:absolute;z-index:7;left:16px;right:16px;bottom:90px;border-radius:30px;padding:10px;
+  background:var(--solid);-webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);
+  border:1px solid var(--gb);box-shadow:inset 0 1.5px 0 var(--hi),0 20px 40px rgba(40,20,70,.28);
+  transform-origin:85% 100%;transform:translateY(40px) scale(.5);opacity:0;transition:transform .5s cubic-bezier(.2,1.35,.4,1),opacity .25s}
+.kk .pick .ttl{display:flex;align-items:center;gap:8px;padding:6px 8px 12px;font-size:15px;font-weight:700}
+.kk .pick .ttl .i{width:20px;height:20px}
+.kk .pick .t{border-radius:20px;padding:10px 12px;margin-top:8px;background:var(--glass);border:1px solid var(--gb);display:flex;align-items:center;gap:12px;
+  transform:translateY(14px);opacity:0;transition:transform .5s cubic-bezier(.2,1.35,.4,1),opacity .3s}
+.kk .pick .t:first-child,.kk .pick .ttl+.t{margin-top:0}
+.kk .pick .t:nth-child(2){transition-delay:.06s}.kk .pick .t:nth-child(3){transition-delay:.11s}.kk .pick .t:nth-child(4){transition-delay:.16s}.kk .pick .t:nth-child(5){transition-delay:.21s}
+.kk .pick .ic{width:40px;height:40px;border-radius:14px;background:var(--tint);color:var(--acc);display:flex;align-items:center;justify-content:center;flex:none}
+.kk .pick .ic .i{width:20px;height:20px}
+.kk .pick .tx b{font-size:14.5px}
+.kk .pick .tx span{font-size:12px}
+.kk .open .scrim{opacity:1}
+.kk .open .pick{transform:none;opacity:1}
+.kk .open .pick .t{transform:none;opacity:1}
+.kk .open .nav .add .i{transform:rotate(135deg)}
+
+/* üst çubuk, alan kartları */
+.kk .bar{height:58px;display:flex;align-items:center;gap:8px;padding:0 14px}
+.kk .bar .cb{width:42px;height:42px;border-radius:21px;display:flex;align-items:center;justify-content:center;flex:none}
+.kk .bar .sp{flex:1}
+.kk .bar h5{margin:0 0 0 4px;flex:1;font-size:21px;font-weight:800;letter-spacing:-.3px;color:var(--ink)}
+.kk .who{display:flex;align-items:center;gap:14px;padding:6px 20px 18px}
+.kk .who .av{width:58px;height:58px;border-radius:20px;font-size:25px;box-shadow:0 10px 22px rgba(0,0,0,.22)}
+.kk .who b{font-size:24px;font-weight:800;letter-spacing:-.4px}
+.kk .who span{font-size:13.5px}
+.kk .fld{height:64px;margin:0 14px 8px;border-radius:22px;display:flex;align-items:center;padding:0 10px 0 16px;gap:6px}
+.kk .form .fld{height:60px}
+.kk .form .fld.pwf{height:78px;flex-wrap:wrap;padding-top:8px;align-content:flex-start}
+.kk .fld .tx span{font-size:11.5px;order:-1}
+.kk .fld .tx b{font-size:15.5px;font-weight:500}
+.kk .ib{width:38px;height:38px;border-radius:19px;display:flex;align-items:center;justify-content:center;color:var(--mut);flex:none}
+.kk .ib .i{width:19px;height:19px}
+.kk .ib.hot{background:var(--tint);color:var(--acc)}
+.kk .pill{font-size:12.5px;font-weight:700;color:var(--acc);background:var(--tint);border-radius:16px;padding:8px 13px;margin-right:4px}
+.kk .str{flex-basis:100%;display:flex;align-items:center;gap:8px;padding:4px 8px 0 0;font-size:11.5px;color:#1E9E57;font-weight:600}
+.kk .str i{flex:1;height:5px;border-radius:3px;background:var(--line);position:relative;overflow:hidden}
+.kk .str i::after{content:"";position:absolute;left:0;top:0;bottom:0;width:82%;border-radius:3px;background:linear-gradient(90deg,#7ED957,#1E9E57)}
+.kk .more{margin:2px 14px 10px;border-radius:22px;padding:12px 16px;display:flex;align-items:center;gap:10px}
+.kk .more .tx b{font-size:14.5px}
+.kk .more .i{color:var(--mut)}
+.kk .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 14px 10px}
+.kk .chip{height:40px;border-radius:20px;padding:0 15px 0 11px;display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;color:var(--ink)}
+.kk .chip .i{width:17px;height:17px;color:var(--acc);stroke-width:2.2}
+.kk .save{position:absolute;z-index:5;left:16px;right:16px;bottom:22px;height:54px;border-radius:27px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--of);
+  background:linear-gradient(145deg,#FF9A52,#EC5512);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 12px 26px rgba(236,85,18,.38)}
+.kk .meta{padding:6px 22px;font-size:12px;color:var(--mut)}
+.kk .snack{position:absolute;z-index:5;left:50%;transform:translateX(-50%);bottom:92px;height:40px;border-radius:20px;padding:0 16px 0 12px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;white-space:nowrap;
+  background:var(--solid);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border:1px solid var(--gb);box-shadow:0 10px 24px var(--sh);animation:kksn 4s ease-in-out infinite}
+.kk .snack .i{width:18px;height:18px;color:#1E9E57;stroke-width:2.4}
+@keyframes kksn{0%,8%{opacity:0;transform:translate(-50%,14px) scale(.92)}16%,78%{opacity:1;transform:translate(-50%,0) scale(1)}90%,100%{opacity:0;transform:translate(-50%,8px) scale(.96)}}
+
+/* ayarlar */
+.kk .bk{margin:0 14px 14px;border-radius:24px;padding:12px 12px 12px 16px;display:flex;align-items:center;gap:10px}
+.kk .bk .tx b{font-size:14.5px}
+.kk .pillb{font-size:12.5px;font-weight:700;color:var(--of);border-radius:18px;padding:9px 14px;background:linear-gradient(145deg,#FF9A52,#EC5512);box-shadow:0 6px 14px rgba(236,85,18,.3)}
+.kk .lbl{margin:0 24px 7px;font-size:12px;font-weight:700;color:var(--acc);letter-spacing:.3px}
+.kk .grp{margin:0 14px 14px;border-radius:24px;overflow:hidden}
+.kk .s{height:56px;padding:0 14px 0 12px;display:flex;align-items:center;gap:12px;position:relative}
+.kk .s+.s::before{content:"";position:absolute;left:60px;right:14px;top:0;height:1px;background:var(--line)}
+.kk .s .si{width:36px;height:36px;border-radius:13px;background:var(--tint);color:var(--acc);display:flex;align-items:center;justify-content:center;flex:none}
+.kk .s .si .i{width:19px;height:19px}
+.kk .s .tx b{font-size:14.5px;font-weight:500}
+.kk .sw{width:46px;height:28px;border-radius:14px;flex:none;position:relative;background:var(--acc)}
+.kk .sw::after{content:"";position:absolute;right:4px;top:4px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.kk .sw.off{background:transparent;border:2px solid var(--mut)}
+.kk .sw.off::after{left:5px;right:auto;top:5px;width:14px;height:14px;background:var(--mut);box-shadow:none}
+.kk .ch{color:var(--mut);width:18px;height:18px}
+
+/* kilit */
+.kk .lock .b1{animation:kkd1 14s ease-in-out infinite alternate}
+.kk .lock .b2{animation:kkd2 17s ease-in-out infinite alternate}
+.kk .lock .b3{animation:kkd3 12s ease-in-out infinite alternate}
+@keyframes kkd1{to{transform:translate(90px,60px) scale(1.15)}}
+@keyframes kkd2{to{transform:translate(-110px,-70px) scale(1.2)}}
+@keyframes kkd3{to{transform:translate(80px,-90px) scale(.9)}}
+.kk .lk{display:flex;flex-direction:column;align-items:center;padding:74px 22px 0}
+.kk .kicon{width:84px;height:84px;border-radius:27px;background:#fff;color:#F26B1D;font-size:50px;font-weight:900;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 18px 36px rgba(236,85,18,.28),inset 0 -3px 0 rgba(0,0,0,.04);animation:kkfl 5s ease-in-out infinite alternate}
+@keyframes kkfl{to{transform:translateY(-7px)}}
+.kk .lk h5{margin:22px 0 4px;font-size:24px;font-weight:800;letter-spacing:-.4px;color:var(--ink)}
+.kk .lk p{margin:0 0 26px;font-size:13.5px;color:var(--mut)}
+.kk .pw{width:100%;height:56px;border-radius:28px;display:flex;align-items:center;padding:0 16px 0 20px;gap:10px;font-size:15px;color:var(--mut);margin-bottom:12px}
+.kk .pw span{flex:1}
+.kk .go{width:100%;height:56px;border-radius:28px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--of);
+  background:linear-gradient(145deg,#FF9A52,#EC5512);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 12px 26px rgba(236,85,18,.38)}
+.kk .fp{margin-top:34px;width:64px;height:64px;border-radius:32px;display:flex;align-items:center;justify-content:center;color:var(--acc)}
+.kk .fp .i{width:30px;height:30px}
+.kk .fpt{margin-top:10px;font-size:12.5px;color:var(--mut)}
+.kk .forgot{position:absolute;z-index:3;left:0;right:0;bottom:26px;text-align:center;font-size:13px;font-weight:600;color:var(--acc)}
+
+/* otomatik doldurma: başka uygulamanın üstünde */
+.kk .other{position:absolute;inset:0;background:#fff;color:#222;display:flex;flex-direction:column;align-items:center;padding:70px 26px 0;gap:12px}
+.kk .other .lg{width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7);margin-bottom:10px}
+.kk .other .in{width:100%;height:44px;border-radius:8px;border:1px solid #d9d9de;background:#fafafa;display:flex;align-items:center;padding:0 12px;font-size:13px;color:#9a9aa3}
+.kk .other .in.f{border-color:#3897f0;box-shadow:0 0 0 2px rgba(56,151,240,.2)}
+.kk .other .bt{width:100%;height:44px;border-radius:8px;background:#3897f0;color:#fff;font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center}
+.kk .dim{position:absolute;inset:0;background:rgba(10,8,16,.42);z-index:1}
+.kk .sheet{position:absolute;z-index:2;left:0;right:0;bottom:0;height:356px;border-radius:32px 32px 0 0;background:var(--bg);overflow:hidden;box-shadow:0 -14px 40px rgba(0,0,0,.3);animation:kksh 5s cubic-bezier(.2,1.1,.3,1) infinite}
+@keyframes kksh{0%{transform:translateY(100%)}14%,88%{transform:none}100%{transform:translateY(100%)}}
+.kk .sheet .b1{width:200px;height:200px;left:-70px;top:-60px}
+.kk .sheet .b2{width:190px;height:190px;right:-80px;top:80px}
+.kk .sheet .b3{width:200px;height:200px;left:20px;bottom:-120px}
+.kk .sheet .hn{width:40px;height:5px;border-radius:3px;background:var(--mut);opacity:.4;margin:10px auto 6px;position:relative;z-index:2}
+.kk .sheet .sh{display:flex;align-items:center;gap:10px;padding:8px 20px 14px;position:relative;z-index:2}
+.kk .sheet .sk{width:32px;height:32px;border-radius:11px;background:#fff;color:#F26B1D;font-weight:900;font-size:19px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(236,85,18,.25)}
+.kk .sheet .sh b{font-size:17px;font-weight:800;flex:1}
+.kk .sheet .sh span{font-size:12.5px;color:var(--mut)}
+.kk .sheet .srch{margin-top:6px}
+</style>
+
+<style>
+/* ===== siyah-beyaz tur: renkler ===== */
+.kk .ph{--bg:#F4F4F4;--ink:#111111;--mut:#6B6B6B;--card:#FFFFFF;--bd:#E2E2E2;--line:#EAEAEA;--tint:rgba(0,0,0,.06);--or:#F26B1D;--of:#1A0D05;--inv:#FFFFFF;--sh:rgba(0,0,0,.08)}
+.kk.dark .ph{--bg:#000000;--ink:#F4F4F4;--mut:#9A9A9A;--card:#121212;--bd:#272727;--line:#222222;--tint:rgba(255,255,255,.09);--or:#FF8A4C;--of:#1A0D05;--inv:#000000;--sh:rgba(0,0,0,.5)}
+.kk .blob{display:none}
+.kk .gl{background:var(--card);-webkit-backdrop-filter:none;backdrop-filter:none;border:1px solid var(--bd);box-shadow:none}
+.kk .av{background:transparent;color:var(--ink);box-shadow:none;width:34px;height:34px;border-radius:0;font-size:21px;font-weight:800}
+.kk .who .av{width:44px;height:44px;font-size:34px;box-shadow:none}
+
+/* menü */
+.kk .nav,.kk.dark .nav{height:52px;padding:5px;border-radius:26px;background:var(--card);-webkit-backdrop-filter:none;backdrop-filter:none;border:1px solid var(--bd);box-shadow:0 8px 22px var(--sh)}
+.kk .nav div{height:40px;min-width:42px;border-radius:20px;font-size:12.5px;gap:6px}
+.kk .nav .i{width:19px;height:19px}
+.kk .nav .on,.kk.dark .nav .on{padding:0 13px 0 11px;color:var(--ink);background:var(--tint);box-shadow:none}
+.kk .nav .sep{min-width:1px;height:22px;background:var(--bd);margin:0 5px}
+.kk .nav .add{min-width:40px;width:40px;background:var(--or);box-shadow:none;color:var(--of)}
+.kk .nav .add .i{width:20px;height:20px}
+.kk .dock{bottom:16px}
+
+/* + seçici */
+.kk .scrim{background:rgba(0,0,0,.35);-webkit-backdrop-filter:none;backdrop-filter:none}
+.kk .pick{bottom:78px;border-radius:22px;padding:8px;background:var(--card);-webkit-backdrop-filter:none;backdrop-filter:none;border:1px solid var(--bd);box-shadow:0 16px 34px var(--sh)}
+.kk .pick .t{border-radius:14px;padding:8px 10px;margin-top:4px;background:transparent;border:0}
+.kk .pick .ic{width:30px;height:30px;background:transparent;color:var(--ink)}
+.kk .pick .tx b{font-size:13.5px}.kk .pick .tx span{font-size:11.5px}
+.kk .pick .ttl{font-size:13.5px;padding:6px 8px 8px}
+
+/* ölçüler: daha küçük yazı ve düğme */
+.kk .hd{padding:10px 20px 10px}
+.kk .hd h4{font-size:22px;font-weight:700;letter-spacing:-.3px}
+.kk .hd small{font-size:11.5px}
+.kk .srch{height:40px;border-radius:14px;font-size:13px;margin:0 14px 10px;padding:0 13px}
+.kk .srch .i{width:18px;height:18px}
+.kk .row{height:54px;border-radius:16px;margin:0 14px 6px;padding:0 13px 0 9px;gap:10px}
+.kk .row.o{height:60px}
+.kk .tx b{font-size:13.5px}
+.kk .tx span{font-size:11.5px}
+.kk .cp{width:17px;height:17px}
+.kk .code{font-size:19px;letter-spacing:1.2px}
+.kk .ring{width:24px;height:24px}
+.kk .ring .pr{stroke:var(--or)}
+.kk .bar{height:50px}
+.kk .bar .cb{width:36px;height:36px;border:0;background:transparent}
+.kk .bar .cb .i{width:20px;height:20px}
+.kk .bar h5{font-size:17px;font-weight:700}
+.kk .who{padding:4px 20px 14px;gap:10px}
+.kk .who b{font-size:19px;font-weight:700}
+.kk .who span{font-size:12px}
+.kk .fld{height:54px;border-radius:16px;margin:0 14px 6px;padding:0 8px 0 14px}
+.kk .form .fld{height:52px}
+.kk .form .fld.pwf{height:70px}
+.kk .fld .tx span{font-size:10.5px}
+.kk .fld .tx b{font-size:14px}
+.kk .ib{width:32px;height:32px}
+.kk .ib .i{width:17px;height:17px}
+.kk .ib.hot{background:var(--tint);color:var(--ink)}
+.kk .pill{font-size:11.5px;color:var(--ink);background:transparent;border:1px solid var(--bd);border-radius:12px;padding:5px 10px}
+.kk .str{color:var(--mut);font-size:10.5px}
+.kk .str i{height:3px}
+.kk .str i::after{background:var(--ink)}
+.kk .more{border-radius:16px;padding:9px 14px}
+.kk .more .tx b{font-size:13px}
+.kk .chip{height:32px;border-radius:16px;font-size:12px;padding:0 12px 0 9px}
+.kk .chip .i{color:var(--ink);width:14px;height:14px}
+.kk .save{height:44px;border-radius:14px;font-size:14px;font-weight:600;background:var(--or);box-shadow:none;left:14px;right:14px;bottom:20px}
+.kk .meta{font-size:11px}
+.kk .snack{height:34px;font-size:12px;bottom:80px;background:var(--ink);color:var(--inv);border:0;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none}
+.kk .snack .i{color:var(--inv);width:15px;height:15px}
+
+/* ayarlar */
+.kk .bk{border-radius:16px;padding:10px 10px 10px 14px;margin:0 14px 12px}
+.kk .bk .tx b{font-size:13px}
+.kk .pillb{font-size:11.5px;font-weight:600;padding:7px 12px;border-radius:12px;background:var(--ink);color:var(--inv);box-shadow:none}
+.kk .lbl{font-size:11px;font-weight:600;color:var(--mut);margin:0 22px 5px;letter-spacing:.2px}
+.kk .grp{border-radius:16px;margin:0 14px 12px}
+.kk .s{height:46px;padding:0 12px 0 12px;gap:10px}
+.kk .s+.s::before{left:42px;right:12px}
+.kk .s .si{width:20px;height:20px;background:transparent;color:var(--ink);border-radius:0}
+.kk .s .si .i{width:18px;height:18px}
+.kk .s .tx b{font-size:13px;font-weight:500}
+.kk .inf{width:17px;height:17px;color:var(--mut);margin-right:-2px}
+.kk .sw{width:36px;height:21px;border-radius:11px;background:var(--ink)}
+.kk .sw::after{right:3px;top:3px;width:15px;height:15px;background:var(--inv);box-shadow:none}
+.kk .sw.off{border:1.5px solid var(--mut)}
+.kk .sw.off::after{left:4px;top:3.5px;width:11px;height:11px;background:var(--mut)}
+.kk .ch{width:15px;height:15px}
+
+/* kilit */
+.kk .lk{padding-top:84px}
+.kk .kicon{width:auto;height:auto;background:transparent;box-shadow:none;border-radius:0;color:var(--or);font-size:64px;line-height:1;animation:none}
+.kk .lk h5{font-size:19px;font-weight:700;margin:16px 0 4px}
+.kk .lk p{font-size:12.5px;margin-bottom:22px}
+.kk .pw{height:46px;border-radius:14px;font-size:13.5px;margin-bottom:10px;padding:0 14px 0 16px}
+.kk .pw .i{width:18px;height:18px}
+.kk .go{height:46px;border-radius:14px;font-size:14px;font-weight:600;background:var(--or);box-shadow:none}
+.kk .fp{margin-top:30px;width:48px;height:48px;border:0;background:transparent;color:var(--ink)}
+.kk .fp .i{width:30px;height:30px}
+.kk .fpt{margin-top:4px;font-size:11.5px}
+.kk .forgot{color:var(--ink);font-size:12px;text-decoration:underline;text-underline-offset:3px}
+
+/* otomatik doldurma */
+.kk .sheet{height:300px;border-radius:22px 22px 0 0}
+.kk .sheet .sk{width:auto;height:auto;background:transparent;box-shadow:none;color:var(--or);font-size:24px}
+.kk .sheet .sh b{font-size:15px;font-weight:700}
+.kk .sheet .sh span{font-size:11.5px}
+
+/* renk kullanımı açıklaması */
+.kk-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:#c8c8cc;margin:0 0 18px}
+.kk-legend span{display:flex;align-items:center;gap:7px}
+.kk-legend i{width:12px;height:12px;border-radius:50%;background:#F26B1D;display:inline-block}
+</style>
+<style>
+/* ===== v2: cam geri geldi (renksiz), daha çok hareket ===== */
+.kk .ph{--bg:#E6E6E8;--glass:rgba(255,255,255,.52);--gb:rgba(255,255,255,.9);--hi:rgba(255,255,255,.8);--sh:rgba(0,0,0,.09);--solid:rgba(255,255,255,.7)}
+.kk.dark .ph{--bg:#000;--glass:rgba(255,255,255,.07);--gb:rgba(255,255,255,.15);--hi:rgba(255,255,255,.12);--sh:rgba(0,0,0,.5);--solid:rgba(30,30,30,.72)}
+.kk .blob{display:block}
+.kk .b1{background:#FFFFFF;opacity:.95}
+.kk .b2{background:#A9A9AE;opacity:.6}
+.kk .b3{background:#FFFFFF;opacity:.8}
+.kk.dark .b1{background:#5A5A5E;opacity:.55}
+.kk.dark .b2{background:#3A3A3E;opacity:.7}
+.kk.dark .b3{background:#4A4A4E;opacity:.5}
+.kk .b1{animation:kkd1 16s ease-in-out infinite alternate}
+.kk .b2{animation:kkd2 19s ease-in-out infinite alternate}
+.kk .b3{animation:kkd3 14s ease-in-out infinite alternate}
+.kk .gl{background:var(--glass);-webkit-backdrop-filter:blur(20px) saturate(140%);backdrop-filter:blur(20px) saturate(140%);border:1px solid var(--gb);box-shadow:inset 0 1px 0 var(--hi),0 5px 14px var(--sh)}
+.kk .bar .cb{background:transparent;border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+.kk .fp{background:transparent;border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+.kk .nav{background:rgba(255,255,255,.34);-webkit-backdrop-filter:blur(26px) saturate(160%);backdrop-filter:blur(26px) saturate(160%);border:1px solid rgba(255,255,255,.9);box-shadow:inset 0 1.5px 0 rgba(255,255,255,.9),0 10px 26px rgba(0,0,0,.16)}
+.kk.dark .nav{background:rgba(255,255,255,.10);-webkit-backdrop-filter:blur(26px) saturate(160%);backdrop-filter:blur(26px) saturate(160%);border:1px solid rgba(255,255,255,.2);box-shadow:inset 0 1.5px 0 rgba(255,255,255,.24),0 10px 26px rgba(0,0,0,.6)}
+.kk .nav .on{background:rgba(255,255,255,.7)}
+.kk.dark .nav .on{background:rgba(255,255,255,.16)}
+.kk .scrim{background:rgba(0,0,0,.22);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.kk .pick{background:var(--solid);-webkit-backdrop-filter:blur(30px) saturate(160%);backdrop-filter:blur(30px) saturate(160%);border:1px solid var(--gb);box-shadow:inset 0 1.5px 0 var(--hi),0 18px 38px rgba(0,0,0,.26)}
+.kk .snack{background:var(--solid);color:var(--ink);border:1px solid var(--gb);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);box-shadow:0 8px 20px var(--sh)}
+.kk .snack .i{color:var(--ink)}
+
+/* hareket: girişler */
+@keyframes kkin{from{opacity:0;transform:translateY(18px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes kkhd{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+@keyframes kkup{from{opacity:0;transform:translateY(46px) scale(.9)}to{opacity:1;transform:none}}
+@keyframes kkpop{0%{opacity:0;transform:scale(.4)}70%{transform:scale(1.08)}100%{opacity:1;transform:none}}
+.kk .hd h4,.kk .bar h5,.kk .who{animation:kkhd .5s cubic-bezier(.2,1,.3,1) backwards}
+.kk .srch,.kk .row,.kk .fld,.kk .more,.kk .bk,.kk .grp,.kk .lbl,.kk .pw,.kk .go{animation:kkin .6s cubic-bezier(.2,1.25,.4,1) backwards}
+.kk .body>*:nth-child(2){animation-delay:.05s}.kk .body>*:nth-child(3){animation-delay:.10s}.kk .body>*:nth-child(4){animation-delay:.15s}
+.kk .body>*:nth-child(5){animation-delay:.20s}.kk .body>*:nth-child(6){animation-delay:.25s}.kk .body>*:nth-child(7){animation-delay:.30s}
+.kk .body>*:nth-child(8){animation-delay:.35s}.kk .body>*:nth-child(9){animation-delay:.40s}.kk .body>*:nth-child(10){animation-delay:.45s}
+.kk .chip{animation:kkpop .45s cubic-bezier(.2,1.3,.4,1) backwards}
+.kk .chip:nth-child(1){animation-delay:.35s}.kk .chip:nth-child(2){animation-delay:.42s}.kk .chip:nth-child(3){animation-delay:.49s}.kk .chip:nth-child(4){animation-delay:.56s}
+.kk .dock,.kk .save{animation:kkup .7s cubic-bezier(.2,1.3,.4,1) .25s backwards}
+.kk .av{animation:kkpop .5s cubic-bezier(.2,1.3,.4,1) .2s backwards}
+.kk .sheet .row,.kk .sheet .srch{animation-delay:.7s}
+
+/* hareket: dokunma */
+.kk .row,.kk .fld,.kk .s,.kk .chip,.kk .more,.kk .go,.kk .save,.kk .pillb,.kk .pill,.kk .nav div,.kk .pick .t,.kk .ib,.kk .pw{transition:transform .18s cubic-bezier(.2,1.4,.4,1),background .2s;cursor:pointer}
+.kk .row:active,.kk .fld:active,.kk .more:active,.kk .go:active,.kk .save:active,.kk .pw:active{transform:scale(.965)}
+.kk .chip:active,.kk .pillb:active,.kk .pill:active,.kk .ib:active,.kk .nav div:active{transform:scale(.88)}
+.kk .s:active{background:var(--tint)}
+.kk .nav .add:hover .i{transform:rotate(90deg)}
+.kk .open .nav .add:hover .i{transform:rotate(135deg)}
+
+/* hareket: süren küçük şeyler */
+.kk .kicon{animation:kkfl 4s ease-in-out infinite alternate}
+@keyframes kkfp{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.12);opacity:.6}}
+.kk .fp .i{animation:kkfp 2.4s ease-in-out infinite}
+@keyframes kkstr{from{width:0}to{width:82%}}
+.kk .str i::after{animation:kkstr 1.1s cubic-bezier(.2,1,.3,1) .5s backwards}
+.kk .sw{transition:background .25s,border-color .25s;cursor:pointer;border:1.5px solid transparent}
+.kk .sw::after{left:17px;right:auto;top:1.5px;transition:left .3s cubic-bezier(.2,1.5,.4,1),width .25s,height .25s,top .25s,background .25s}
+.kk .sw.off::after{left:3px;top:3.5px}
+.kk .more .i{transition:transform .35s cubic-bezier(.2,1.4,.4,1)}
+</style>
+
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="3"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.700-7-5.500-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-set" viewBox="0 0 24 24"><path d="M4 7h9M19 7h1M4 17h1M11 17h9"/><circle cx="16" cy="7" r="2.500"/><circle cx="8" cy="17" r="2.500"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="3"/><path d="M5 15V7a3 3 0 0 1 3-3h7"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.500 12S6 5.500 12 5.500 21.500 12 21.500 12 18 18.500 12 18.500 2.500 12 2.500 12z"/><circle cx="12" cy="12" r="2.500"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 7l3 3"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4z"/></symbol>
+  <symbol id="i-dots" viewBox="0 0 24 24"><path d="M12 5h.01M12 12h.01M12 19h.01" stroke-width="2.800"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.500l4.500 4.500L19 7.500"/></symbol>
+  <symbol id="i-qr" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.500"/><rect x="14" y="4" width="6" height="6" rx="1.500"/><rect x="4" y="14" width="6" height="6" rx="1.500"/><path d="M14 14h2v2M20 14v6h-6v-2"/></symbol>
+  <symbol id="i-img" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="3"/><circle cx="9" cy="10" r="1.500"/><path d="M5 17l5-4 3 2 3-3 4 4"/></symbol>
+  <symbol id="i-kbd" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="3"/><path d="M7 10h.01M11 10h.01M15 10h.01M8 14h8"/></symbol>
+  <symbol id="i-imp" viewBox="0 0 24 24"><path d="M12 4v10M8 10l4 4 4-4M5 19h14"/></symbol>
+  <symbol id="i-exp" viewBox="0 0 24 24"><path d="M12 14V4M8 8l4-4 4 4M5 19h14"/></symbol>
+  <symbol id="i-rest" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.500-5.800M4 5v4h4"/></symbol>
+  <symbol id="i-fp" viewBox="0 0 24 24"><path d="M8 19c1-2 1.300-4.500 1.300-7a2.700 2.700 0 0 1 5.400 0c0 3-.4 5.500-1.200 7.500M12 12c0 3-.5 5.500-1.700 8M5.500 15c.4-1 .5-2 .5-3a6 6 0 0 1 10-4.500M18 11.500c0 2-.1 3.500-.5 5"/></symbol>
+</svg>
+
+<h2>KeyKey siyah-beyaz tasarım: bütün ekranlar</h2>
+<p class="subtitle">Siyah-beyaz, ama cam geri geldi: renksiz ışık lekeleri üstünde cam kartlar, cam menü, "+" açılınca bulanıklaşan arka plan. Hareketler arttı: ekranlar açılırken satırlar sırayla yerine oturur, dokununca her şey hafifçe esner. "+" düğmelerine, satırlara ve ayarlardaki anahtarlara tıklayabilirsin.</p>
+<div class="kk-legend"><span><i></i>K logosu</span><span><i></i>"+" düğmesi</span><span><i></i>Ekranın ana düğmesi (Kaydet, Kilidi aç)</span><span><i></i>2FA süre halkası</span></div>
+<div class="kk-top">
+  <button class="mock-button" onclick="document.getElementById('kk').classList.toggle('dark')">Açık / koyu temayı değiştir</button>
+  <button class="mock-button" style="background:#F26B1D;color:#1A0D05" onclick="var g=document.getElementById('kk');g.style.display='none';g.offsetHeight;g.style.display=''">Giriş hareketlerini yeniden oynat</button>
+</div>
+
+<div class="kk kk-grid" id="kk" data-multiselect>
+
+  <!-- 1 kilit -->
+  <div class="card" data-choice="1-kilit" onclick="toggleSelect(this)">
+    <div class="ph lock">
+      <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+      <div class="sb"><span>9:41</span><span>5G ▮</span></div>
+      <div class="body lk">
+        <div class="kicon">K</div>
+        <h5>Kasa kilitli</h5>
+        <p>Açmak için ana parolanı gir</p>
+        <div class="pw gl"><span>Ana parola</span><svg class="i"><use href="#i-eye"/></svg></div>
+        <div class="go">Kilidi aç</div>
+        <div class="fp gl"><svg class="i"><use href="#i-fp"/></svg></div>
+        <div class="fpt">Parmak iziyle aç</div>
+      </div>
+      <div class="forgot">Parolamı unuttum</div>
+    </div>
+    <div class="card-body"><h3>1 · Kilit</h3><p>Kutusuz turuncu K. Tek turuncu düğme. Gerisi siyah-beyaz.</p></div>
+  </div>
+
+  <!-- 2 kasa -->
+  <div class="card" data-choice="2-kasa" onclick="toggleSelect(this)">
+    <div class="ph">
+      <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+      <div class="sb"><span>9:41</span><span>5G ▮</span></div>
+      <div class="body">
+        <div class="hd"><h4>Kasa</h4><small>24 kayıt</small></div>
+        <div class="srch gl"><svg class="i"><use href="#i-search"/></svg>Kasada ara</div>
+        <div class="row gl"><div class="av" style="--c:#24292F">G</div><div class="tx"><b>GitHub</b><span>furky</span></div><svg class="i cp"><use href="#i-copy"/></svg></div>
+        <div class="row gl"><div class="av" style="--c:#E1306C">I</div><div class="tx"><b>Instagram</b><span>@furky</span></div><svg class="i cp"><use href="#i-copy"/></svg></div>
+        <div class="row gl"><div class="av" style="--c:#1DB954">S</div><div class="tx"><b>Spotify</b><span>furky@posta.com</span></div><svg class="i cp"><use href="#i-copy"/></svg></div>
+        <div class="row gl"><div class="av" style="--c:#5865F2">D</div><div class="tx"><b>Discord</b><span>furky#0001</span></div><svg class="i cp"><use href="#i-copy"/></svg></div>
+        <div class="row gl"><div class="av" style="--c:#0A7D4F">B</div><div class="tx"><b>Banka</b><span>Müşteri no 4471…</span></div><svg class="i cp"><use href="#i-copy"/></svg></div>
+        <div class="row gl"><div class="av" style="--c:#E50914">N</div><div class="tx"><b>Netflix</b><span>furky@posta.com</span></div><svg class="i cp"><use href="#i-copy"/></svg></div>
+        <div class="row gl"><div class="av" style="--c:#1B2838">S</div><div class="tx"><b>Steam</b><span>furky_tr</span></div><svg class="i cp"><use href="#i-copy"/></svg></div>
+      </div>
+      <div class="dock"><div class="nav">
+        <div class="on"><svg class="i"><use href="#i-lock"/></svg>Kasa</div>
+        <div><svg class="i"><use href="#i-shield"/></svg></div>
+        <div><svg class="i"><use href="#i-set"/></svg></div>
+        <div class="sep"></div>
+        <div class="add"><svg class="i"><use href="#i-plus"/></svg></div>
+      </div></div>
+    </div>
+    <div class="card-body"><h3>2 · Kasa</h3><p>Düz kartlar, kutusuz siyah-beyaz simgeler, küçük yazı, sade menü.</p></div>
+  </div>
+
+  <!-- 3 + seçici -->
+  <div class="card" data-choice="3-ekle" onclick="toggleSelect(this)">
+    <div class="ph open">
+      <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+      <div class="sb"><span>9:41</span><span>5G ▮</span></div>
+      <div class="body">
+        <div class="hd"><h4>Kasa</h4><small>24 kayıt</small></div>
+        <div class="srch gl"><svg class="i"><use href="#i-search"/></svg>Kasada ara</div>
+        <div class="row gl"><div class="av" style="--c:#24292F">G</div><div class="tx"><b>GitHub</b><span>furky</span></div></div>
+        <div class="row gl"><div class="av" style="--c:#E1306C">I</div><div class="tx"><b>Instagram</b><span>@furky</span></div></div>
+        <div class="row gl"><div class="av" style="--c:#1DB954">S</div><div class="tx"><b>Spotify</b><span>furky@posta.com</span></div></div>
+        <div class="row gl"><div class="av" style="--c:#5865F2">D</div><div class="tx"><b>Discord</b><span>furky#0001</span></div></div>
+        <div class="row gl"><div class="av" style="--c:#0A7D4F">B</div><div class="tx"><b>Banka</b><span>Müşteri no</span></div></div>
+        <div class="row gl"><div class="av" style="--c:#E50914">N</div><div class="tx"><b>Netflix</b><span>furky@posta.com</span></div></div>
+      </div>
+      <div class="scrim"></div>
+      <div class="pick">
+        <div class="t"><div class="ic"><svg class="i"><use href="#i-key"/></svg></div><div class="tx"><b>Parola</b><span>Site ya da uygulama girişi</span></div></div>
+        <div class="t"><div class="ic"><svg class="i"><use href="#i-shield"/></svg></div><div class="tx"><b>2FA kodu</b><span>QR tara, elle gir ya da içe aktar</span></div></div>
+      </div>
+      <div class="dock"><div class="nav">
+        <div class="on"><svg class="i"><use href="#i-lock"/></svg>Kasa</div>
+        <div><svg class="i"><use href="#i-shield"/></svg></div>
+        <div><svg class="i"><use href="#i-set"/></svg></div>
+        <div class="sep"></div>
+        <div class="add" onclick="event.stopPropagation();this.closest('.ph').classList.toggle('open')"><svg class="i"><use href="#i-plus"/></svg></div>
+      </div></div>
+    </div>
+    <div class="card-body"><h3>3 · "+" seçici</h3><p>Aynı davranış, renksiz simgeler.</p></div>
+  </div>
+
+  <!-- 4 + → 2FA -->
+  <div class="card" data-choice="4-ekle-2fa" onclick="toggleSelect(this)">
+    <div class="ph open">
+      <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+      <div class="sb"><span>9:41</span><span>5G ▮</span></div>
+      <div class="body">
+        <div class="hd"><h4>Kasa</h4><small>24 kayıt</small></div>
+        <div class="srch gl"><svg class="i"><use href="#i-search"/></svg>Kasada ara</div>
+        <div class="row gl"><div class="av" style="--c:#24292F">G</div><div class="tx"><b>GitHub</b><span>furky</span></div></div>
+        <div class="row gl"><div class="av" style="--c:#E1306C">I</div><div class="tx"><b>Instagram</b><span>@furky</span></div></div>
+        <div class="row gl"><div class="av" style="--c:#1DB954">S</div><div class="tx"><b>Spotify</b><span>furky@posta.com</span></div></div>
+        <div class="row gl"><div class="av" style="--c:#5865F2">D</div><div class="tx"><b>Discord</b><span>furky#0001</span></div></div>
+        <div class="row gl"><div class="av" style="--c:#0A7D4F">B</div><div class="tx"><b>Banka</b><span>Müşteri no</span></div></div>
+      </div>
+      <div class="scrim"></div>
+      <div class="pick">
+        <div class="ttl"><svg class="i"><use href="#i-arrow"/></svg>2FA kodu ekle</div>
+        <div class="t"><div class="ic"><svg class="i"><use href="#i-qr"/></svg></div><div class="tx"><b>QR tara</b><span>Kamerayla QR kodunu oku</span></div></div>
+        <div class="t"><div class="ic"><svg class="i"><use href="#i-img"/></svg></div><div class="tx"><b>Resimden oku</b><span>Galerideki bir ekran görüntüsünden</span></div></div>
+        <div class="t"><div class="ic"><svg class="i"><use href="#i-kbd"/></svg></div><div class="tx"><b>Elle gir</b><span>Kurulum anahtarını yaz</span></div></div>
+        <div class="t"><div class="ic"><svg class="i"><use href="#i-imp"/></svg></div><div class="tx"><b>İçe aktar</b><span>Aegis, 2FAS, Google Authenticator</span></div></div>
+      </div>
+      <div class="dock"><div class="nav">
+        <div class="on"><svg class="i"><use href="#i-lock"/></svg>Kasa</div>
+        <div><svg class="i"><use href="#i-shield"/></svg></div>
+        <div><svg class="i"><use href="#i-set"/></svg></div>
+        <div class="sep"></div>
+        <div class="add" onclick="event.stopPropagation();this.closest('.ph').classList.toggle('open')"><svg class="i"><use href="#i-plus"/></svg></div>
+      </div></div>
+    </div>
+    <div class="card-body"><h3>4 · "+" → 2FA kodu</h3><p>Dört yol, renksiz simgeler.</p></div>
+  </div>
+
+  <!-- 5 yeni parola -->
+  <div class="card" data-choice="5-yeni-parola" onclick="toggleSelect(this)">
+    <div class="ph">
+      <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+      <div class="sb"><span>9:41</span><span>5G ▮</span></div>
+      <div class="body form">
+        <div class="bar"><div class="cb gl"><svg class="i"><use href="#i-arrow"/></svg></div><h5>Yeni parola</h5><div class="av" style="--c:#24292F">G</div></div>
+        <div class="fld gl"><div class="tx"><b>GitHub</b><span>Ad</span></div></div>
+        <div class="fld gl"><div class="tx"><b>furky</b><span>Kullanıcı adı</span></div></div>
+        <div class="fld gl pwf"><div class="tx"><b>••••••••••••••</b><span>Parola</span></div><div class="ib"><svg class="i"><use href="#i-eye"/></svg></div><div class="pill">Üret</div><div class="str"><i></i>Güçlü</div></div>
+        <div class="fld gl"><div class="tx"><b>github.com</b><span>Site</span></div></div>
+        <div class="more gl"><div class="tx"><b>Daha fazla seçenek</b><span>Klasör, not, özel alan, başka site</span></div><svg class="i"><use href="#i-down"/></svg></div>
+      </div>
+      <div class="save">Kaydet</div>
+    </div>
+    <div class="card-body"><h3>5 · Yeni parola</h3><p>Daha alçak alanlar, daha küçük "Kaydet".</p></div>
+  </div>
+
+  <!-- 6 daha fazla -->
+  <div class="card" data-choice="6-daha-fazla" onclick="toggleSelect(this)">
+    <div class="ph">
+      <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+      <div class="sb"><span>9:41</span><span>5G ▮</span></div>
+      <div class="body form">
+        <div class="bar"><div class="cb gl"><svg class="i"><use href="#i-arrow"/></svg></div><h5>Yeni parola</h5><div class="av" style="--c:#24292F">G</div></div>
+        <div class="fld gl"><div class="tx"><b>GitHub</b><span>Ad</span></div></div>
+        <div class="fld gl"><div class="tx"><b>furky</b><span>Kullanıcı adı</span></div></div>
+        <div class="fld gl pwf"><div class="tx"><b>••••••••••••••</b><span>Parola</span></div><div class="ib"><svg class="i"><use href="#i-eye"/></svg></div><div class="pill">Üret</div><div class="str"><i></i>Güçlü</div></div>
+        <div class="fld gl"><div class="tx"><b>github.com</b><span>Site</span></div></div>
+        <div class="more gl"><div class="tx"><b>Daha fazla seçenek</b></div><svg class="i"><use href="#i-up"/></svg></div>
+        <div class="chips">
+          <div class="chip gl"><svg class="i"><use href="#i-plus"/></svg>Klasör</div>
+          <div class="chip gl"><svg class="i"><use href="#i-plus"/></svg>Not</div>
+          <div class="chip gl"><svg class="i"><use href="#i-plus"/></svg>Özel alan</div>
+          <div class="chip gl"><svg class="i"><use href="#i-plus"/></svg>Başka site</div>
+        </div>
+      </div>
+      <div class="save">Kaydet</div>
+    </div>
+    <div class="card-body"><h3>6 · "Daha fazla" açık</h3><p>Ek alan düğmeleri küçük ve renksiz.</p></div>
+  </div>
+
+  <!-- 7 ayrıntı -->
+  <div class="card" data-choice="7-ayrinti" onclick="toggleSelect(this)">
+    <div class="ph">
+      <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+      <div class="sb"><span>9:41</span><span>5G ▮</span></div>
+      <div class="body">
+        <div class="bar"><div class="cb gl"><svg class="i"><use href="#i-arrow"/></svg></div><div class="sp"></div><div class="cb gl"><svg class="i"><use href="#i-edit"/></svg></div><div class="cb gl"><svg class="i"><use href="#i-dots"/></svg></div></div>
+        <div class="who"><div class="av" style="--c:#24292F">G</div><div class="tx"><b>GitHub</b><span>github.com</span></div></div>
+        <div class="fld gl"><div class="tx"><b>furky</b><span>Kullanıcı adı</span></div><div class="ib"><svg class="i"><use href="#i-copy"/></svg></div></div>
+        <div class="fld gl"><div class="tx"><b>••••••••••••••</b><span>Parola</span></div><div class="ib"><svg class="i"><use href="#i-eye"/></svg></div><div class="ib hot"><svg class="i"><use href="#i-copy"/></svg></div></div>
+        <div class="fld gl"><div class="tx"><div class="code" style="font-size:19px">482 913</div><span>2FA kodu</span></div><svg class="ring" viewBox="0 0 28 28" style="margin-right:6px"><circle class="tr" cx="14" cy="14" r="11"/><circle class="pr" cx="14" cy="14" r="11"/></svg><div class="ib"><svg class="i"><use href="#i-copy"/></svg></div></div>
+        <div class="fld gl"><div class="tx"><b>github.com</b><span>Site</span></div><div class="ib"><svg class="i"><use href="#i-copy"/></svg></div></div>
+        <div class="meta">Son değişiklik: 3 Kasım 2026</div>
+      </div>
+      <div class="snack"><svg class="i"><use href="#i-check"/></svg>Parola kopyalandı</div>
+      <div class="dock"><div class="nav">
+        <div class="on"><svg class="i"><use href="#i-lock"/></svg>Kasa</div>
+        <div><svg class="i"><use href="#i-shield"/></svg></div>
+        <div><svg class="i"><use href="#i-set"/></svg></div>
+        <div class="sep"></div>
+        <div class="add"><svg class="i"><use href="#i-plus"/></svg></div>
+      </div></div>
+    </div>
+    <div class="card-body"><h3>7 · Kayıt ayrıntısı</h3><p>Yalnızca süre halkası turuncu.</p></div>
+  </div>
+
+  <!-- 8 2FA -->
+  <div class="card" data-choice="8-2fa" onclick="toggleSelect(this)">
+    <div class="ph">
+      <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+      <div class="sb"><span>9:41</span><span>5G ▮</span></div>
+      <div class="body">
+        <div class="hd"><h4>2FA</h4><small>6 hesap</small></div>
+        <div class="srch gl"><svg class="i"><use href="#i-search"/></svg>Hesap ara</div>
+        <div class="row o gl"><div class="av" style="--c:#24292F">G</div><div class="tx"><span>GitHub · furky</span><div class="code">482 913</div></div><svg class="ring" viewBox="0 0 28 28"><circle class="tr" cx="14" cy="14" r="11"/><circle class="pr" cx="14" cy="14" r="11"/></svg></div>
+        <div class="row o gl"><div class="av" style="--c:#5865F2">D</div><div class="tx"><span>Discord · furky</span><div class="code">071 556</div></div><svg class="ring" viewBox="0 0 28 28"><circle class="tr" cx="14" cy="14" r="11"/><circle class="pr" cx="14" cy="14" r="11"/></svg></div>
+        <div class="row o gl"><div class="av" style="--c:#E1306C">I</div><div class="tx"><span>Instagram · @furky</span><div class="code">930 248</div></div><svg class="ring" viewBox="0 0 28 28"><circle class="tr" cx="14" cy="14" r="11"/><circle class="pr" cx="14" cy="14" r="11"/></svg></div>
+        <div class="row o gl"><div class="av" style="--c:#1B2838">S</div><div class="tx"><span>Steam · furky_tr</span><div class="code">615 004</div></div><svg class="ring" viewBox="0 0 28 28"><circle class="tr" cx="14" cy="14" r="11"/><circle class="pr" cx="14" cy="14" r="11"/></svg></div>
+        <div class="row o gl"><div class="av" style="--c:#0A7D4F">B</div><div class="tx"><span>Banka · mobil onay</span><div class="code">277 381</div></div><svg class="ring" viewBox="0 0 28 28"><circle class="tr" cx="14" cy="14" r="11"/><circle class="pr" cx="14" cy="14" r="11"/></svg></div>
+        <div class="row o gl"><div class="av" style="--c:#FF9900">A</div><div class="tx"><span>Amazon · furky@posta.com</span><div class="code">840 162</div></div><svg class="ring" viewBox="0 0 28 28"><circle class="tr" cx="14" cy="14" r="11"/><circle class="pr" cx="14" cy="14" r="11"/></svg></div>
+      </div>
+      <div class="dock"><div class="nav">
+        <div><svg class="i"><use href="#i-lock"/></svg></div>
+        <div class="on"><svg class="i"><use href="#i-shield"/></svg>2FA</div>
+        <div><svg class="i"><use href="#i-set"/></svg></div>
+        <div class="sep"></div>
+        <div class="add"><svg class="i"><use href="#i-plus"/></svg></div>
+      </div></div>
+    </div>
+    <div class="card-body"><h3>8 · 2FA</h3><p>Kodlar siyah-beyaz, halka turuncu.</p></div>
+  </div>
+
+  <!-- 9 ayarlar -->
+  <div class="card" data-choice="9-ayarlar" onclick="toggleSelect(this)">
+    <div class="ph">
+      <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+      <div class="sb"><span>9:41</span><span>5G ▮</span></div>
+      <div class="body">
+        <div class="hd"><h4>Ayarlar</h4></div>
+        <div class="bk gl"><div class="tx"><b>Son yedek 12 gün önce</b><span>Kasan yalnızca bu telefonda</span></div><div class="pillb">Yedekle</div></div>
+        <div class="lbl">Güvenlik</div>
+        <div class="grp gl">
+          <div class="s"><div class="si"><svg class="i"><use href="#i-fp"/></svg></div><div class="tx"><b>Parmak iziyle aç</b></div><svg class="i inf"><use href="#i-info"/></svg><div onclick="event.stopPropagation();this.classList.toggle('off')" class="sw"></div></div>
+          <div class="s"><div class="si"><svg class="i"><use href="#i-shield"/></svg></div><div class="tx"><b>2FA kodları için onay</b></div><svg class="i inf"><use href="#i-info"/></svg><div onclick="event.stopPropagation();this.classList.toggle('off')" class="sw off"></div></div>
+          <div class="s"><div class="si"><svg class="i"><use href="#i-key"/></svg></div><div class="tx"><b>Ana parolayı değiştir</b></div><svg class="i ch"><use href="#i-next"/></svg></div>
+          <div class="s"><div class="si"><svg class="i"><use href="#i-lock"/></svg></div><div class="tx"><b>Şimdi kilitle</b></div></div>
+        </div>
+        <div class="lbl">Yedek ve aktarım</div>
+        <div class="grp gl">
+          <div class="s"><div class="si"><svg class="i"><use href="#i-rest"/></svg></div><div class="tx"><b>Yedekten geri yükle</b></div><svg class="i ch"><use href="#i-next"/></svg></div>
+          <div class="s"><div class="si"><svg class="i"><use href="#i-imp"/></svg></div><div class="tx"><b>Parolaları içe aktar</b></div><svg class="i ch"><use href="#i-next"/></svg></div>
+          <div class="s"><div class="si"><svg class="i"><use href="#i-exp"/></svg></div><div class="tx"><b>Dışa aktar</b></div><svg class="i inf"><use href="#i-info"/></svg><svg class="i ch"><use href="#i-next"/></svg></div>
+        </div>
+      </div>
+      <div class="dock"><div class="nav">
+        <div><svg class="i"><use href="#i-lock"/></svg></div>
+        <div><svg class="i"><use href="#i-shield"/></svg></div>
+        <div class="on"><svg class="i"><use href="#i-set"/></svg>Ayarlar</div>
+        <div class="sep"></div>
+        <div class="add"><svg class="i"><use href="#i-plus"/></svg></div>
+      </div></div>
+    </div>
+    <div class="card-body"><h3>9 · Ayarlar</h3><p>Küçük satırlar, kutusuz simgeler, (i) anahtarın solunda, anahtarlar siyah-beyaz.</p></div>
+  </div>
+
+  <!-- 10 otomatik doldurma -->
+  <div class="card" data-choice="10-doldurma" onclick="toggleSelect(this)">
+    <div class="ph">
+      <div class="other">
+        <div class="lg"></div>
+        <div class="in f">Kullanıcı adı</div>
+        <div class="in">Şifre</div>
+        <div class="bt">Giriş yap</div>
+      </div>
+      <div class="dim"></div>
+      <div class="sheet">
+        <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+        <div class="hn"></div>
+        <div class="sh"><div class="sk">K</div><b>Doldur</b><span>2 eşleşme</span></div>
+        <div class="body">
+          <div class="row gl"><div class="av" style="--c:#E1306C">I</div><div class="tx"><b>Instagram</b><span>@furky</span></div></div>
+          <div class="row gl"><div class="av" style="--c:#E1306C">I</div><div class="tx"><b>Instagram (iş)</b><span>@furky.studio</span></div></div>
+          <div class="srch gl"><svg class="i"><use href="#i-search"/></svg>Başka bir kayıt ara</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body"><h3>10 · Otomatik doldurma</h3><p>Aynı davranış, siyah-beyaz pencere.</p></div>
+  </div>
+
+</div>
+</body>
+</html>

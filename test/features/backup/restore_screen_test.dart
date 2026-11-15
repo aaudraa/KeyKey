@@ -47,6 +47,9 @@ void main() {
   group('yeni telefonda', () {
     Future<void> openFromSetup(WidgetTester tester) async {
       await pump(tester, const VaultNotSetUp());
+      // Düğme kurulum ekranının altında; ekrana kaydırılır.
+      await tester.ensureVisible(find.text('Yedekten geri yükle'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Yedekten geri yükle'));
       await tester.pumpAndSettle();
     }
@@ -174,7 +177,7 @@ void main() {
         find.text('2 kayıt eklendi, 1 kayıt güncellendi.'),
         findsOneWidget,
       );
-      expect(find.text('Yedek al'), findsOneWidget);
+      expect(find.text('Yedekle'), findsOneWidget);
     });
 
     testWidgets('değiştirme onay istiyor, vazgeçilirse bir şey olmuyor', (
@@ -184,6 +187,7 @@ void main() {
       await tester.tap(find.text('Kasamı yedekle değiştir'));
       await tester.pumpAndSettle();
       expect(find.text('Kasan değiştirilsin mi?'), findsOneWidget);
+      expect(find.byType(BottomSheet), findsOneWidget);
 
       await tester.tap(find.text('Vazgeç'));
       await tester.pumpAndSettle();

@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:keykey/app/app.dart';
+import 'package:keykey/app/ui/glass_nav_bar.dart';
+import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/core/storage/vault_database.dart';
 import 'package:keykey/core/storage/vault_store.dart';
@@ -112,6 +114,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          ambientMotionProvider.overrideWithValue(false),
           vaultServiceProvider.overrideWithValue(service),
           sensitiveClipboardProvider.overrideWithValue(
             PigeonSensitiveClipboard(),
@@ -137,7 +140,9 @@ void main() {
     debugPrint('KKADIM Hesap elle ekleniyor.');
     await tester.tap(_otpTab());
     await pumpUntilFound(tester, find.textContaining('Henüz 2FA hesabı yok'));
-    await tapText(tester, 'Ekle');
+    await tester.tap(find.byKey(GlassNavBar.addKey));
+    await pumpUntilFound(tester, find.text('2FA kodu'));
+    await tapText(tester, '2FA kodu');
     await pumpUntilFound(tester, find.text('Anahtarı elle gir'));
     await tapText(tester, 'Anahtarı elle gir');
     await pumpUntilFound(tester, find.text('Yeni 2FA hesabı'));
@@ -174,10 +179,10 @@ void main() {
     await pumpUntilFound(tester, find.text('Kodlar gizli'));
     expect(anyCurrentCode(), findsNothing);
     await tapText(tester, 'Kodları göster');
-    await pumpUntilFound(tester, find.byType(AlertDialog));
+    await pumpUntilFound(tester, find.byType(BottomSheet));
     await tester.enterText(
       find.descendant(
-        of: find.byType(AlertDialog),
+        of: find.byType(BottomSheet),
         matching: find.byType(TextField),
       ),
       password,
@@ -200,6 +205,6 @@ void main() {
 /// Alt çubuktaki 2FA sekmesi. Ayarlardaki ek onay satırı da aynı simgeyi
 /// kullandığı için yalnızca simgeyle aramak iki sonuç verir.
 Finder _otpTab() => find.descendant(
-  of: find.byType(NavigationBar),
+  of: find.byType(GlassNavBar),
   matching: find.byIcon(Icons.shield_outlined),
 );

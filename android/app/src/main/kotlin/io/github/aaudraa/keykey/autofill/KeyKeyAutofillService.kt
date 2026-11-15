@@ -167,7 +167,7 @@ class KeyKeyAutofillService : AutofillService() {
         )
         val content = InlineSuggestionUi.newContentBuilder(attribution)
             .setTitle(label)
-            .setStartIcon(Icon.createWithResource(this, R.mipmap.ic_launcher))
+            .setStartIcon(Icon.createWithResource(this, R.drawable.ic_inline_suggestion))
             .build()
         return InlinePresentation(content.slice, spec, false)
     }

@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:keykey/app/app_shell.dart';
 import 'package:keykey/app/router.dart';
+import 'package:keykey/app/ui/keykey_logo.dart';
+import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
@@ -18,7 +21,8 @@ void main() {
   late FakeVaultService service;
 
   const lockedTitle = 'KeyKey kilitli';
-  const vaultText = "Henüz parola yok. İlkini kaydetmek için Ekle'ye dokun.";
+  const vaultText =
+      'Henüz parola yok. İlkini kaydetmek için alttaki + düğmesine dokun.';
 
   setUpAll(() async {
     sodium = await SodiumSumoInit.init();
@@ -89,6 +93,15 @@ void main() {
       expect(find.text(vaultText), findsNothing);
     });
 
+    testWidgets('kilit ekranında logo ve tek parola kutusu var', (
+      tester,
+    ) async {
+      await pumpLocked(tester);
+
+      expect(find.bySemanticsLabel('KeyKey'), findsOneWidget);
+      expect(find.byType(TextField), findsOneWidget);
+    });
+
     testWidgets('doğru parola kasaya götürüyor', (tester) async {
       await pumpLocked(tester);
 
@@ -108,6 +121,80 @@ void main() {
       expect(find.text(vaultText), findsNothing);
       final field = tester.widget<TextField>(find.byType(TextField));
       expect(field.controller?.text, isEmpty);
+    });
+
+    testWidgets('yanlış parolada kutu titriyor, sonra yerine dönüyor', (
+      tester,
+    ) async {
+      await pumpLocked(tester);
+      final field = find.byType(TextField);
+      final start = tester.getTopLeft(field).dx;
+
+      await tester.enterText(field, 'yanlis-parola-99');
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Aç'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 40));
+      await tester.pump(const Duration(milliseconds: 40));
+      expect(tester.getTopLeft(field).dx, isNot(start));
+
+      await tester.pumpAndSettle();
+      expect(tester.getTopLeft(field).dx, start);
+      expect(find.text('Parola yanlış.'), findsOneWidget);
+    });
+
+    testWidgets('animasyonlar kapalıyken kutu titremiyor', (tester) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      await pumpLocked(tester);
+      final field = find.byType(TextField);
+      final start = tester.getTopLeft(field).dx;
+
+      await tester.enterText(field, 'yanlis-parola-99');
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Aç'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 40));
+      expect(tester.getTopLeft(field).dx, start);
+    });
+
+    testWidgets('kilit ekranında zemin ve logo yavaşça hareket ediyor', (
+      tester,
+    ) async {
+      await pumpKeyKey(
+        tester,
+        status: VaultLocked(service.header),
+        service: service,
+        ambient: true,
+        settle: false,
+      );
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 1));
+      expect(tester.binding.hasScheduledFrame, isTrue);
+    });
+
+    testWidgets('animasyonlar kapalıyken kilit ekranı kare istemiyor', (
+      tester,
+    ) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      await pumpKeyKey(
+        tester,
+        status: VaultLocked(service.header),
+        service: service,
+        ambient: true,
+        settle: false,
+      );
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.text(lockedTitle), findsOneWidget);
+      expect(tester.binding.hasScheduledFrame, isFalse);
     });
 
     testWidgets('bekleme sürerken düğme kapalı, süre bitince açılıyor', (
@@ -153,6 +240,126 @@ void main() {
       expect(field.enableSuggestions, isFalse);
       expect(field.enableIMEPersonalizedLearning, isFalse);
       expect(field.obscureText, isTrue);
+    });
+  });
+
+  group('açılış ve kilit hareketleri', () {
+    double logoOpacity(WidgetTester tester) => tester
+        .widget<Opacity>(
+          find
+              .ancestor(
+                of: find.byType(KeyKeyLogo),
+                matching: find.byType(Opacity),
+              )
+              .first,
+        )
+        .opacity;
+
+    testWidgets('K logosu küçükten ve solarak belirir', (tester) async {
+      await pumpKeyKey(
+        tester,
+        status: VaultLocked(service.header),
+        service: service,
+        settle: false,
+      );
+      expect(logoOpacity(tester), lessThan(0.5));
+      await tester.pumpAndSettle();
+      expect(logoOpacity(tester), 1);
+    });
+
+    double breath(WidgetTester tester) => tester
+        .widget<Transform>(
+          find
+              .descendant(
+                of: find.byKey(LockScreen.breathKey),
+                matching: find.byType(Transform),
+              )
+              .first,
+        )
+        .transform
+        .storage[0];
+
+    testWidgets('parmak izi simgesi yavaşça nefes alır', (tester) async {
+      service
+        ..biometricEnabled = true
+        ..biometricSupportValue = BiometricSupport.available;
+      await pumpKeyKey(
+        tester,
+        status: VaultLocked(service.header),
+        service: service,
+        ambient: true,
+        settle: false,
+      );
+      for (var i = 0; i < 5; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      final first = breath(tester);
+      await tester.pump(KkMotion.breath ~/ 2);
+      final second = breath(tester);
+      expect((first - second).abs(), greaterThan(0.01));
+      expect(second, inInclusiveRange(1, 1.06));
+    });
+
+    testWidgets('süren hareket kapalıyken parmak izi durur', (tester) async {
+      service
+        ..biometricEnabled = true
+        ..biometricSupportValue = BiometricSupport.available;
+      await pumpLocked(tester);
+      expect(find.byKey(LockScreen.breathKey), findsNothing);
+      expect(find.byIcon(Icons.fingerprint_rounded), findsOneWidget);
+    });
+
+    testWidgets('kilit açılınca kasa hemen hazır, K yukarı kayıp solar', (
+      tester,
+    ) async {
+      await pumpLocked(tester);
+      await tester.enterText(
+        find.byType(TextField),
+        FakeVaultService.correctPassword,
+      );
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Aç'));
+      for (var i = 0; i < 20; i++) {
+        await tester.pump(const Duration(milliseconds: 16));
+        if (find.byType(AppShell).evaluate().isNotEmpty) break;
+      }
+      expect(find.byType(AppShell), findsOneWidget);
+      // Logo katmanı dokunuşu engellemez; kasa altta hazır.
+      final reveal = find.byKey(AppShell.revealKey);
+      expect(reveal, findsOneWidget);
+      expect(
+        find.ancestor(of: reveal, matching: find.byType(IgnorePointer)),
+        findsWidgets,
+      );
+      // Katman bir vurgu süresinde kalkar; sayfa geçişi birkaç kare
+      // geciktirebilir, bu yüzden iki katı beklenir.
+      await tester.pump();
+      await tester.pump(KkMotion.emphasis * 2);
+      await tester.pump();
+      expect(find.byKey(AppShell.revealKey), findsNothing);
+      await tester.pumpAndSettle();
+      expect(find.text(vaultText), findsOneWidget);
+    });
+
+    testWidgets('kilitlenince kasa hızla kalkar, hareket oyalanmaz', (
+      tester,
+    ) async {
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+      );
+      expect(find.text(vaultText), findsOneWidget);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pump();
+      await tester.pump(KkMotion.fast);
+      await tester.pump();
+      expect(find.text(vaultText), findsNothing);
+      expect(find.text(lockedTitle), findsOneWidget);
+      await tester.pumpAndSettle();
     });
   });
 
@@ -432,7 +639,7 @@ void main() {
     testWidgets('kapalıysa düğme yok ve pencere açılmıyor', (tester) async {
       await pumpLocked(tester);
 
-      expect(find.byIcon(Icons.fingerprint), findsNothing);
+      expect(find.byTooltip('Parmak izi kullan'), findsNothing);
       expect(service.biometricPrompts, 0);
     });
 
@@ -442,7 +649,7 @@ void main() {
       enableFake();
       await pumpLocked(tester);
 
-      expect(find.byIcon(Icons.fingerprint), findsOneWidget);
+      expect(find.byTooltip('Parmak izi kullan'), findsOneWidget);
       expect(service.biometricPrompts, 1);
       expect(find.text(lockedTitle), findsOneWidget);
     });
@@ -469,7 +676,7 @@ void main() {
       await pumpLocked(tester);
 
       service.nextBiometric = const BiometricSuccess(null);
-      await tester.tap(find.byIcon(Icons.fingerprint));
+      await tester.tap(find.byTooltip('Parmak izi kullan'));
       await tester.pumpAndSettle();
 
       expect(service.biometricPrompts, 2);
@@ -484,7 +691,7 @@ void main() {
       await pumpLocked(tester);
 
       expect(find.textContaining('parmak izleri değişti'), findsOneWidget);
-      expect(find.byIcon(Icons.fingerprint), findsNothing);
+      expect(find.byTooltip('Parmak izi kullan'), findsNothing);
       expect(find.text(vaultText), findsNothing);
     });
 

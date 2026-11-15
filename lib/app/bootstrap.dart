@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/misc.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
+import 'package:keykey/core/platform/app_packages.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/platform/export_file_picker.dart';
 import 'package:keykey/core/platform/pigeon_biometric_bridge.dart';
@@ -19,7 +20,9 @@ import 'package:keykey/features/backup/application/restore_service.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
+import 'package:keykey/features/settings/application/theme_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
+import 'package:keykey/features/settings/data/theme_preference.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:path_provider/path_provider.dart';
@@ -33,11 +36,19 @@ Future<List<Override>> bootstrap() async {
   final sodium = await SodiumSumoInit.init();
   final directory = await getApplicationSupportDirectory();
 
+  // Tema kasadan bağımsız: kasa dosyası açılamasa da seçilen temayla açılır.
+  final themeStore = FileThemePreferenceStore(File('${directory.path}/theme'));
+  final theme = [
+    themePreferenceStoreProvider.overrideWithValue(themeStore),
+    initialThemeModeProvider.overrideWithValue(await themeStore.read()),
+  ];
+
   final VaultDatabase database;
   try {
     database = VaultDatabase.openFile(File('${directory.path}/keykey.db'));
   } on UnsupportedSchemaException {
     return [
+      ...theme,
       initialVaultStatusProvider.overrideWithValue(const VaultUnavailable()),
     ];
   }
@@ -49,11 +60,13 @@ Future<List<Override>> bootstrap() async {
     biometric: PigeonBiometricBridge(),
   );
   return [
+    ...theme,
     randomSourceProvider.overrideWithValue(SodiumRandomSource(sodium)),
     sensitiveClipboardProvider.overrideWithValue(PigeonSensitiveClipboard()),
     qrImageReaderProvider.overrideWithValue(ZxingQrImageReader()),
     exportFilePickerProvider.overrideWithValue(FileSelectorExportPicker()),
     documentFilesProvider.overrideWithValue(PigeonDocumentFiles()),
+    appPackagesProvider.overrideWithValue(PigeonAppPackages()),
     backupServiceProvider.overrideWithValue(
       BackupService(sodium: sodium, store: store),
     ),

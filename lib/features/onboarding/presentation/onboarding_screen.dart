@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/secret_field.dart';
+import 'package:keykey/app/ui/keykey_logo.dart';
+import 'package:keykey/app/ui/kk_backdrop.dart';
+import 'package:keykey/app/ui/kk_bars.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/crypto/recovery_key.dart';
 import 'package:keykey/features/backup/presentation/restore_screen.dart';
@@ -14,6 +19,9 @@ enum _Step { password, showKey, verifyKey }
 /// Kasa oluşturma. Kurtarma anahtarı doğrulanana kadar diske bir şey yazılmaz.
 class OnboardingScreen extends ConsumerStatefulWidget {
   const new({super.key});
+
+  /// Adım göstergesi (testler için; madde 4.7).
+  static const Key stepIndicatorKey = ValueKey('kk-setup-steps');
 
   @override
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -120,19 +128,80 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.setupTitle)),
+    return KkScaffold(
+      appBar: kkRootAppBar(context, title: l10n.setupTitle),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: switch (_step) {
-              _Step.password => _passwordStep(l10n),
-              _Step.showKey => _showKeyStep(l10n),
-              _Step.verifyKey => _verifyStep(l10n),
-            },
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Adım göstergesi dolarak ilerler (madde 4.7).
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+              child: ExcludeSemantics(
+                child: KeyedSubtree(
+                  key: OnboardingScreen.stepIndicatorKey,
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(end: (_step.index + 1) / _Step.values.length),
+                    duration: KkMotion.of(context, KkMotion.enter),
+                    curve: KkMotion.standard,
+                    builder: (context, value, _) => LinearProgressIndicator(
+                      value: value,
+                      minHeight: 3,
+                      borderRadius: const BorderRadius.all(Radius.circular(2)),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                // Adımlar arası içerik yana kayar.
+                child: AnimatedSwitcher(
+                  duration: KkMotion.of(context, KkMotion.enter),
+                  switchInCurve: KkMotion.standard,
+                  switchOutCurve: KkMotion.standard,
+                  layoutBuilder: (current, previous) => Stack(
+                    alignment: Alignment.topCenter,
+                    children: [...previous, ?current],
+                  ),
+                  transitionBuilder: (child, animation) {
+                    final incoming = child.key == ValueKey(_step);
+                    // Kayıp giden adım (ör. kurtarma anahtarı) yalnızca
+                    // çizilir: dokunulmaz, odaklanmaz, ekran okuyucu okumaz.
+                    return IgnorePointer(
+                      ignoring: !incoming,
+                      child: ExcludeFocus(
+                        excluding: !incoming,
+                        child: ExcludeSemantics(
+                          excluding: !incoming,
+                          child: FadeTransition(
+                            opacity: animation,
+                            child: SlideTransition(
+                              position: Tween(
+                                begin: Offset(incoming ? 0.25 : -0.25, 0),
+                                end: Offset.zero,
+                              ).animate(animation),
+                              child: child,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  child: Column(
+                    key: ValueKey(_step),
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: switch (_step) {
+                      _Step.password => _passwordStep(l10n),
+                      _Step.showKey => _showKeyStep(l10n),
+                      _Step.verifyKey => _verifyStep(l10n),
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -140,16 +209,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   List<Widget> _passwordStep(AppLocalizations l10n) {
     return [
+      const Center(child: KeyKeyLogo(size: 72)),
+      const SizedBox(height: 16),
       Text(l10n.setupIntro),
       const SizedBox(height: 12),
       _WarningCard(text: l10n.setupPasswordWarning),
       const SizedBox(height: 16),
-      NewPasswordFields(
-        password: _password,
-        confirmation: _confirmation,
-        enabled: !_busy,
-        autofocus: true,
-        onSubmitted: _create,
+      GlassSurface(
+        padding: const EdgeInsets.all(12),
+        child: NewPasswordFields(
+          password: _password,
+          confirmation: _confirmation,
+          enabled: !_busy,
+          autofocus: true,
+          onSubmitted: _create,
+        ),
       ),
       if (_error != null) ...[const SizedBox(height: 12), _ErrorText(_error!)],
       const SizedBox(height: 16),
@@ -174,7 +248,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       const SizedBox(height: 12),
       _WarningCard(text: l10n.recoveryShowWarning),
       const SizedBox(height: 16),
-      Card(
+      GlassSurface(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Text(
@@ -200,23 +274,27 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return [
       Text(l10n.recoveryVerifyIntro),
       const SizedBox(height: 16),
-      SecretField(
-        controller: _typedKey,
-        label: l10n.recoveryKeyLabel,
-        obscure: false,
-        autofocus: true,
-        enabled: !_busy,
-        errorText: _error,
-        helperText: l10n.recoveryKeyProgress(
-          RecoveryKeyCodec.symbolsOf(_typedKey.text).length,
-          RecoveryKeyCodec.textLength,
+      GlassSurface(
+        padding: const EdgeInsets.all(4),
+        child: SecretField(
+          controller: _typedKey,
+          label: l10n.recoveryKeyLabel,
+          obscure: false,
+          autofocus: true,
+          enabled: !_busy,
+          errorText: _error,
+          helperText: l10n.recoveryKeyProgress(
+            RecoveryKeyCodec.symbolsOf(_typedKey.text).length,
+            RecoveryKeyCodec.textLength,
+          ),
+          // Tireler kendiliğinden gelir; uzun anahtar satıra sığmazsa alta
+          // geçer.
+          inputFormatters: [RecoveryKeyFormatter()],
+          style: const TextStyle(fontFamily: 'monospace'),
+          maxLines: 3,
+          onChanged: (_) => setState(() {}),
+          onSubmitted: (_) => _verify(),
         ),
-        // Tireler kendiliğinden gelir; uzun anahtar satıra sığmazsa alta geçer.
-        inputFormatters: [RecoveryKeyFormatter()],
-        style: const TextStyle(fontFamily: 'monospace'),
-        maxLines: 3,
-        onChanged: (_) => setState(() {}),
-        onSubmitted: (_) => _verify(),
       ),
       const SizedBox(height: 16),
       FilledButton(
@@ -245,10 +323,14 @@ class _WarningCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    return Card(
-      color: colors.errorContainer,
+    // Opak: uyarının okunurluğu zemine bağlı kalmasın.
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.errorContainer,
+        borderRadius: const BorderRadius.all(Radius.circular(22)),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         child: Text(text, style: TextStyle(color: colors.onErrorContainer)),
       ),
     );

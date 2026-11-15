@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keykey/app/ui/glass_nav_bar.dart';
+import 'package:keykey/app/ui/kk_section.dart';
+import 'package:keykey/app/ui/kk_switch.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/features/autofill/application/autofill_setup.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/settings/application/theme_controller.dart';
+import 'package:keykey/features/settings/data/theme_preference.dart';
+import 'package:keykey/features/settings/presentation/settings_screen.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../../support/fake_vault_service.dart';
@@ -52,10 +58,178 @@ void main() {
   }
 
   // Ayarlarda birden çok anahtar var, parmak izi anahtarı adıyla bulunur.
-  final biometricSwitch = find.widgetWithText(
-    SwitchListTile,
-    'Parmak iziyle aç',
-  );
+  final biometricSwitch = find.widgetWithText(KkSwitchTile, 'Parmak iziyle aç');
+
+  group('düzen', () {
+    // Telefon denemesi 5: başlık üst çubukta sabit, kaydırınca değişmez.
+    testWidgets('başlık çubukta sabit durur', (tester) async {
+      await pumpSettings(tester);
+      final screen = find.byType(SettingsScreen);
+      final bar = find.descendant(
+        of: find.descendant(of: screen, matching: find.byType(AppBar)),
+        matching: find.text('Ayarlar'),
+      );
+      expect(bar, findsOneWidget);
+      final before = tester.getRect(bar);
+
+      await tester.drag(
+        find.descendant(of: screen, matching: find.byType(Scrollable)).first,
+        const Offset(0, -400),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.getRect(bar), before);
+    });
+
+    testWidgets('ayarlar dört grup başlığını gösterir', (tester) async {
+      await pumpSettings(tester);
+
+      for (final title in [
+        'Güvenlik',
+        'Yedek ve aktarım',
+        'Otomatik doldurma',
+        'Hakkında',
+      ]) {
+        final header = find.text(title);
+        await tester.scrollUntilVisible(header, 200);
+        expect(header, findsOneWidget);
+        expect(
+          tester.getSemantics(header).flagsCollection.isHeader,
+          isTrue,
+          reason: title,
+        );
+      }
+    });
+
+    testWidgets('parmak izi satırında açıklama satırda değil, (i) ile '
+        'açılan pencerede', (tester) async {
+      service.biometricSupportValue = BiometricSupport.available;
+      await pumpSettings(tester);
+      const hint =
+          'Telefona yeni parmak izi eklenirse bu kapanır ve ana parola '
+          'istenir.';
+
+      expect(find.text(hint), findsNothing);
+      await tester.tap(
+        find.descendant(
+          of: biometricSwitch,
+          matching: find.byTooltip('Açıklama'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text(hint), findsOneWidget);
+      expect(find.byType(BottomSheet), findsOneWidget);
+    });
+
+    testWidgets("sürüm satırı sahte API'nin döndürdüğü sürümü gösterir", (
+      tester,
+    ) async {
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        packages: FakeAppPackages(version: '1.2.3'),
+      );
+      await tester.tap(find.byIcon(Icons.settings_outlined));
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(find.text('1.2.3'), 200);
+      expect(find.text('1.2.3'), findsOneWidget);
+      expect(find.text('Sürüm'), findsOneWidget);
+    });
+
+    for (final (name, inset) in [
+      ('hareketle gezinme', 24.0),
+      ('üç düğmeli gezinme', 48.0),
+    ]) {
+      testWidgets('$name: son satır yüzen menünün üstünde kalıyor', (
+        tester,
+      ) async {
+        // Android 15+ uygulamayı kenardan kenara çizer; sistem çubuğu kadar
+        // boşluk alttan gelir.
+        tester.view.padding = FakeViewPadding(
+          bottom: inset * tester.view.devicePixelRatio,
+        );
+        addTearDown(tester.view.reset);
+        await pumpSettings(tester);
+
+        await tester.drag(find.byType(ListView).first, const Offset(0, -3000));
+        await tester.pumpAndSettle();
+
+        final last = tester.getRect(
+          find.ancestor(
+            of: find.text('Lisanslar'),
+            matching: find.byType(ListTile),
+          ),
+        );
+        final pill = tester.getRect(find.byKey(GlassNavBar.pillKey));
+        expect(last.bottom, lessThanOrEqualTo(pill.top));
+      });
+    }
+
+    testWidgets('satırlarda simge kutusu, açılan satırlarda ok var', (
+      tester,
+    ) async {
+      await pumpSettings(tester);
+      Finder row(String text) =>
+          find.ancestor(of: find.text(text), matching: find.byType(ListTile));
+      for (final text in ['Ana parolayı değiştir', 'Şimdi kilitle']) {
+        expect(
+          find.descendant(of: row(text), matching: find.byType(KkIconBox)),
+          findsOneWidget,
+          reason: text,
+        );
+      }
+      expect(
+        find.descendant(
+          of: row('Ana parolayı değiştir'),
+          matching: find.byIcon(Icons.chevron_right_rounded),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('lisanslar sayfasının zemini saydam değil', (tester) async {
+      await pumpSettings(tester);
+      // Son satır; menünün altında kalmasın diye liste sonuna kaydırılır.
+      await tester.drag(find.byType(ListView).first, const Offset(0, -3000));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Lisanslar'));
+      await tester.pumpAndSettle();
+
+      final page = find.byType(LicensePage);
+      expect(page, findsOneWidget);
+      final scaffold = find
+          .descendant(of: page, matching: find.byType(Scaffold))
+          .first;
+      final background = Theme.of(tester.element(scaffold))
+          .scaffoldBackgroundColor;
+      expect(background.a, 1);
+      // Kendi sayfası; alttaki menü görünmüyor.
+      expect(find.byKey(GlassNavBar.pillKey), findsNothing);
+    });
+
+    testWidgets('satırlar aynı boyda', (tester) async {
+      service.biometricSupportValue = BiometricSupport.available;
+      await pumpSettings(tester);
+
+      final heights = <double>{
+        for (final text in [
+          'Ana parolayı değiştir',
+          'Parmak iziyle aç',
+          'Şimdi kilitle',
+        ])
+          tester
+              .getSize(
+                find.ancestor(
+                  of: find.text(text),
+                  matching: find.byType(ListTile),
+                ),
+              )
+              .height,
+      };
+      expect(heights, hasLength(1));
+    });
+  });
 
   group('parmak izi', () {
     testWidgets('cihazda yoksa ayar görünmüyor', (tester) async {
@@ -84,7 +258,7 @@ void main() {
       await tester.tap(biometricSwitch);
       await tester.pumpAndSettle();
       expect(service.biometricEnabled, isTrue);
-      expect(tester.widget<SwitchListTile>(biometricSwitch).value, isTrue);
+      expect(tester.widget<KkSwitchTile>(biometricSwitch).value, isTrue);
 
       await tester.tap(biometricSwitch);
       await tester.pumpAndSettle();
@@ -99,7 +273,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(service.biometricPrompts, 1);
-      expect(tester.widget<SwitchListTile>(biometricSwitch).value, isFalse);
+      expect(tester.widget<KkSwitchTile>(biometricSwitch).value, isFalse);
     });
 
     testWidgets('etkinleşmezse mesaj çıkıyor', (tester) async {
@@ -181,7 +355,7 @@ void main() {
       await tester.tap(find.byIcon(Icons.settings_outlined));
       await tester.pumpAndSettle();
       // Bölüm yedekleme girişlerinin altında; ekrana kaydırılır.
-      await tester.scrollUntilVisible(find.text('Otomatik doldurma'), 300);
+      await tester.scrollUntilVisible(find.text('Doldurma servisi'), 300);
       await tester.pumpAndSettle();
       return setup;
     }
@@ -194,7 +368,7 @@ void main() {
 
       expect(find.text("Kapalı. Dokun ve KeyKey'i seç."), findsOneWidget);
       expect(find.text("Chrome'da otomatik doldurma"), findsNothing);
-      await tester.tap(find.text('Otomatik doldurma'));
+      await tester.tap(find.text('Doldurma servisi'));
       await tester.pump();
       expect(setup.opened, ['autofill']);
     });
@@ -254,10 +428,10 @@ void main() {
       );
       await tester.tap(find.byIcon(Icons.settings_outlined));
       await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(find.text('Otomatik doldurma'), 300);
+      await tester.scrollUntilVisible(find.text('Doldurma servisi'), 300);
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Otomatik doldurma'));
+      await tester.tap(find.text('Doldurma servisi'));
       await tester.pump();
       expect(find.text('Ayar açılamadı.'), findsOneWidget);
     });
@@ -289,16 +463,104 @@ void main() {
     await tester.pumpAndSettle();
 
     final copySwitch = find.widgetWithText(
-      SwitchListTile,
+      KkSwitchTile,
       'Doldurduktan sonra 2FA kodunu kopyala',
     );
     await tester.scrollUntilVisible(copySwitch, 100);
     await tester.ensureVisible(copySwitch);
     await tester.pumpAndSettle();
-    expect(tester.widget<SwitchListTile>(copySwitch).value, isTrue);
+    expect(tester.widget<KkSwitchTile>(copySwitch).value, isTrue);
     await tester.tap(copySwitch);
     await tester.pumpAndSettle();
     expect(settings.settings.autofillCopyOtp, isFalse);
-    expect(tester.widget<SwitchListTile>(copySwitch).value, isFalse);
+    expect(tester.widget<KkSwitchTile>(copySwitch).value, isFalse);
   });
+
+  group('tema', () {
+    late _RecordingThemeStore store;
+
+    setUp(() => store = _RecordingThemeStore());
+
+    Future<void> pumpWithTheme(WidgetTester tester) async {
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        extraOverrides: [themePreferenceStoreProvider.overrideWithValue(store)],
+      );
+      await tester.tap(find.byIcon(Icons.settings_outlined));
+      await tester.pumpAndSettle();
+    }
+
+    Finder themeRow() => find.widgetWithText(ListTile, 'Tema');
+
+    Finder option(String name) => find.descendant(
+      of: find.byType(BottomSheet),
+      matching: find.widgetWithText(ListTile, name),
+    );
+
+    ThemeMode appThemeMode(WidgetTester tester) =>
+        tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode!;
+
+    testWidgets('Görünüm grubunda Tema satırı seçili temayı gösterir', (
+      tester,
+    ) async {
+      await pumpWithTheme(tester);
+      await tester.scrollUntilVisible(themeRow(), 200);
+      expect(find.widgetWithText(KkSection, 'Görünüm'), findsOneWidget);
+      expect(
+        find.descendant(of: themeRow(), matching: find.text('Sistem')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('Koyu seçilince uygulanır, satırda yazar ve saklanır', (
+      tester,
+    ) async {
+      await pumpWithTheme(tester);
+      await tester.scrollUntilVisible(themeRow(), 200);
+      await tester.tap(themeRow());
+      await tester.pumpAndSettle();
+      for (final name in ['Sistem', 'Açık', 'Koyu']) {
+        expect(option(name), findsOneWidget);
+      }
+      expect(
+        find.descendant(
+          of: option('Sistem'),
+          matching: find.byIcon(Icons.check_rounded),
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(option('Koyu'));
+      await tester.pumpAndSettle();
+      expect(find.byType(BottomSheet), findsNothing);
+      expect(appThemeMode(tester), ThemeMode.dark);
+      expect(
+        find.descendant(of: themeRow(), matching: find.text('Koyu')),
+        findsOneWidget,
+      );
+      expect(store.written, [ThemeMode.dark]);
+    });
+
+    testWidgets('pencere seçmeden kapatılırsa tema değişmez', (tester) async {
+      await pumpWithTheme(tester);
+      await tester.scrollUntilVisible(themeRow(), 200);
+      await tester.tap(themeRow());
+      await tester.pumpAndSettle();
+      expect(find.byType(BottomSheet), findsOneWidget);
+      await tester.tapAt(const Offset(20, 20));
+      await tester.pumpAndSettle();
+      expect(find.byType(BottomSheet), findsNothing);
+      expect(appThemeMode(tester), ThemeMode.system);
+      expect(store.written, isEmpty);
+    });
+  });
+}
+
+class _RecordingThemeStore implements ThemePreferenceStore {
+  final written = <ThemeMode>[];
+
+  @override
+  Future<void> write(ThemeMode mode) async => written.add(mode);
 }

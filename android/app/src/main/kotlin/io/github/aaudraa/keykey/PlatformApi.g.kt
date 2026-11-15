@@ -912,8 +912,8 @@ interface AutofillApi {
    * kayıttaki özetlerin hepsiyle tutuyor mu. İmza geçmişi de kabul edilir.
    */
   fun hasSigningCertificates(packageName: String, certsSha256: List<String>): Boolean
-  /** Değerleri forma verir ve ekranı kapatır. */
-  fun fill(username: String, password: String)
+  /** Değerleri forma verir, [notice] bildirimini gösterir ve ekranı kapatır. */
+  fun fill(username: String, password: String, notice: String)
   /** Hiçbir şey doldurmadan ekranı kapatır. Kaydetme bitince de kullanılır. */
   fun cancel()
 
@@ -966,8 +966,9 @@ interface AutofillApi {
             val args = message as List<Any?>
             val usernameArg = args[0] as String
             val passwordArg = args[1] as String
+            val noticeArg = args[2] as String
             val wrapped: List<Any?> = try {
-              api.fill(usernameArg, passwordArg)
+              api.fill(usernameArg, passwordArg, noticeArg)
               listOf(null)
             } catch (exception: Throwable) {
               PlatformApiPigeonUtils.wrapError(exception)
@@ -985,6 +986,65 @@ interface AutofillApi {
             val wrapped: List<Any?> = try {
               api.cancel()
               listOf(null)
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}
+/**
+ * Telefondaki uygulamalar hakkında görünüşe yönelik bilgiler.
+ *
+ * Generated interface from Pigeon that represents a handler of messages from Flutter.
+ */
+interface AppPackagesApi {
+  /**
+   * Uygulamanın simgesi, [sizePx] boyutunda PNG. Uygulama yoksa ya da
+   * KeyKey onu göremiyorsa (ana ekranda simgesi yok) `null`.
+   */
+  fun appIcon(packageName: String, sizePx: Long): ByteArray?
+  /** KeyKey'in sürüm adı. */
+  fun versionName(): String
+
+  companion object {
+    /** The codec used by AppPackagesApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      PlatformApiPigeonCodec()
+    }
+    /** Sets up an instance of `AppPackagesApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: AppPackagesApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.AppPackagesApi.appIcon$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val packageNameArg = args[0] as String
+            val sizePxArg = args[1] as Long
+            val wrapped: List<Any?> = try {
+              listOf(api.appIcon(packageNameArg, sizePxArg))
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.AppPackagesApi.versionName$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.versionName())
             } catch (exception: Throwable) {
               PlatformApiPigeonUtils.wrapError(exception)
             }

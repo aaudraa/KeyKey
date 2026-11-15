@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
+import 'package:keykey/app/ui/kk_section.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/presentation/scanned_code_handler.dart';
@@ -19,10 +19,11 @@ import 'package:keykey/l10n/generated/app_localizations.dart';
 /// Açık kasanın yedeğini üretir ve kullanıcının seçtiği yere kaydeder.
 ///
 /// Dosya kasa açıkken üretilir; seçici açıkken yalnızca şifreli baytlar
-/// bekler. Başarılıysa son yedek zamanı ayar kaydına yazılır.
-Future<void> backUpVault(BuildContext context, WidgetRef ref) async {
+/// bekler. Başarılıysa son yedek zamanı ayar kaydına yazılır ve `true`
+/// döner.
+Future<bool> backUpVault(BuildContext context, WidgetRef ref) async {
   final status = ref.read(vaultControllerProvider);
-  if (status is! VaultOpen) return;
+  if (status is! VaultOpen) return false;
   final l10n = AppLocalizations.of(context);
   final messenger = ScaffoldMessenger.of(context);
   final settings = ref.read(settingsControllerProvider.notifier);
@@ -32,7 +33,7 @@ Future<void> backUpVault(BuildContext context, WidgetRef ref) async {
   try {
     bytes = await ref.read(backupServiceProvider).create(status.session, now);
   } on VaultLockedException {
-    return;
+    return false;
   }
   final result = await ref
       .read(externalActivityGateProvider.notifier)
@@ -51,98 +52,54 @@ Future<void> backUpVault(BuildContext context, WidgetRef ref) async {
         // Dosya kaydedildi; kasa kilitlendiği için zaman yazılamadı.
       }
       messenger.showSnackBar(SnackBar(content: Text(l10n.backupSaved)));
+      return true;
     case DocumentSaveResult.cancelled:
-      break;
+      return false;
     case DocumentSaveResult.failed:
       messenger.showSnackBar(SnackBar(content: Text(l10n.backupFailed)));
+      return false;
   }
 }
 
-/// Ayarlar ekranında yedek alma ve son yedeğin zamanı.
-class BackupSection extends ConsumerStatefulWidget {
+/// Ayarlardaki "Yedek ve aktarım" grubu: geri yükleme, içe ve dışa
+/// aktarma. Yedek alma ayarların en üstündeki `BackupStatusCard`'da.
+class BackupSection extends ConsumerWidget {
   const new({super.key});
 
   @override
-  ConsumerState<BackupSection> createState() => _BackupSectionState();
-}
-
-class _BackupSectionState extends ConsumerState<BackupSection> {
-  bool _busy = false;
-
-  Future<void> _backUp() async {
-    if (_busy) return;
-    setState(() => _busy = true);
-    try {
-      await backUpVault(context, ref);
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final settings = ref.watch(settingsControllerProvider);
-    final last = settings?.lastBackupAt;
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    const chevron = Icon(Icons.chevron_right_rounded);
+    return KkSection(
+      title: l10n.settingsGroupBackup,
       children: [
         ListTile(
-          leading: _busy
-              ? const SizedBox.square(
-                  dimension: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Icons.save_alt),
-          title: Text(l10n.backupCreate),
-          subtitle: Text(
-            last == null
-                ? l10n.backupNever
-                : l10n.backupLast(
-                    DateFormat.yMMMd(locale).add_Hm().format(last.toLocal()),
-                  ),
-          ),
-          enabled: !_busy,
-          onTap: () => unawaited(_backUp()),
-        ),
-        ListTile(
-          leading: const Icon(Icons.settings_backup_restore),
+          leading: const KkIconBox(icon: Icons.settings_backup_restore_rounded),
           title: Text(l10n.restoreTitle),
-          subtitle: Text(l10n.restoreHelp),
-          enabled: !_busy,
+          subtitle: KkRowSubtitle(l10n.restoreHelp),
+          trailing: chevron,
           onTap: () => unawaited(pickBackupToRestore(context, ref)),
         ),
         ListTile(
-          leading: const Icon(Icons.input),
+          leading: const KkIconBox(icon: Icons.input_rounded),
           title: Text(l10n.loginImportTitle),
-          subtitle: Text(l10n.loginImportHelp),
-          enabled: !_busy,
+          subtitle: KkRowSubtitle(l10n.loginImportHelp),
+          trailing: chevron,
           onTap: () => unawaited(pickLoginExport(context, ref)),
         ),
         ListTile(
-          leading: const Icon(Icons.phonelink_lock_outlined),
+          leading: const KkIconBox(icon: Icons.phonelink_lock_rounded),
           title: Text(l10n.otpImportSettingsTitle),
-          subtitle: Text(l10n.otpImportSettingsHelp),
-          enabled: !_busy,
+          subtitle: KkRowSubtitle(l10n.otpImportSettingsHelp),
+          trailing: chevron,
           onTap: () => unawaited(importFromFile(context, ref)),
         ),
         ListTile(
-          leading: const Icon(Icons.output),
+          leading: const KkIconBox(icon: Icons.output_rounded),
           title: Text(l10n.exportTitle),
-          subtitle: Text(l10n.exportHelp),
-          enabled: !_busy,
+          subtitle: KkRowSubtitle(l10n.exportHelp),
+          trailing: chevron,
           onTap: () => unawaited(exportPlaintext(context, ref)),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(72, 0, 16, 8),
-          child: Text(
-            l10n.backupHelp,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
         ),
       ],
     );

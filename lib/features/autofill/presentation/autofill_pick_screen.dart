@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/secret_field.dart';
+import 'package:keykey/app/ui/kk_card.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/features/authenticator/application/otp_clock.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
@@ -12,7 +15,8 @@ import 'package:keykey/features/autofill/application/autofill_otp.dart';
 import 'package:keykey/features/autofill/domain/fill_warnings.dart';
 import 'package:keykey/features/autofill/domain/login_matcher.dart';
 import 'package:keykey/features/autofill/presentation/autofill_app.dart';
-import 'package:keykey/features/autofill/presentation/fill_confirm_dialog.dart';
+import 'package:keykey/features/autofill/presentation/autofill_sheet_frame.dart';
+import 'package:keykey/features/autofill/presentation/fill_confirm.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/vault/application/login_search.dart';
@@ -37,10 +41,55 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
   final _query = TextEditingController();
   bool _busy = false;
 
+  /// Doğrudan doldurma bir kez denenir; eşleşmeler yeniden hesaplanınca
+  /// ikinci kez doldurulmaz.
+  bool _directChecked = false;
+
+  /// Tek kesin eşleşme dolduruluyor; liste gösterilmez.
+  bool _directFilling = false;
+
+  /// Arama kutusu odakta: pencere uzar, bütün kayıtlar aranır.
+  bool _searchFocused = false;
+
+  /// Gösterilen uyarı; varken liste yerine bu çizilir.
+  Widget? _confirming;
+
+  /// Uyarıdan vazgeçer; geri tuşu bununla listeye döner.
+  VoidCallback? _cancelConfirm;
+
+  @override
+  void initState() {
+    super.initState();
+    ref.listenManual(
+      autofillMatchesProvider,
+      (_, next) => _maybeFillDirectly(next),
+      fireImmediately: true,
+    );
+  }
+
   @override
   void dispose() {
     _query.dispose();
     super.dispose();
+  }
+
+  /// Tek bir kesin eşleşme varsa ve hiçbir uyarı yoksa seçme penceresi
+  /// açılmadan doldurur. Kural güvenlik tasarımı belgesinin "Akış"
+  /// bölümünde.
+  void _maybeFillDirectly(AsyncValue<LoginMatches> next) {
+    if (_directChecked || next.isLoading) return;
+    if (next case AsyncData(:final value)) {
+      // Kayıtlar yüklenmeden hesaplanan eşleşme boştur; beklenir.
+      if (ref.read(loginsControllerProvider) is! LoginsLoaded) return;
+      _directChecked = true;
+      final item = directFillCandidate(target: widget.target, matches: value);
+      if (item == null || _busy) return;
+      _busy = true;
+      setState(() => _directFilling = true);
+      unawaited(_fill(item).whenComplete(() => _busy = false));
+    } else if (next is AsyncError) {
+      _directChecked = true;
+    }
   }
 
   /// Şüpheli bir durum varsa önce uyarır ve onay ister, istenirse uygulamayı
@@ -57,12 +106,7 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
       );
       var chosen = item;
       if (warnings.isNotEmpty) {
-        final answer = await confirmFill(
-          context,
-          target: target,
-          item: item,
-          warnings: warnings,
-        );
+        final answer = await _confirm(item, warnings);
         if (answer == null || !mounted) return;
         if (answer.bind && canBindApp(target: target, warnings: warnings)) {
           chosen = await _bindApp(item);
@@ -72,6 +116,30 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
     } finally {
       _busy = false;
     }
+  }
+
+  /// Uyarıları listenin yerinde, aynı pencerede gösterir. Vazgeçilirse
+  /// `null`, onaylanırsa uygulamanın kayda bağlanıp bağlanmayacağı.
+  Future<({bool bind})?> _confirm(LoginItem item, Set<FillWarning> warnings) {
+    final completer = Completer<({bool bind})?>();
+    void finish(({bool bind})? answer) {
+      _cancelConfirm = null;
+      if (mounted) setState(() => _confirming = null);
+      if (!completer.isCompleted) completer.complete(answer);
+    }
+
+    FocusManager.instance.primaryFocus?.unfocus();
+    _cancelConfirm = () => finish(null);
+    setState(
+      () => _confirming = FillConfirmContent(
+        target: widget.target,
+        item: item,
+        warnings: warnings,
+        onCancel: () => finish(null),
+        onConfirm: ({required bind}) => finish((bind: bind)),
+      ),
+    );
+    return completer.future;
   }
 
   /// Uygulamayı paket adı ve imza özetleriyle kayda ekler.
@@ -95,21 +163,30 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
   /// anahtarlar silindikten sonra yalnızca seçilen iki değer ve varsa 2FA
   /// kodu kalır. Kod, ekran kapanmadan önce panoya kopyalanır.
   Future<void> _fill(LoginItem item) async {
+    final l10n = AppLocalizations.of(context);
+    final name = item.content.name.trim();
+    final notice = name.isEmpty
+        ? l10n.autofillFilledNoticeUnnamed
+        : l10n.autofillFilledNotice(name);
     final username = item.content.username;
     final password = item.content.password;
+    // markDone ekranı bir sonraki karede kapatır; kapanmış ekranda `ref`
+    // kullanılamaz. Sonradan gerekenler beklemeden önce alınır.
+    final done = ref.read(autofillDoneProvider.notifier);
+    final vault = ref.read(vaultControllerProvider.notifier);
+    final clipboard = ref.read(sensitiveClipboardProvider);
+    final bridge = ref.read(autofillBridgeProvider);
     final code = await _linkedOtpCode(item);
-    ref.read(autofillDoneProvider.notifier).markDone();
-    ref.read(vaultControllerProvider.notifier).lock();
+    done.markDone();
+    vault.lock();
     if (code != null) {
       try {
-        await ref.read(sensitiveClipboardProvider).copy(code);
+        await clipboard.copy(code);
       } on Exception {
         // Kopyalanamazsa doldurma yine yapılır.
       }
     }
-    await ref
-        .read(autofillBridgeProvider)
-        .fill(username: username, password: password);
+    await bridge.fill(username: username, password: password, notice: notice);
   }
 
   /// Ayar açıksa kayda bağlı TOTP hesabının güncel kodu. Hata doldurmayı
@@ -133,106 +210,130 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final state = ref.watch(loginsControllerProvider);
-    final matches = ref.watch(autofillMatchesProvider);
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.autofillTitle),
-        leading: IconButton(
-          tooltip: l10n.autofillClose,
-          icon: const Icon(Icons.close),
-          onPressed: () => unawaited(ref.read(autofillBridgeProvider).cancel()),
-        ),
-      ),
-      body: switch ((state, matches)) {
-        (LoginsLoaded(), AsyncData(:final value)) => _list(
-          context,
-          l10n,
-          state as LoginsLoaded,
-          value,
-        ),
-        // Eşleştirme başarısız olursa bütün kayıtlar eşleşmesiz gösterilir.
-        (LoginsLoaded(), AsyncError()) => _list(
-          context,
-          l10n,
-          state as LoginsLoaded,
-          LoginMatches.empty,
-        ),
-        _ => const Center(child: CircularProgressIndicator()),
+    final matches = switch (ref.watch(autofillMatchesProvider)) {
+      AsyncData(:final value) => value,
+      // Eşleştirme başarısız olursa bütün kayıtlar eşleşmesiz gösterilir.
+      AsyncError() => LoginMatches.empty,
+      _ => null,
+    };
+    void cancel() => unawaited(ref.read(autofillBridgeProvider).cancel());
+    final confirming = _confirming;
+    final ready = !_directFilling && state is LoginsLoaded && matches != null;
+    // Eşleşme yoksa ya da aranıyorsa bütün kayıtlar gösterilir; pencere uzar.
+    final expanded =
+        ready &&
+        confirming == null &&
+        (_searchFocused ||
+            _query.text.trim().isNotEmpty ||
+            matches.matches.isEmpty);
+    // Uyarı açıkken geri tuşu yalnızca uyarıyı kapatır, listeye döner;
+    // listedeyken pencere kapanır ve hiçbir şey doldurulmaz.
+    return PopScope(
+      canPop: confirming == null,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _cancelConfirm?.call();
       },
+      child: AutofillSheetFrame(
+        onDismiss: cancel,
+        expanded: expanded,
+        child: switch (confirming) {
+          final Widget confirm => confirm,
+          null when ready => _picker(context, l10n, state, matches, cancel),
+          null => const Padding(
+            padding: EdgeInsets.all(32),
+            child: Center(child: CircularProgressIndicator()),
+          ),
+        },
+      ),
     );
   }
 
-  Widget _list(
+  Widget _picker(
     BuildContext context,
     AppLocalizations l10n,
     LoginsLoaded state,
     LoginMatches matches,
+    VoidCallback cancel,
   ) {
-    final searching = _query.text.trim().isNotEmpty;
+    final query = _query.text.trim();
+    final searching = query.isNotEmpty;
+    final showAll = _searchFocused || searching || matches.matches.isEmpty;
     final filtered = filterLogins(
       state.indexed,
       LoginFilter(query: _query.text),
     );
     final matched = [for (final m in matches.matches) m.item];
     final matchedIds = {for (final item in matched) _key(item)};
-    final List<LoginItem> top;
-    final List<LoginItem> rest;
-    if (searching) {
-      // Aramada eşleşenler yine önce gelir, ama yalnızca aramaya uyanlar.
-      final hits = {for (final item in filtered) _key(item)};
-      top = [
-        for (final item in matched)
-          if (hits.contains(_key(item))) item,
-      ];
-      rest = [
-        for (final item in filtered)
-          if (!matchedIds.contains(_key(item))) item,
-      ];
-    } else {
-      top = matched;
-      rest = [
-        for (final item in filtered)
-          if (!matchedIds.contains(_key(item))) item,
-      ];
-    }
+    final hits = {for (final item in filtered) _key(item)};
+    // Aramada eşleşenler yine önce gelir, ama yalnızca aramaya uyanlar.
+    final top = [
+      for (final item in matched)
+        if (!searching || hits.contains(_key(item))) item,
+    ];
+    final rest = showAll
+        ? [
+            for (final item in filtered)
+              if (!matchedIds.contains(_key(item))) item,
+          ]
+        : const <LoginItem>[];
     final targetName = autofillTargetName(widget.target);
-    return ListView(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-          child: Text(
-            l10n.autofillFor(targetName),
-            style: Theme.of(context).textTheme.titleMedium,
+        AutofillSheetHeader(
+          title: l10n.autofillFor(targetName),
+          info: matched.isEmpty
+              ? null
+              : l10n.autofillMatchCount(matched.length),
+          onClose: cancel,
+        ),
+        Flexible(
+          child: ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            children: [
+              if (state.items.isEmpty)
+                _note(l10n.autofillEmpty)
+              else if (top.isEmpty && rest.isEmpty)
+                _note(l10n.vaultNoResults)
+              else ...[
+                if (!searching && matched.isEmpty)
+                  _note(l10n.autofillNoMatch(targetName)),
+                if (top.isNotEmpty) ...[
+                  if (showAll) _header(context, l10n.autofillMatching),
+                  for (final item in top) _tile(item, matches),
+                ],
+                if (rest.isNotEmpty) ...[
+                  _header(
+                    context,
+                    top.isEmpty
+                        ? l10n.autofillAllLogins
+                        : l10n.autofillOtherLogins,
+                  ),
+                  for (final item in rest) _tile(item, matches),
+                ],
+              ],
+            ],
           ),
         ),
         Padding(
-          padding: const EdgeInsets.all(16),
-          child: SecretField(
-            controller: _query,
-            label: l10n.vaultSearch,
-            obscure: false,
-            onChanged: (_) => setState(() {}),
-          ),
-        ),
-        if (state.items.isEmpty)
-          _note(l10n.autofillEmpty)
-        else if (top.isEmpty && rest.isEmpty)
-          _note(l10n.vaultNoResults)
-        else ...[
-          if (!searching && top.isEmpty)
-            _note(l10n.autofillNoMatch(targetName)),
-          if (top.isNotEmpty) ...[
-            _header(context, l10n.autofillMatching),
-            for (final item in top) _tile(item, matches),
-          ],
-          if (rest.isNotEmpty) ...[
-            _header(
-              context,
-              top.isEmpty ? l10n.autofillAllLogins : l10n.autofillOtherLogins,
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          child: Focus(
+            onFocusChange: (focused) =>
+                setState(() => _searchFocused = focused),
+            child: GlassSurface(
+              padding: const EdgeInsets.all(4),
+              child: SecretField(
+                controller: _query,
+                label: l10n.autofillSearchOther,
+                obscure: false,
+                textInputAction: TextInputAction.search,
+                onChanged: (_) => setState(() {}),
+              ),
             ),
-            for (final item in rest) _tile(item, matches),
-          ],
-        ],
+          ),
+        ),
       ],
     );
   }
@@ -240,12 +341,12 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
   static String _key(LoginItem item) => item.id.join(',');
 
   Widget _note(String text) => Padding(
-    padding: const EdgeInsets.all(24),
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
     child: Text(text, textAlign: TextAlign.center),
   );
 
   Widget _header(BuildContext context, String text) => Padding(
-    padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+    padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
     child: Text(
       text,
       style: Theme.of(context).textTheme.labelLarge
@@ -253,12 +354,15 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
     ),
   );
 
-  Widget _tile(LoginItem item, LoginMatches matches) => ListTile(
-    leading: const Icon(Icons.key),
-    title: Text(item.content.name.isEmpty ? '—' : item.content.name),
-    subtitle: item.content.username.isEmpty
-        ? null
-        : Text(item.content.username),
-    onTap: () => unawaited(_pick(item, matches)),
+  Widget _tile(LoginItem item, LoginMatches matches) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: KkCard(
+      title: Text(item.content.name.isEmpty ? '—' : item.content.name),
+      subtitle: item.content.username.isEmpty
+          ? null
+          : Text(item.content.username),
+      leading: RecordAvatar(login: item.content, name: item.content.name),
+      onTap: () => unawaited(_pick(item, matches)),
+    ),
   );
 }

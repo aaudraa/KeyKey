@@ -45,7 +45,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.settings_outlined));
     await tester.pumpAndSettle();
     final container = ProviderScope.containerOf(
-      tester.element(find.text('Yedek al')),
+      tester.element(find.text('Yedekle')),
     );
     documents.readGate = () => container.read(externalActivityGateProvider);
     final tile = find.text('Parolaları içe aktar');
@@ -80,10 +80,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Kaynak dosyayı sil'), findsOneWidget);
+    expect(find.byType(BottomSheet), findsOneWidget);
+    expect(find.textContaining('KeyKey bu dosyayı silemez'), findsOneWidget);
     expect(find.text('2 kayıt eklendi.'), findsOneWidget);
     await tester.tap(find.text('Tamam'));
     await tester.pumpAndSettle();
-    expect(find.text('Yedek al'), findsOneWidget);
+    expect(find.text('Parolaları içe aktar'), findsOneWidget);
 
     expect(logins.items.map((item) => item.content.name), ['Şirket', 'Basit']);
     final company = logins.items.first;

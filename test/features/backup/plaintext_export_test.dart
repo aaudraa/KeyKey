@@ -53,7 +53,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.settings_outlined));
     await tester.pumpAndSettle();
     final container = ProviderScope.containerOf(
-      tester.element(find.text('Yedek al')),
+      tester.element(find.text('Yedekle')),
     );
     documents.readGate = () => container.read(externalActivityGateProvider);
     final tile = find.text('Şifresiz dışa aktar');
@@ -73,11 +73,12 @@ void main() {
   testWidgets('uyarı, parola ve kayıt', (tester) async {
     await openExport(tester);
     expect(find.text('Bu dosya şifresiz'), findsOneWidget);
+    expect(find.byType(BottomSheet), findsOneWidget);
 
     await tester.tap(find.text('Devam et'));
     await tester.pumpAndSettle();
     // Parola penceresi dışa aktarma başlığıyla açılıyor.
-    expect(find.widgetWithText(AlertDialog, 'Şifresiz dışa aktar'), findsOne);
+    expect(find.widgetWithText(BottomSheet, 'Şifresiz dışa aktar'), findsOne);
     expect(documents.saves, 0);
 
     await enterPassword(tester, FakeVaultService.correctPassword);

@@ -74,11 +74,10 @@ void main() {
       logins: logins,
       locale: locale,
     );
-    await tester.tap(
-      find.byTooltip(
-        locale.languageCode == 'en' ? 'Password report' : 'Parola raporu',
-      ),
-    );
+    final en = locale.languageCode == 'en';
+    await tester.tap(find.byTooltip(en ? 'More actions' : 'Diğer işlemler'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(en ? 'Password report' : 'Parola raporu'));
     await tester.pumpAndSettle();
   }
 
@@ -115,7 +114,7 @@ void main() {
         'Yeni-Guclu-Parola-7wQ#',
       );
       await tester.pump();
-      await tester.tap(find.widgetWithText(TextButton, 'Kaydet'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Kaydet'));
       await tester.pumpAndSettle();
 
       expect(logins.items[2].content.password, 'Yeni-Guclu-Parola-7wQ#');

@@ -308,15 +308,11 @@
   "@vaultSearch": {
     "description": "Search field on the vault list."
   },
-  "vaultSort": "Sort",
-  "@vaultSort": {
-    "description": "Tooltip of the sort menu."
-  },
-  "vaultSortName": "By name",
+  "vaultSortName": "Sort by name",
   "@vaultSortName": {
     "description": "Sort option."
   },
-  "vaultSortRecent": "Recently changed",
+  "vaultSortRecent": "Sort by last changed",
   "@vaultSortRecent": {
     "description": "Sort option."
   },
@@ -328,7 +324,7 @@
   "@vaultFavorites": {
     "description": "Filter chip."
   },
-  "vaultEmpty": "No passwords yet. Tap Add to save your first one.",
+  "vaultEmpty": "No passwords yet. Tap + below to save your first one.",
   "@vaultEmpty": {
     "description": "Empty vault message."
   },
@@ -434,10 +430,6 @@
   "@loginDiscard": {
     "description": "Dialog button."
   },
-  "loginAddUrl": "Add website",
-  "@loginAddUrl": {
-    "description": "Button."
-  },
   "loginApp": "App",
   "@loginApp": {
     "description": "Label for an Android app linked to a login for autofill."
@@ -474,14 +466,6 @@
   "loginFieldVisible": "Show value by default",
   "@loginFieldVisible": {
     "description": "Tooltip."
-  },
-  "loginRemoveField": "Remove field",
-  "@loginRemoveField": {
-    "description": "Tooltip."
-  },
-  "loginAddField": "Add field",
-  "@loginAddField": {
-    "description": "Button."
   },
   "trashTitle": "Trash",
   "@trashTitle": {
@@ -588,13 +572,53 @@
   "@generatorPassphraseNote": {
     "description": "Explains the word list."
   },
-  "generatorOpen": "Generate password",
-  "@generatorOpen": {
-    "description": "Tooltip on the password field."
-  },
   "settingsLicenses": "Licenses",
   "@settingsLicenses": {
     "description": "Settings entry that opens the license page."
+  },
+  "settingsGroupSecurity": "Security",
+  "@settingsGroupSecurity": {
+    "description": "Settings group header for password, fingerprint and locking."
+  },
+  "settingsGroupBackup": "Backup and transfer",
+  "@settingsGroupBackup": {
+    "description": "Settings group header for backup, restore, import and export."
+  },
+  "settingsGroupAutofill": "Autofill",
+  "@settingsGroupAutofill": {
+    "description": "Settings group header for autofill."
+  },
+  "settingsGroupAbout": "About",
+  "@settingsGroupAbout": {
+    "description": "Settings group header for version and licenses."
+  },
+  "settingsGroupAppearance": "Appearance",
+  "@settingsGroupAppearance": {
+    "description": "Settings group header for the theme choice."
+  },
+  "settingsTheme": "Theme",
+  "@settingsTheme": {
+    "description": "Settings row that opens the light/dark theme choice."
+  },
+  "themeSystem": "System",
+  "@themeSystem": {
+    "description": "Theme option: follow the phone's light or dark setting."
+  },
+  "themeLight": "Light",
+  "@themeLight": {
+    "description": "Theme option: always light."
+  },
+  "themeDark": "Dark",
+  "@themeDark": {
+    "description": "Theme option: always dark."
+  },
+  "settingsVersion": "Version",
+  "@settingsVersion": {
+    "description": "Settings row that shows the app version."
+  },
+  "settingsMoreInfo": "More info",
+  "@settingsMoreInfo": {
+    "description": "Tooltip of the (i) button that opens a setting's explanation."
   },
   "copy": "Copy",
   "@copy": {
@@ -609,7 +633,7 @@
       }
     }
   },
-  "otpEmpty": "No 2FA accounts yet. Tap Add to set up the first one.",
+  "otpEmpty": "No 2FA accounts yet. Tap + below to set up the first one.",
   "@otpEmpty": {
     "description": "Empty state of the 2FA list."
   },
@@ -671,10 +695,6 @@
   "otpClose": "Close",
   "@otpClose": {
     "description": "Closes a dialog."
-  },
-  "otpAddTitle": "Add a 2FA account",
-  "@otpAddTitle": {
-    "description": "Title of the sheet that lists the ways to add an account."
   },
   "otpAddManual": "Enter key manually",
   "@otpAddManual": {
@@ -958,10 +978,6 @@
   "@settingsOtpRequireAuthHelp": {
     "description": "Explains what the setting protects against."
   },
-  "autofillTitle": "Fill with KeyKey",
-  "@autofillTitle": {
-    "description": "Title of the autofill screen."
-  },
   "autofillFor": "For {target}",
   "@autofillFor": {
     "description": "Shows which app or website will be filled.",
@@ -990,6 +1006,24 @@
   "autofillClose": "Close",
   "@autofillClose": {
     "description": "Closes the autofill screen without filling."
+  },
+  "autofillSearchOther": "Search another login",
+  "@autofillSearchOther": {
+    "description": "Search field under the matching logins in the autofill sheet; focusing it expands the sheet and searches all logins."
+  },
+  "autofillFilledNotice": "{name} filled",
+  "@autofillFilledNotice": {
+    "description": "Short system toast after autofill. Carries only the login's name, never the username or password.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "GitHub"
+      }
+    }
+  },
+  "autofillFilledNoticeUnnamed": "Login filled",
+  "@autofillFilledNoticeUnnamed": {
+    "description": "Toast after autofill when the login has no name."
   },
   "autofillMatching": "Matching logins",
   "@autofillMatching": {
@@ -1191,7 +1225,7 @@
       }
     }
   },
-  "autofillSetupTitle": "Autofill",
+  "autofillSetupTitle": "Autofill service",
   "@autofillSetupTitle": {
     "description": "Settings entry for the system autofill service."
   },
@@ -1235,19 +1269,6 @@
   "backupCreate": "Back up now",
   "@backupCreate": {
     "description": "Settings tile that saves an encrypted backup file."
-  },
-  "backupLast": "Last backup: {time}",
-  "@backupLast": {
-    "description": "Subtitle with the time of the last backup.",
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "backupNever": "No backup yet.",
-  "@backupNever": {
-    "description": "Subtitle when no backup was taken."
   },
   "backupHelp": "The backup file is encrypted. It opens with your current master password or your recovery key. If you lose this phone, it is the only way to get your data back.",
   "@backupHelp": {
@@ -1598,5 +1619,56 @@
   "favoriteMark": "Favorite",
   "@favoriteMark": {
     "description": "Screen reader label of the star on favorite items."
+  },
+  "addTitle": "What do you want to add?",
+  "addPassword": "Password",
+  "addPasswordHint": "A site or app sign-in",
+  "addOtp": "2FA code",
+  "addOtpHint": "Scan a QR code, type it in or import",
+  "addBack": "Back",
+  "addClose": "Close",
+  "vaultSearchCount": "{count, plural, =1{Search 1 item} other{Search {count} items}}",
+  "@vaultSearchCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "vaultCopyPassword": "Copy password",
+  "screenMore": "More actions",
+  "loginLastChanged": "Last changed: {date}",
+  "@loginLastChanged": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "formMoreOptions": "More options",
+  "formFolder": "Folder",
+  "formNote": "Note",
+  "formCustomField": "Custom field",
+  "formAnotherSite": "Another site",
+  "formRemoveField": "Remove field",
+  "loginGenerate": "Generate",
+  "backupStatusNever": "No backup yet",
+  "backupStatusToday": "Last backup today",
+  "backupStatusDays": "{count, plural, =1{Last backup 1 day ago} other{Last backup {count} days ago}}",
+  "@backupStatusDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupStatusAction": "Back up",
+  "autofillMatchCount": "{count, plural, =1{1 match} other{{count} matches}}",
+  "@autofillMatchCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

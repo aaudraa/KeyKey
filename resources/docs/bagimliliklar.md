@@ -12,7 +12,7 @@ KeyKey GPL-3.0 ile yayımlanır. Bu yüzden içine giren her şeyin lisansı GPL
 | Veri dosyaları | Public Suffix List MPL-2.0; GPL ile birlikte dağıtılabilir, dosya değiştirilmeden gömülü. EFF sözcük listesi CC BY 3.0, atıf istiyor. SecLists parola listesi MIT. Üçü de kod değil, uygulamanın okuduğu veri. Atıfları Lisanslar ekranında. |
 | Kullanılmayan paket | Yok. Doğrudan bağımlılıkların hepsi kodda kullanılıyor (aşağıdaki tablo). |
 | Güncellik | Doğrudan bağımlılıkların hepsi son kararlı sürümde, biri hariç: `androidx.biometric`'in 1.1.0'dan yeni kararlı sürümü yok. Bekleyen dolaylı paketler ve nedenleri [Güncellik](#güncellik) bölümünde. |
-| Derlemede indirilen | Yalnızca SQLite'ın hazır kütüphanesi (`sqlite3` paketi); özeti paketin içinde sabit. Ayrıntı: [Derlemede indirilenler](#derlemede-indirilenler). |
+| Derlemede indirilen | Uygulamaya giren hazır yerel kütüphane yok. SQLite, Faz 9'dan beri repodaki kaynaktan derleniyor (#99). Ayrıntı: [Derlemede indirilenler](#derlemede-indirilenler). |
 | Lisanslar ekranı | Android kütüphaneleri ve SQLite eksikti, eklendi. Ayrıntı: [Lisanslar ekranı](#lisanslar-ekranı). |
 | Bilinen açıklar | Bir tane vardı (Guava), düzeltilmiş sürüme geçildi. Şu an bilinen açık yok. Ayrıntı: [Bilinen açıklar](#bilinen-açıklar). |
 
@@ -182,7 +182,7 @@ Testlerde kullanılan `junit` (EPL-1.0) uygulamaya girmez.
 | Kütüphane | Lisans | Nereden |
 |---|---|---|
 | libsodium 1.0.22 | ISC | `sodium` paketinin içindeki kaynak arşivinden, derleme sırasında NDK ile derlenir |
-| SQLite (`libsqlite3.so`) | Kamu malı | `sqlite3` paketinin derleme kancası hazır kütüphaneyi indirir |
+| SQLite 3.54.1 (`libsqlite3.so`) | Kamu malı | Repodaki kaynaktan ([`android/third_party/sqlite`](../../android/third_party/sqlite/README.md)), `sqlite3` paketinin derleme kancasıyla NDK ile derlenir |
 | zxing-cpp, zint (`libflutter_zxing.so`) | Apache-2.0, BSD-3-Clause | `flutter_zxing` paketinin içindeki kaynaktan, CMake ile derlenir |
 | Flutter motoru (`libflutter.so`) | BSD-3-Clause ve motorun üçüncü taraf lisansları | Flutter aracının indirdiği motor dosyaları |
 | Dart kodu (`libapp.so`) | KeyKey ve paketler | Derlemenin kendisi |
@@ -194,7 +194,7 @@ Derleme şunları internetten alır. Her biri bir sürüme ya da özete sabit:
 | Ne | Nereden | Doğrulama |
 |---|---|---|
 | Dart paketleri | pub.dev | `pubspec.lock`'taki SHA-256 özetleri; `pub` uyuşmayan paketi reddeder |
-| SQLite hazır kütüphanesi | GitHub, `simolus3/sqlite3.dart` deposunun `sqlite3-3.9.1` sürümü | Paketin içindeki `asset_hashes.dart`'ta her dosyanın SHA-256 özeti sabit; uyuşmazsa derleme durur. CI'da bir kez geçici bir indirme hatasında bu denetim derlemeyi durdurdu, yeniden denemede geçti. |
+| SQLite hazır kütüphanesi (yalnızca bilgisayardaki testler) | GitHub, `simolus3/sqlite3.dart` deposunun `sqlite3-3.9.1` sürümü | Paketin içindeki `asset_hashes.dart`'ta her dosyanın SHA-256 özeti sabit; uyuşmazsa derleme durur. Uygulamaya girmez: Android derlemesi SQLite'ı repodaki kaynaktan derler. Kaynağın kendisi sqlite.org'un yayımladığı SHA3-256 özetiyle doğrulandı; `bash resources/scripts/sqlite-guncelle.sh --denetle` bunu yeniden yapar. |
 | Flutter motoru ve Dart SDK'sı | Google'ın Flutter depolaması | Flutter sürümüne bağlı motor sürümü (`89c39edf`) |
 | Gradle, Android eklentisi ve Gradle kütüphaneleri | Google Maven, Maven Central, Gradle | Gradle sarmalayıcısının ve kütüphanelerin sürümü sabit. Gradle'ın özet doğrulaması (`verification-metadata.xml`) açık değil; yeniden üretilebilir derlemeyle birlikte Faz 9'da ele alınacak. |
 

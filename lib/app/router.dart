@@ -1,7 +1,8 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/app_shell.dart';
+import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/core/backup/backup_codec.dart';
 import 'package:keykey/features/authenticator/application/otp_import.dart';
 import 'package:keykey/features/authenticator/data/otpauth_uri.dart';
@@ -91,17 +92,20 @@ final routerProvider = Provider<GoRouter>((ref) {
     ..listen(vaultControllerProvider, (_, _) => statusChanges.value++)
     ..onDispose(statusChanges.dispose);
 
+  // Form ekranları kök gezginde açılır; alt menünün üstünü örterler.
+  final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'kök');
   final router = GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: AppRoutes.vault,
     refreshListenable: statusChanges,
     redirect: (context, state) =>
         vaultRedirect(ref.read(vaultControllerProvider), state.matchedLocation),
     routes: [
-      GoRoute(
+      kkRoute(
         path: AppRoutes.setup,
         builder: (context, state) => const OnboardingScreen(),
       ),
-      GoRoute(
+      kkRoute(
         path: AppRoutes.restore,
         // Yedek yalnızca seçiciden gelir; uygulama yeniden kurulurken
         // yol kalırsa kuruluma dönülür.
@@ -110,21 +114,23 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) =>
             RestoreScreen(file: state.extra! as BackupFile),
       ),
-      GoRoute(
+      kkRoute(
         path: AppRoutes.lock,
+        // Kilitlenince içerik hızla solar, kilit ekranı belirir (madde 4.4).
+        transition: KkRouteTransition.fade,
         builder: (context, state) => const LockScreen(),
         routes: [
-          GoRoute(
+          kkRoute(
             path: 'kurtarma',
             builder: (context, state) => const RecoveryScreen(),
           ),
         ],
       ),
-      GoRoute(
+      kkRoute(
         path: AppRoutes.newPassword,
         builder: (context, state) => const NewPasswordScreen(),
       ),
-      GoRoute(
+      kkRoute(
         path: AppRoutes.unavailable,
         builder: (context, state) => const UnavailableScreen(),
       ),
@@ -134,28 +140,30 @@ final routerProvider = Provider<GoRouter>((ref) {
         branches: [
           StatefulShellBranch(
             routes: [
-              GoRoute(
+              kkRoute(
                 path: AppRoutes.vault,
                 builder: (context, state) => const VaultScreen(),
                 routes: [
-                  GoRoute(
+                  kkRoute(
+                    parentNavigatorKey: rootNavigatorKey,
                     path: 'yeni',
                     builder: (context, state) => const LoginEditScreen(),
                   ),
-                  GoRoute(
+                  kkRoute(
                     path: 'cop',
                     builder: (context, state) => const TrashScreen(),
                   ),
-                  GoRoute(
+                  kkRoute(
                     path: 'rapor',
                     builder: (context, state) => const PasswordReportScreen(),
                   ),
-                  GoRoute(
+                  kkRoute(
                     path: 'kayit/:id',
                     builder: (context, state) =>
                         LoginDetailScreen(idHex: state.pathParameters['id']!),
                     routes: [
-                      GoRoute(
+                      kkRoute(
+                        parentNavigatorKey: rootNavigatorKey,
                         path: 'duzenle',
                         builder: (context, state) =>
                             LoginEditScreen(idHex: state.pathParameters['id']),
@@ -168,11 +176,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           StatefulShellBranch(
             routes: [
-              GoRoute(
+              kkRoute(
                 path: AppRoutes.authenticator,
                 builder: (context, state) => const AuthenticatorScreen(),
                 routes: [
-                  GoRoute(
+                  kkRoute(
+                    parentNavigatorKey: rootNavigatorKey,
                     path: 'yeni',
                     // QR'dan okunan hesap onay için forma dolu gelir.
                     builder: (context, state) => OtpEditScreen(
@@ -182,11 +191,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                       },
                     ),
                   ),
-                  GoRoute(
+                  kkRoute(
                     path: 'tara',
                     builder: (context, state) => const QrScanScreen(),
                   ),
-                  GoRoute(
+                  kkRoute(
+                    parentNavigatorKey: rootNavigatorKey,
                     path: 'ice-aktar',
                     // Okunan hesaplar yalnızca bellekte, ekrana doğrudan
                     // verilir. Kaynak yoksa, örneğin uygulama yeniden
@@ -197,11 +207,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                     builder: (context, state) =>
                         OtpImportScreen(source: state.extra! as ImportSource),
                   ),
-                  GoRoute(
+                  kkRoute(
                     path: 'cop',
                     builder: (context, state) => const OtpTrashScreen(),
                   ),
-                  GoRoute(
+                  kkRoute(
+                    parentNavigatorKey: rootNavigatorKey,
                     path: 'hesap/:id/duzenle',
                     builder: (context, state) =>
                         OtpEditScreen(idHex: state.pathParameters['id']),
@@ -212,15 +223,17 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           StatefulShellBranch(
             routes: [
-              GoRoute(
+              kkRoute(
                 path: AppRoutes.settings,
                 builder: (context, state) => const SettingsScreen(),
                 routes: [
-                  GoRoute(
+                  kkRoute(
+                    parentNavigatorKey: rootNavigatorKey,
                     path: 'parola',
                     builder: (context, state) => const ChangePasswordScreen(),
                   ),
-                  GoRoute(
+                  kkRoute(
+                    parentNavigatorKey: rootNavigatorKey,
                     path: 'ice-aktar',
                     // Okunan dosya yalnızca bellekte, ekrana doğrudan verilir.
                     // Yoksa, örneğin uygulama yeniden açıldıysa, ayarlara
@@ -241,3 +254,53 @@ final routerProvider = Provider<GoRouter>((ref) {
   ref.onDispose(router.dispose);
   return router;
 });
+
+/// Bir rotanın sayfa geçişi.
+enum KkRouteTransition {
+  /// Temanın geçişi: yandan kayma ve solma, tahmini geri hareketiyle.
+  material,
+
+  /// Kısa solma ([KkMotion.fast]); kilit ekranı için.
+  fade,
+}
+
+/// [GoRoute] ile aynı, ama sayfa her zaman Flutter'ın [MaterialPage]'iyle
+/// kurulur. go_router uygulama türünü `material_ui` paketinin
+/// `MaterialApp`'iyle tanır; KeyKey Flutter'ın kendi `MaterialApp`'ini
+/// kullandığı için kendi hâline bırakılınca bütün sayfalar geçişsiz
+/// (`NoTransitionPage`) açılıyordu.
+GoRoute kkRoute({
+  required String path,
+  GoRouterWidgetBuilder? builder,
+  GoRouterRedirect? redirect,
+  GlobalKey<NavigatorState>? parentNavigatorKey,
+  List<RouteBase> routes = const <RouteBase>[],
+  KkRouteTransition transition = KkRouteTransition.material,
+}) => GoRoute(
+  path: path,
+  redirect: redirect,
+  parentNavigatorKey: parentNavigatorKey,
+  routes: routes,
+  pageBuilder: builder == null
+      ? null
+      : (context, state) => switch (transition) {
+          KkRouteTransition.material => MaterialPage<void>(
+            key: state.pageKey,
+            name: state.name ?? state.path,
+            arguments: state.extra,
+            restorationId: state.pageKey.value,
+            child: builder(context, state),
+          ),
+          KkRouteTransition.fade => CustomTransitionPage<void>(
+            key: state.pageKey,
+            name: state.name ?? state.path,
+            arguments: state.extra,
+            restorationId: state.pageKey.value,
+            transitionDuration: KkMotion.of(context, KkMotion.fast),
+            reverseTransitionDuration: KkMotion.of(context, KkMotion.fast),
+            transitionsBuilder: (context, animation, _, child) =>
+                FadeTransition(opacity: animation, child: child),
+            child: builder(context, state),
+          ),
+        },
+);

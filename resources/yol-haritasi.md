@@ -2,7 +2,7 @@
 
 KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-10 · **Şu anki faz:** Faz 9
+**Son güncelleme:** 2026-11-13 · **Şu anki faz:** Faz 9
 
 > [!IMPORTANT]
 > **Gerçek parolalarını 1.0'a kadar KeyKey'e koyma.** Projenin kendi güvenlik denetimi tamamlandı, ama yayımlanmış bir sürüm yok ve bağımsız bir denetim yapılmadı.
@@ -22,7 +22,7 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 | 6 | Otomatik doldurma | XL | 4 | `faz/6-otomatik-doldurma` | Tamamlandı |
 | 7 | Yedekleme, içe ve dışa aktarma | L | 4, 5 | `faz/7-yedekleme` | Tamamlandı |
 | 8 | Güvenlik sertleştirme ve denetim | L | 6, 7 | `faz/8-guvenlik-denetimi` | Tamamlandı |
-| 9 | 1.0 yayını | M | 8 | `faz/9-yayin` | Bekliyor |
+| 9 | 1.0 yayını | M | 8 | `faz/9-yayin` | Sürüyor |
 
 Büyüklük göreli iş miktarını gösterir, takvim sözü değildir. Faz 4 ve 5 aynı anda ilerleyebilir. İlerlemeyi [milestone'lardan](https://github.com/aaudraa/KeyKey/milestones) da izleyebilirsin.
 
@@ -75,7 +75,7 @@ Sürümler ve lisanslar 2026-11-05 tarihinde pub.dev'den kontrol edildi. Faz ba�
 | `zxcvbn` | Dart 3 ile uyumlu değil (`sdk <3.0.0`). |
 | `sodium_libs` | Kullanımdan kalktı, yerini `sodium` aldı. |
 | `pointycastle` | Şifreli Aegis ve 2FAS dosyalarını açmak için yalnızca scrypt, PBKDF2 ve AES-GCM gerekiyor. Büyük bir saf Dart kripto kütüphanesi yerine AES-GCM için Android'in kitaplığını, scrypt ve PBKDF2 için RFC 7914 vektörleriyle doğrulanan kısa kendi kodumuzu kullanıyoruz. |
-| `sqlite3_flutter_libs` | Kullanım ömrü bitti, `sqlite3` paketi yerel kütüphaneyi artık kendisi sağlıyor. Derlemede GitHub'dan hazır dosya indiriyor ve paketin içindeki SHA-256 ile doğruluyor. Aynı yayıncının Dart kodu zaten uygulamanın içinde çalıştığı için bu, güvenmemiz gereken kişiyi değiştirmiyor. Kaynaktan derlemeye Faz 9'da geçilecek. |
+| `sqlite3_flutter_libs` | Kullanım ömrü bitti, `sqlite3` paketi yerel kütüphaneyi artık kendisi sağlıyor. Derlemede GitHub'dan hazır dosya indiriyor ve paketin içindeki SHA-256 ile doğruluyor. Aynı yayıncının Dart kodu zaten uygulamanın içinde çalıştığı için bu, güvenmemiz gereken kişiyi değiştirmiyor. Faz 9'dan beri uygulamadaki SQLite repodaki kaynaktan derleniyor (#99); hazır dosya yalnızca bilgisayardaki testlerde kullanılıyor. |
 
 ### libsodium doğrulaması
 
@@ -432,15 +432,36 @@ Güvenlik ya da veri kaybı sorunu çıkmadı. Ayrıntılar [denetim belgesinde]
 
 **Amaç:** İlk kararlı sürümü imzalı ve doğrulanabilir şekilde yayımlamak.
 
-- [ ] Uygulama simgesi ve açılış ekranı; kaynak dosyalar `resources/design/` altında
-- [ ] Yayın anahtarı: repoya girmez, yedeği ayrı ve güvenli bir yerde tutulur, CI'da GitHub Secrets ile kullanılır
-- [ ] Yayın otomasyonu: etiket atılınca imzalı APK ve AAB, SHA-256 özetleri, GitHub Release; R8 `mapping.txt` dosyası da sürüme eklenir (yığın izlerini okumak için)
-- [ ] `CHANGELOG.md` ve sürüm numaralandırma
-- [ ] Yeniden üretilebilir derleme denemesi; `sqlite3`'ü hazır dosya yerine kaynaktan derlemek (F-Droid de bunu gerektiriyor)
-- [ ] Dağıtım kararı: GitHub Releases ile başlamak; F-Droid ve Play Store'u değerlendirmek
-- [ ] Kullanım kılavuzu ve ekran görüntüleri (`resources/docs/kullanim.md`, `resources/design/`)
-- [ ] `v0.x` sürümünden 1.0'a yükseltme testi: veri kaybı olmamalı
-- [ ] Gizlilik bildirimi: seçilen mağazaların istediği açıklamalar (Play Store veri güvenliği formu, F-Droid); MASVS-PRIVACY denetiminden
+- [x] Yayın anahtarı: repoya girmez, yedeği ayrı ve güvenli bir yerde tutulur, CI'da GitHub Secrets ile kullanılır
+- [x] Yayın otomasyonu: etiket atılınca imzalı APK ve AAB, SHA-256 özetleri, GitHub Release; R8 `mapping.txt` dosyası da sürüme eklenir (yığın izlerini okumak için)
+- [x] `CHANGELOG.md` ve sürüm numaralandırma
+- [x] Yeniden üretilebilir derleme denemesi; `sqlite3`'ü hazır dosya yerine kaynaktan derlemek (F-Droid de bunu gerektiriyor)
+- [x] Dağıtım kararı (2026-11-09): 1.0 GitHub Releases'ta; ardından IzzyOnDroid, sonra F-Droid ana deposu (bizim imzamızla); Play Store şimdilik yok
+- [x] `v0.x` sürümünden 1.0'a yükseltme testi: veri kaybı olmamalı (1.0 etiketinden önce son derlemeyle kısa tekrar)
+- [x] Gizlilik bildirimi: seçilen mağazaların istediği açıklamalar (Play Store veri güvenliği formu, F-Droid); MASVS-PRIVACY denetiminden
+- [x] Tasarım incelemesi: bütün ekranların baştan gözden geçirilmesi, uygulama simgesi ve açılış ekranı; kaynak dosyalar `resources/design/` altında. Deneme (#89) boyunca biriken arayüz notları ve ertelenen fikirler (örneğin otomatik doldurma ekranının yarım yükseklikte açılması) buraya girer. İlk tur kodda bitti (#103, [ilk tasarım belgesi](docs/tasarim-yenileme.md)) ama kullanıcı görünümü beğenmedi; ikinci tur: [cam tasarım belgesi](docs/tasarim-cam.md). Telefonda kullanıcıyla deneme 1.0 etiketinden önce.
+- [x] Kullanım kılavuzu ve ekran görüntüleri (`resources/docs/kullanim.md`, `resources/design/`)
+- [ ] Dışarıdan inceleme çağrısı (#90, Faz 8'den taşındı): gönderiyi kullanıcı paylaşır; gelen geri bildirimler 1.0 etiketinden önce issue'lara dönüştürülür
+
+**Sıra:** Önce görünümü değiştirmeyen işler (yayın otomasyonu, derleme, sürüm, yükseltme testi). Tasarım incelemesi fazın sonunda yapılır, çünkü deneme bitmeden arayüzü değiştirmek denenen sürümü değiştirir. Kılavuz ve ekran görüntüleri tasarımdan sonra gelir; önce çekilirse tasarım değişince yeniden çekmek gerekir. Kullanıcının kararı (2026-11-09).
+
+**Durum (2026-11-09):** Faz başladı, görevler #96-#104. Biten: sürüm kuralı ve [değişiklik günlüğü](CHANGELOG.md) (#98), [gizlilik bildirimi](docs/gizlilik.md) (#102, mağaza yanıtları dağıtım kararını bekliyor). Yayın iş akışı (#96, [yayın belgesi](docs/yayin.md)) deneme anahtarıyla GitHub'da sınandı: etiketten taslak ön sürüm, özetler ve imza doğru. Gerçek anahtar #97'yi bekliyor. SQLite artık repodaki kaynaktan derleniyor; aynı yolda yapılan iki derleme, yayın iş akışındakiler dahil, bayt bayt aynı; farklı yolda Flutter'ın gömdüğü mutlak yol yüzünden ayrılıyor (#99, [ayrıntılar](docs/yayin.md#yeniden-üretilebilir-derleme)). Yükseltme denemesi (#101) fazın son derlemesiyle yapılacak.
+
+**Durum (2026-11-10):** Kalıcı yayın anahtarı oluşturuldu, sertifika özeti README'de ve [yayın belgesinde](docs/yayin.md) (#97). Dağıtım kararı verildi (#100, yukarıda). Faz 8 [#105](https://github.com/aaudraa/KeyKey/pull/105) ile kapandı; dış inceleme çağrısı (#90) bu faza taşındı. Yükseltme testi (#101) emülatörde iki yolla geçti: aynı imzayla üstüne kurulum ve farklı imzada yedekle taşıma ([ayrıntılar](docs/yayin.md#eski-sürümlerden-geçiş)). Bilgisayarda Windows Smart App Control, Flutter'ın 32 bit ARM aracını (`gen_snapshot`) engellemeye başladı; yerel derlemeler `--target-platform android-x64,android-arm64` ile yapılıyor, CI etkilenmiyor. Kalan sıra: tasarım incelemesi (#103), kullanım kılavuzu (#104), ardından 1.0.
+
+**Durum (2026-11-11):** Tasarım yenilemesi (#103) kodda bitti: yeni tema ve renkler, aynı boy kartlar, yüzen alt menü, gruplu ayarlar, alttan açılan pencereler, yeni simge ve açılış ekranı, yarım pencerede otomatik doldurma ve tek kesin eşleşmenin sorulmadan doldurulması. Entegrasyon testleri Android 11, 14 ve 17 emülatörlerinde geçti; Android 16 emülatörü bozuk durumda (hiçbir KeyKey sürümü açılmıyor, tasarımdan önceki sürüm de), yeniden kurulacak. Kalan: telefonda kullanıcıyla deneme, kılavuz (#104), dış inceleme çağrısı (#90).
+
+**Durum (2026-11-12):** Kullanıcı ilk turun görünümünü telefonda birkaç gün kullandıktan sonra beğenmedi ("sadece renkler değişmiş", cam fark edilmiyor, yeni parola ekranı korkutucu). Tasarım incelemesi yeniden açıldı. Örnek ekranlar üzerinden yeni yön kararlaştırıldı: renkli yumuşak zemin, cam kartlar, ucunda "+" olan cam menü, sade formlar, yumuşak hareketler ([cam tasarım belgesi](docs/tasarim-cam.md), [örnek ekranlar](design/cam-tasarim-ornekleri.html)). İlk turun otomatik doldurma davranışı, simge ve açılış ekranı kalıyor. Kullanıcı belgeyi aynı gün onayladı; [uygulama planı](docs/tasarim-cam-plani.md) yazıldı (15 görev). Sıra: kullanıcının plan onayı, uygulama, telefonda deneme; kılavuz (#104) bunun arkasında.
+
+**Durum (2026-11-13):** Cam tasarım planının 15 görevi kodda bitti (#103). Bütün ekranlar renkli zemin ve cam kartlarla çiziliyor; tek "+", listeden kopyalama, sade formlar, ayarlarda yedek kartı, hareketli kilit ekranı, cam doldurma penceresi ve tahmini geri hareketi eklendi. Bir tarama testi düz `Scaffold`, düz alt pencere ve `AlertDialog` kalmadığını denetliyor. Birim testleri (1099) ve entegrasyon testleri Android 11, 14 ve 17 emülatörlerinde geçti. Tahmini geri hareketi Android 17 emülatöründe elle denendi: "+" kutusu açıkken geri kutuyu kapatıyor, değişmiş formda soru çıkıyor, kökte geri uygulamayı arka plana alıyor.
+
+Ölçüm: 1000 kayıtlı listede beş savurma (debug, aynı Android 14 emülatörü) cam öncesi 15,2-15,5 sn, cam sonrası 17,0-18,0 sn sürdü. Karttaki gölgeyi kapatmak 16,6 sn, alt menünün bulanıklığını kapatmak 17,1 sn verdi; kalan fark kart başına daha çok bileşenden. Emülatörde profil modu olmadığı için karar telefondaki denemeye bırakıldı; takılma görülürse önce gölge ucuzlatılır. Yazılımsal grafikli emülatör (`-gpu swiftshader_indirect` ve `guest`) bulanık yüzeylerde qemu erişim ihlaliyle çöktü; testler `-gpu host` ile çalıştırıldı. KeyKey ekran görüntüsünü engellediği için emülatörde görsel karşılaştırma yapılamadı; görsel denetim telefondaki denemede. Kalan: telefonda kullanıcıyla deneme, kılavuz (#104), dış inceleme çağrısı (#90).
+
+**Durum (2026-11-13, öğleden önce):** Kullanıcı cam tasarımı telefonda denedi: cam ve hareketler hoşuna gitti ama turuncu fazla, yazı ve düğmeler büyük geldi. Üçüncü tur konuşuldu: siyah-beyaz zemin ve simgeler, turuncu yalnızca dört yerde (K logosu, "+", ekranın ana düğmesi, 2FA halkası), cam korunuyor, ölçüler küçülüyor, ayarlarda (i) anahtarın solunda, kayıt simgeleri kutusuz; ayrıca dört katmanlı bir hareket planı ([siyah-beyaz tasarım belgesi](docs/tasarim-siyah-beyaz.md), [örnek ekranlar](design/siyah-beyaz-tasarim-ornekleri.html)). Açık sorular aynı gün yanıtlandı: küçülen başlık ve hata titreşimi eklenecek, simgesiz kayıtta harf ince daire içinde, güç çubuğu renksiz. Kullanıcı hareketlerin yalnızca ilk girişte kalmayıp kullanım boyunca sürmesini istedi; belgeye her dönüşte giriş hareketi ve bütün ekranlarda yavaş kayan zemin eklendi. Sıra: uygulama planı, uygulama (altı aşama, üç telefon denemesi); kılavuz (#104) bunun arkasında.
+
+**Durum (2026-11-13, gece):** Siyah-beyaz tasarım ve hareket planının 15 görevi kodda bitti (#103, [belge](docs/tasarim-siyah-beyaz.md)). Turuncu yalnızca dört yerde; kartlar beyaz, alt menü buzlu cam; ölçüler küçüldü. Hareketler dört katmanda: yavaş kayan zemin, kaydırınca küçülen başlık ve kaydırdıkça gelen kartlar; basınca küçülme, kopyalayınca onay işareti, hatada titreme ve titreşim, kaydedince onay işareti ve parlayan kart; listelerde silinen kartın kayıp kapanması; parolanın sırayla açılması, 2FA rakamlarının kayması, halkanın son saniyelerde atması; kilit ekranında logo, nefes alan parmak izi, kilit açılışında solan K; yedek kartının atması, kurulumda kayan adımlar, nefes alan QR çerçevesi. "Animasyonları kaldır" açıkken hepsi anında biter. Bitişte yeni gözle bir inceleme yapıldı; bulunan iki önemli sorun (2FA listesinde saniyede biriken dinleyiciler, ekran geçişlerinin hiç çalışmaması) ve altı küçük sorun testle birlikte düzeltildi. Birim testleri (1206) geçti. Entegrasyon testleri Android 11, 14 ve 17 emülatörlerinde hepsi geçti (emülatörler sırayla, birer birer açıldı). Telefonda birinci deneme yapıldı; ikinci ve üçüncü deneme sürümleri taslak yayında. Dördüncü denemede proje sahibi kartları buzlu ve küçük buldu, arama kutusunun listeyle kaymasını istedi, küçülen başlığı anlamsız buldu; kartlar dolu ve büyük oldu, büyük başlık ve arama listeyle birlikte kayıyor (afcf10f). Beşinci denemede başlıkların sabit, biraz büyük ve kalın olması, kayan arama kutusunun üst çubukta simgeye dönmesi istendi; form alanlarının etiketinin yarısının kesildiği görüldü. Başlık ve arama düzeltildi (dacb9a5). Etiket için alanlar etiketi içeride gösteren stile geçirildi (405b759), ama proje sahibi altıncı denemede düğmelerdeki yazının kesilmesinin sürdüğünü söyledi; sonraki oturumun ilk işi bu. #103 onun onayıyla kapanır.
+
+**Durum (2026-11-15):** "Kesilen düğme yazısı" aslında form alanlarının görünümüydü; iki farklı alan stili denendi, proje sahibi ikisini de beğenmedi ve beşinci denemedeki görünüme dönüldü. Koyu tema sakinleşti: zemin tam siyah yerine koyu gri, yazı kısık beyaz, kartlar zeminden belirgin, arkadaki lekeler çok soluk. Açık tema Claude uygulamasındaki gibi krem oldu. Kartların tepesindeki ince beyaz şerit iki temada da kalktı, yalnızca alt menünün camında duruyor. Ayarlar'a Görünüm grubu ve tema seçimi (Sistem, Açık, Koyu) eklendi; seçim kilit ekranı da uysun diye kasanın dışında şifresiz bir dosyada ([tasarım](docs/tema-secimi.md), [plan](docs/tema-secimi-plani.md)). #103 proje sahibinin onayıyla kapanır. Proje sahibi altıncı denemeden sonra görünümü şimdilik uygun buldu. Aynı gün entegrasyon testleri Android 11, 14 ve 17 emülatörlerinde hepsi geçti; kullanım kılavuzu ([kullanim.md](docs/kullanim.md)) ekran görüntüleriyle yazıldı (#104); gizlilik bildirimine tema dosyası eklendi, mağaza yanıtları kesinleşti (#102). Kalan: faz PR'ı, dışarıdan inceleme çağrısı (#90, gönderiyi proje sahibi paylaşır), 1.0'dan önce son derlemeyle kısa yükseltme denemesi (#101), sürüm numarası ve 1.0 etiketi.
 
 **Bitti sayılması için:** GitHub Release'teki APK dört emülatöre ve gerçek telefona kuruluyor; önceki sürümden yükseltmede veri korunuyor; README son durumu anlatıyor.
 
@@ -455,6 +476,10 @@ Bu fikirlerin hiçbiri henüz planlanmış değil. Sırası kullanıma göre bel
 | Passkey ve Credential Manager sağlayıcısı | Android 14 ve üstü. |
 | Kart ve güvenli not kayıtları | Kayıt modeli türlere açık tasarlanacak. |
 | Steam Guard kodları, Wear OS | 2FA tarafı için. |
+| IzzyOnDroid | 1.0'dan hemen sonra. GitHub'daki imzalı APK'yı F-Droid uygulamasında listeler; imza bizim anahtarımız kalır. |
+| F-Droid ana deposu | IzzyOnDroid'den sonra. F-Droid kaynaktan derler, derleme bizimkiyle birebir aynıysa bizim imzamızla yayımlar. Bunun için CI'ın F-Droid'in derleme yolunda (`/home/vagrant/build/io.github.aaudraa.keykey`) derlemesi gerekiyor; yol farkı `libapp.so`'yu değiştiriyor ([yeniden üretilebilir derleme](docs/yayin.md#yeniden-üretilebilir-derleme)). |
+| Play Store | Şimdilik yok (2026-11-09 kararı). 25 $ ücret ve kimlik, yeni hesaplarda 12 kişilik 14 günlük kapalı test; Google kendi imza anahtarını kullandığı için Play sürümü GitHub sürümünün üstüne kurulamaz. |
+| Google'ın geliştirici doğrulaması | 30 Eylül 2026'da dört ülkede başladı, 2027'den sonra yayılacak; Türkiye henüz kapsamda değil. Kapsama girince kayıtsız geliştiricinin uygulaması Play dışında yalnızca "gelişmiş kurulum" adımlarıyla kurulabilecek. O zaman yeniden değerlendirilecek. |
 | KeyKey klavyesi | Giriş kutularını doldurma sistemine bildirmeyen uygulamalarda da doldurmak için kendi klavyesi (KeePassDX'teki gibi). Erişilebilirlik servisi kullanmadan her uygulamada çalışır, ama büyük bir iş ve klavyenin kendisi de güvenlik incelemesi ister. Çıkış noktası: [#94](https://github.com/aaudraa/KeyKey/issues/94), [doldurma sistemine katılmayan ekranlar](docs/guvenlik-tasarimi.md#doldurma-sistemine-katılmayan-ekranlar). |
 | Windows, iOS, tarayıcı eklentisi | Windows derlemesi için araçlar hazır, iOS için Mac gerekir. |
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/features/lock/presentation/auto_lock_scope.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
@@ -25,8 +26,16 @@ class SecretField extends StatefulWidget {
     this.initiallyVisible = false,
     this.inputFormatters,
     this.style,
+    this.search = false,
+    this.focusNode,
     super.key,
   });
+
+  final FocusNode? focusNode;
+
+  /// Arama kutusu: tam yuvarlak, başında büyüteç; [label] silik yazı olarak
+  /// kutunun içinde durur.
+  final bool search;
 
   /// `true` ise gizli kutu açık başlar; gizle düğmesi yine çıkar.
   final bool initiallyVisible;
@@ -68,6 +77,7 @@ class _SecretFieldState extends State<SecretField> {
     final l10n = AppLocalizations.of(context);
     return TextField(
       controller: widget.controller,
+      focusNode: widget.focusNode,
       autofocus: widget.autofocus,
       // Kapatmak yerine salt okunur: odak ve klavye korunur, kullanıcı yanlış
       // paroladan sonra kutuya yeniden dokunmak zorunda kalmaz.
@@ -94,7 +104,24 @@ class _SecretFieldState extends State<SecretField> {
         widget.onChanged?.call(value);
       },
       decoration: InputDecoration(
-        labelText: widget.label,
+        labelText: widget.search ? null : widget.label,
+        hintText: widget.search ? widget.label : null,
+        prefixIcon: widget.search ? const Icon(Icons.search_rounded) : null,
+        enabledBorder: widget.search
+            ? const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(28)),
+                borderSide: BorderSide.none,
+              )
+            : null,
+        focusedBorder: widget.search
+            ? OutlineInputBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(28)),
+                borderSide: BorderSide(
+                  color: KkGlass.of(context).accent,
+                  width: 1.5,
+                ),
+              )
+            : null,
         errorText: widget.errorText,
         helperText: widget.helperText,
         helperMaxLines: 3,

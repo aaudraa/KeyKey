@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keykey/app/ui/kk_switch.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/features/authenticator/data/otp_content.dart';
 import 'package:keykey/features/authenticator/data/otp_parameters.dart';
@@ -77,7 +78,7 @@ void main() {
   Future<void> enterPassword(WidgetTester tester, String password) async {
     await tester.enterText(
       find.descendant(
-        of: find.byType(AlertDialog),
+        of: find.byType(BottomSheet),
         matching: find.byType(TextField),
       ),
       password,
@@ -103,14 +104,14 @@ void main() {
 
     await tester.tap(find.text('Kodları göster'));
     await settle(tester);
-    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.byType(BottomSheet), findsOneWidget);
 
     await enterPassword(tester, 'yanlis-parola');
     expect(find.text('Parola yanlış.'), findsOneWidget);
     expect(find.text('287 082'), findsNothing);
 
     await enterPassword(tester, FakeVaultService.correctPassword);
-    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(BottomSheet), findsNothing);
     expect(find.text('287 082'), findsOneWidget);
   });
 
@@ -136,7 +137,7 @@ void main() {
     await settle(tester);
 
     expect(service.biometricPrompts, 1);
-    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(BottomSheet), findsNothing);
     expect(find.text('287 082'), findsOneWidget);
   });
 
@@ -152,7 +153,7 @@ void main() {
     await settle(tester);
 
     expect(service.biometricPrompts, 1);
-    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.byType(BottomSheet), findsOneWidget);
   });
 
   testWidgets('hatalı denemeler kilit beklemesine ekleniyor', (tester) async {
@@ -211,7 +212,7 @@ void main() {
     }
 
     Finder toggle() => find.widgetWithText(
-      SwitchListTile,
+      KkSwitchTile,
       '2FA kodlarını göstermeden önce doğrula',
     );
 
@@ -222,9 +223,9 @@ void main() {
       await tester.tap(toggle());
       await settle(tester);
 
-      expect(find.byType(AlertDialog), findsNothing);
+      expect(find.byType(BottomSheet), findsNothing);
       expect(settings.settings.otpRequireAuth, isTrue);
-      expect(tester.widget<SwitchListTile>(toggle()).value, isTrue);
+      expect(tester.widget<KkSwitchTile>(toggle()).value, isTrue);
     });
 
     testWidgets('kapatmak doğrulama istiyor', (tester) async {
@@ -232,7 +233,7 @@ void main() {
 
       await tester.tap(toggle());
       await settle(tester);
-      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(find.byType(BottomSheet), findsOneWidget);
       await tester.tap(find.text('Vazgeç'));
       await settle(tester);
       expect(settings.settings.otpRequireAuth, isTrue);
@@ -242,7 +243,7 @@ void main() {
       await enterPassword(tester, FakeVaultService.correctPassword);
 
       expect(settings.settings.otpRequireAuth, isFalse);
-      expect(tester.widget<SwitchListTile>(toggle()).value, isFalse);
+      expect(tester.widget<KkSwitchTile>(toggle()).value, isFalse);
     });
   });
 }

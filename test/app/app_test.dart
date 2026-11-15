@@ -28,7 +28,9 @@ void main() {
     await pumpApp(tester, locale: const Locale('tr'));
 
     expect(
-      find.text("Henüz parola yok. İlkini kaydetmek için Ekle'ye dokun."),
+      find.text(
+        'Henüz parola yok. İlkini kaydetmek için alttaki + düğmesine dokun.',
+      ),
       findsOneWidget,
     );
   });
@@ -39,7 +41,9 @@ void main() {
     await tester.tap(find.byIcon(Icons.shield_outlined));
     await tester.pumpAndSettle();
     expect(
-      find.text("Henüz 2FA hesabı yok. İlkini kurmak için Ekle'ye dokun."),
+      find.text(
+        'Henüz 2FA hesabı yok. İlkini kurmak için alttaki + düğmesine dokun.',
+      ),
       findsOneWidget,
     );
 

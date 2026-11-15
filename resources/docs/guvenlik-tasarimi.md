@@ -249,6 +249,8 @@ Tür `otp` olan kayıtlar 2FA anahtarıyla şifrelenir. Düz metin şu JSON'dur:
 
 Kasa, uygulamanın özel klasöründe tek bir SQLite dosyasında (`keykey.db`) durur. Android yedeklemesi ve cihaz aktarımı kapalıdır. Dosyanın tamamı şifrelenmez, koruma kayıt düzeyindeki şifrelemeden gelir. Bu yüzden SQLCipher gerekmiyor ve şifresiz kalan alanlar yukarıdaki listeyle sınırlı kalıyor.
 
+Kasanın dışında tek bir dosya daha vardır: tema seçimi (`theme`, içeriği `system`, `light` ya da `dark`). Kilit ekranı da seçilen temayla açılsın diye şifresizdir. Kasayla ilgili hiçbir şey içermez; okuyan biri yalnızca seçilen temayı öğrenir. Gerekçe [tema seçimi](tema-secimi.md) belgesinde.
+
 | Tablo | Alanlar | Not |
 |---|---|---|
 | `vault_meta` | `id` (her zaman 1), `header` | Üst bilgi, yukarıdaki JSON biçiminde. |
@@ -354,6 +356,7 @@ Ana uygulama ve doldurma ekranı aynı korumayı kullanır (`WindowProtection`).
 
 ## Pano
 
+- Parola kayıt ayrıntısından ve kasa listesindeki kopyala düğmesinden kopyalanabilir; ikisi de aynı yoldan geçer ve aşağıdaki kurallar ikisinde de aynıdır.
 - Kopyalanan parola hassas olarak işaretlenir (`EXTRA_IS_SENSITIVE`, Android 13+), böylece sistem önizlemede göstermez. Android 11 ve 12'de bu işaret yoktur.
 - Pano 30 saniye sonra temizlenir. Bunu önce zamanlayıcı yapar. Süreç durdurulduysa veya dondurulduysa, 10 saniye paylı kurulan bir `AlarmManager` alarmı yapar. Pay olmadan Android 11'de alarm zamanlayıcıdan önce çalıştı ve kullanıcının yeni kopyasını sildi.
 - Pano okunabiliyorsa yalnızca hâlâ bizim kopyamızı taşıyorsa silinir. Bunu anlamak için kopyalanan metnin kendisi değil, SHA-256 özeti tutulur. Panonun zaman damgası bu iş için güvenilir çıkmadı, cihaz testinde eşleşmedi. Okunamıyorsa, örneğin uygulama arka plandaysa veya Android o an izin vermiyorsa, silinir. Android 14 emülatöründe uygulama öndeyken de zaman zaman okunamadı.
@@ -468,8 +471,8 @@ Android'in otomatik doldurma çerçevesiyle (`AutofillService`) çalışır. Tem
 1. Sistem bir giriş formu için `onFillRequest` çağırır. Kotlin'deki servis formu çözümler: kullanıcı adı, parola, yeni parola ve tek kullanımlık kod alanlarını bulur. Doldurulacak alan yoksa yanıt vermez. KeyKey'in kendi formlarına ve cihazın kendi kilit bilgilerine (Ayarlar ve sistem arayüzü: `com.android.settings`, `com.android.systemui`, `android`) hiç yanıt vermez; ne doldurur ne kaydetmeyi önerir. Android 14'te Ayarlar'daki PIN onayı otomatik doldurmaya açık ve KeyKey cihaz PIN'ini kaydetmeyi öneriyordu.
 2. Servis **kasaya hiç dokunmaz**: kasa açık olsa bile kayıt adlarını bilmez. Yanıtta tek bir öneri vardır, "KeyKey ile doldur". Öneri değer taşımaz ve kimlik doğrulama ister (`Dataset.setAuthentication`): öneriye dokunulunca KeyKey'in doldurma ekranı açılır. Doğrulama öneri düzeyindedir, yanıt düzeyinde değil; çünkü yanıt düzeyinde ekranın döndürdüğü tek bir `Dataset` sistemce yok sayılıyor ve öneri yeniden açılıyor (Android 16 emülatöründe görüldü). Kilitliyken de açıkken de kayıt adı görünmez.
 3. Doldurma ekranı (`AutofillActivity`), ana uygulamadan ayrı bir Flutter giriş noktasıyla (`autofillMain`) çalışır. Kendi kasa oturumunu açar: parmak izi veya ana parola. Hatalı parola beklemesi ana uygulamayla aynı sayacı kullanır.
-4. Ekran eşleşen kayıtları gösterir. Kullanıcı birini seçer. Şüpheli bir durum varsa önce açık bir uyarı ve ek onay gelir.
-5. Seçilen kaydın kullanıcı adı ve parolası Kotlin'e verilir. Kotlin bunlardan bir `Dataset` kurup sisteme döndürür; sistem onu hemen doldurur. Yalnızca giriş parolası alanları doldurulur, yeni parola alanları doldurulmaz. Ekran kapanınca kasa oturumu kapatılır, anahtarlar silinir.
+4. Ekran eşleşen kayıtları gösterir. Kullanıcı birini seçer. Şüpheli bir durum varsa önce açık bir uyarı ve ek onay gelir. **Tek kesin eşleşme** sorulmadan doldurulur, liste açılmaz. Bunun için üçü birlikte geçerli olmalı: tam olarak bir kayıt eşleşiyor; eşleşme kesin (uygulama hedefinde imza tutuyor, ya da güvenilen tarayıcıda kayıt edilebilir alan adı tutuyor); hiçbir uyarı yok (WebView ya da web sayfası gösteren uygulama değil, sitede bağlantı `https` (tarayıcı bağlantı türünü bildirmezse liste açılır), başka bir kayıtta imza tutmuyor değil). Kullanıcı isteğini zaten iki kez göstermiştir: öneriye dokunmuş ve kilidi açmıştır. Yanlış uygulamaya ya da sahte siteye doldurma riski seçme adımında değil, eşleştirme kurallarında karşılanır.
+5. Seçilen kaydın kullanıcı adı ve parolası Kotlin'e verilir. Kotlin bunlardan bir `Dataset` kurup sisteme döndürür; sistem onu hemen doldurur. Yalnızca giriş parolası alanları doldurulur, yeni parola alanları doldurulmaz. Ekran kapanınca kasa oturumu kapatılır, anahtarlar silinir. Doldurmadan sonra kısa bir sistem bildirimi (`Toast`) kaydın adını gösterir: "GitHub dolduruldu". Kullanıcı adı ve parola bildirime girmez. Bildirim her doldurmada çıkar, listeden seçilende de.
 
 Ekran son uygulamalar listesinde görünmez ve ekran görüntüsü alınamaz (`FLAG_SECURE`).
 
@@ -492,7 +495,7 @@ Tarayıcıda kayda bağlı uygulamalar dikkate alınmaz, yalnızca adresler kar�
 - **Şifresiz bağlantı:** Sayfa `http` ile açılmış.
 - **İmza tutmuyor:** Kayıtta bağlı uygulamanın paket adı aynı ama imzası farklı. Bu durumda kayıt eşleşmiş sayılmaz. Kullanıcı yine de seçerse uyarı özellikle "bu uygulama sahte olabilir" der. Bu durumda bağlama önerilmez; yoksa sahte uygulamanın imzası kayda girerdi.
 
-Birden fazla durum aynı anda geçerliyse hepsi tek pencerede yazılır. Uygulama hedeflerinde pencere uygulamanın adını, paket adını ve imza sertifikasının tam SHA-256 özetini gösterir; tarayıcıda bunun yerine adres çubuğuna bakılması söylenir. Bağlama yalnızca imzası okunabilen, tarayıcı olmayan bir uygulama için, kutu işaretlenirse yapılır; varsayılan kapalıdır. Eşleşen ve `https` olan kayıt sorulmadan doldurulur.
+Birden fazla durum aynı anda geçerliyse hepsi tek pencerede yazılır. Uygulama hedeflerinde pencere uygulamanın adını, paket adını ve imza sertifikasının tam SHA-256 özetini gösterir; tarayıcıda bunun yerine adres çubuğuna bakılması söylenir. Bağlama yalnızca imzası okunabilen, tarayıcı olmayan bir uygulama için, kutu işaretlenirse yapılır; varsayılan kapalıdır. Eşleşen ve `https` olan kayıt sorulmadan doldurulur. Uyarısız tek bir eşleşme varsa liste hiç açılmadan doldurulur ([Akış](#akış), 4. adım); şüpheli durumlardan biri varsa bu yapılmaz, liste ve uyarı gelir.
 
 ### Yeni parola kaydetme
 
@@ -507,6 +510,8 @@ Yanıtta bir `SaveInfo` bulunur. Kullanıcı formu gönderince sistem kaydetmeyi
   - Güvenilen tarayıcılar, adıyla. Bu liste `trusted-browsers.mjs` ile tarayıcı listesiyle birlikte üretilir ve bir test ikisinin aynı kaldığını denetler.
 
   Ana ekranda simgesi olmayan bir uygulamanın imzası yine okunamayabilir; o zaman kayıt bağlanmadan kaydedilir ve ekran bunu söyler.
+
+  Aynı görünürlükle kayda bağlı uygulamanın simgesi de okunur ve kartta silik olarak gösterilir. Simge `PackageManager`dan o an alınır, diske yazılmaz ve yalnızca onu gösteren ekran açıkken bellekte durur; görünmeyen uygulamada çizgi simge çıkar.
 - **Var olan kayıt:** Bu hedefle zaten eşleşen ve aynı kullanıcı adını taşıyan bir kayıt varsa, ekran onun parolasını güncellemeyi önerir; eski parola geçmişe girer. Eşleşmeyen bir kaydın parolası önerilmez; böylece sahte bir uygulama başka bir kaydın parolasını değiştirtemez. Parola da aynıysa ekran kaydın zaten var olduğunu söyler.
 
 ### Satır içi öneriler
@@ -691,6 +696,7 @@ Kasa açıkken arama yapılabilsin diye kayıtların tamamı çözülüp bellekt
 5. **Sarmalama anahtarı dönmez.** Parola değişse de kasa anahtarı aynı kalır. Eski parolayı ve o zamanki üst bilgiyi birlikte ele geçiren biri kasa anahtarına ulaşabilir, eski yedekler de eski parolayla açılmaya devam eder.
 6. **Hatalı deneme beklemesi yalnızca uygulamanın kuralıdır.** Sayaç şifresizdir ve kopyalanmış bir kasa dosyası üzerindeki denemeleri sınırlamaz. Ayrıntılar [Kilit](#kilit) bölümünde.
 7. **Kilitten sonra bellekte kalan dizeler.** Yazılan ana parola ve ekranda gösterilmiş değerler (parola, kullanıcı adı) kilitten sonra da Dart'ın henüz toplanmamış dizelerinde kalabilir; denetimde kilitten 2,5 dakika sonra bile bulundular ([ölçüm](guvenlik-denetimi.md#bellek)). Anahtarlar, kurtarma anahtarı ve 2FA anahtarları bulunmadı. Bu belleği okumak root ya da süreçte kod çalıştırmayı gerektirir; böyle bir saldırgan ana parolayı yazılırken de görebileceği için risk kabul edildi. Ayrıntılar [Bellek](#bellek) bölümünde.
+8. **Doldurma bildirimi güvenli pencerenin dışında.** Doldurmadan sonraki bildirim kaydın adını taşır ve KeyKey'in `FLAG_SECURE` penceresinin dışında görünür: ekran kaydına girer, erişilebilirlik servislerine bildirilir. Bildirimden önce kayıt adı KeyKey dışında hiç görünmüyordu. Kayıt adı genelde zaten ekranda olan uygulamanın ya da sitenin adı olduğu ve kullanıcı adı ile parola bildirime girmediği için bu kabul edildi.
 
 ## Test yaklaşımı
 
