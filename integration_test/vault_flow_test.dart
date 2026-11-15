@@ -160,7 +160,7 @@ void main() {
     // İlk açılışta tanıtım gelir; atlanır.
     await pumpUntilFound(tester, find.text('Atla'));
     await tester.tap(find.text('Atla'));
-    await pumpUntilFound(tester, find.text('Kasa oluştur'));
+    await pumpUntilFound(tester, find.text('KASA OLUŞTUR'));
 
     final fields = find.byType(TextField);
     await tester.enterText(fields.at(0), firstPassword);

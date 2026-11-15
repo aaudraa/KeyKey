@@ -401,7 +401,7 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Devam et'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Yeni ana parola'), findsOneWidget);
+      expect(find.text('YENİ ANA PAROLA'), findsOneWidget);
       expect(find.text(vaultText), findsNothing);
 
       final fields = find.byType(TextField);

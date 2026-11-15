@@ -67,7 +67,7 @@ void main() {
       final screen = find.byType(SettingsScreen);
       final bar = find.descendant(
         of: find.descendant(of: screen, matching: find.byType(AppBar)),
-        matching: find.text('Ayarlar'),
+        matching: find.text('AYARLAR'),
       );
       expect(bar, findsOneWidget);
       final before = tester.getRect(bar);

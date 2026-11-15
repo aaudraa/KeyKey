@@ -12,6 +12,7 @@ Faz 9 (1.0 yayını) sürüyor.
 - Etiketten imzalı APK, AAB ve taslak GitHub Release üreten yayın iş akışı (#96).
 - Türkçe ve İngilizce gizlilik bildirimi (#102).
 - İlk açılışta altı sayfalık hareketli tanıtım: KeyKey'in ne olduğu, menüde nerede ne bulunduğu, otomatik doldurma, başka uygulamalardan geçiş ve yedek; atlanabilir, Ayarlar → Hakkında'dan yeniden izlenebilir.
+- Ekran başlıkları (Kasa, 2FA, Ayarlar) dar, eğik, kalın ve büyük harfle; alttaki menüde sekme adı daha büyük.
 - Ayarlar'da tema seçimi: Sistem, Açık ya da Koyu (#103). Seçim kilit ekranında ve otomatik doldurma penceresinde de geçerli; kasanın dışında, şifresiz küçük bir dosyada saklanıyor.
 
 ### Değişenler

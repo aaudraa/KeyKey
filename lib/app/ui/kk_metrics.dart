@@ -4,7 +4,7 @@
 abstract final class KkMetrics {
   /// Sekmelerin kök ekran başlığı ("Kasa").
   /// Telefon denemesi 5: biraz büyük ve kalın (w800), sabit.
-  static const double rootTitle = 24;
+  static const double rootTitle = 30;
 
   /// Alt ekranların başlığı.
   static const double subTitle = 19;
