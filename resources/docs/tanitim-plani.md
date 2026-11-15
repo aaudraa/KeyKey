@@ -36,11 +36,11 @@
 
 **Arayüzler:** `class IntroScreen extends StatefulWidget { const new({super.key}); }`; kasa durumu `VaultOpen` ise yeniden izleme kipi. `vaultRedirect`: `VaultNotSetUp` → `intro`, `setup` ve `restore` serbest; `VaultOpen` → `intro` serbest.
 
-- [ ] **Adım 1: Başarısız testler.** Kasa yokken açılış "Hoş geldin" sayfasını gösterir; **İleri** sayfayı ilerletir ve noktalar değişir; **Atla** ve son sayfadaki **Kasamı oluştur** kuruluma gider; Ayarlar → Hakkında → **Tanıtımı yeniden göster** tanıtımı açar, son düğme **Bitti**, dokununca Ayarlar'a döner; `vaultRedirect(VaultNotSetUp(), '/kasa') == '/tanitim'`, `('/kurulum') == null`.
-- [ ] **Adım 2:** Testler düşer.
-- [ ] **Adım 3:** İskeleti yaz: altı sayfanın başlığı ve metni, çizim yeri boş; `KkScaffold`, üstte Atla, altta noktalar ve düğme. Eski testleri **Atla** ile güncelle.
-- [ ] **Adım 4:** `flutter test` tümü yeşil.
-- [ ] **Adım 5:** Commit `özellik(tanıtım): ilk açılışta tanıtım sayfaları`.
+- [x] **Adım 1: Başarısız testler.** Kasa yokken açılış "Hoş geldin" sayfasını gösterir; **İleri** sayfayı ilerletir ve noktalar değişir; **Atla** ve son sayfadaki **Kasamı oluştur** kuruluma gider; Ayarlar → Hakkında → **Tanıtımı yeniden göster** tanıtımı açar, son düğme **Bitti**, dokununca Ayarlar'a döner; `vaultRedirect(VaultNotSetUp(), '/kasa') == '/tanitim'`, `('/kurulum') == null`.
+- [x] **Adım 2:** Testler düşer.
+- [x] **Adım 3:** İskeleti yaz: altı sayfanın başlığı ve metni, çizim yeri boş; `KkScaffold`, üstte Atla, altta noktalar ve düğme. Eski testleri **Atla** ile güncelle.
+- [x] **Adım 4:** `flutter test` tümü yeşil.
+- [x] **Adım 5:** Commit `özellik(tanıtım): ilk açılışta tanıtım sayfaları`.
 
 ### Görev 2: Hareketli çizimler ve KeePassXC logosu
 

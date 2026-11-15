@@ -245,7 +245,18 @@ void main() {
           status: const VaultNotSetUp(),
           service: service,
         );
+        await skipIntro(tester);
         await checkGuidelines(tester, location: AppRoutes.setup, scale: scale);
+      });
+
+      testWidgets('tanıtım', (tester) async {
+        final service = await prepare(tester);
+        await pumpKeyKey(
+          tester,
+          status: const VaultNotSetUp(),
+          service: service,
+        );
+        await checkGuidelines(tester, location: AppRoutes.intro, scale: scale);
       });
 
       testWidgets('yedekten kurulum', (tester) async {

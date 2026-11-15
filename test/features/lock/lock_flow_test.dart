@@ -52,7 +52,7 @@ void main() {
         AppRoutes.changePassword,
       ]) {
         expect(vaultRedirect(VaultLocked(header), location), AppRoutes.lock);
-        expect(vaultRedirect(const VaultNotSetUp(), location), AppRoutes.setup);
+        expect(vaultRedirect(const VaultNotSetUp(), location), AppRoutes.intro);
         expect(
           vaultRedirect(const VaultUnavailable(), location),
           AppRoutes.unavailable,

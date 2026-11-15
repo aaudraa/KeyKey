@@ -19,6 +19,7 @@ import 'package:keykey/features/lock/presentation/lock_screen.dart';
 import 'package:keykey/features/lock/presentation/new_password_screen.dart';
 import 'package:keykey/features/lock/presentation/recovery_screen.dart';
 import 'package:keykey/features/lock/presentation/unavailable_screen.dart';
+import 'package:keykey/features/onboarding/presentation/intro_screen.dart';
 import 'package:keykey/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:keykey/features/settings/presentation/change_password_screen.dart';
 import 'package:keykey/features/settings/presentation/settings_screen.dart';
@@ -42,6 +43,7 @@ abstract final class AppRoutes {
   static const changePassword = '/ayarlar/parola';
   static const loginImport = '/ayarlar/ice-aktar';
   static const setup = '/kurulum';
+  static const intro = '/tanitim';
   static const restore = '/geri-yukle';
   static const lock = '/kilit';
   static const recovery = '/kilit/kurtarma';
@@ -61,11 +63,13 @@ abstract final class AppRoutes {
 /// Kasa açık değilken kasa ekranlarına hiçbir yoldan ulaşılamaz.
 String? vaultRedirect(VaultStatus status, String location) {
   return switch (status) {
-    // Yeni telefonda kasa yedekten de kurulabilir.
+    // Önce tanıtım; yeni telefonda kasa yedekten de kurulabilir.
     VaultNotSetUp() =>
-      location == AppRoutes.setup || location == AppRoutes.restore
+      location == AppRoutes.intro ||
+              location == AppRoutes.setup ||
+              location == AppRoutes.restore
           ? null
-          : AppRoutes.setup,
+          : AppRoutes.intro,
     VaultLocked() =>
       location == AppRoutes.lock || location == AppRoutes.recovery
           ? null
@@ -101,6 +105,10 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) =>
         vaultRedirect(ref.read(vaultControllerProvider), state.matchedLocation),
     routes: [
+      kkRoute(
+        path: AppRoutes.intro,
+        builder: (context, state) => const IntroScreen(),
+      ),
       kkRoute(
         path: AppRoutes.setup,
         builder: (context, state) => const OnboardingScreen(),

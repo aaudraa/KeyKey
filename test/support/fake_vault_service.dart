@@ -601,6 +601,12 @@ final Set<String> _commonPasswords = Wordlists.parseCommon(
   File(Wordlists.commonPath).readAsStringSync(),
 );
 
+/// Kasa yokken açılışta gelen tanıtımı atlayıp kurulum ekranına geçer.
+Future<void> skipIntro(WidgetTester tester) async {
+  await tester.tap(find.text('Atla'));
+  await tester.pumpAndSettle();
+}
+
 /// Uygulamayı verilen kasa durumuyla açar.
 Future<void> pumpKeyKey(
   WidgetTester tester, {

@@ -24,6 +24,9 @@ abstract final class KkMetrics {
   /// denemesi 5) belgedeki 52-54'ten büyük.
   static const double fieldHeight = 60;
 
+  /// Tanıtım sayfalarındaki çizimin yüksekliği.
+  static const double introArtHeight = 240;
+
   /// Ana düğmenin görünen boyu ve köşesi.
   static const double buttonHeight = 44;
   static const double buttonRadius = 14;

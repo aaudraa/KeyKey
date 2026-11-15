@@ -307,6 +307,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     trailing: Text(version ?? ''),
                   ),
                   ListTile(
+                    leading: const KkIconBox(icon: Icons.auto_stories_rounded),
+                    title: Text(l10n.settingsShowIntro),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () => context.push(AppRoutes.intro),
+                  ),
+                  ListTile(
                     leading: const KkIconBox(icon: Icons.description_rounded),
                     title: Text(l10n.settingsLicenses),
                     trailing: const Icon(Icons.chevron_right_rounded),
