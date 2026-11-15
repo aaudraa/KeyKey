@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:keykey/app/ui/kk_field_border.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_metrics.dart';
 
@@ -146,26 +145,37 @@ abstract final class AppTheme {
           side: BorderSide(color: glass.border),
         ),
       ),
-      // Etiket çerçeve çizgisine değil, kutunun içine oturur: alanlar cam
-      // kartın içinde durduğu için çizgideki etiketin yarısı kesiliyordu
-      // (telefon denemesi 5). Odak ve hata dört yandan ince çerçeveyle
-      // gösterilir (telefon denemesi 6).
+      // Alanın adı çerçeve çizgisinin üstünde durur, çizgi boşta da
+      // görünür (telefon denemesi 6). Kart, çizginin üstüne taşan adı
+      // kesmesin diye KkFieldCard üstte yer bırakır.
       inputDecorationTheme: InputDecorationTheme(
-        contentPadding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 20,
+        ),
         filled: true,
         fillColor: glass.fill,
-        border: const KkFieldBorder(borderRadius: cardRadius),
-        enabledBorder: const KkFieldBorder(borderRadius: cardRadius),
-        disabledBorder: const KkFieldBorder(borderRadius: cardRadius),
-        focusedBorder: KkFieldBorder(
+        border: OutlineInputBorder(
+          borderRadius: cardRadius,
+          borderSide: BorderSide(color: muted.withValues(alpha: 0.5)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: cardRadius,
+          borderSide: BorderSide(color: muted.withValues(alpha: 0.5)),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: cardRadius,
+          borderSide: BorderSide(color: muted.withValues(alpha: 0.25)),
+        ),
+        focusedBorder: OutlineInputBorder(
           borderRadius: cardRadius,
           borderSide: BorderSide(color: ink, width: 1.5),
         ),
-        errorBorder: KkFieldBorder(
+        errorBorder: OutlineInputBorder(
           borderRadius: cardRadius,
           borderSide: BorderSide(color: error),
         ),
-        focusedErrorBorder: KkFieldBorder(
+        focusedErrorBorder: OutlineInputBorder(
           borderRadius: cardRadius,
           borderSide: BorderSide(color: error, width: 1.5),
         ),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/app/ui/kk_card.dart';
+import 'package:keykey/app/ui/kk_form.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
@@ -323,7 +324,7 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
             onFocusChange: (focused) =>
                 setState(() => _searchFocused = focused),
             child: GlassSurface(
-              padding: const EdgeInsets.all(4),
+              padding: kkFieldCardPadding,
               child: SecretField(
                 controller: _query,
                 label: l10n.autofillSearchOther,

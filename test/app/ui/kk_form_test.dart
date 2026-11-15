@@ -151,41 +151,52 @@ void main() {
     });
   }
 
-  // Telefon denemesi 6: yuvarlak köşeli kutudaki alt çizgi köşelerde
-  // kıvrılıp incelerek bitiyor, bozuk görünüyordu. Odakta kutunun dört
-  // yanı ince bir çerçeveyle çizilir; etiket yine içeride kalır.
-  for (final (name, theme) in [
-    ('açık', AppTheme.light),
-    ('koyu', AppTheme.dark),
-  ]) {
-    testWidgets('$name: odaktaki alanın dört yanında çerçeve var', (
-      tester,
-    ) async {
-      final focus = FocusNode();
-      addTearDown(focus.dispose);
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: theme,
-          home: Scaffold(
-            body: Padding(
-              padding: const EdgeInsets.all(16),
+  // Kilit, kurtarma gibi ekranlarda alan KkFieldCard yerine doğrudan cam
+  // yüzeyin içinde durur; orada da adı kesilmemeli.
+  testWidgets('kkFieldCardPadding ile cam yüzeydeki alanın adı kesilmez', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Scaffold(
+          body: Padding(
+            padding: const EdgeInsets.all(16),
+            child: GlassSurface(
+              key: const Key('kart'),
+              padding: kkFieldCardPadding,
               child: TextField(
-                focusNode: focus,
-                decoration: const InputDecoration(labelText: 'Kullanıcı adı'),
+                controller: TextEditingController(text: 'ali'),
+                decoration: const InputDecoration(labelText: 'Ana parola'),
               ),
             ),
           ),
         ),
-      );
-      focus.requestFocus();
-      await tester.pumpAndSettle();
-      expect(
-        find.byType(InputDecorator),
-        paints..rrect(
-          style: PaintingStyle.stroke,
-          color: theme.colorScheme.onSurface,
-        ),
-      );
+      ),
+    );
+    await tester.pumpAndSettle();
+    final card = tester.getRect(find.byKey(const Key('kart')));
+    final label = tester.getRect(find.text('Ana parola'));
+    expect(label.top, greaterThanOrEqualTo(card.top + 4));
+  });
+
+  // Telefon denemesi 6: kullanıcı alanın adının eski görünümdeki gibi
+  // çerçeve çizgisinin üstünde durmasını istedi; çizgi boşta da görünür.
+  for (final (name, theme) in [
+    ('açık', AppTheme.light),
+    ('koyu', AppTheme.dark),
+  ]) {
+    test('$name: alanın adı çerçeve çizgisinde, çizgi hep görünür', () {
+      final deco = theme.inputDecorationTheme;
+      for (final border in [
+        deco.enabledBorder,
+        deco.focusedBorder,
+        deco.errorBorder,
+        deco.focusedErrorBorder,
+      ]) {
+        expect(border!.isOutline, isTrue);
+        expect(border.borderSide.style, BorderStyle.solid);
+      }
     });
   }
 
