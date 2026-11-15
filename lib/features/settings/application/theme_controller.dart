@@ -19,18 +19,26 @@ final themeModeProvider = NotifierProvider<ThemeModeController, ThemeMode>(
 );
 
 class ThemeModeController extends Notifier<ThemeMode> {
+  /// Yazmalar sırayla yapılır: arka arkaya iki seçim dosyaya aynı anda
+  /// yazılıp içeriği karıştırmasın.
+  Future<void> _lastWrite = Future.value();
+
   @override
   ThemeMode build() => ref.read(initialThemeModeProvider);
 
   /// Seçimi hemen uygular, sonra saklar. Dosyaya yazılamazsa seçim bu
   /// oturumda yine geçerlidir; bir sonraki açılışta eski tema gelir.
-  Future<void> select(ThemeMode mode) async {
+  Future<void> select(ThemeMode mode) {
     state = mode;
-    try {
-      await ref.read(themePreferenceStoreProvider).write(mode);
-    } on FileSystemException {
-      // Tema gizli ya da önemli bir bilgi değil; yazılamaması işi durdurmaz.
-    }
+    final store = ref.read(themePreferenceStoreProvider);
+    return _lastWrite = _lastWrite.then((_) async {
+      try {
+        await store.write(mode);
+      } on FileSystemException {
+        // Tema gizli ya da önemli bir bilgi değil; yazılamaması işi
+        // durdurmaz.
+      }
+    });
   }
 }
 

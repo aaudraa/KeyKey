@@ -192,9 +192,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         );
       },
     );
-    if (chosen != null) {
-      await ref.read(themeModeProvider.notifier).select(chosen);
-    }
+    // Pencere açıkken ekran kapanmış olabilir (ör. kasa kilitlendi).
+    if (!mounted || chosen == null) return;
+    await ref.read(themeModeProvider.notifier).select(chosen);
   }
 
   @override

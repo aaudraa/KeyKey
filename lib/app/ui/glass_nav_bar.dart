@@ -155,7 +155,7 @@ class GlassNavBar extends StatelessWidget {
                             child: SizedBox(
                               width: 1,
                               height: 28,
-                              child: ColoredBox(color: glass.border),
+                              child: ColoredBox(color: glass.hairline),
                             ),
                           ),
                           _AddButton(

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -11,6 +12,18 @@ class _RecordingStore implements ThemePreferenceStore {
 
   @override
   Future<void> write(ThemeMode mode) async => written.add(mode);
+}
+
+/// Her yazma, test onu bitirene kadar sürer.
+class _SlowStore implements ThemePreferenceStore {
+  final pending = <(ThemeMode, Completer<void>)>[];
+
+  @override
+  Future<void> write(ThemeMode mode) {
+    final done = Completer<void>();
+    pending.add((mode, done));
+    return done.future;
+  }
 }
 
 class _FailingStore implements ThemePreferenceStore {
@@ -75,6 +88,27 @@ void main() {
       await container.read(themeModeProvider.notifier).select(ThemeMode.light);
       expect(container.read(themeModeProvider), ThemeMode.light);
       expect(store.written, [ThemeMode.light]);
+    });
+
+    // İnceleme (2026-11-16): arka arkaya iki seçim dosyaya aynı anda
+    // yazılıp içeriği karıştırabiliyordu.
+    test('arka arkaya seçimler dosyaya sırayla yazılır', () async {
+      final store = _SlowStore();
+      final container = ProviderContainer(
+        overrides: [themePreferenceStoreProvider.overrideWithValue(store)],
+      );
+      addTearDown(container.dispose);
+      final notifier = container.read(themeModeProvider.notifier);
+      final first = notifier.select(ThemeMode.dark);
+      final second = notifier.select(ThemeMode.light);
+      await pumpEventQueue();
+      expect(store.pending.map((p) => p.$1), [ThemeMode.dark]);
+      store.pending.first.$2.complete();
+      await pumpEventQueue();
+      expect(store.pending.map((p) => p.$1), [ThemeMode.dark, ThemeMode.light]);
+      store.pending.last.$2.complete();
+      await Future.wait([first, second]);
+      expect(container.read(themeModeProvider), ThemeMode.light);
     });
 
     test('yazılamazsa seçim yine de oturumda kalır', () async {

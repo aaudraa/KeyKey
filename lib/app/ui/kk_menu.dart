@@ -162,6 +162,6 @@ ButtonStyle kkCircleButtonStyle(KkGlass glass, double size) => ButtonStyle(
   minimumSize: WidgetStatePropertyAll(Size.square(size)),
   tapTargetSize: MaterialTapTargetSize.padded,
   backgroundColor: WidgetStatePropertyAll(glass.fill),
-  side: WidgetStatePropertyAll(BorderSide(color: glass.border)),
+  side: WidgetStatePropertyAll(BorderSide(color: glass.hairline)),
   shape: const WidgetStatePropertyAll(CircleBorder()),
 );

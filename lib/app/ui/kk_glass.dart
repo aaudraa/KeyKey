@@ -13,6 +13,7 @@ class KkGlass extends ThemeExtension<KkGlass> {
     required this.fillStrong,
     required this.navFill,
     required this.border,
+    required this.hairline,
     required this.highlight,
     required this.shadow,
     required this.scrim,
@@ -37,7 +38,12 @@ class KkGlass extends ThemeExtension<KkGlass> {
   /// ve canlı görünsün.
   final Color navFill;
 
+  /// Kartın kenarı.
   final Color border;
+
+  /// Satır arası çizgiler, ayraçlar, çip ve düğme kenarları. Koyu temada
+  /// kart kenarından belirgin: kartın üstünde seçilmeli.
+  final Color hairline;
 
   /// Cam yüzeyin üst kenarındaki ince parlak çizgi.
   final Color highlight;
@@ -101,6 +107,7 @@ class KkGlass extends ThemeExtension<KkGlass> {
       fillStrong: c(fillStrong, other.fillStrong),
       navFill: c(navFill, other.navFill),
       border: c(border, other.border),
+      hairline: c(hairline, other.hairline),
       highlight: c(highlight, other.highlight),
       shadow: c(shadow, other.shadow),
       scrim: c(scrim, other.scrim),

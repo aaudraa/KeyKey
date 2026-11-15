@@ -99,6 +99,20 @@ void main() {
       }
     });
 
+    // Kart kenarı soluk, ama satır arası çizgiler ve düğme kenarları
+    // kartın üstünde seçilmeli (inceleme, 2026-11-16).
+    test('koyu temada satır çizgisi kartta görünür', () {
+      final theme = AppTheme.dark;
+      final glass = theme.extension<KkGlass>()!;
+      final line = theme.dividerTheme.color!;
+      expect(line, glass.hairline);
+      expect(theme.colorScheme.outlineVariant, glass.hairline);
+      expect(
+        contrast(over(glass.fill, line), glass.fill),
+        greaterThanOrEqualTo(1.45),
+      );
+    });
+
     test('koyu temada kartın çerçevesi neredeyse görünmez', () {
       final glass = AppTheme.dark.extension<KkGlass>()!;
       expect(glass.border.a, lessThanOrEqualTo(0.05));

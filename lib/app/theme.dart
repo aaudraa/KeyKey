@@ -79,6 +79,11 @@ abstract final class AppTheme {
       border: isDark
           ? Colors.white.withValues(alpha: 0.04)
           : KkColors.ink.withValues(alpha: 0.07),
+      // Satır çizgileri koyu temada kart kenarından belirgin (inceleme,
+      // 2026-11-16); açık temada kenarla aynı.
+      hairline: isDark
+          ? Colors.white.withValues(alpha: 0.14)
+          : KkColors.ink.withValues(alpha: 0.07),
       highlight: Colors.white.withValues(alpha: isDark ? 0.28 : 0.95),
       shadow: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
       scrim: Colors.black.withValues(alpha: isDark ? 0.40 : 0.18),
@@ -117,7 +122,7 @@ abstract final class AppTheme {
       surfaceContainerHigh: surface,
       surfaceContainerHighest: surface,
       outline: muted,
-      outlineVariant: glass.border,
+      outlineVariant: glass.hairline,
       inverseSurface: ink,
       onInverseSurface: ground,
       inversePrimary: isDark ? KkColors.ink : KkColors.darkInk,
@@ -230,13 +235,13 @@ abstract final class AppTheme {
           shape: buttonShape,
           foregroundColor: ink,
           backgroundColor: glass.fill,
-          side: BorderSide(color: glass.border),
+          side: BorderSide(color: glass.hairline),
         ),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: glass.fill,
         selectedColor: glass.tint,
-        side: BorderSide(color: glass.border),
+        side: BorderSide(color: glass.hairline),
         shape: const StadiumBorder(),
         checkmarkColor: ink,
         labelStyle: TextStyle(color: ink),
@@ -275,7 +280,7 @@ abstract final class AppTheme {
         elevation: 4,
         shape: RoundedRectangleBorder(
           borderRadius: const BorderRadius.all(Radius.circular(28)),
-          side: BorderSide(color: glass.border),
+          side: BorderSide(color: glass.hairline),
         ),
       ),
       popupMenuTheme: const PopupMenuThemeData(
@@ -284,7 +289,7 @@ abstract final class AppTheme {
         surfaceTintColor: Colors.transparent,
       ),
       dividerTheme: DividerThemeData(
-        color: glass.border,
+        color: glass.hairline,
         space: 1,
         thickness: 1,
       ),
