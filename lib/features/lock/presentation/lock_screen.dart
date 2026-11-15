@@ -9,7 +9,6 @@ import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/app/ui/keykey_logo.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
-import 'package:keykey/app/ui/kk_form.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/app/ui/kk_shake.dart';
@@ -186,7 +185,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
     final field = KkShake(
       controller: _shake,
       child: GlassSurface(
-        padding: kkFieldCardPadding,
+        padding: const EdgeInsets.all(4),
         child: SecretField(
           controller: _password,
           label: l10n.lockPasswordLabel,

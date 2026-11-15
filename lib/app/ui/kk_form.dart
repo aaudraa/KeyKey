@@ -5,11 +5,6 @@ import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
-/// Etiketli bir alanı doğrudan saran cam yüzeyin iç boşluğu. Alanın adı
-/// çerçeve çizgisinin üstüne taşar; üstteki boşluk kartın onu kesmesini
-/// önler (telefon denemesi 6).
-const kkFieldCardPadding = EdgeInsets.fromLTRB(4, 10, 4, 4);
-
 /// Formdaki bir alanı saran cam kart. [onRemove] verilirse sonda küçük
 /// kaldırma düğmesi durur (ek alanlar için).
 class KkFieldCard extends StatelessWidget {
@@ -32,8 +27,7 @@ class KkFieldCard extends StatelessWidget {
         padding: EdgeInsetsDirectional.only(
           start: 4,
           end: onRemove == null ? 4 : 0,
-          // Alanın adı çerçeve çizgisinin üstüne taşar; kart kesmesin.
-          top: 10,
+          top: 2,
           bottom: 2,
         ),
         child: Row(

@@ -8,7 +8,6 @@ import 'package:keykey/app/router.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
-import 'package:keykey/app/ui/kk_form.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/core/backup/backup_codec.dart';
@@ -224,7 +223,7 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
       Text(l10n.restoreUnlockIntro),
       const SizedBox(height: 16),
       GlassSurface(
-        padding: kkFieldCardPadding,
+        padding: const EdgeInsets.all(4),
         child: _useRecoveryKey
             ? SecretField(
                 key: const ValueKey('recovery'),

@@ -20,9 +20,9 @@ abstract final class KkMetrics {
   static const double rowTitle = 14.5;
   static const double rowSubtitle = 12.5;
 
-  /// Form alanının kutusunun boyu. Kullanıcı biraz büyük istedi (telefon
-  /// denemesi 6); belgedeki 52-54'ten büyük.
-  static const double fieldHeight = 64;
+  /// Form alanının boyu. Etiket kutunun içinde durduğu için (telefon
+  /// denemesi 5) belgedeki 52-54'ten büyük.
+  static const double fieldHeight = 60;
 
   /// Ana düğmenin görünen boyu ve köşesi.
   static const double buttonHeight = 44;

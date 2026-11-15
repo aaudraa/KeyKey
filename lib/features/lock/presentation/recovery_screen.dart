@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
-import 'package:keykey/app/ui/kk_form.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/crypto/recovery_key.dart';
@@ -70,7 +69,7 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
               Text(l10n.recoveryIntro),
               const SizedBox(height: 16),
               GlassSurface(
-                padding: kkFieldCardPadding,
+                padding: const EdgeInsets.all(4),
                 child: SecretField(
                   controller: _key,
                   label: l10n.recoveryKeyLabel,
