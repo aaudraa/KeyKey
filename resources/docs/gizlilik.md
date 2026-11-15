@@ -48,9 +48,11 @@ Bu bildirim değişirse yeni hali bu dosyada ve [değişiklik günlüğünde](..
 
 Sorular için GitHub'da issue aç: https://github.com/aaudraa/KeyKey/issues. Bir güvenlik açığı bildirmek için [güvenlik politikasına](../../.github/SECURITY.md) bak.
 
-## Mağaza formları (taslak)
+## Mağaza formları
 
 Dağıtım kararı (#100, 2026-11-09): 1.0 GitHub Releases'ta, sonra IzzyOnDroid ve F-Droid. Play Store şimdilik yok; Play yanıtı ileride gerekirse diye duruyor.
 
+- **GitHub Releases ve IzzyOnDroid:** Gizlilik formu istemiyor; bu bildirim yeterli.
+
 - **Play Store veri güvenliği formu:** "Uygulama kullanıcı verisi toplamıyor veya paylaşmıyor." Veri aktarımda şifrelenir sorusu: aktarım yok. Kullanıcı veri silme talebinde bulunabilir: uygulama içinden kayıt silme ve uygulamayı kaldırma.
-- **F-Droid:** Beklenen anti-özellik yok. İnternet yok, izleme yok, özgür olmayan bağımlılık yok. SQLite ve libsodium kaynaktan derleniyor; Flutter motoru gibi kalan hazır parçalar F-Droid'in kendi derleme kurallarıyla #100'de ele alınacak.
+- **F-Droid:** Beklenen anti-özellik yok. İnternet yok, izleme yok, özgür olmayan bağımlılık yok. SQLite ve libsodium kaynaktan derleniyor; Flutter motoru gibi kalan hazır parçalar F-Droid'in derleme kurallarıyla başvuru sırasında, 1.0'dan sonra ele alınır.

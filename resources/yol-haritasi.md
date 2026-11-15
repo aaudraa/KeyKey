@@ -438,7 +438,7 @@ Güvenlik ya da veri kaybı sorunu çıkmadı. Ayrıntılar [denetim belgesinde]
 - [x] Yeniden üretilebilir derleme denemesi; `sqlite3`'ü hazır dosya yerine kaynaktan derlemek (F-Droid de bunu gerektiriyor)
 - [x] Dağıtım kararı (2026-11-09): 1.0 GitHub Releases'ta; ardından IzzyOnDroid, sonra F-Droid ana deposu (bizim imzamızla); Play Store şimdilik yok
 - [x] `v0.x` sürümünden 1.0'a yükseltme testi: veri kaybı olmamalı (1.0 etiketinden önce son derlemeyle kısa tekrar)
-- [ ] Gizlilik bildirimi: seçilen mağazaların istediği açıklamalar (Play Store veri güvenliği formu, F-Droid); MASVS-PRIVACY denetiminden
+- [x] Gizlilik bildirimi: seçilen mağazaların istediği açıklamalar (Play Store veri güvenliği formu, F-Droid); MASVS-PRIVACY denetiminden
 - [ ] Tasarım incelemesi: bütün ekranların baştan gözden geçirilmesi, uygulama simgesi ve açılış ekranı; kaynak dosyalar `resources/design/` altında. Deneme (#89) boyunca biriken arayüz notları ve ertelenen fikirler (örneğin otomatik doldurma ekranının yarım yükseklikte açılması) buraya girer. İlk tur kodda bitti (#103, [ilk tasarım belgesi](docs/tasarim-yenileme.md)) ama kullanıcı görünümü beğenmedi; ikinci tur: [cam tasarım belgesi](docs/tasarim-cam.md). Telefonda kullanıcıyla deneme 1.0 etiketinden önce.
 - [x] Kullanım kılavuzu ve ekran görüntüleri (`resources/docs/kullanim.md`, `resources/design/`)
 - [ ] Dışarıdan inceleme çağrısı (#90, Faz 8'den taşındı): gönderiyi kullanıcı paylaşır; gelen geri bildirimler 1.0 etiketinden önce issue'lara dönüştürülür
