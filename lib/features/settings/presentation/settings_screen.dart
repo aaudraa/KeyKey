@@ -11,6 +11,7 @@ import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_entrance.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_section.dart';
+import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/app/ui/kk_switch.dart';
 import 'package:keykey/core/platform/app_packages.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
@@ -22,6 +23,7 @@ import 'package:keykey/features/backup/presentation/backup_section.dart';
 import 'package:keykey/features/backup/presentation/backup_status_card.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
+import 'package:keykey/features/settings/application/theme_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -142,11 +144,65 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  static String _themeName(AppLocalizations l10n, ThemeMode mode) =>
+      switch (mode) {
+        ThemeMode.system => l10n.themeSystem,
+        ThemeMode.light => l10n.themeLight,
+        ThemeMode.dark => l10n.themeDark,
+      };
+
+  /// Alttan açılan pencerede Sistem / Açık / Koyu; seçilmeden kapatılırsa
+  /// tema değişmez.
+  Future<void> _chooseTheme(ThemeMode current) async {
+    final l10n = AppLocalizations.of(context);
+    final chosen = await showKkSheet<ThemeMode>(
+      context,
+      builder: (context) {
+        final accent = KkGlass.of(context).accent;
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Semantics(
+                    header: true,
+                    child: Text(
+                      l10n.settingsTheme,
+                      style: Theme.of(context).textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ),
+                for (final mode in ThemeMode.values)
+                  ListTile(
+                    title: Text(_themeName(l10n, mode)),
+                    selected: mode == current,
+                    trailing: mode == current
+                        ? Icon(Icons.check_rounded, color: accent)
+                        : null,
+                    onTap: () => Navigator.pop(context, mode),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (chosen != null) {
+      await ref.read(themeModeProvider.notifier).select(chosen);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final settings = ref.watch(settingsControllerProvider);
     final version = ref.watch(appVersionProvider).value;
+    final themeMode = ref.watch(themeModeProvider);
     return KkScaffold(
       appBar: kkRootAppBar(context, title: l10n.navSettings),
       body: KkEntranceScope(
@@ -222,6 +278,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ? null
                         : (value) =>
                               unawaited(_setAutofillCopyOtp(value: value)),
+                  ),
+                ],
+              ),
+              KkSection(
+                title: l10n.settingsGroupAppearance,
+                children: [
+                  ListTile(
+                    leading: const KkIconBox(icon: Icons.contrast_rounded),
+                    title: Text(l10n.settingsTheme),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(_themeName(l10n, themeMode)),
+                        const Icon(Icons.chevron_right_rounded),
+                      ],
+                    ),
+                    onTap: () => unawaited(_chooseTheme(themeMode)),
                   ),
                 ],
               ),

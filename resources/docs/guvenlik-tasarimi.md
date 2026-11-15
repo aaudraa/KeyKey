@@ -249,6 +249,8 @@ Tür `otp` olan kayıtlar 2FA anahtarıyla şifrelenir. Düz metin şu JSON'dur:
 
 Kasa, uygulamanın özel klasöründe tek bir SQLite dosyasında (`keykey.db`) durur. Android yedeklemesi ve cihaz aktarımı kapalıdır. Dosyanın tamamı şifrelenmez, koruma kayıt düzeyindeki şifrelemeden gelir. Bu yüzden SQLCipher gerekmiyor ve şifresiz kalan alanlar yukarıdaki listeyle sınırlı kalıyor.
 
+Kasanın dışında tek bir dosya daha vardır: tema seçimi (`theme`, içeriği `system`, `light` ya da `dark`). Kilit ekranı da seçilen temayla açılsın diye şifresizdir. Kasayla ilgili hiçbir şey içermez; okuyan biri yalnızca seçilen temayı öğrenir. Gerekçe [tema seçimi](tema-secimi.md) belgesinde.
+
 | Tablo | Alanlar | Not |
 |---|---|---|
 | `vault_meta` | `id` (her zaman 1), `header` | Üst bilgi, yukarıdaki JSON biçiminde. |

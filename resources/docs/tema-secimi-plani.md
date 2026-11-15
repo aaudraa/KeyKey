@@ -59,9 +59,9 @@
 
 Metinler (TR / EN): `settingsGroupAppearance` "Görünüm" / "Appearance"; `settingsTheme` "Tema" / "Theme"; `themeSystem` "Sistem" / "System"; `themeLight` "Açık" / "Light"; `themeDark` "Koyu" / "Dark".
 
-- [ ] **Adım 1: Başarısız widget testleri** (`pumpSettings` ile): "Görünüm" grubunda "Tema" satırı ve sağında "Sistem" görünür; satıra dokununca pencerede üç seçenek, seçili olanda `Icons.check_rounded`; "Koyu"ya dokununca pencere kapanır, `MaterialApp.themeMode == ThemeMode.dark`, satırda "Koyu" yazar ve kayıt deposuna `dark` yazılmıştır; pencere dışına dokunup kapatınca tema değişmez.
-- [ ] **Adım 2:** `flutter gen-l10n`, test düşer.
-- [ ] **Adım 3:** "Hakkında"dan önce `KkSection(title: settingsGroupAppearance)`; `ListTile` (`KkIconBox(icon: Icons.contrast_rounded)`, sağda seçili adın metni ve `chevron_right_rounded`); `showKkSheet<ThemeMode>` içinde `otp_code_tile` düzeninde başlık ve üç `ListTile`, seçilende `trailing: Icon(Icons.check_rounded)`; dönen değer `null` değilse `select`.
-- [ ] **Adım 4:** Testler ve tüm kontroller yeşil (`dart format`, `flutter analyze`, `flutter test`).
-- [ ] **Adım 5:** `guvenlik-tasarimi.md` dosya bölümüne `theme` dosyası satırı ve şifresiz kalanlar notu; yol haritasına durum satırı.
-- [ ] **Adım 6:** Commit `özellik(ayarlar): Ayarlar'da tema seçimi`; push; APK, telefon denemesi.
+- [x] **Adım 1: Başarısız widget testleri** (`pumpSettings` ile): "Görünüm" grubunda "Tema" satırı ve sağında "Sistem" görünür; satıra dokununca pencerede üç seçenek, seçili olanda `Icons.check_rounded`; "Koyu"ya dokununca pencere kapanır, `MaterialApp.themeMode == ThemeMode.dark`, satırda "Koyu" yazar ve kayıt deposuna `dark` yazılmıştır; pencere dışına dokunup kapatınca tema değişmez.
+- [x] **Adım 2:** `flutter gen-l10n`, test düşer.
+- [x] **Adım 3:** "Hakkında"dan önce `KkSection(title: settingsGroupAppearance)`; `ListTile` (`KkIconBox(icon: Icons.contrast_rounded)`, sağda seçili adın metni ve `chevron_right_rounded`); `showKkSheet<ThemeMode>` içinde `otp_code_tile` düzeninde başlık ve üç `ListTile`, seçilende `trailing: Icon(Icons.check_rounded)`; dönen değer `null` değilse `select`.
+- [x] **Adım 4:** Testler ve tüm kontroller yeşil (`dart format`, `flutter analyze`, `flutter test`).
+- [x] **Adım 5:** `guvenlik-tasarimi.md` dosya bölümüne `theme` dosyası satırı ve şifresiz kalanlar notu; yol haritasına durum satırı.
+- [x] **Adım 6:** Commit `özellik(ayarlar): Ayarlar'da tema seçimi`; push; APK, telefon denemesi.

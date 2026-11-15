@@ -592,6 +592,26 @@
   "@settingsGroupAbout": {
     "description": "Settings group header for version and licenses."
   },
+  "settingsGroupAppearance": "Appearance",
+  "@settingsGroupAppearance": {
+    "description": "Settings group header for the theme choice."
+  },
+  "settingsTheme": "Theme",
+  "@settingsTheme": {
+    "description": "Settings row that opens the light/dark theme choice."
+  },
+  "themeSystem": "System",
+  "@themeSystem": {
+    "description": "Theme option: follow the phone's light or dark setting."
+  },
+  "themeLight": "Light",
+  "@themeLight": {
+    "description": "Theme option: always light."
+  },
+  "themeDark": "Dark",
+  "@themeDark": {
+    "description": "Theme option: always dark."
+  },
   "settingsVersion": "Version",
   "@settingsVersion": {
     "description": "Settings row that shows the app version."

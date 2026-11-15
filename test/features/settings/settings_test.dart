@@ -6,6 +6,8 @@ import 'package:keykey/app/ui/kk_switch.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/features/autofill/application/autofill_setup.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/settings/application/theme_controller.dart';
+import 'package:keykey/features/settings/data/theme_preference.dart';
 import 'package:keykey/features/settings/presentation/settings_screen.dart';
 import 'package:sodium/sodium_sumo.dart';
 
@@ -473,4 +475,92 @@ void main() {
     expect(settings.settings.autofillCopyOtp, isFalse);
     expect(tester.widget<KkSwitchTile>(copySwitch).value, isFalse);
   });
+
+  group('tema', () {
+    late _RecordingThemeStore store;
+
+    setUp(() => store = _RecordingThemeStore());
+
+    Future<void> pumpWithTheme(WidgetTester tester) async {
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        extraOverrides: [themePreferenceStoreProvider.overrideWithValue(store)],
+      );
+      await tester.tap(find.byIcon(Icons.settings_outlined));
+      await tester.pumpAndSettle();
+    }
+
+    Finder themeRow() => find.widgetWithText(ListTile, 'Tema');
+
+    Finder option(String name) => find.descendant(
+      of: find.byType(BottomSheet),
+      matching: find.widgetWithText(ListTile, name),
+    );
+
+    ThemeMode appThemeMode(WidgetTester tester) =>
+        tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode!;
+
+    testWidgets('Görünüm grubunda Tema satırı seçili temayı gösterir', (
+      tester,
+    ) async {
+      await pumpWithTheme(tester);
+      await tester.scrollUntilVisible(themeRow(), 200);
+      expect(find.widgetWithText(KkSection, 'Görünüm'), findsOneWidget);
+      expect(
+        find.descendant(of: themeRow(), matching: find.text('Sistem')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('Koyu seçilince uygulanır, satırda yazar ve saklanır', (
+      tester,
+    ) async {
+      await pumpWithTheme(tester);
+      await tester.scrollUntilVisible(themeRow(), 200);
+      await tester.tap(themeRow());
+      await tester.pumpAndSettle();
+      for (final name in ['Sistem', 'Açık', 'Koyu']) {
+        expect(option(name), findsOneWidget);
+      }
+      expect(
+        find.descendant(
+          of: option('Sistem'),
+          matching: find.byIcon(Icons.check_rounded),
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(option('Koyu'));
+      await tester.pumpAndSettle();
+      expect(find.byType(BottomSheet), findsNothing);
+      expect(appThemeMode(tester), ThemeMode.dark);
+      expect(
+        find.descendant(of: themeRow(), matching: find.text('Koyu')),
+        findsOneWidget,
+      );
+      expect(store.written, [ThemeMode.dark]);
+    });
+
+    testWidgets('pencere seçmeden kapatılırsa tema değişmez', (tester) async {
+      await pumpWithTheme(tester);
+      await tester.scrollUntilVisible(themeRow(), 200);
+      await tester.tap(themeRow());
+      await tester.pumpAndSettle();
+      expect(find.byType(BottomSheet), findsOneWidget);
+      await tester.tapAt(const Offset(20, 20));
+      await tester.pumpAndSettle();
+      expect(find.byType(BottomSheet), findsNothing);
+      expect(appThemeMode(tester), ThemeMode.system);
+      expect(store.written, isEmpty);
+    });
+  });
+}
+
+class _RecordingThemeStore implements ThemePreferenceStore {
+  final written = <ThemeMode>[];
+
+  @override
+  Future<void> write(ThemeMode mode) async => written.add(mode);
 }
