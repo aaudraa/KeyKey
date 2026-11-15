@@ -9,7 +9,7 @@ KeyKey GPL-3.0 ile yayımlanır. Bu yüzden içine giren her şeyin lisansı GPL
 | Konu | Sonuç |
 |---|---|
 | Lisans uyumu | Uyumlu. Kodların hepsi izin veren lisanslarla geliyor: BSD-2/3-Clause, MIT, Apache-2.0, ISC; SQLite kamu malı. GPL'li, LGPL'li ya da lisanssız paket yok. Apache-2.0 GPL-3.0 ile uyumlu (GPL-2.0 ile uyumlu olmazdı). |
-| Veri dosyaları | Public Suffix List MPL-2.0; GPL ile birlikte dağıtılabilir, dosya değiştirilmeden gömülü. EFF sözcük listesi CC BY 3.0, atıf istiyor. SecLists parola listesi MIT. Üçü de kod değil, uygulamanın okuduğu veri. Atıfları Lisanslar ekranında. |
+| Veri dosyaları | Public Suffix List MPL-2.0; GPL ile birlikte dağıtılabilir, dosya değiştirilmeden gömülü. EFF sözcük listesi CC BY 3.0, atıf istiyor. SecLists parola listesi MIT. Üçü de kod değil, uygulamanın okuduğu veri. Tanıtımdaki KeePassXC logosu LGPL-2 (KeePassXC'nin `COPYING` dosyası aynı dosyayı Apache-2.0 kaydında da listeliyor). Atıfları Lisanslar ekranında. |
 | Kullanılmayan paket | Yok. Doğrudan bağımlılıkların hepsi kodda kullanılıyor (aşağıdaki tablo). |
 | Güncellik | Doğrudan bağımlılıkların hepsi son kararlı sürümde, biri hariç: `androidx.biometric`'in 1.1.0'dan yeni kararlı sürümü yok. Bekleyen dolaylı paketler ve nedenleri [Güncellik](#güncellik) bölümünde. |
 | Derlemede indirilen | Uygulamaya giren hazır yerel kütüphane yok. SQLite, Faz 9'dan beri repodaki kaynaktan derleniyor (#99). Ayrıntı: [Derlemede indirilenler](#derlemede-indirilenler). |
@@ -206,7 +206,7 @@ Ayarlar'daki "Lisanslar" ekranı Flutter'ın `LicenseRegistry`'sini gösterir. F
 
 - **Dart paketleri:** Hepsinin lisans metni var.
 - **Yanlış başlık:** Üç eklentinin lisans metni kendi adının altında görünmüyor, çünkü `LICENSE` dosyaları Flutter'ın beklediği biçimde değil. `file_selector_android`'inki "Copyright 2013 The Flutter Authors" başlığı altında, `image_picker_android` ve `image_picker_ios`'unki `image_picker` altında. Metinler eksiksiz; sorun eklentilerin kendi dosyasında.
-- **Elle eklenenler** ([`licenses.dart`](../../lib/app/licenses.dart)): EFF sözcük listesi, SecLists, Public Suffix List, zxing-cpp, zint, SQLite ve Android kütüphaneleri.
+- **Elle eklenenler** ([`licenses.dart`](../../lib/app/licenses.dart)): EFF sözcük listesi, SecLists, KeePassXC logosu, Public Suffix List, zxing-cpp, zint, SQLite ve Android kütüphaneleri.
 - **Eksikti, eklendi:**
   - Gradle'dan gelen Android kütüphaneleri hiç yoktu, çünkü Flutter yalnızca Dart paketlerini topluyor. Şimdi "Android libraries" başlığı altında, Apache-2.0 metniyle birlikte listeleniyor.
   - SQLite'ın kamu malı olduğunu belirten kayıt.

@@ -59,6 +59,6 @@
 
 ### Görev 3: Belgeler ve deneme
 
-- [ ] Kılavuzun "İlk kasa" bölümüne tanıtım; değişiklik günlüğü; yol haritası durumu; `bagimliliklar.md`'ye KeePassXC logosu.
-- [ ] Entegrasyon testleri Android 17 emülatöründe; APK, telefon denemesi.
+- [x] Kılavuzun "İlk kasa" bölümüne tanıtım; değişiklik günlüğü; yol haritası durumu; `bagimliliklar.md`'ye KeePassXC logosu.
+- [x] Entegrasyon testleri Android 17 emülatöründe; APK, telefon denemesi.
 - [ ] Commit `belge(tanıtım): kılavuz ve günlük`.

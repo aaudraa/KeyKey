@@ -660,7 +660,8 @@ class _Import extends AnimatedWidget {
   }
 }
 
-// 6. Yedeğin sende: yedek simgesi belirir, sonra nefes alır.
+// 6. Yedeğin sende: dosyaya kaydetme simgesi belirir, sonra nefes alır.
+// Bulut simgesi kullanılmaz: KeyKey internete çıkmaz.
 
 class _Backup extends StatelessWidget {
   const new({required this.enter, required this.loop});
@@ -689,7 +690,7 @@ class _Backup extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: glass.tint,
                 ),
-                child: Icon(Icons.backup_outlined, size: 92, color: ink),
+                child: Icon(Icons.save_alt_rounded, size: 92, color: ink),
               ),
             ),
           ),
