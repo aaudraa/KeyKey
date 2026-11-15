@@ -19,11 +19,9 @@ class IntroArt extends StatefulWidget {
   final int page;
   final bool active;
 
-  /// Tanıtımda gerçek logosu gösterilen tek uygulama: KeePassXC'nin logosu
-  /// özgür lisanslı (ayrıntı `resources/docs/tanitim.md`).
-  static const keepassxcAsset = 'resources/assets/logos/keepassxc.png';
-
-  /// İçe aktarılabilen uygulamalar; logosu olmayanlar yalnızca adıyla.
+  /// İçe aktarılabilen uygulamalar. Hepsi aynı rozette, yalnızca adıyla:
+  /// logoların çoğu marka olarak korunuyor ve özgür lisanslı değil;
+  /// proje sahibi rozetlerin aynı olmasını istedi.
   static const importApps = [
     'Bitwarden',
     'Chrome',
@@ -473,7 +471,7 @@ class _TourRow extends StatelessWidget {
 class _Autofill extends AnimatedWidget {
   const new({required Animation<double> enter}) : super(listenable: enter);
 
-  static const _user = 'ayse.yilmaz';
+  static const _user = 'furkan.keykey';
   static const _passwordLength = 10;
 
   @override
@@ -611,25 +609,11 @@ class _Import extends AnimatedWidget {
                           Radius.circular(20),
                         ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (name == 'KeePassXC') ...[
-                            Image.asset(
-                              IntroArt.keepassxcAsset,
-                              width: 22,
-                              height: 22,
-                              excludeFromSemantics: true,
-                            ),
-                            const SizedBox(width: 6),
-                          ],
-                          Text(
-                            name,
-                            style: theme.textTheme.labelLarge?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        name,
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),

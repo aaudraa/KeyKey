@@ -173,20 +173,12 @@ void main() {
       }
     });
 
-    testWidgets('Geçiş: KeePassXC logosu ve uygulama adları', (tester) async {
+    // Proje sahibinin isteği (2026-11-16): rozetlerin hepsi aynı, logo yok.
+    testWidgets('Geçiş: uygulama adları aynı rozetlerde, logo yok', (
+      tester,
+    ) async {
       await goToPage(tester, 4);
-      expect(
-        inArt(
-          find.byWidgetPredicate(
-            (w) =>
-                w is Image &&
-                w.image is AssetImage &&
-                (w.image as AssetImage).assetName ==
-                    'resources/assets/logos/keepassxc.png',
-          ),
-        ),
-        findsOneWidget,
-      );
+      expect(inArt(find.byType(Image)), findsNothing);
       for (final name in [
         'Bitwarden',
         'Chrome',
@@ -198,6 +190,21 @@ void main() {
       ]) {
         expect(inArt(find.text(name)), findsOneWidget);
       }
+    });
+
+    testWidgets('Otomatik doldurma: örnek kullanıcı adı furkan.keykey', (
+      tester,
+    ) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(tester.platformDispatcher.clearAllTestValues);
+      await pumpFresh(tester);
+      for (var i = 0; i < 3; i++) {
+        await tester.tap(find.widgetWithText(FilledButton, 'İleri'));
+        await tester.pump();
+        await tester.pump();
+      }
+      expect(inArt(find.text('furkan.keykey')), findsOneWidget);
     });
 
     testWidgets('animasyonlar kapalıyken çizimler hemen son hallerinde', (

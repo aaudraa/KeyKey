@@ -14,7 +14,7 @@ Kasa kurulmamışken uygulama açılınca, kasa oluşturma ekranından önce alt
 2. **Verilerin sende:** telefon simgesi; üstünden bir bulut kayıp gider ve üstü çizilir. "İnternet izni yok, hesap yok, sunucu yok."
 3. **Nerede ne var:** alttaki menünün aynısı çizilir, simgeleri sırayla parlar ve yanlarında ne oldukları yazar: kilit → Kasa (parolaların), kalkan → 2FA (doğrulama kodların), dişli → Ayarlar (yedek, doldurma, tema), turuncu + → yeni parola ya da 2FA ekle.
 4. **Otomatik doldurma:** bir giriş kutusunun altında "KeyKey ile doldur" önerisi belirir, kutular dolar. "Uygulamalarda ve Chrome'da tek dokunuşla."
-5. **Geçiş:** KeePassXC logosu ve uygulama adlarıyla rozetler süzülerek K logosuna akar. "Bitwarden, Chrome, Firefox, KeePassXC, Google Authenticator, Aegis ve 2FAS'tan taşı."
+5. **Geçiş:** uygulama adlarıyla aynı görünen rozetler süzülerek K logosuna akar. "Bitwarden, Chrome, Firefox, KeePassXC, Google Authenticator, Aegis ve 2FAS'tan taşı."
 6. **Yedek ve başla:** "Yedeğini sen alırsın; telefon kaybolursa kurtaran o." Ana düğme **Kasamı oluştur**.
 
 **Atla** ve **Kasamı oluştur** kasa oluşturma ekranına götürür; "Yedekten geri yükle" orada kalır.
@@ -25,7 +25,7 @@ Telefonda "Animasyonları kaldır" açıksa hareketler anında biter, metinler v
 
 ## Logolar
 
-Gerçek logo olarak yalnızca **KeePassXC**'ninki kullanılır: `keepassxc.svg` LGPL-2 lisanslı (2016, Lorenzo Stella; KeePassXC'nin `COPYING` dosyası). Lisans notu uygulamanın lisanslar sayfasına eklenir. Diğerleri yalnızca adlarıyla, yazı rozeti olarak geçer:
+Başka uygulamaların logosu kullanılmaz; hepsi aynı görünen yazı rozetleriyle, yalnızca adlarıyla geçer. Önce özgür lisanslı tek logo olan KeePassXC'ninki konmuştu; proje sahibi telefonda gördükten sonra rozetlerin hepsinin aynı olmasını istedi (2026-11-16). Diğer logoların durumu:
 
 | Uygulama | Neden logo yok |
 |---|---|
@@ -40,7 +40,8 @@ Bu sayede F-Droid'in "özgür olmayan görsel" uyarısı gelmez ve [gizlilik bil
 
 1. **Tamamen gerçek logolar:** en tanıdık, ama marka ve lisans sorunu, F-Droid uyarısı. Seçilmedi.
 2. **Baş harfli rozetler:** sorunsuz, ama hiçbir gerçek logo yok. Seçilmedi.
-3. **Serbest olan gerçek logo + ad rozetleri (seçilen):** proje sahibinin tercihi; hepsini göstermek gerekmiyor, amaç aktarmanın mümkün olduğunu göstermek.
+3. **Serbest olan gerçek logo + ad rozetleri:** proje sahibi önce bunu seçti, telefonda gördükten sonra vazgeçti.
+4. **Hepsi aynı ad rozetleri (son karar):** amaç aktarmanın mümkün olduğunu göstermek; logo gerekmiyor.
 
 ## Kurucuya kalanlar
 

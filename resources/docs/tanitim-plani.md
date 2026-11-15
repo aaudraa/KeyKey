@@ -14,7 +14,7 @@
 
 - Süreler `KkMotion.of(context, …)` ile; "Animasyonları kaldır" açıkken çizimler son halleriyle görünür.
 - Turuncu yalnızca K logosunda, "+" çiziminde ve son sayfanın ana düğmesinde.
-- KeePassXC logosu `resources/assets/logos/keepassxc.png` (256 px), kaynağı `resources/design/keepassxc.svg`; lisans notu `registerDataLicenses`'ta (LGPL-2, Lorenzo Stella; KeePassXC `COPYING` aynı dosyayı Apache-2.0 Pictogrammers kaydında da listeliyor, iki not birden).
+- KeePassXC logosu önce eklendi, telefon denemesinden sonra proje sahibinin isteğiyle kaldırıldı: bütün uygulamalar aynı ad rozetinde.
 - Metinler TR ve EN.
 
 ## Gözden geçirmede bakılacaklar
