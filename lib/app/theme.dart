@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:keykey/app/ui/kk_field_border.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_metrics.dart';
 
@@ -147,32 +148,24 @@ abstract final class AppTheme {
       ),
       // Etiket çerçeve çizgisine değil, kutunun içine oturur: alanlar cam
       // kartın içinde durduğu için çizgideki etiketin yarısı kesiliyordu
-      // (telefon denemesi 5). Odak ve hata alt çizgiyle gösterilir.
+      // (telefon denemesi 5). Odak ve hata dört yandan ince çerçeveyle
+      // gösterilir (telefon denemesi 6).
       inputDecorationTheme: InputDecorationTheme(
         contentPadding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
         filled: true,
         fillColor: glass.fill,
-        border: const UnderlineInputBorder(
-          borderRadius: cardRadius,
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: const UnderlineInputBorder(
-          borderRadius: cardRadius,
-          borderSide: BorderSide.none,
-        ),
-        disabledBorder: const UnderlineInputBorder(
-          borderRadius: cardRadius,
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: UnderlineInputBorder(
+        border: const KkFieldBorder(borderRadius: cardRadius),
+        enabledBorder: const KkFieldBorder(borderRadius: cardRadius),
+        disabledBorder: const KkFieldBorder(borderRadius: cardRadius),
+        focusedBorder: KkFieldBorder(
           borderRadius: cardRadius,
           borderSide: BorderSide(color: ink, width: 1.5),
         ),
-        errorBorder: UnderlineInputBorder(
+        errorBorder: KkFieldBorder(
           borderRadius: cardRadius,
           borderSide: BorderSide(color: error),
         ),
-        focusedErrorBorder: UnderlineInputBorder(
+        focusedErrorBorder: KkFieldBorder(
           borderRadius: cardRadius,
           borderSide: BorderSide(color: error, width: 1.5),
         ),

@@ -151,6 +151,44 @@ void main() {
     });
   }
 
+  // Telefon denemesi 6: yuvarlak köşeli kutudaki alt çizgi köşelerde
+  // kıvrılıp incelerek bitiyor, bozuk görünüyordu. Odakta kutunun dört
+  // yanı ince bir çerçeveyle çizilir; etiket yine içeride kalır.
+  for (final (name, theme) in [
+    ('açık', AppTheme.light),
+    ('koyu', AppTheme.dark),
+  ]) {
+    testWidgets('$name: odaktaki alanın dört yanında çerçeve var', (
+      tester,
+    ) async {
+      final focus = FocusNode();
+      addTearDown(focus.dispose);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: theme,
+          home: Scaffold(
+            body: Padding(
+              padding: const EdgeInsets.all(16),
+              child: TextField(
+                focusNode: focus,
+                decoration: const InputDecoration(labelText: 'Kullanıcı adı'),
+              ),
+            ),
+          ),
+        ),
+      );
+      focus.requestFocus();
+      await tester.pumpAndSettle();
+      expect(
+        find.byType(InputDecorator),
+        paints..rrect(
+          style: PaintingStyle.stroke,
+          color: theme.colorScheme.onSurface,
+        ),
+      );
+    });
+  }
+
   testWidgets('alan kartının kaldırma düğmesi çağırır ve 48 dp', (
     tester,
   ) async {
