@@ -24,14 +24,18 @@ abstract final class KkColors {
     Color(0xFFFFFFFF),
   ];
 
-  static const darkGround = Color(0xFF000000);
-  static const darkInk = Color(0xFFF4F4F4);
-  static const darkInkMuted = Color(0xFFADADAD);
+  /// Koyu temada zemin tam siyah değil, yazı saf beyaz değil, kartlar
+  /// zeminden belirgin açık: tam siyah üstünde parlak yazı ve zeminden
+  /// zor ayrılan kartlar gözü yoruyor, ekran karışık görünüyordu
+  /// (telefon denemesi 6).
+  static const darkGround = Color(0xFF121214);
+  static const darkInk = Color(0xFFE6E6E8);
+  static const darkInkMuted = Color(0xFFA2A2A8);
   static const darkError = Color(0xFFFFB4AB);
-  static const darkSurface = Color(0xFF161617);
+  static const darkSurface = Color(0xFF242427);
 
   /// Koyu temada kartların dolu rengi (telefon denemesi 4: buzlu cam değil).
-  static const darkCard = Color(0xFF1C1C1E);
+  static const darkCard = Color(0xFF2E2E32);
   static const darkBrand = Color(0xFFFF8A4C);
   static const blobsDark = [
     Color(0xFF5A5A5E),
@@ -60,8 +64,10 @@ abstract final class AppTheme {
       fill: isDark ? KkColors.darkCard : Colors.white,
       fillStrong: Colors.white.withValues(alpha: isDark ? 0.12 : 0.92),
       navFill: Colors.white.withValues(alpha: isDark ? 0.03 : 0.05),
-      border: Colors.white.withValues(alpha: isDark ? 0.17 : 0.70),
-      highlight: Colors.white.withValues(alpha: isDark ? 0.28 : 0.95),
+      // Koyu temada kartın tepesindeki parlak beyaz şerit ve çerçeve
+      // siyahın üstünde göze batıyordu (telefon denemesi 6).
+      border: Colors.white.withValues(alpha: isDark ? 0.04 : 0.70),
+      highlight: Colors.white.withValues(alpha: isDark ? 0 : 0.95),
       shadow: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
       scrim: Colors.black.withValues(alpha: isDark ? 0.40 : 0.18),
       accent: ink,
@@ -73,7 +79,7 @@ abstract final class AppTheme {
       brandStroke: isDark ? KkColors.darkBrand : KkColors.brandStroke,
       ground: ground,
       blobs: isDark ? KkColors.blobsDark : KkColors.blobsLight,
-      blobAlpha: isDark ? 0.50 : 0.45,
+      blobAlpha: isDark ? 0.12 : 0.45,
     );
 
     final scheme = ColorScheme(

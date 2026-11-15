@@ -56,25 +56,44 @@ void main() {
       expect(glass.fill, Colors.white);
     });
 
+    // Telefon denemesi 6: tam siyah zemin, parlak beyaz yazı ve zeminden
+    // zor ayrılan kartlar "karışık" görünüyordu; gözü yoruyordu.
     test('koyu tema', () {
       final theme = AppTheme.dark;
       final glass = theme.extension<KkGlass>()!;
-      expect(theme.colorScheme.primary, const Color(0xFFF4F4F4));
-      expect(theme.colorScheme.onSurface, const Color(0xFFF4F4F4));
-      expect(theme.colorScheme.onSurfaceVariant, const Color(0xFFADADAD));
-      expect(glass.ground, const Color(0xFF000000));
+      expect(theme.colorScheme.primary, const Color(0xFFE6E6E8));
+      expect(theme.colorScheme.onSurface, const Color(0xFFE6E6E8));
+      expect(theme.colorScheme.onSurfaceVariant, const Color(0xFFA2A2A8));
+      expect(glass.ground, const Color(0xFF121214));
       expect(glass.blobs, const [
         Color(0xFF5A5A5E),
         Color(0xFF3A3A3E),
         Color(0xFF4A4A4E),
       ]);
-      expect(glass.blobAlpha, 0.5);
+      expect(glass.blobAlpha, 0.12);
       expect(glass.brand, const Color(0xFFFF8A4C));
       expect(glass.brandStroke, const Color(0xFFFF8A4C));
       expect(glass.onBrand, const Color(0xFF1A0D05));
       expect(glass.accent, theme.colorScheme.onSurface);
-      // Kartlar dolu koyu gri; arkadaki lekeler kartın içinden görünmez.
-      expect(glass.fill, const Color(0xFF1C1C1E));
+      // Kartlar dolu gri; arkadaki lekeler kartın içinden görünmez.
+      expect(glass.fill, const Color(0xFF2E2E32));
+    });
+
+    test('koyu temada kart zeminin her yerinden belirgin ayrışır', () {
+      final glass = AppTheme.dark.extension<KkGlass>()!;
+      for (final g in glass.worstGrounds()) {
+        expect(
+          contrast(glass.fill, g),
+          greaterThanOrEqualTo(1.25),
+          reason: '$g',
+        );
+      }
+    });
+
+    test('koyu temada kartın üstünde parlak beyaz çizgi yok', () {
+      final glass = AppTheme.dark.extension<KkGlass>()!;
+      expect(glass.highlight.a, 0);
+      expect(glass.border.a, lessThanOrEqualTo(0.05));
     });
 
     test('zemin saydam, ekranlar kendi zeminini çizer', () {

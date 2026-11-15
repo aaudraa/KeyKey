@@ -79,8 +79,9 @@ void main() {
           bytes.getUint8(i + 2),
         );
         expect(l, inInclusiveRange(lo, hi), reason: 'piksel ${i ~/ 4}');
-        // Renksiz lekeler koyu zeminde hafif: eşik küçük.
-        if ((l - lums.first).abs() > 0.005) tinted++;
+        // Renksiz lekeler koyu zeminde çok hafif (telefon denemesi 6):
+        // eşik küçük.
+        if ((l - lums.first).abs() > 0.001) tinted++;
       }
       // Lekeler gerçekten çizilmiş olmalı.
       expect(tinted, greaterThan(10000));
