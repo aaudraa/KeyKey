@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_metrics.dart';
 
-/// KeyKey'in renkleri: siyah, beyaz ve gri; turuncu yalnızca dört yerde.
+/// KeyKey'in renkleri: açık temada krem, koyu temada gri; turuncu yalnızca
+/// dört yerde.
 /// Değerler ve kontrast oranları `resources/docs/tasarim-siyah-beyaz-plani.md`
 /// belgesinde. Zemin tek renk olmadığı için her yazı rengi zeminin en kötü
 /// noktasına göre seçildi.
@@ -10,18 +11,23 @@ abstract final class KkColors {
   /// Simgedeki ve logodaki turuncu; açık temada dolgu turuncusu da budur.
   static const brandOrange = Color(0xFFF26B1D);
 
-  static const ground = Color(0xFFE6E6E8);
-  static const ink = Color(0xFF111111);
-  static const inkMuted = Color(0xFF525252);
+  /// Açık tema krem: zemin, kart ve yazılar sıcak tonlu (telefon
+  /// denemesi 6, kullanıcı Claude uygulamasındaki kremi istedi).
+  static const ground = Color(0xFFECE9DF);
+  static const ink = Color(0xFF141413);
+  static const inkMuted = Color(0xFF57564F);
   static const error = Color(0xFFA1201A);
-  static const surface = Color(0xFFF7F7F8);
+  static const surface = Color(0xFFFAF9F5);
+
+  /// Açık temada kartların dolu rengi: saf beyaz değil açık krem.
+  static const card = Color(0xFFFAF9F5);
 
   /// Açık temada ince turuncu çizgi: `brandOrange` zeminde 3:1 tutmuyor.
   static const brandStroke = Color(0xFFC2470C);
   static const blobsLight = [
-    Color(0xFFFFFFFF),
-    Color(0xFFA9A9AE),
-    Color(0xFFFFFFFF),
+    Color(0xFFFAF9F5),
+    Color(0xFFC9C3B1),
+    Color(0xFFFAF9F5),
   ];
 
   /// Koyu temada zemin tam siyah değil, yazı saf beyaz değil, kartlar
@@ -61,13 +67,19 @@ abstract final class AppTheme {
     final brand = isDark ? KkColors.darkBrand : KkColors.brandOrange;
 
     final glass = KkGlass(
-      fill: isDark ? KkColors.darkCard : Colors.white,
-      fillStrong: Colors.white.withValues(alpha: isDark ? 0.12 : 0.92),
+      fill: isDark ? KkColors.darkCard : KkColors.card,
+      fillStrong: isDark
+          ? Colors.white.withValues(alpha: 0.12)
+          : KkColors.card.withValues(alpha: 0.92),
       navFill: Colors.white.withValues(alpha: isDark ? 0.03 : 0.05),
-      // Koyu temada kartın tepesindeki parlak beyaz şerit ve çerçeve
-      // siyahın üstünde göze batıyordu (telefon denemesi 6).
-      border: Colors.white.withValues(alpha: isDark ? 0.04 : 0.70),
-      highlight: Colors.white.withValues(alpha: isDark ? 0 : 0.95),
+      // Kartın tepesindeki parlak beyaz şerit ve beyaz çerçeve koyu
+      // temada siyahın, açık temada kremin üstünde göze batıyordu
+      // (telefon denemesi 6). Açık temada kartı ince sıcak bir çizgi
+      // çevreler.
+      border: isDark
+          ? Colors.white.withValues(alpha: 0.04)
+          : KkColors.ink.withValues(alpha: 0.07),
+      highlight: Colors.white.withValues(alpha: isDark ? 0.28 : 0.95),
       shadow: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
       scrim: Colors.black.withValues(alpha: isDark ? 0.40 : 0.18),
       accent: ink,

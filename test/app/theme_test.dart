@@ -35,25 +35,34 @@ Color over(Color bg, Color fg) {
 
 void main() {
   group('sabit renkler', () {
+    // Telefon denemesi 6: açık tema beyaz-gri yerine krem (Claude
+    // uygulamasındaki gibi); yazılar da sıcak tonlu.
     test('açık tema', () {
       final theme = AppTheme.light;
       final glass = theme.extension<KkGlass>()!;
-      expect(theme.colorScheme.primary, const Color(0xFF111111));
-      expect(theme.colorScheme.onSurface, const Color(0xFF111111));
-      expect(theme.colorScheme.onSurfaceVariant, const Color(0xFF525252));
-      expect(glass.ground, const Color(0xFFE6E6E8));
+      expect(theme.colorScheme.primary, const Color(0xFF141413));
+      expect(theme.colorScheme.onSurface, const Color(0xFF141413));
+      expect(theme.colorScheme.onSurfaceVariant, const Color(0xFF57564F));
+      expect(glass.ground, const Color(0xFFECE9DF));
       expect(glass.blobs, const [
-        Color(0xFFFFFFFF),
-        Color(0xFFA9A9AE),
-        Color(0xFFFFFFFF),
+        Color(0xFFFAF9F5),
+        Color(0xFFC9C3B1),
+        Color(0xFFFAF9F5),
       ]);
       expect(glass.blobAlpha, 0.45);
       expect(glass.brand, const Color(0xFFF26B1D));
       expect(glass.brandStroke, const Color(0xFFC2470C));
       expect(glass.onBrand, const Color(0xFF1A0D05));
       expect(glass.accent, theme.colorScheme.onSurface);
-      // Telefon denemesi 4: kartlar buzlu cam değil, dolu beyaz.
-      expect(glass.fill, Colors.white);
+      // Kartlar dolu, saf beyaz değil açık krem.
+      expect(glass.fill, const Color(0xFFFAF9F5));
+      expect(theme.colorScheme.surface, const Color(0xFFFAF9F5));
+    });
+
+    test('açık temada kartın çerçevesi beyaz değil', () {
+      // Krem kartın çevresinde beyaz çerçeve görünürdü.
+      final glass = AppTheme.light.extension<KkGlass>()!;
+      expect(glass.border.r, lessThan(0.5));
     });
 
     // Telefon denemesi 6: tam siyah zemin, parlak beyaz yazı ve zeminden
@@ -90,9 +99,8 @@ void main() {
       }
     });
 
-    test('koyu temada kartın üstünde parlak beyaz çizgi yok', () {
+    test('koyu temada kartın çerçevesi neredeyse görünmez', () {
       final glass = AppTheme.dark.extension<KkGlass>()!;
-      expect(glass.highlight.a, 0);
       expect(glass.border.a, lessThanOrEqualTo(0.05));
     });
 

@@ -118,9 +118,9 @@ class KkGlass extends ThemeExtension<KkGlass> {
   }
 }
 
-/// Yarı saydam cam yüzey: dolgu, ince kenar, üstte parlak çizgi ve yumuşak
-/// gölge. Gerçek bulanıklaştırma ([blur]) pahalıdır; yalnızca içeriğin
-/// altından kaydığı ya da üstüne açıldığı yüzeylerde kullanılır.
+/// Yarı saydam cam yüzey: dolgu, ince kenar ve yumuşak gölge; [sheen] ile
+/// üstte parlak çizgi. Gerçek bulanıklaştırma ([blur]) pahalıdır; yalnızca
+/// içeriğin altından kaydığı ya da üstüne açıldığı yüzeylerde kullanılır.
 class GlassSurface extends StatelessWidget {
   const new({
     required this.child,
@@ -152,7 +152,8 @@ class GlassSurface extends StatelessWidget {
   /// (yalnızca [blur] ile).
   final bool vibrant;
 
-  /// Üstten aşağı sönen beyaz parıltı: buzlu camın ışığı (alt menü).
+  /// Üstten aşağı sönen beyaz parıltı ve tepede ince parlak şerit: buzlu
+  /// camın ışığı (alt menü).
   final bool sheen;
 
   final Widget child;
@@ -206,13 +207,17 @@ class GlassSurface extends StatelessWidget {
                 ),
               ),
             ),
-          Positioned(
-            top: 0,
-            left: inset,
-            right: inset,
-            height: 1,
-            child: IgnorePointer(child: ColoredBox(color: glass.highlight)),
-          ),
+          // Tepedeki ince parlak şerit yalnızca alt menünün camında: kartlarda
+          // koyu temada siyahın, açık temada kremin üstünde göze batıyordu
+          // (telefon denemesi 6).
+          if (sheen)
+            Positioned(
+              top: 0,
+              left: inset,
+              right: inset,
+              height: 1,
+              child: IgnorePointer(child: ColoredBox(color: glass.highlight)),
+            ),
         ],
       ),
     );
