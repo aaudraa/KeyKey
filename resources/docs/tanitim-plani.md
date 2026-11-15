@@ -61,4 +61,4 @@
 
 - [x] Kılavuzun "İlk kasa" bölümüne tanıtım; değişiklik günlüğü; yol haritası durumu; `bagimliliklar.md`'ye KeePassXC logosu.
 - [x] Entegrasyon testleri Android 17 emülatöründe; APK, telefon denemesi.
-- [ ] Commit `belge(tanıtım): kılavuz ve günlük`.
+- [x] Commit (belgeler `d0447de` ve `8edf5fb` içinde).
