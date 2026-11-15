@@ -448,7 +448,8 @@ class _TourRow extends StatelessWidget {
           Text(
             name,
             style: theme.textTheme.bodyLarge?.copyWith(
-              fontWeight: FontWeight.w700,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
             ),
           ),
           const SizedBox(width: 10),

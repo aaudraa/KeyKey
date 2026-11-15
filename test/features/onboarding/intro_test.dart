@@ -163,6 +163,12 @@ void main() {
       ]) {
         expect(inArt(find.byIcon(icon)), findsWidgets);
       }
+      // Sekme adları açıklamalardan büyük ve kalın.
+      for (final name in ['Kasa', '2FA', 'Ayarlar', 'Ekle']) {
+        final style = tester.widget<Text>(inArt(find.text(name))).style;
+        expect(style?.fontSize, 18, reason: name);
+        expect(style?.fontWeight, FontWeight.w800, reason: name);
+      }
       for (final caption in [
         'Parolaların',
         'Doğrulama kodların',
