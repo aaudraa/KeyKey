@@ -12,7 +12,8 @@
 set -euo pipefail
 
 commit="$1"
-out="$2"
+# Betik başka klasörlere geçiyor; çıktı yolu baştan mutlak olmalı.
+out="$(realpath -m "$2")"
 bundle="${3:-}"
 
 appid=io.github.aaudraa.keykey

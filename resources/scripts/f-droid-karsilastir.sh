@@ -9,6 +9,13 @@ set -euo pipefail
 signed="$1"
 unsigned="$2"
 
+for f in "$signed" "$unsigned"; do
+  if [[ ! -f "$f" ]]; then
+    echo "HATA: $f yok; derleme işi APK'yı yüklememiş." >&2
+    exit 1
+  fi
+done
+
 if apksigcopier compare "$signed" --unsigned "$unsigned"; then
   echo "AYNI: F-Droid'in derlemesi bizim imzamızı kabul ediyor."
   exit 0
