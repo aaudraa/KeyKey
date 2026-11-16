@@ -943,6 +943,14 @@
   "@otpScanHint": {
     "description": "Hint under the camera view."
   },
+  "otpTorchOn": "Turn on flashlight",
+  "@otpTorchOn": {
+    "description": "Tooltip of the scanner's flashlight button while the light is off."
+  },
+  "otpTorchOff": "Turn off flashlight",
+  "@otpTorchOff": {
+    "description": "Tooltip of the scanner's flashlight button while the light is on."
+  },
   "otpScanNotOtp": "This QR code is not a 2FA account.",
   "@otpScanNotOtp": {
     "description": "Shown when a scanned QR code holds something else, such as a web address."

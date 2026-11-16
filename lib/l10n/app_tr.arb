@@ -204,6 +204,8 @@
   "otpAddScan": "QR kodu tara",
   "otpAddImage": "Görseldeki QR kodunu oku",
   "otpScanHint": "Kamerayı servisin gösterdiği QR koduna tut.",
+  "otpTorchOn": "Feneri aç",
+  "otpTorchOff": "Feneri kapat",
   "otpScanNotOtp": "Bu QR kodu bir 2FA hesabı değil.",
   "otpImageNoQr": "Görselde QR kodu bulunamadı.",
   "otpCameraUnavailable": "Kamera kullanılamıyor. İzni reddettiysen Android ayarlarından verebilir ya da QR kodunu bir görselden okuyabilirsin.",

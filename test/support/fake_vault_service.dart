@@ -513,24 +513,40 @@ class FakeExportFilePicker implements ExportFilePicker {
 
 /// Kamera yerine: test, [scan] ile okunmuş gibi metin verir.
 class FakeQrCamera {
+  static const Key key = ValueKey('fake-qr-camera');
+
   late ValueChanged<String> _onText;
   late VoidCallback _onUnavailable;
+  late ValueChanged<QrTorch?> _onTorch;
 
   /// Kamera ekrana geldi mi.
   bool isShown = false;
+
+  /// Fener açık mı.
+  bool torchOn = false;
 
   void scan(String text) => _onText(text);
 
   void fail() => _onUnavailable();
 
+  /// Kamera feneri olduğunu bildirir; [fails] ise fener açılmaya çalışılınca
+  /// hata verir.
+  void offerTorch({bool fails = false}) => _onTorch(() async {
+    if (fails) throw StateError('fener yok');
+    torchOn = !torchOn;
+    return torchOn;
+  });
+
   Widget build({
     required ValueChanged<String> onText,
     required VoidCallback onUnavailable,
+    required ValueChanged<QrTorch?> onTorch,
   }) {
     _onText = onText;
     _onUnavailable = onUnavailable;
+    _onTorch = onTorch;
     isShown = true;
-    return const ColoredBox(color: Colors.black);
+    return const ColoredBox(key: key, color: Colors.black);
   }
 }
 

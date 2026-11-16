@@ -14,27 +14,47 @@ import 'package:keykey/features/authenticator/application/scanned_code.dart';
 import 'package:keykey/features/authenticator/presentation/scanned_code_handler.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
+/// Kameranın fenerini açıp kapatır, yeni durumu (açık mı) döndürür. Fener
+/// yoksa ya da açılamazsa hata fırlatır.
+typedef QrTorch = Future<bool> Function();
+
 /// Kamera görüntüsünü gösterir ve okunan her QR metnini [onText]'e verir.
 /// Kamera açılamazsa, örneğin izin reddedilirse, [onUnavailable] çağrılır.
+/// Kamera hazır olunca feneri [onTorch]'a verir; kamera yeniden açılırsa
+/// yenisini verir.
+///
+/// Kamera yalnızca görüntüyü gösterir: karartma, tarama penceresi ve
+/// düğmeler [QrScanScreen]'in. Okunan alan, görüntünün kısa kenarının
+/// [QrScanScreen.cropPercent]'i olmalı.
 typedef QrCameraBuilder = Widget Function({
   required ValueChanged<String> onText,
   required VoidCallback onUnavailable,
+  required ValueChanged<QrTorch?> onTorch,
 });
 
 /// `flutter_zxing` kamerası. Testler kendi kamerasını verir.
 final qrCameraProvider = Provider<QrCameraBuilder>(
   (ref) =>
-      ({required onText, required onUnavailable}) =>
-          _ZxingCamera(onText: onText, onUnavailable: onUnavailable),
+      ({required onText, required onUnavailable, required onTorch}) =>
+          _ZxingCamera(
+            onText: onText,
+            onUnavailable: onUnavailable,
+            onTorch: onTorch,
+          ),
 );
 
 /// Önce cihazdaki kameraları sorar. `ReaderWidget` kamera bulamayınca hata
 /// bildirmiyor, ekran sonsuza dek yükleniyor gibi kalıyor.
 class _ZxingCamera extends StatefulWidget {
-  const new({required this.onText, required this.onUnavailable});
+  const new({
+    required this.onText,
+    required this.onUnavailable,
+    required this.onTorch,
+  });
 
   final ValueChanged<String> onText;
   final VoidCallback onUnavailable;
+  final ValueChanged<QrTorch?> onTorch;
 
   @override
   State<_ZxingCamera> createState() => _ZxingCameraState();
@@ -75,9 +95,14 @@ class _ZxingCameraState extends State<_ZxingCamera> {
       // uğraşınca okunabildi. Daha sık, daha geniş alanda ve daha dikkatli
       // taranıyor; uzaktaki küçük QR için çözünürlük de artırıldı.
       tryHarder: true,
-      cropPercent: 0.8,
+      cropPercent: QrScanScreen.cropPercent,
       scanDelay: const Duration(milliseconds: 250),
       resolution: ResolutionPreset.veryHigh,
+      // Paketin kendi karartması ve düğmeleri kapalı: karartma bizim tarama
+      // çerçevemizle hizalanmıyordu, fener düğmesi açıklamanın altında
+      // kalıyordu. İkisi de QrScanScreen'de.
+      showScannerOverlay: false,
+      showFlashlight: false,
       showGallery: false,
       showToggleCamera: false,
       onScan: (code) {
@@ -85,7 +110,15 @@ class _ZxingCameraState extends State<_ZxingCamera> {
         if (code.isValid && text != null) widget.onText(text);
       },
       onControllerCreated: (controller, error) {
-        if (error != null) widget.onUnavailable();
+        if (error != null || controller == null) {
+          widget.onUnavailable();
+          return;
+        }
+        widget.onTorch(() async {
+          final on = controller.value.flashMode != FlashMode.torch;
+          await controller.setFlashMode(on ? FlashMode.torch : FlashMode.off);
+          return on;
+        });
       },
     );
   }
@@ -103,6 +136,19 @@ class QrScanScreen extends ConsumerStatefulWidget {
   static const Key frameKey = ValueKey('kk-qr-frame');
   static const double closedScale = 0.9;
 
+  /// Kameranın üstündeki karartma (testler için).
+  static const Key shadeKey = ValueKey('kk-qr-shade');
+
+  /// Okuyucunun taradığı alan: kamera görüntüsünün kısa kenarının bu oranı,
+  /// ortada.
+  static const double cropPercent = 0.8;
+
+  /// Karartmadaki saydam pencere ve köşe çerçevesi. Kamera görüntüsü alanı
+  /// kapladığı için (kırpılarak) görüntünün kısa kenarı alanınkinden kısa
+  /// olamaz; bu pencere her zaman taranan alanın içinde kalır.
+  static Size holeFor(Size area) =>
+      Size.square(area.shortestSide * cropPercent);
+
   @override
   ConsumerState<QrScanScreen> createState() => _QrScanScreenState();
 }
@@ -110,6 +156,8 @@ class QrScanScreen extends ConsumerStatefulWidget {
 class _QrScanScreenState extends ConsumerState<QrScanScreen> {
   bool _unavailable = false;
   bool _handled = false;
+  QrTorch? _torch;
+  bool _torchOn = false;
 
   /// Aynı ilgisiz QR her karede okununca uyarı tekrar tekrar çıkmasın.
   String? _lastRejected;
@@ -135,6 +183,26 @@ class _QrScanScreenState extends ConsumerState<QrScanScreen> {
     }
   }
 
+  void _onTorch(QrTorch? torch) {
+    if (!mounted) return;
+    setState(() {
+      _torch = torch;
+      _torchOn = false;
+    });
+  }
+
+  Future<void> _toggleTorch() async {
+    final torch = _torch;
+    if (torch == null) return;
+    try {
+      final on = await torch();
+      if (mounted) setState(() => _torchOn = on);
+    } on Object {
+      // Fener yok ya da açılamıyor: düğme kalkar.
+      _onTorch(null);
+    }
+  }
+
   Future<void> _readImageInstead() async {
     await readQrFromImage(context, ref, replace: true);
   }
@@ -148,6 +216,12 @@ class _QrScanScreenState extends ConsumerState<QrScanScreen> {
         context,
         title: l10n.otpAddScan,
         actions: [
+          if (_torch != null && !_unavailable)
+            KkCircleButton(
+              icon: _torchOn ? Icons.flash_on_rounded : Icons.flash_off_rounded,
+              tooltip: _torchOn ? l10n.otpTorchOff : l10n.otpTorchOn,
+              onPressed: _toggleTorch,
+            ),
           KkCircleButton(
             icon: Icons.image_rounded,
             tooltip: l10n.otpAddImage,
@@ -189,11 +263,32 @@ class _QrScanScreenState extends ConsumerState<QrScanScreen> {
                     onUnavailable: () {
                       if (mounted) setState(() => _unavailable = true);
                     },
+                    onTorch: _onTorch,
                   ),
                 ),
                 Positioned.fill(
                   child: IgnorePointer(
-                    child: Center(child: _ScanFrame(closed: _handled)),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final hole = QrScanScreen.holeFor(constraints.biggest);
+                        return Stack(
+                          children: [
+                            Positioned.fill(
+                              child: CustomPaint(
+                                key: QrScanScreen.shadeKey,
+                                painter: _ShadePainter(hole),
+                              ),
+                            ),
+                            Center(
+                              child: _ScanFrame(
+                                closed: _handled,
+                                size: hole.width,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
                   ),
                 ),
                 // Açıklama kamera görüntüsünün üstünde, güçlü camda.
@@ -223,12 +318,12 @@ class _QrScanScreenState extends ConsumerState<QrScanScreen> {
 /// açıkken yavaşça nefes alır; kod okununca [KkMotion.base] boyunca
 /// [QrScanScreen.closedScale]'e kapanır.
 class _ScanFrame extends StatefulWidget {
-  const new({required this.closed});
+  const new({required this.closed, required this.size});
 
-  static const double size = 240;
   static const double breathDepth = 0.03;
 
   final bool closed;
+  final double size;
 
   @override
   State<_ScanFrame> createState() => _ScanFrameState();
@@ -292,13 +387,43 @@ class _ScanFrameState extends State<_ScanFrame> with TickerProviderStateMixin {
               (1 + breathing) * (1 - (1 - QrScanScreen.closedScale) * closing);
           return Transform.scale(scale: scale, child: child);
         },
-        child: const SizedBox.square(
-          dimension: _ScanFrame.size,
-          child: CustomPaint(painter: _CornersPainter()),
+        child: SizedBox.square(
+          dimension: widget.size,
+          child: const CustomPaint(painter: _CornersPainter()),
         ),
       ),
     );
   }
+}
+
+/// Kameranın üstündeki karartma; ortasında [hole] boyunda saydam pencere.
+class _ShadePainter extends CustomPainter {
+  const new(this.hole);
+
+  final Size hole;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final window = RRect.fromRectAndRadius(
+      Rect.fromCenter(
+        center: size.center(Offset.zero),
+        width: hole.width,
+        height: hole.height,
+      ),
+      const Radius.circular(12),
+    );
+    final path = Path()
+      ..fillType = PathFillType.evenOdd
+      ..addRect(Offset.zero & size)
+      ..addRRect(window);
+    canvas.drawPath(
+      path,
+      Paint()..color = Colors.black.withValues(alpha: 0.45),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_ShadePainter old) => old.hole != hole;
 }
 
 /// Çerçevenin dört köşesi.

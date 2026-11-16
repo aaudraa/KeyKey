@@ -169,6 +169,54 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
 
+    testWidgets(
+      'köşe çerçevesi karartmadaki pencereyle aynı boyda ve kameranın ortasında',
+      (tester) async {
+        await openCamera(tester, ambient: false);
+        final cameraRect = tester.getRect(find.byKey(FakeQrCamera.key));
+        final hole = QrScanScreen.holeFor(cameraRect.size);
+        // Okuyucu, kamera görüntüsünün kısa kenarının cropPercent'ini tarar;
+        // görüntü alanı kapladığı için bu pencere her zaman taranan alanın
+        // içinde kalır.
+        expect(hole.width, cameraRect.shortestSide * QrScanScreen.cropPercent);
+        final frame = tester.getRect(find.byKey(QrScanScreen.frameKey));
+        expect(frame.width, moreOrLessEquals(hole.width));
+        expect(frame.height, moreOrLessEquals(hole.height));
+        expect(frame.center.dx, moreOrLessEquals(cameraRect.center.dx));
+        expect(frame.center.dy, moreOrLessEquals(cameraRect.center.dy));
+        final shade = tester.getRect(find.byKey(QrScanScreen.shadeKey));
+        expect(shade, cameraRect);
+      },
+    );
+
+    testWidgets('fener destekleniyorsa üst çubuktan açılıp kapanıyor', (
+      tester,
+    ) async {
+      await openCamera(tester, ambient: false);
+      expect(find.byIcon(Icons.flash_off_rounded), findsNothing);
+      camera.offerTorch();
+      await tester.pump();
+      await tester.tap(find.byIcon(Icons.flash_off_rounded));
+      await tester.pump();
+      expect(camera.torchOn, isTrue);
+      expect(find.byIcon(Icons.flash_on_rounded), findsOneWidget);
+      expect(find.byTooltip('Feneri kapat'), findsOneWidget);
+      await tester.tap(find.byIcon(Icons.flash_on_rounded));
+      await tester.pump();
+      expect(camera.torchOn, isFalse);
+      expect(find.byTooltip('Feneri aç'), findsOneWidget);
+    });
+
+    testWidgets('fener açılamazsa düğme kalkıyor', (tester) async {
+      await openCamera(tester, ambient: false);
+      camera.offerTorch(fails: true);
+      await tester.pump();
+      await tester.tap(find.byIcon(Icons.flash_off_rounded));
+      await tester.pump();
+      expect(find.byIcon(Icons.flash_off_rounded), findsNothing);
+      expect(find.byIcon(Icons.flash_on_rounded), findsNothing);
+    });
+
     testWidgets('süren hareket kapalıyken çerçeve durur', (tester) async {
       await openCamera(tester, ambient: false);
       expect(frameScale(tester), 1);
