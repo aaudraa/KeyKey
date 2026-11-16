@@ -50,6 +50,8 @@ Deneme: iş akışı önce bir deneme anahtarıyla (sertifika `baa13a57…af3f9`
 
 Gerçek yayın anahtarı yerine deneme anahtarı kullanıldı; Android için ikisi de "farklı imza" olduğundan sonuç aynıdır. Biçim uyumluluğu ayrıca birim testlerinde örnek dosyalarla sınanıyor (`test/fixtures/storage`, `vault`, `backup`). 1.0 etiketinden önce fazın son derlemesiyle aynı-imza yolu kısaca tekrarlanacak.
 
+**Son derlemeyle tekrar (2026-11-16).** Android 16 emülatörü bozuk olduğu için Android 17 emülatöründe (`Medium_Phone_API_37.0`) yapıldı. `v0.8.0` (`0.1.0+1`) ile yeni kasa kuruldu: bir parola kaydı, ona bağlı bir 2FA hesabı (bilinen anahtarla), parmak iziyle açma ve bir yedek. Üstüne `main`'deki son derleme (`4fd40b3`, `1.0.0-dev+2`, aynı hata ayıklama anahtarı) `adb install -r` ile kuruldu. Kasa olduğu için tanıtım çıkmadı. Kasa parmak iziyle ve kilitledikten sonra ana parolayla açıldı. Kayıt ve parolası, 2FA bağı ve kodu (bilgisayarda hesaplananla aynı), "son yedek" bilgisi ve parmak izi ayarı korundu.
+
 ## Sürüm numarası
 
 `pubspec.yaml`'daki `version: <ad>+<derleme numarası>` satırı iki şey belirler:

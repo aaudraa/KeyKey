@@ -467,6 +467,8 @@ Güvenlik ya da veri kaybı sorunu çıkmadı. Ayrıntılar [denetim belgesinde]
 
 **Durum (2026-11-16, akşam):** Proje sahibi 14. denemeyi telefonda gördü, başlıkları beğendi. Birim testleri (1254) ve entegrasyon testleri Android 17'de geçti; tanıtım ve başlıklar için ikinci faz PR'ı açıldı. Kalan: PR'ın birleşmesi (proje sahibinin onayıyla), #101 kısa tekrarı, sürüm numarası ve `v1.0.0` etiketi.
 
+**Durum (2026-11-16, gece):** [#110](https://github.com/aaudraa/KeyKey/pull/110) proje sahibinin onayıyla `main`'e birleşti. #101'in kısa tekrarı son derlemeyle Android 17 emülatöründe geçti: `v0.8.0` kasası üstüne kurulumda bütün veriyle, 2FA bağıyla ve parmak iziyle açıldı ([ayrıntılar](docs/yayin.md#eski-sürümlerden-geçiş)). Kalan: sürüm numarası ve `v1.0.0` etiketi.
+
 **Bitti sayılması için:** GitHub Release'teki APK dört emülatöre ve gerçek telefona kuruluyor; önceki sürümden yükseltmede veri korunuyor; README son durumu anlatıyor.
 
 ## 1.0 sonrası
