@@ -8,6 +8,10 @@
 # üretilir ve arşivin içindeki bilgi dosyasında durur.
 set -euo pipefail
 
+# Git Bash "/" ile başlayan değerleri Windows programlarına yol sanıp çevirir;
+# parola keytool'a çevrilmeden gitmeli.
+export MSYS2_ENV_CONV_EXCL='*' MSYS2_ARG_CONV_EXCL='*'
+
 KEYTOOL="/c/Program Files/Android/Android Studio/jbr/bin/keytool.exe"
 SEVENZIP="/c/Program Files/7-Zip/7z.exe"
 REPO="aaudraa/KeyKey"
@@ -46,8 +50,9 @@ cleanup() { rm -rf "$work"; }
 trap cleanup EXIT
 
 # Anahtarın parolası: rastgele, ekrana yazılmaz. PKCS12'de depo ve anahtar
-# parolası aynıdır.
-KEYKEY_STORE_PW="$(openssl rand -base64 33 | tr -d '\n')"
+# parolası aynıdır. Git Bash'teki openssl satırı CR LF ile bitirir; ikisi de
+# silinir (2026-11-09 çalışmasında CR parolada kaldı, bkz. resources/docs/yayin.md).
+KEYKEY_STORE_PW="$(openssl rand -base64 33 | tr -d '\r\n')"
 export KEYKEY_STORE_PW
 
 echo "Anahtar oluşturuluyor (RSA 4096, 30 yıl)..."
