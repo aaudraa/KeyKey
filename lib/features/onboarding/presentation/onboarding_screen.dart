@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/secret_field.dart';
@@ -6,8 +8,10 @@ import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
+import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/crypto/recovery_key.dart';
+import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/features/backup/presentation/restore_screen.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/new_password_fields.dart';
@@ -242,6 +246,71 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     ];
   }
 
+  /// Anahtarı güvenli panoya kopyalar; pano 30 saniye sonra temizlenir.
+  Future<void> _copyKey() async {
+    final text = _recoveryKeyText;
+    if (text == null) return;
+    await copySensitive(context, ref, text);
+  }
+
+  /// Anahtarı kullanıcının seçtiği yere metin dosyası olarak kaydeder.
+  /// Kurulum sırasında arka plan kilidi çalışmadığı için seçici kapıdan
+  /// geçmez (guvenlik-tasarimi.md, Kasa oluşturma).
+  Future<void> _saveKeyFile() async {
+    final text = _recoveryKeyText;
+    if (text == null) return;
+    final l10n = AppLocalizations.of(context);
+    final snack = kkSnackFor(context);
+    final result = await ref
+        .read(documentFilesProvider)
+        .save(
+          suggestedName: l10n.recoveryFileName,
+          mimeType: 'text/plain',
+          bytes: utf8.encode('${l10n.recoveryFileHeader}\n$text\n'),
+        );
+    switch (result) {
+      case DocumentSaveResult.saved:
+        snack(l10n.recoveryFileSaved);
+      case DocumentSaveResult.failed:
+        snack(l10n.recoveryFileFailed);
+      case DocumentSaveResult.cancelled:
+        break;
+    }
+  }
+
+  /// Kaydedilmiş dosyadan anahtarı okuyup kutuya yazar. Anahtar,
+  /// karakterleri tam bir anahtar uzunluğunda olan ilk satırdır.
+  Future<void> _readKeyFile() async {
+    final l10n = AppLocalizations.of(context);
+    final snack = kkSnackFor(context);
+    final result = await ref
+        .read(documentFilesProvider)
+        .open(mimeTypes: const ['text/plain'], maxBytes: 4096);
+    if (result is DocumentOpenCancelled) return;
+    String? line;
+    if (result is DocumentOpened) {
+      final text = utf8.decode(result.bytes, allowMalformed: true);
+      result.bytes.fillRange(0, result.bytes.length, 0);
+      for (final candidate in const LineSplitter().convert(text)) {
+        if (RecoveryKeyCodec.symbolsOf(candidate).length ==
+            RecoveryKeyCodec.textLength) {
+          line = candidate;
+          break;
+        }
+      }
+    }
+    if (!mounted) return;
+    if (line == null) {
+      snack(l10n.recoveryFileNoKey);
+      return;
+    }
+    _typedKey.value = RecoveryKeyFormatter().formatEditUpdate(
+      TextEditingValue.empty,
+      TextEditingValue(text: line.trim()),
+    );
+    setState(() => _error = null);
+  }
+
   List<Widget> _showKeyStep(AppLocalizations l10n) {
     return [
       Text(l10n.recoveryShowIntro),
@@ -259,7 +328,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
         ),
       ),
-      const SizedBox(height: 16),
+      const SizedBox(height: 8),
+      Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 8,
+        children: [
+          TextButton.icon(
+            onPressed: _copyKey,
+            icon: const Icon(Icons.copy_rounded),
+            label: Text(l10n.recoveryCopy),
+          ),
+          TextButton.icon(
+            onPressed: _saveKeyFile,
+            icon: const Icon(Icons.save_alt_rounded),
+            label: Text(l10n.recoverySaveFile),
+          ),
+        ],
+      ),
+      const SizedBox(height: 8),
       FilledButton(
         onPressed: () => setState(() {
           _step = _Step.verifyKey;
@@ -296,7 +382,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           onSubmitted: (_) => _verify(),
         ),
       ),
-      const SizedBox(height: 16),
+      Align(
+        alignment: AlignmentDirectional.centerEnd,
+        child: TextButton.icon(
+          onPressed: _busy ? null : _readKeyFile,
+          icon: const Icon(Icons.file_open_outlined),
+          label: Text(l10n.recoveryReadFile),
+        ),
+      ),
+      const SizedBox(height: 8),
       FilledButton(
         onPressed: _busy ? null : _verify,
         child: Text(l10n.recoveryVerifyConfirm),

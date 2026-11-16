@@ -89,17 +89,49 @@
   "@recoveryShowIntro": {
     "description": "Intro on the screen that shows the recovery key."
   },
-  "recoveryShowWarning": "Write it on paper and keep it somewhere safe. It is shown only now, KeyKey does not store it.",
+  "recoveryShowWarning": "Write it on paper, or copy it into another password manager. It is shown only now, KeyKey does not store it. Anyone who finds the key can open your vault.",
   "@recoveryShowWarning": {
     "description": "Warning that the recovery key is shown once."
   },
-  "recoveryShowContinue": "I wrote it down",
+  "recoveryShowContinue": "I saved it",
   "@recoveryShowContinue": {
     "description": "Button: go to the verification step."
   },
-  "recoveryVerifyIntro": "Type the key from your paper. This proves it was written correctly.",
+  "recoveryCopy": "Copy",
+  "@recoveryCopy": {
+    "description": "Button: copy the recovery key to the clipboard (cleared after 30 seconds)."
+  },
+  "recoverySaveFile": "Save to file",
+  "@recoverySaveFile": {
+    "description": "Button: save the recovery key as a text file where the user chooses."
+  },
+  "recoveryFileName": "keykey-recovery-key.txt",
+  "@recoveryFileName": {
+    "description": "Suggested file name for the saved recovery key."
+  },
+  "recoveryFileHeader": "KeyKey recovery key. Anyone who finds this key can open your vault; keep it somewhere safe.",
+  "@recoveryFileHeader": {
+    "description": "First line of the saved recovery key file."
+  },
+  "recoveryFileSaved": "Saved. Do not leave the file on the phone: print it or move it somewhere safe.",
+  "@recoveryFileSaved": {
+    "description": "Shown after the recovery key file was saved."
+  },
+  "recoveryFileFailed": "The file could not be saved.",
+  "@recoveryFileFailed": {
+    "description": "Shown when saving the recovery key file failed."
+  },
+  "recoveryVerifyIntro": "Type or paste the key you saved. This proves it was saved correctly.",
   "@recoveryVerifyIntro": {
     "description": "Intro on the recovery key verification step."
+  },
+  "recoveryReadFile": "Read from file",
+  "@recoveryReadFile": {
+    "description": "Button: read the recovery key from a saved text file."
+  },
+  "recoveryFileNoKey": "No recovery key found in the file.",
+  "@recoveryFileNoKey": {
+    "description": "Shown when the chosen file contains no recovery key."
   },
   "recoveryKeyProgress": "{count}/{total} characters",
   "@recoveryKeyProgress": {

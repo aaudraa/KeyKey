@@ -24,7 +24,7 @@ Bu belge KeyKey'in verileri nasıl şifrelediğini bayt düzeyinde anlatır. Kod
 |---|---|
 | Kayıtlar: parolalar, kullanıcı adları, notlar, 2FA gizli anahtarları, adresler | Diskte şifreli; kasa açıkken çözülmüş halde bellekte |
 | Ana parola | Hiçbir yerde saklanmaz; yazılırken klavyeden ve bellekten geçer |
-| Kurtarma anahtarı | Kullanıcının kâğıdında; uygulamada saklanmaz |
+| Kurtarma anahtarı | Kullanıcının kâğıdında ya da kendi seçtiği yerde (dosya, başka bir parola yöneticisi); uygulamada saklanmaz |
 | Kasa anahtarı | Diskte yalnızca sarılmış halde; kasa açıkken korumalı bellekte |
 | Kopyalanan değer | Panoda en fazla 30 saniye ([Pano](#pano)) |
 | Yedek dosyası | Kullanıcının seçtiği konumda (Drive gibi), şifreli |
@@ -268,6 +268,8 @@ Kasanın dışında tek bir dosya daha vardır: tema seçimi (`theme`, içeriği
 2. Güç göstergesi yalnızca kaba bir tahmindir: uzunluk, karakter çeşitliliği ve kısa bir sık kullanılan parola listesi. `zxcvbn` Dart 3 ile uyumlu olmadığı için kullanılmıyor.
 3. Kalibrasyondan sonra kasa anahtarı ve yuvalar üretilir. Bu sonuç **yalnızca bellekte** tutulur.
 4. Kurtarma anahtarı bir kez gösterilir ve kullanıcıya geri yazdırılır. Doğrulama metin karşılaştırmasıyla değil, yazılan anahtarla kurtarma yuvası gerçekten açılarak yapılır.
+   - 55 karakteri elle yazmak zor olduğu için anahtar **kopyalanabilir** ve **metin dosyası olarak kaydedilebilir** (2026-11-17). Kopyalama güvenli panoyu kullanır: Android 13+ önizlemede göstermez, pano 30 saniye sonra temizlenir. Dosyayı Android'in belge oluşturma ekranıyla kullanıcı nereye isterse oraya kaydeder; ilk satırı anahtarı bulanın kasayı açabileceğini söyler, kaydedince "telefonda bırakma" uyarısı çıkar. Doğrulama adımı yapıştırmayı ve kaydedilen dosyadan okumayı kabul eder; dosyadan okunan baytlar okununca sıfırlanır.
+   - **Ödün:** Telefonda bırakılan dosya ya da panodan başka bir uygulamaya yapıştırılan anahtar, kâğıttan daha kolay ele geçer. Anahtarın tek başına kasayı açtığı uyarıda açıkça yazar; KeyKey anahtarı yine hiçbir yerde saklamaz.
 5. Doğrulama geçince `vault_meta` satırı yazılır ve kasa açık hale gelir.
 
 **Yarım kasa olmaz:** Akış herhangi bir yerde yarıda kalırsa diskte hiçbir şey kalmaz, kullanıcı baştan başlar. `vault_meta` satırının varlığı, kasanın kurulu olduğunu gösteren tek işarettir.
