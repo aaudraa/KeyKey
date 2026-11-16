@@ -5,7 +5,7 @@ Android için çevrimdışı, açık kaynak parola yöneticisi ve 2FA doğrulama
 *English: see the [security design summary](resources/docs/security-summary.md), the [privacy policy](resources/docs/privacy.md) and the [security policy](.github/SECURITY.md#security-policy).*
 
 > [!IMPORTANT]
-> **KeyKey 1.0 yayında:** [son sürümü indir](https://github.com/aaudraa/KeyKey/releases/latest). Projenin kendi güvenlik denetimi tamamlandı ama bağımsız bir denetimden geçmedi. Şifreli yedeğini düzenli al ve telefonun dışında da sakla. Eski bir `v0.x` sürümü kullanıyorsan önce [geçiş adımlarını](resources/docs/yayin.md#eski-sürümlerden-geçiş) oku.
+> **KeyKey 1.0 yayında:** [son sürümü indir](https://github.com/aaudraa/KeyKey/releases/latest) ya da [Obtainium'a ekle](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22io.github.aaudraa.keykey%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Faaudraa%2FKeyKey%22%2C%22author%22%3A%22aaudraa%22%2C%22name%22%3A%22KeyKey%22%7D), yeni sürümler kendiliğinden gelsin. Projenin kendi güvenlik denetimi tamamlandı ama bağımsız bir denetimden geçmedi. Şifreli yedeğini düzenli al ve telefonun dışında da sakla. Eski bir `v0.x` sürümü kullanıyorsan önce [geçiş adımlarını](resources/docs/yayin.md#eski-sürümlerden-geçiş) oku.
 
 ## Neden KeyKey?
 
