@@ -303,5 +303,33 @@ void main() {
       expect(find.bySemanticsLabel('Ayarlar'), findsOneWidget);
       handle.dispose();
     });
+
+    // Başlık kocaman (44); uzun başlık dar ekranda taşmaz, sığacak kadar
+    // küçülür.
+    testWidgets('uzun başlık dar ekranda taşmaz', (tester) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light,
+          home: Builder(
+            builder: (context) => KkScaffold(
+              appBar: kkRootAppBar(
+                context,
+                title: 'New master password',
+                actions: [
+                  IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
+                ],
+              ),
+              body: const SizedBox.expand(),
+            ),
+          ),
+        ),
+      );
+      expect(tester.takeException(), isNull);
+      final title = tester.getRect(find.text('NEW MASTER PASSWORD'));
+      expect(title.right, lessThanOrEqualTo(320 - 48));
+    });
   });
 }

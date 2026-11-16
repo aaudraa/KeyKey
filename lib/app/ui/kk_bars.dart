@@ -65,20 +65,25 @@ PreferredSizeWidget kkRootAppBar(
   final theme = Theme.of(context);
   return AppBar(
     automaticallyImplyLeading: false,
-    toolbarHeight: 56,
+    toolbarHeight: KkMetrics.rootBarHeight,
     titleSpacing: 20,
     title: Semantics(
       header: true,
-      child: Text(
-        kkUpperTitle(title, Localizations.localeOf(context)),
-        semanticsLabel: title,
-        style: theme.textTheme.headlineMedium?.copyWith(
-          fontFamily: kkTitleFont,
-          fontSize: KkMetrics.rootTitle,
-          fontWeight: FontWeight.w800,
-          fontStyle: FontStyle.italic,
-          letterSpacing: 1.2,
-          color: theme.colorScheme.onSurface,
+      // Uzun başlık (ör. "YENİ ANA PAROLA") sığmazsa küçülür, taşmaz.
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: AlignmentDirectional.centerStart,
+        child: Text(
+          kkUpperTitle(title, Localizations.localeOf(context)),
+          semanticsLabel: title,
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontFamily: kkTitleFont,
+            fontSize: KkMetrics.rootTitle,
+            fontWeight: FontWeight.w800,
+            fontStyle: FontStyle.italic,
+            letterSpacing: 1.2,
+            color: theme.colorScheme.onSurface,
+          ),
         ),
       ),
     ),

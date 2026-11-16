@@ -60,7 +60,8 @@ Widget _card() => const Scaffold(
 
 void main() {
   test('ölçü değerleri belgedeki gibi', () {
-    expect(KkMetrics.rootTitle, 30);
+    expect(KkMetrics.rootTitle, 44);
+    expect(KkMetrics.rootBarHeight, 72);
     expect(KkMetrics.subTitle, 19);
     expect(KkMetrics.cardHeight, 64);
     expect(KkMetrics.cardTitle, 15);
@@ -109,7 +110,7 @@ void main() {
   });
 
   // Telefon denemesi 5: başlıklar sabit, biraz büyük ve daha kalın.
-  testWidgets('başlıklar 30 ve 19, kalın', (tester) async {
+  testWidgets('başlıklar 44 ve 19, kalın', (tester) async {
     await tester.pumpWidget(
       _host(
         Builder(
@@ -120,7 +121,7 @@ void main() {
         ),
       ),
     );
-    expect(tester.widget<Text>(find.text('KASA')).style?.fontSize, 30);
+    expect(tester.widget<Text>(find.text('KASA')).style?.fontSize, 44);
     expect(
       tester.widget<Text>(find.text('KASA')).style?.fontWeight,
       FontWeight.w800,
