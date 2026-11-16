@@ -50,9 +50,9 @@ Sorular için GitHub'da issue aç: https://github.com/aaudraa/KeyKey/issues. Bir
 
 ## Mağaza formları
 
-Dağıtım kararı (#100, 2026-11-09): 1.0 GitHub Releases'ta, sonra IzzyOnDroid ve F-Droid. Play Store şimdilik yok; Play yanıtı ileride gerekirse diye duruyor.
+Dağıtım kararı (#100, 2026-11-09): 1.0 GitHub Releases'ta, sonra F-Droid. IzzyOnDroid'e başvurulmuyor (2026-11-17): yapay zekâyla yazılmış kodu kabul etmiyor ([F-Droid tasarımı](f-droid.md#izzyondroid-neden-yok)). Play Store şimdilik yok; Play yanıtı ileride gerekirse diye duruyor.
 
-- **GitHub Releases ve IzzyOnDroid:** Gizlilik formu istemiyor; bu bildirim yeterli.
+- **GitHub Releases ve Obtainium:** Gizlilik formu istemiyor; bu bildirim yeterli.
 
 - **Play Store veri güvenliği formu:** "Uygulama kullanıcı verisi toplamıyor veya paylaşmıyor." Veri aktarımda şifrelenir sorusu: aktarım yok. Kullanıcı veri silme talebinde bulunabilir: uygulama içinden kayıt silme ve uygulamayı kaldırma.
-- **F-Droid:** Beklenen anti-özellik yok. İnternet yok, izleme yok, özgür olmayan bağımlılık yok. SQLite ve libsodium kaynaktan derleniyor; Flutter motoru gibi kalan hazır parçalar F-Droid'in derleme kurallarıyla başvuru sırasında, 1.0'dan sonra ele alınır.
+- **F-Droid:** Beklenen anti-özellik yok. İnternet yok, izleme yok, özgür olmayan bağımlılık yok. SQLite ve libsodium kaynaktan derleniyor; Flutter motoru F-Droid'in izin verdiği hazır parçalardan. Başvuru Faz 10'da (#119): F-Droid kaynaktan derler, derlemesi bizimkiyle birebir aynı olduğu için bizim imzalı APK'mızı dağıtır.

@@ -198,6 +198,8 @@ Derleme şunları internetten alır. Her biri bir sürüme ya da özete sabit:
 | Flutter motoru ve Dart SDK'sı | Google'ın Flutter depolaması | Flutter sürümüne bağlı motor sürümü (`89c39edf`) |
 | Gradle, Android eklentisi ve Gradle kütüphaneleri | Google Maven, Maven Central, Gradle | Gradle sarmalayıcısının ve kütüphanelerin sürümü sabit. Gradle'ın özet doğrulaması (`verification-metadata.xml`) açık değil; yeniden üretilebilir derlemeyle birlikte Faz 9'da ele alınacak. |
 
+Yayın derlemesi ve F-Droid karşılaştırması F-Droid'in derleme imajında (`registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie`) yapılır; imaj, Debian'ın OpenJDK 21'i, Android SDK ve NDK r28c (`28.2.13676358`) buradan gelir. Karşılaştırma işi F-Droid'in `fdroidserver` aracını ve `apksigcopier`'ı da kullanır. Bunlar yalnızca CI'da çalışır, uygulamaya girmez ([F-Droid tasarımı](f-droid.md)).
+
 libsodium'un ve zxing-cpp'nin kaynağı derleme sırasında indirilmez, paketlerin içinde gelir. `flutter_zxing`'in CMake dosyalarında başka kütüphaneleri indirebilen bir yol (`FetchContent`) var. Ama KeyKey'in derlemesinde zint, paketin içindeki kaynaktan derleniyor ve hiçbir şey indirilmiyor.
 
 ## Lisanslar ekranı
