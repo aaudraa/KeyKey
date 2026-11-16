@@ -20,6 +20,8 @@ void main() {
       'lib/app/ui/keykey_logo.dart',
       'lib/app/ui/glass_nav_bar.dart',
       'lib/features/authenticator/presentation/otp_ring.dart',
+      // Tanıtımdaki menü çiziminin "+" düğmesi (resources/docs/tanitim.md).
+      'lib/features/onboarding/presentation/intro_art.dart',
     });
   });
 }

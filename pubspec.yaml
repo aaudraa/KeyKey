@@ -43,6 +43,14 @@ flutter:
     - resources/assets/licenses/zint.txt
     - resources/assets/licenses/apache-2.0.txt
     - resources/assets/autofill/public_suffix_list.dat
+    - resources/assets/licenses/barlow-ofl.txt
+  # Ekran başlıkları (kkRootAppBar): dar, eğik, çok kalın. SIL OFL 1.1.
+  fonts:
+    - family: BarlowCondensed
+      fonts:
+        - asset: resources/assets/fonts/BarlowCondensed-ExtraBoldItalic.ttf
+          weight: 800
+          style: italic
   generate: true
 
 # Uygulamadaki SQLite hazır kütüphane olarak indirilmez, repodaki kaynaktan

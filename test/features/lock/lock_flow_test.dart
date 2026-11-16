@@ -52,7 +52,7 @@ void main() {
         AppRoutes.changePassword,
       ]) {
         expect(vaultRedirect(VaultLocked(header), location), AppRoutes.lock);
-        expect(vaultRedirect(const VaultNotSetUp(), location), AppRoutes.setup);
+        expect(vaultRedirect(const VaultNotSetUp(), location), AppRoutes.intro);
         expect(
           vaultRedirect(const VaultUnavailable(), location),
           AppRoutes.unavailable,
@@ -341,6 +341,27 @@ void main() {
       expect(find.text(vaultText), findsOneWidget);
     });
 
+    // Proje sahibinin bildirdiği hata (2026-11-16): "+" menüsü açılınca
+    // katman listesi değişiyor ve K logosu baştan oynuyordu.
+    testWidgets('"+" menüsü açılınca kilit açılışının K logosu dönmez', (
+      tester,
+    ) async {
+      await pumpLocked(tester);
+      await tester.enterText(
+        find.byType(TextField),
+        FakeVaultService.correctPassword,
+      );
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Aç'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(AppShell.revealKey), findsNothing);
+      await tester.tap(find.byIcon(Icons.add_rounded));
+      await tester.pump();
+      expect(find.byKey(AppShell.revealKey), findsNothing);
+      await tester.pumpAndSettle();
+      expect(find.byKey(AppShell.revealKey), findsNothing);
+    });
+
     testWidgets('kilitlenince kasa hızla kalkar, hareket oyalanmaz', (
       tester,
     ) async {
@@ -380,7 +401,7 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Devam et'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Yeni ana parola'), findsOneWidget);
+      expect(find.text('YENİ ANA PAROLA'), findsOneWidget);
       expect(find.text(vaultText), findsNothing);
 
       final fields = find.byType(TextField);

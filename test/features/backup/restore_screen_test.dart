@@ -29,13 +29,16 @@ void main() {
     documents.nextOpen = DocumentOpened(Uint8List.fromList(backup));
   });
 
-  Future<void> pump(WidgetTester tester, VaultStatus status) => pumpKeyKey(
-    tester,
-    status: status,
-    service: service,
-    documents: documents,
-    restores: restores,
-  );
+  Future<void> pump(WidgetTester tester, VaultStatus status) async {
+    await pumpKeyKey(
+      tester,
+      status: status,
+      service: service,
+      documents: documents,
+      restores: restores,
+    );
+    if (status is VaultNotSetUp) await skipIntro(tester);
+  }
 
   Future<void> typeSecret(WidgetTester tester, String text) async {
     await tester.enterText(find.byType(TextField), text);

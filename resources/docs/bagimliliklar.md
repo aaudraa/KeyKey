@@ -206,7 +206,7 @@ Ayarlar'daki "Lisanslar" ekranı Flutter'ın `LicenseRegistry`'sini gösterir. F
 
 - **Dart paketleri:** Hepsinin lisans metni var.
 - **Yanlış başlık:** Üç eklentinin lisans metni kendi adının altında görünmüyor, çünkü `LICENSE` dosyaları Flutter'ın beklediği biçimde değil. `file_selector_android`'inki "Copyright 2013 The Flutter Authors" başlığı altında, `image_picker_android` ve `image_picker_ios`'unki `image_picker` altında. Metinler eksiksiz; sorun eklentilerin kendi dosyasında.
-- **Elle eklenenler** ([`licenses.dart`](../../lib/app/licenses.dart)): EFF sözcük listesi, SecLists, Public Suffix List, zxing-cpp, zint, SQLite ve Android kütüphaneleri.
+- **Elle eklenenler** ([`licenses.dart`](../../lib/app/licenses.dart)): EFF sözcük listesi, SecLists, Barlow Condensed yazı tipi (SIL OFL 1.1), Public Suffix List, zxing-cpp, zint, SQLite ve Android kütüphaneleri.
 - **Eksikti, eklendi:**
   - Gradle'dan gelen Android kütüphaneleri hiç yoktu, çünkü Flutter yalnızca Dart paketlerini topluyor. Şimdi "Android libraries" başlığı altında, Apache-2.0 metniyle birlikte listeleniyor.
   - SQLite'ın kamu malı olduğunu belirten kayıt.

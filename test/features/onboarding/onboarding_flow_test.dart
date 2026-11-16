@@ -23,8 +23,10 @@ void main() {
     service = FakeVaultService(sodium);
   });
 
-  Future<void> pumpSetup(WidgetTester tester) =>
-      pumpKeyKey(tester, status: const VaultNotSetUp(), service: service);
+  Future<void> pumpSetup(WidgetTester tester) async {
+    await pumpKeyKey(tester, status: const VaultNotSetUp(), service: service);
+    await skipIntro(tester);
+  }
 
   FilledButton createButton(WidgetTester tester) =>
       tester.widget(find.widgetWithText(FilledButton, 'Kasayı oluştur'));

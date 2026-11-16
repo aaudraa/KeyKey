@@ -307,7 +307,7 @@ void main() {
       await pumpVault(tester);
       final bar = find.descendant(
         of: find.byType(AppBar),
-        matching: find.text('Kasa'),
+        matching: find.text('KASA'),
       );
       final searchIcon = find.descendant(
         of: find.byType(VaultScreen),

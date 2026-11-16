@@ -36,6 +36,8 @@ Bilgisayarda denetlemek istersen [yayın belgesindeki](yayin.md) "İndirilen APK
 
 ## İlk kasa
 
+Uygulamayı ilk açtığında kısa, hareketli bir tanıtım gelir: KeyKey'in ne olduğu, menüde nerede ne bulunduğu, otomatik doldurma, başka uygulamalardan geçiş ve yedek. Kaydırarak ya da **İleri** ile geçebilir, sağ üstteki **Atla** ile hemen kasa oluşturmaya geçebilirsin. Sonra yeniden izlemek istersen: Ayarlar → Hakkında → **Tanıtımı yeniden göster**.
+
 <img src="../design/kilavuz/01-kasa-olustur.webp" width="240" alt="Kasa oluşturma ekranı"> <img src="../design/kilavuz/02-kurtarma-anahtari.webp" width="240" alt="Kurtarma anahtarı ekranı">
 
 1. **Ana parolanı seç.** Kasanı bu parola korur. En az 10 karakter olmalı; birbiriyle ilgisiz birkaç kelimeden oluşan bir cümle hem güçlü hem akılda kalıcıdır. Güç göstergesi parolanın ne kadar tahmin edilebilir olduğunu söyler.

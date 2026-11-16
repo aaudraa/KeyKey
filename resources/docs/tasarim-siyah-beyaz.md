@@ -258,7 +258,7 @@ Proje sahibi dördüncü deneme sürümünü telefonda denedi:
 
 ## Telefon denemesi 5 (2026-11-13)
 
-- Ekran adları (Kasa, 2FA, Ayarlar, Düzenle) hiç büyüyüp küçülmesin, üstte sabit dursun, biraz büyük ve kalın olsun. Karar: başlıklar üst çubukta sabit; kökte 22 → 24, alt ekranlarda 17 → 19, kalınlık w700 → w800.
+- Ekran adları (Kasa, 2FA, Ayarlar, Düzenle) hiç büyüyüp küçülmesin, üstte sabit dursun, biraz büyük ve kalın olsun. Karar: başlıklar üst çubukta sabit; kökte 22 → 24, alt ekranlarda 17 → 19, kalınlık w700 → w800. *2026-11-16:* proje sahibi kök başlıkları spor başlıkları gibi istedi; üç seçenek gösterildi, Barlow Condensed ExtraBold Italic, büyük harf, harf aralığı 1.2 seçildi; ilk 30 punto, proje sahibi "kocaman olsun" deyince 44, çubuk 72; uzun başlık sığmazsa küçülür (SIL OFL 1.1, `resources/assets/fonts`). Ekran okuyucu düz yazılışı okur; Türkçede "i" → "İ".
 - Arama kutusu yukarı kayınca üstte, üç noktanın solunda simge olsun. Karar: arama kutusu listenin başında kayar; kayıp gidince üst çubukta arama simgesi belirir, dokununca liste başa döner ve kutu odaklanır.
 - Bütün formlarda alanın sol üstündeki etiket kartın üst kenarından taşıyor, yarısı kesiliyordu. Neden: alanlar dış çizgili stildeydi, etiket çizginin üstüne oturuyordu. Karar: etiket dolu kutunun içinde, odak ve hata alt çizgiyle gösterilir; alan boyu 60 dp.
 

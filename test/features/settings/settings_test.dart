@@ -67,7 +67,7 @@ void main() {
       final screen = find.byType(SettingsScreen);
       final bar = find.descendant(
         of: find.descendant(of: screen, matching: find.byType(AppBar)),
-        matching: find.text('Ayarlar'),
+        matching: find.text('AYARLAR'),
       );
       expect(bar, findsOneWidget);
       final before = tester.getRect(bar);
@@ -152,8 +152,15 @@ void main() {
         addTearDown(tester.view.reset);
         await pumpSettings(tester);
 
-        await tester.drag(find.byType(ListView).first, const Offset(0, -3000));
-        await tester.pumpAndSettle();
+        // Liste tembel kurulur; ilk kaydırmada uzunluğu eksik tahmin edildiği
+        // için en alta iki kaydırmada inilir.
+        for (var i = 0; i < 2; i++) {
+          await tester.drag(
+            find.byType(ListView).first,
+            const Offset(0, -3000),
+          );
+          await tester.pumpAndSettle();
+        }
 
         final last = tester.getRect(
           find.ancestor(
@@ -191,8 +198,12 @@ void main() {
     testWidgets('lisanslar sayfasının zemini saydam değil', (tester) async {
       await pumpSettings(tester);
       // Son satır; menünün altında kalmasın diye liste sonuna kaydırılır.
-      await tester.drag(find.byType(ListView).first, const Offset(0, -3000));
-      await tester.pumpAndSettle();
+      // Liste tembel kurulur; ilk kaydırmada uzunluğu eksik tahmin edildiği
+      // için en alta iki kaydırmada inilir.
+      for (var i = 0; i < 2; i++) {
+        await tester.drag(find.byType(ListView).first, const Offset(0, -3000));
+        await tester.pumpAndSettle();
+      }
       await tester.tap(find.text('Lisanslar'));
       await tester.pumpAndSettle();
 

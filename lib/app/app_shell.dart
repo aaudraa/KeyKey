@@ -176,7 +176,10 @@ class _AppShellState extends ConsumerState<AppShell>
                 ),
               ),
             // Kilit açılışı: logo kasanın üstünde solar (madde 4.3).
+            // Anahtar şart: "+" menüsü eklenince katman sırası kayıyor ve
+            // anahtarsız katman yeniden kurulup logoyu baştan oynatıyordu.
             const Positioned.fill(
+              key: ValueKey('unlock-reveal-layer'),
               child: KkUnlockReveal(contentKey: AppShell.revealKey),
             ),
           ],

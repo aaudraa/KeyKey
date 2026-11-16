@@ -39,8 +39,24 @@ class KkCircleButton extends StatelessWidget {
   }
 }
 
-/// Kök ekranlardaki üst çubuk: solda kalın başlık. Başlık sabittir;
-/// kaydırınca büyüyüp küçülmez (telefon denemesi 5).
+/// Ekran başlıklarının yazı tipi: Barlow Condensed ExtraBold Italic
+/// (SIL OFL 1.1, `resources/assets/fonts`).
+const kkTitleFont = 'BarlowCondensed';
+
+/// Başlığın büyük harfli hali. Dart'ın `toUpperCase`'i dile bakmaz;
+/// Türkçede "i" noktalı "İ" olmalı.
+String kkUpperTitle(String text, Locale locale) {
+  final dotted = switch (locale.languageCode) {
+    'tr' || 'az' => text.replaceAll('i', 'İ'),
+    _ => text,
+  };
+  return dotted.toUpperCase();
+}
+
+/// Kök ekranlardaki üst çubuk: solda başlık. Başlık sabittir; kaydırınca
+/// büyüyüp küçülmez (telefon denemesi 5). Proje sahibinin isteğiyle spor
+/// başlıkları gibi: dar, eğik, çok kalın, büyük harf, hafif aralıklı.
+/// Ekran okuyucu başlığı düz yazılışıyla okur.
 PreferredSizeWidget kkRootAppBar(
   BuildContext context, {
   required String title,
@@ -49,16 +65,25 @@ PreferredSizeWidget kkRootAppBar(
   final theme = Theme.of(context);
   return AppBar(
     automaticallyImplyLeading: false,
-    toolbarHeight: 56,
+    toolbarHeight: KkMetrics.rootBarHeight,
     titleSpacing: 20,
     title: Semantics(
       header: true,
-      child: Text(
-        title,
-        style: theme.textTheme.headlineMedium?.copyWith(
-          fontSize: KkMetrics.rootTitle,
-          fontWeight: FontWeight.w800,
-          color: theme.colorScheme.onSurface,
+      // Uzun başlık (ör. "YENİ ANA PAROLA") sığmazsa küçülür, taşmaz.
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: AlignmentDirectional.centerStart,
+        child: Text(
+          kkUpperTitle(title, Localizations.localeOf(context)),
+          semanticsLabel: title,
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontFamily: kkTitleFont,
+            fontSize: KkMetrics.rootTitle,
+            fontWeight: FontWeight.w800,
+            fontStyle: FontStyle.italic,
+            letterSpacing: 1.2,
+            color: theme.colorScheme.onSurface,
+          ),
         ),
       ),
     ),

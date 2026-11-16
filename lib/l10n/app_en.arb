@@ -576,6 +576,106 @@
   "@settingsLicenses": {
     "description": "Settings entry that opens the license page."
   },
+  "introSkip": "Skip",
+  "@introSkip": {
+    "description": "Intro: skip to vault setup."
+  },
+  "introNext": "Next",
+  "@introNext": {
+    "description": "Intro: go to the next page."
+  },
+  "introStart": "Create my vault",
+  "@introStart": {
+    "description": "Intro: last page main button, opens vault setup."
+  },
+  "introDone": "Done",
+  "@introDone": {
+    "description": "Intro opened from settings: close it."
+  },
+  "introPage": "Page {page} of {total}",
+  "@introPage": {
+    "description": "Intro: screen reader label of the page dots.",
+    "placeholders": {
+      "page": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "introWelcomeTitle": "KeyKey",
+  "@introWelcomeTitle": {
+    "description": "Intro page 1 title."
+  },
+  "introWelcomeBody": "Your passwords and 2FA codes, only on this phone.",
+  "@introWelcomeBody": {
+    "description": "Intro page 1 text."
+  },
+  "introOfflineTitle": "Your data stays with you",
+  "@introOfflineTitle": {
+    "description": "Intro page 2 title."
+  },
+  "introOfflineBody": "No internet permission, no account, no server. Your vault stays encrypted on this phone and goes nowhere.",
+  "@introOfflineBody": {
+    "description": "Intro page 2 text."
+  },
+  "introTourTitle": "What's where",
+  "@introTourTitle": {
+    "description": "Intro page 3 title: tour of the bottom menu."
+  },
+  "introTourBody": "Everything is one tap away in the menu at the bottom.",
+  "@introTourBody": {
+    "description": "Intro page 3 text."
+  },
+  "introTourVault": "Your passwords",
+  "@introTourVault": {
+    "description": "Intro page 3: caption next to the vault tab icon."
+  },
+  "introTourOtp": "Your verification codes",
+  "@introTourOtp": {
+    "description": "Intro page 3: caption next to the 2FA tab icon."
+  },
+  "introTourSettings": "Backup, autofill and theme",
+  "@introTourSettings": {
+    "description": "Intro page 3: caption next to the settings tab icon."
+  },
+  "introTourAdd": "New password or 2FA code",
+  "@introTourAdd": {
+    "description": "Intro page 3: caption next to the + button."
+  },
+  "introAutofillTitle": "Autofill",
+  "@introAutofillTitle": {
+    "description": "Intro page 4 title."
+  },
+  "introAutofillBody": "Tap a login field in apps or Chrome and fill it with KeyKey in one tap.",
+  "@introAutofillBody": {
+    "description": "Intro page 4 text."
+  },
+  "introAutofillSuggestion": "Fill with KeyKey",
+  "@introAutofillSuggestion": {
+    "description": "Intro page 4: the autofill suggestion shown in the drawing."
+  },
+  "introImportTitle": "Switch from other apps",
+  "@introImportTitle": {
+    "description": "Intro page 5 title."
+  },
+  "introImportBody": "Bring your passwords and 2FA codes from Bitwarden, Chrome, Firefox, KeePassXC, Google Authenticator, Aegis and 2FAS.",
+  "@introImportBody": {
+    "description": "Intro page 5 text."
+  },
+  "introBackupTitle": "Your backup, your call",
+  "@introBackupTitle": {
+    "description": "Intro page 6 title."
+  },
+  "introBackupBody": "KeyKey never goes online, so you make the backups. If you lose your phone, that backup is what saves you.",
+  "@introBackupBody": {
+    "description": "Intro page 6 text."
+  },
+  "settingsShowIntro": "Show the introduction again",
+  "@settingsShowIntro": {
+    "description": "Settings row in About that replays the intro."
+  },
   "settingsGroupSecurity": "Security",
   "@settingsGroupSecurity": {
     "description": "Settings group header for password, fingerprint and locking."

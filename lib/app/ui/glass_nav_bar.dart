@@ -98,7 +98,8 @@ class GlassNavBar extends StatelessWidget {
   static TextStyle? _labelStyle(BuildContext context) {
     final theme = Theme.of(context);
     return theme.textTheme.labelLarge?.copyWith(
-      fontWeight: FontWeight.w700,
+      fontSize: 16,
+      fontWeight: FontWeight.w800,
       color: theme.colorScheme.onSurface,
     );
   }

@@ -84,6 +84,14 @@ void main() {
     expect(find.text('Ayarlar'), findsNothing);
   });
 
+  // Proje sahibinin isteği (2026-11-16): sekme adı daha büyük ve kalın.
+  testWidgets('sekme adı 16 punto, çok kalın', (tester) async {
+    await tester.pumpWidget(_host());
+    final style = tester.widget<Text>(find.text('Kasa')).style;
+    expect(style?.fontSize, 16);
+    expect(style?.fontWeight, FontWeight.w800);
+  });
+
   testWidgets('seçim değişince ad yeni sekmeye geçer', (tester) async {
     await tester.pumpWidget(const _Switcher());
     await tester.tap(find.byIcon(Icons.shield_outlined));

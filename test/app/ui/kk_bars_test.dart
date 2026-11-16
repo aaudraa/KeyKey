@@ -35,7 +35,7 @@ void main() {
         ),
       ),
     );
-    expect(find.text('Kasa'), findsOneWidget);
+    expect(find.text('KASA'), findsOneWidget);
     expect(find.byTooltip('Back'), findsNothing);
 
     await tester.tap(find.text('aç'));
@@ -174,10 +174,10 @@ void main() {
         ),
       ),
     );
-    final before = tester.getRect(find.text('Kurulum'));
+    final before = tester.getRect(find.text('KURULUM'));
     await tester.drag(find.byType(ListView), const Offset(0, -200));
     await tester.pumpAndSettle();
-    expect(tester.getRect(find.text('Kurulum')), before);
+    expect(tester.getRect(find.text('KURULUM')), before);
   });
 
   // Telefon denemesi 5: arama kutusu kayıp gidince üst çubukta, üç
@@ -267,5 +267,69 @@ void main() {
     expect(dy(), closeTo(24, 0.01));
     await tester.pump(KkMotion.enter);
     expect(dy(), closeTo(0, 0.01));
+  });
+
+  // Proje sahibinin isteği (2026-11-16): ekran başlıkları spor
+  // başlıkları gibi; dar, eğik, çok kalın, büyük harf, hafif aralıklı.
+  group('kök başlık', () {
+    test('büyük harf Türkçede noktalı İ ile', () {
+      expect(
+        kkUpperTitle('Kimlik ayarları', const Locale('tr')),
+        'KİMLİK AYARLARI',
+      );
+      expect(kkUpperTitle('Settings', const Locale('en')), 'SETTINGS');
+    });
+
+    testWidgets('Barlow Condensed, eğik, büyük harf; ekran okuyucu düz okur', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light,
+          home: Builder(
+            builder: (context) => KkScaffold(
+              appBar: kkRootAppBar(context, title: 'Ayarlar'),
+              body: const SizedBox.expand(),
+            ),
+          ),
+        ),
+      );
+      final text = tester.widget<Text>(find.text('AYARLAR'));
+      expect(text.style?.fontFamily, kkTitleFont);
+      expect(text.style?.fontStyle, FontStyle.italic);
+      expect(text.style?.fontWeight, FontWeight.w800);
+      expect(text.style!.letterSpacing, greaterThan(0));
+      expect(find.bySemanticsLabel('Ayarlar'), findsOneWidget);
+      handle.dispose();
+    });
+
+    // Başlık kocaman (44); uzun başlık dar ekranda taşmaz, sığacak kadar
+    // küçülür.
+    testWidgets('uzun başlık dar ekranda taşmaz', (tester) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light,
+          home: Builder(
+            builder: (context) => KkScaffold(
+              appBar: kkRootAppBar(
+                context,
+                title: 'New master password',
+                actions: [
+                  IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
+                ],
+              ),
+              body: const SizedBox.expand(),
+            ),
+          ),
+        ),
+      );
+      expect(tester.takeException(), isNull);
+      final title = tester.getRect(find.text('NEW MASTER PASSWORD'));
+      expect(title.right, lessThanOrEqualTo(320 - 48));
+    });
   });
 }

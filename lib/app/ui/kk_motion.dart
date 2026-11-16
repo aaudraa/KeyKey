@@ -55,6 +55,12 @@ abstract final class KkMotion {
   /// Kilit ekranında parmak izi simgesinin bir nefesi (madde 4.2).
   static const breath = Duration(milliseconds: 2400);
 
+  /// Tanıtım sayfasındaki çizimin giriş hareketi.
+  static const introEnter = Duration(milliseconds: 1600);
+
+  /// Tanıtımın menü sayfasında bir simgenin vurgulu kaldığı süre.
+  static const introTourStep = Duration(milliseconds: 900);
+
   /// Hafifçe hedefi geçip yerine oturan yay eğrisi.
   static const Curve spring = Cubic(0.2, 1.35, 0.4, 1);
 

@@ -157,7 +157,10 @@ void main() {
     var (database, app) = await openApp();
     addTearDown(() => database.close());
     await tester.pumpWidget(app);
-    await pumpUntilFound(tester, find.text('Kasa oluştur'));
+    // İlk açılışta tanıtım gelir; atlanır.
+    await pumpUntilFound(tester, find.text('Atla'));
+    await tester.tap(find.text('Atla'));
+    await pumpUntilFound(tester, find.text('KASA OLUŞTUR'));
 
     final fields = find.byType(TextField);
     await tester.enterText(fields.at(0), firstPassword);

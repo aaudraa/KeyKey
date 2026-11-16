@@ -35,6 +35,10 @@ void registerDataLicenses() {
         name,
       ], await rootBundle.loadString(path));
     }
+    // Ekran başlıklarının yazı tipi, değiştirilmeden gömülü.
+    yield LicenseEntryWithLineBreaks([
+      'Barlow Condensed',
+    ], await rootBundle.loadString(_barlowLicense));
     yield const LicenseEntryWithLineBreaks(
       ['SQLite'],
       'SQLite, https://sqlite.org/\n\n'
@@ -73,6 +77,8 @@ const _embeddedNative = [
   ('zxing-cpp', 'resources/assets/licenses/zxing-cpp.txt'),
   ('zint', 'resources/assets/licenses/zint.txt'),
 ];
+
+const _barlowLicense = 'resources/assets/licenses/barlow-ofl.txt';
 
 const _secListsMit = '''
 MIT License
