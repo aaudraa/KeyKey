@@ -223,10 +223,18 @@ class _KkSnackState extends State<KkSnack> with SingleTickerProviderStateMixin {
               child: child,
             ),
           ),
+          // Dokununca da kapanır: hap üst çubuğu örtebilir, geri tuşuna
+          // ulaşmak beklemek gerektirmesin.
           child: GestureDetector(
+            onTap: () => unawaited(_dismiss()),
             onVerticalDragUpdate: _onDragUpdate,
             onVerticalDragEnd: _onDragEnd,
-            child: Semantics(container: true, liveRegion: true, child: pill),
+            child: Semantics(
+              container: true,
+              liveRegion: true,
+              onDismiss: () => unawaited(_dismiss()),
+              child: pill,
+            ),
           ),
         ),
       ),

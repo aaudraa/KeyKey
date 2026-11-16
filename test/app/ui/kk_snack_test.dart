@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/theme.dart';
@@ -257,6 +258,43 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.byKey(KkSnack.pillKey).hitTestable(), findsOneWidget);
+  });
+
+  testWidgets('dokununca kapanır, alttaki düğmeye yol açar', (tester) async {
+    final (ctx, _) = await _pump(tester, _Clipboard());
+    showKkSnack(ctx, 'bir');
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(KkSnack.pillKey));
+    await tester.pumpAndSettle();
+    expect(find.byType(KkSnack), findsNothing);
+  });
+
+  testWidgets('TalkBack kapatma eylemiyle kapanır', (tester) async {
+    final semantics = tester.ensureSemantics();
+    final (ctx, _) = await _pump(
+      tester,
+      _Clipboard(),
+      accessibleNavigation: true,
+    );
+    showKkSnack(
+      ctx,
+      'bir',
+      action: KkSnackAction(label: 'Geri al', onPressed: () {}),
+    );
+    await tester.pumpAndSettle();
+    final node = tester.getSemantics(
+      find
+          .ancestor(
+            of: find.byKey(KkSnack.pillKey),
+            matching: find.byType(Semantics),
+          )
+          .first,
+    );
+    expect(node.getSemanticsData().hasAction(SemanticsAction.dismiss), isTrue);
+    node.owner!.performAction(node.id, SemanticsAction.dismiss);
+    await tester.pumpAndSettle();
+    expect(find.byType(KkSnack), findsNothing);
+    semantics.dispose();
   });
 
   testWidgets('hideKkSnack bildirimi kapatır', (tester) async {
