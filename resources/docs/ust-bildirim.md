@@ -1,6 +1,6 @@
 # Üstten inen bildirim
 
-Durum: taslak, proje sahibinin onayını bekliyor (2026-11-16).
+Durum: proje sahibi onayladı ve uygulandı (2026-11-16, [plan](ust-bildirim-plani.md)).
 
 ## Neden
 
@@ -38,10 +38,10 @@ Bugün iki tür bildirim var. Üç yerde (kopyalama, kayıt ve 2FA hesabını ç
 - **Görünüm:** Bugünkü cam bildirimle aynı cam yüzey: güçlü bulanıklık, hap biçimi, ince kenar çizgisi. Yazı ana renkte, 16 punto, w700. "Geri al" gibi bir düğme varsa hapın sağında duruyor ve yazısı da aynı büyüklükte, w800.
 - **Hareket:** Yukarıdan kayarak ve belirerek iniyor (`KkMotion.base`), çıkarken yukarı kayıp soluyor (`KkMotion.panelClose`). "Animasyonları kaldır" açıkken anında çıkıp anında kayboluyor.
 - **Süre:** Düğmesiz bildirim 4 saniye ekranda kalıyor. Düğmeli bildirim 6 saniye kalıyor, çünkü üstteki düğmeye ulaşmak alttakinden uzun sürüyor. *(Benim kararım.)*
-- **Kapanma:** Yukarı kaydırınca kapanıyor. Yeni bildirim öncekinin yerine geçiyor. Kasa kilitlenince açık bildirim kapanıyor, kilitten sonra "Geri al"a basılamasın diye. *(Benim kararım.)*
+- **Kapanma:** Yukarı kaydırınca ya da dokununca kapanıyor; hap üst çubuğu örtebildiği için dokunmak geri tuşuna beklemeden yol açıyor *(son incelemede eklendi)*. Yeni bildirim öncekinin yerine geçiyor. Kasa kilitlenince açık bildirim kapanıyor, kilitten sonra "Geri al"a basılamasın diye. *(Benim kararım.)*
 - **Simge:** Yok. Mesajların bir kısmı başarı, bir kısmı hata; yanlış simge, simgesizlikten kötü. Hata bildirimi de renksiz kalıyor, turuncu yalnızca dört yerde kullanılıyor. *(Benim kararım.)*
-- **Erişilebilirlik:** Mesaj TalkBack'te okunuyor (canlı bölge). TalkBack açıkken düğmeli bildirim kendiliğinden kapanmıyor, Flutter'ın `SnackBar` kuralı gibi.
-- **Kod:** `showKkSnack(context, message, {action})` aynı adla kalıyor, içi yeni katmana geçiyor. `SnackBarAction` yerine küçük bir `KkSnackAction(label, onPressed)` geliyor. Doğrudan `SnackBar` gösteren bütün yerler `showKkSnack`'e geçiyor, temadaki `snackBarTheme` kalkıyor. Bir tarama testi `lib/` altında `SnackBar` ve `showSnackBar` kalmadığını denetliyor.
+- **Erişilebilirlik:** Mesaj TalkBack'te okunuyor (canlı bölge). TalkBack açıkken düğmeli bildirim kendiliğinden kapanmıyor, Flutter'ın `SnackBar` kuralı gibi; TalkBack'in kapatma eylemiyle kapanıyor.
+- **Kod:** `showKkSnack(context, message, {action})` aynı adla kalıyor; `await` öncesi alınan `kkSnackFor(context)` ekran kapansa da bildirimi gösteriyor, içi yeni katmana geçiyor. `SnackBarAction` yerine küçük bir `KkSnackAction(label, onPressed)` geliyor. Doğrudan `SnackBar` gösteren bütün yerler `showKkSnack`'e geçiyor, temadaki `snackBarTheme` kalkıyor. Bir tarama testi `lib/` altında `SnackBar` ve `showSnackBar` kalmadığını denetliyor.
 
 ## Kurucuya kalanlar
 

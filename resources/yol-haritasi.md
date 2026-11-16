@@ -469,6 +469,8 @@ Güvenlik ya da veri kaybı sorunu çıkmadı. Ayrıntılar [denetim belgesinde]
 
 **Durum (2026-11-16, gece):** [#110](https://github.com/aaudraa/KeyKey/pull/110) proje sahibinin onayıyla `main`'e birleşti. #101'in kısa tekrarı son derlemeyle Android 17 emülatöründe geçti: `v0.8.0` kasası üstüne kurulumda bütün veriyle, 2FA bağıyla ve parmak iziyle açıldı ([ayrıntılar](docs/yayin.md#eski-sürümlerden-geçiş)). Kalan: sürüm numarası ve `v1.0.0` etiketi.
 
+**Durum (2026-11-16, gece, devam):** Proje sahibi 1.0'dan önce uygulama içi bildirimlerin üstten inmesini istedi. Bütün bildirimler artık durum çubuğunun altında, ortada duran cam bir hap: yazı 16 punto kalın, yukarı kaydırınca ya da dokununca kapanıyor, düğmeli olanlar 6 saniye kalıyor, kasa kilitlenince kapanıyor ([tasarım](docs/ust-bildirim.md), [plan](docs/ust-bildirim-plani.md)). Yeni gözle yapılan incelemede bulunan iki sorun (TalkBack'le kapatılamama, uzun bildirimin geri tuşunu örtmesi) testle düzeltildi. Birim testleri (1271) geçti. Kalan: proje sahibinin telefonda denemesi, PR, sürüm numarası ve `v1.0.0` etiketi.
+
 **Bitti sayılması için:** GitHub Release'teki APK dört emülatöre ve gerçek telefona kuruluyor; önceki sürümden yükseltmede veri korunuyor; README son durumu anlatıyor.
 
 ## 1.0 sonrası
