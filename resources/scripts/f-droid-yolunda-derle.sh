@@ -29,7 +29,8 @@ source /etc/profile.d/bsenv.sh
 export ANDROID_HOME=/opt/android-sdk
 
 apt-get update -qq
-apt-get install -qy sudo openjdk-21-jdk-headless >/dev/null
+# make: libsodium'un derlemesi için (tarifteki sudo adımı).
+apt-get install -qy sudo openjdk-21-jdk-headless make >/dev/null
 update-alternatives --set java /usr/lib/jvm/java-21-openjdk-amd64/bin/java
 sdkmanager --install "ndk;$ndk_version" >/dev/null
 
