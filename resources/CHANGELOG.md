@@ -4,6 +4,14 @@ KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesind
 
 ## Yayınlanmamış
 
+### Eklenenler
+
+- Kurulumda kurtarma anahtarı kopyalanabiliyor (güvenli pano, 30 saniyede temizlenir) ve metin dosyası olarak kaydedilebiliyor; doğrulama adımı yapıştırmayı ve dosyadan okumayı kabul ediyor. Düğme "Yazdım" yerine "Kaydettim".
+
+### Düzeltilenler
+
+- QR tarayıcıda karartmadaki saydam pencere ile köşe çerçevesi artık aynı yerde ve aynı boyda; fener düğmesi açıklamanın altında kalmıyor, üst çubukta.
+
 ### Değişenler
 
 - Bağımlılıklar güncellendi: Gradle 9.9.0, Android eklentisi 9.5.1, `drift` 2.35.4, `go_router` 18.1.4, `flutter_zxing` 3.1.1, `pigeon` 29.2.0 ve dolaylı paketler.
