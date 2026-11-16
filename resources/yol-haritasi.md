@@ -5,7 +5,7 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 **Son güncelleme:** 2026-11-16 · **Şu anki faz:** yok; Faz 9 bitti, [1.0.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.0.0) yayınlandı
 
 > [!IMPORTANT]
-> **Gerçek parolalarını 1.0'a kadar KeyKey'e koyma.** Projenin kendi güvenlik denetimi tamamlandı, ama yayımlanmış bir sürüm yok ve bağımsız bir denetim yapılmadı.
+> **KeyKey 1.0 yayında.** Projenin kendi güvenlik denetimi tamamlandı, ama bağımsız bir denetim yapılmadı. Şifreli yedeğini düzenli al ve telefonun dışında da sakla.
 
 **Bu belgede:** [Durum](#durum) · [Temel kararlar](#temel-kararlar) · [Teknoloji seçimleri](#teknoloji-seçimleri) · [Mimari](#mimari) · [Güvenlik tasarımı](#güvenlik-tasarımı) · [Çalışma düzeni](#çalışma-düzeni) · [Fazlar](#fazlar) · [1.0 sonrası](#10-sonrası) · [Riskler](#riskler)
 
