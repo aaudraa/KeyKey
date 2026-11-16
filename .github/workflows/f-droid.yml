@@ -1,0 +1,108 @@
+name: F-Droid
+
+# F-Droid'in kendi aracının KeyKey'i bizim derlememizle bayt bayt aynı
+# derlediğini denetler. Bizim derleme tek kullanımlık bir anahtarla imzalanır;
+# imza F-Droid'in imzasız APK'sına kopyalanıp doğrulanır. Yayın anahtarına ve
+# gizli değerlere erişmez. Ayrıntılar: resources/docs/f-droid.md
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - pubspec.lock
+      - pubspec.yaml
+      - "android/**"
+      - ".github/workflows/**"
+      - "resources/f-droid/**"
+      - "resources/scripts/f-droid-*"
+  # Faz 10 boyunca geçici; faz PR'ından önce çıkarılacak.
+  push:
+    branches: [faz/10-f-droid]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: f-droid-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # PR'da birleştirme commit'i değil, F-Droid'in GitHub'dan çekebileceği dal ucu.
+  COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+  IMAGE: registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie
+
+jobs:
+  bizim:
+    name: Bizim derleme (F-Droid yolunda)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    container:
+      image: registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie
+      options: --user root
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.COMMIT }}
+          persist-credentials: false
+      - run: git config --global --add safe.directory '*'
+      - name: Derle
+        run: bash resources/scripts/f-droid-yolunda-derle.sh "$COMMIT" out/imzasiz.apk
+      - name: Tek kullanımlık anahtarla imzala
+        run: |
+          apt-get install -qy apksigner >/dev/null
+          keytool -genkeypair -keystore "$RUNNER_TEMP/deneme.jks" -alias deneme \
+            -keyalg RSA -keysize 4096 -validity 1 -dname CN=deneme \
+            -storepass deneme-parola -keypass deneme-parola
+          apksigner sign --ks "$RUNNER_TEMP/deneme.jks" --ks-pass pass:deneme-parola \
+            --in out/imzasiz.apk --out out/bizim.apk
+          apksigner verify --print-certs out/bizim.apk
+          sha256sum out/*.apk
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: bizim
+          path: out/bizim.apk
+
+  f-droid:
+    name: F-Droid derlemesi (fdroid build)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    container:
+      image: registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie
+      options: --user root
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.COMMIT }}
+          persist-credentials: false
+      - run: git config --global --add safe.directory '*'
+      - name: fdroid build
+        run: bash resources/scripts/f-droid-derle.sh "$COMMIT" out/fdroid.apk
+      - name: Günlükler
+        if: always()
+        run: ls -la /home/vagrant/logs /home/vagrant/tmp 2>/dev/null || true
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: fdroid
+          path: out/fdroid.apk
+
+  karsilastir:
+    name: Karşılaştır
+    needs: [bizim, f-droid]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    container:
+      image: registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie
+      options: --user root
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.COMMIT }}
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: out
+          merge-multiple: true
+      - run: |
+          apt-get update -qq && apt-get install -qy apksigcopier >/dev/null
+          sha256sum out/*.apk
+          bash resources/scripts/f-droid-karsilastir.sh out/bizim.apk out/fdroid.apk

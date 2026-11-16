@@ -1,6 +1,44 @@
 # fdroiddata'ya gönderilecek tarifin kopyası ve f-droid.yml iş akışının girdisi.
-# Tasarım: resources/docs/f-droid.md. Görev 4'te dolduruluyor.
+# İş akışı son derleme bloğunun commit, versionName ve versionCode alanlarını
+# derlenen commit'e göre değiştirir. Tasarım: resources/docs/f-droid.md
+Categories:
+  - Password & 2FA
+  - Security
+License: GPL-3.0-only
+AuthorName: aaudraa
+SourceCode: https://github.com/aaudraa/KeyKey
+IssueTracker: https://github.com/aaudraa/KeyKey/issues
+Changelog: https://github.com/aaudraa/KeyKey/blob/HEAD/resources/CHANGELOG.md
+
+AutoName: KeyKey
+
+RepoType: git
+Repo: https://github.com/aaudraa/KeyKey.git
 Binaries: https://github.com/aaudraa/KeyKey/releases/download/v%v/keykey-%v.apk
 
+Builds:
+  - versionName: 1.0.1
+    versionCode: 4
+    commit: 0000000000000000000000000000000000000000
+    output: build/app/outputs/flutter-apk/app-release.apk
+    srclibs:
+      - flutter@3.47.9
+    prebuild:
+      - export PUB_CACHE=$(pwd)/.pub-cache
+      - $$flutter$$/bin/flutter config --no-analytics
+      - $$flutter$$/bin/flutter pub get --enforce-lockfile
+      - sed -i -e '/signingConfig = /d' android/app/build.gradle.kts
+    scandelete:
+      - .pub-cache
+    build:
+      - export PUB_CACHE=$(pwd)/.pub-cache
+      - $$flutter$$/bin/flutter build apk --release
+    ndk: r28c
+
+AllowedAPKSigningKeys: 66ff7b5c0c009a8530d0a55dd1d80a3af35de48bd0667c456a0cf86a6d1129a0
+
+AutoUpdateMode: Version
 UpdateCheckMode: Tags ^v[0-9]+\.[0-9]+\.[0-9]+$
 UpdateCheckData: pubspec.yaml|version:\s.+\+(\d+)|.|version:\s(.+)\+
+CurrentVersion: 1.0.1
+CurrentVersionCode: 4
