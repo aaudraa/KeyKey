@@ -30,7 +30,7 @@
 
 ---
 
-### Görev 1: Üstten inen bildirim
+### Task 1: Üstten inen bildirim
 
 **Dosyalar:**
 - Değiştir: `lib/app/ui/kk_snack.dart`, `lib/app/ui/kk_motion.dart`
@@ -61,7 +61,7 @@
 - [ ] **Adım 5: Testleri çalıştır.** `flutter test test/app/ui/kk_snack_test.dart test/features/vault test/features/authenticator` → PASS.
 - [ ] **Adım 6: Commit** `özellik(arayüz): bildirim üstten iniyor, yazısı büyük ve kalın`
 
-### Görev 2: Bütün bildirimler aynı yoldan
+### Task 2: Bütün bildirimler aynı yoldan
 
 **Dosyalar:**
 - Değiştir: `restore_screen.dart`, `settings_screen.dart`, `plaintext_export.dart`, `change_password_screen.dart`, `login_import_screen.dart`, `login_edit_screen.dart`, `backup_section.dart`, `autofill_setup_section.dart`, `autofill_save_screen.dart`, `otp_import_screen.dart`, `scanned_code_handler.dart`, `otp_edit_screen.dart`, `lib/app/theme.dart` (`snackBarTheme` kalkar)
@@ -76,7 +76,7 @@
 - [ ] **Adım 4: Çalıştır:** `flutter test` → hepsi PASS, `flutter analyze` temiz.
 - [ ] **Adım 5: Commit** `düzeltme(arayüz): bütün bildirimler üstten inen camda`
 
-### Görev 3: Kilitlenince bildirim kapanır
+### Task 3: Kilitlenince bildirim kapanır
 
 **Dosyalar:**
 - Değiştir: `lib/app/app.dart`
@@ -88,7 +88,7 @@
 - [ ] **Adım 4: PASS gör.**
 - [ ] **Adım 5: Commit** `düzeltme(arayüz): kilitlenince bildirim kapanıyor`
 
-### Görev 4: Doğrulama ve belgeler
+### Task 4: Doğrulama ve belgeler
 
 - [ ] `dart format`, `flutter analyze`, `flutter test`, entegrasyon testleri Android 17'de.
 - [ ] `ust-bildirim.md` durumu "uygulandı", `tasarim-siyah-beyaz.md`'deki "alttaki cam bildirim" ibaresi güncellenir, yol haritasına durum satırı.

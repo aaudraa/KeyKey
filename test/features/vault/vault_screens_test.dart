@@ -10,6 +10,7 @@ import 'package:keykey/app/ui/kk_done_mark.dart';
 import 'package:keykey/app/ui/kk_form.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_secret_text.dart';
+import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
@@ -896,8 +897,7 @@ void main() {
 
     testWidgets('çöp kutusundan geri alınıyor', (tester) async {
       await trashPosta(tester);
-      ScaffoldMessenger.of(tester.element(find.byType(VaultScreen)))
-          .hideCurrentSnackBar();
+      hideKkSnack();
       await tester.pumpAndSettle();
 
       await openMenu(tester);
