@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/autofill/application/autofill_bridge.dart';
 import 'package:keykey/features/autofill/application/autofill_matches.dart';
@@ -77,7 +78,7 @@ class _AutofillSaveScreenState extends ConsumerState<AutofillSaveScreen> {
   Future<void> _run(Future<void> Function(LoginsController) save) async {
     if (_busy) return;
     final l10n = AppLocalizations.of(context);
-    final messenger = ScaffoldMessenger.of(context);
+    final snack = kkSnackFor(context);
     setState(() => _busy = true);
     try {
       await save(ref.read(loginsControllerProvider.notifier));
@@ -86,7 +87,7 @@ class _AutofillSaveScreenState extends ConsumerState<AutofillSaveScreen> {
       if (mounted) setState(() => _busy = false);
       return;
     } on Exception {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.loginSaveFailed)));
+      snack(l10n.loginSaveFailed);
       if (mounted) setState(() => _busy = false);
       return;
     }

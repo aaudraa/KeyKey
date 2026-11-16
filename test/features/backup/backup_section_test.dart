@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/ui/kk_done_mark.dart';
+import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/features/backup/presentation/backup_status_card.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
@@ -233,7 +234,7 @@ void main() {
 
     expect(documents.saves, 1);
     expect(settings.settings.lastBackupAt, isNull);
-    expect(find.byType(SnackBar), findsNothing);
+    expect(find.byType(KkSnack), findsNothing);
   });
 
   testWidgets('yazılamazsa hata gösteriliyor, zaman yazılmıyor', (

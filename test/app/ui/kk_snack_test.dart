@@ -220,6 +220,28 @@ void main() {
     expect(find.text('Çöpe taşındı'), findsOneWidget);
   });
 
+  testWidgets('kkSnackFor: await öncesi alınır, ekran kapansa da gösterir', (
+    tester,
+  ) async {
+    final (ctx, _) = await _pump(tester, _Clipboard());
+    late BuildContext pageContext;
+    Navigator.of(ctx).push(
+      MaterialPageRoute<void>(
+        builder: (context) {
+          pageContext = context;
+          return const SizedBox.expand();
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+    final snack = kkSnackFor(pageContext);
+    Navigator.of(pageContext).pop();
+    await tester.pumpAndSettle();
+    snack('Yedek kaydedildi');
+    await tester.pumpAndSettle();
+    expect(find.text('Yedek kaydedildi'), findsOneWidget);
+  });
+
   testWidgets('alt pencere açıkken bildirim pencerenin üstünde', (
     tester,
   ) async {

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/ui/kk_section.dart';
+import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/features/autofill/application/autofill_setup.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
@@ -51,7 +52,7 @@ class _AutofillSetupSectionState extends ConsumerState<AutofillSetupSection> {
 
   Future<void> _open(Future<bool> Function(AutofillSetupBridge) open) async {
     final l10n = AppLocalizations.of(context);
-    final messenger = ScaffoldMessenger.of(context);
+    final snack = kkSnackFor(context);
     var opened = false;
     try {
       opened = await open(ref.read(autofillSetupBridgeProvider));
@@ -59,9 +60,7 @@ class _AutofillSetupSectionState extends ConsumerState<AutofillSetupSection> {
       opened = false;
     }
     if (!opened) {
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.autofillSetupOpenFailed)),
-      );
+      snack(l10n.autofillSetupOpenFailed);
     }
   }
 

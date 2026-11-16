@@ -10,6 +10,7 @@ import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
+import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/backup/backup_codec.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/crypto/recovery_key.dart';
@@ -27,10 +28,7 @@ import 'package:keykey/l10n/generated/app_localizations.dart';
 /// ekranını açar.
 Future<void> pickBackupToRestore(BuildContext context, WidgetRef ref) async {
   final l10n = AppLocalizations.of(context);
-  final messenger = ScaffoldMessenger.of(context);
-  void show(String message) => messenger
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(message)));
+  final show = kkSnackFor(context);
 
   final files = ref.read(documentFilesProvider);
   final result = await ref
@@ -130,7 +128,7 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
   /// Kasa kurulu değilken: yedekten kasa kurulur ve açılır.
   Future<void> _restoreNew(OpenedBackup backup) async {
     final l10n = AppLocalizations.of(context);
-    final messenger = ScaffoldMessenger.of(context);
+    final snack = kkSnackFor(context);
     final controller = ref.read(vaultControllerProvider.notifier);
     setState(() => _busy = true);
     try {
@@ -140,7 +138,7 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
           .openRestoredSession(backup.header, backup.copyKey());
       controller.openRestored(session);
       if (mounted) context.go(AppRoutes.vault);
-      messenger.showSnackBar(SnackBar(content: Text(l10n.restoreDone)));
+      snack(l10n.restoreDone);
     } on Exception {
       _fail(l10n.restoreFailed);
       if (mounted) setState(() => _busy = false);
@@ -149,7 +147,7 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
 
   Future<void> _merge(OpenedBackup backup, VaultSession session) async {
     final l10n = AppLocalizations.of(context);
-    final messenger = ScaffoldMessenger.of(context);
+    final snack = kkSnackFor(context);
     setState(() => _busy = true);
     try {
       final counts = await ref
@@ -159,11 +157,7 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
         ..invalidate(loginsControllerProvider)
         ..invalidate(otpsControllerProvider);
       if (mounted) context.pop();
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(l10n.restoreMerged(counts.added, counts.updated)),
-        ),
-      );
+      snack(l10n.restoreMerged(counts.added, counts.updated));
     } on VaultLockedException {
       // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.
     } on Exception {

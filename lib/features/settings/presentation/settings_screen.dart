@@ -12,6 +12,7 @@ import 'package:keykey/app/ui/kk_entrance.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_section.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
+import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/app/ui/kk_switch.dart';
 import 'package:keykey/core/platform/app_packages.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
@@ -57,7 +58,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Future<void> _setBiometric({required bool enable}) async {
     final l10n = AppLocalizations.of(context);
-    final messenger = ScaffoldMessenger.of(context);
+    final snack = kkSnackFor(context);
     final controller = ref.read(vaultControllerProvider.notifier);
     setState(() => _busy = true);
     try {
@@ -75,15 +76,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           BiometricFailed() => l10n.biometricEnableFailed,
         };
         if (message != null) {
-          messenger.showSnackBar(SnackBar(content: Text(message)));
+          snack(message);
         }
       } else {
         await controller.disableBiometric();
       }
     } on Exception {
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.biometricEnableFailed)),
-      );
+      snack(l10n.biometricEnableFailed);
     } finally {
       await _loadBiometric();
       if (mounted) setState(() => _busy = false);
@@ -94,7 +93,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   /// telefonu eline alan biri ayarı kapatıp kodları görebilirdi.
   Future<void> _setOtpRequireAuth({required bool value}) async {
     final l10n = AppLocalizations.of(context);
-    final messenger = ScaffoldMessenger.of(context);
+    final snack = kkSnackFor(context);
     if (!value && !await confirmIdentity(context, ref)) return;
     try {
       await ref
@@ -103,13 +102,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     } on VaultLockedException {
       // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.
     } on Exception {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.loginSaveFailed)));
+      snack(l10n.loginSaveFailed);
     }
   }
 
   Future<void> _setAutofillCopyOtp({required bool value}) async {
     final l10n = AppLocalizations.of(context);
-    final messenger = ScaffoldMessenger.of(context);
+    final snack = kkSnackFor(context);
     try {
       await ref
           .read(settingsControllerProvider.notifier)
@@ -117,7 +116,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     } on VaultLockedException {
       // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.
     } on Exception {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.loginSaveFailed)));
+      snack(l10n.loginSaveFailed);
     }
   }
 

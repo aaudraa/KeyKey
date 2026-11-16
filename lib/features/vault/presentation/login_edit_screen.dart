@@ -8,6 +8,7 @@ import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_form.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
+import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/generator/presentation/generator_sheet.dart';
@@ -148,7 +149,7 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
   Future<void> _save() async {
     if (_saving || _done || _name.text.trim().isEmpty) return;
     final l10n = AppLocalizations.of(context);
-    final messenger = ScaffoldMessenger.of(context);
+    final snack = kkSnackFor(context);
     final controller = ref.read(loginsControllerProvider.notifier);
     setState(() => _saving = true);
     try {
@@ -165,7 +166,7 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
     } on VaultLockedException {
       // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.
     } on Exception {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.loginSaveFailed)));
+      snack(l10n.loginSaveFailed);
     } finally {
       if (mounted) setState(() => _saving = false);
     }

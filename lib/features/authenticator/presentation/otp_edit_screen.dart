@@ -12,6 +12,7 @@ import 'package:keykey/app/ui/kk_form.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_shake.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
+import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/data/base32.dart';
@@ -154,9 +155,7 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
         _linkError = null;
         _applyAccount(account);
       });
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(l10n.otpLinkFilled)));
+      showKkSnack(context, l10n.otpLinkFilled);
     } on InvalidOtpauthUriException catch (error) {
       setState(() {
         _linkError = error.error == OtpauthError.unsupportedType
@@ -175,9 +174,7 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
     if (!mounted) return;
     final text = data?.text?.trim() ?? '';
     if (text.isEmpty) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(l10n.otpSecretPasteEmpty)));
+      showKkSnack(context, l10n.otpSecretPasteEmpty);
       return;
     }
     final formatted = SecretKeyFormatter.group(text);
@@ -314,7 +311,7 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
       return;
     }
     final l10n = AppLocalizations.of(context);
-    final messenger = ScaffoldMessenger.of(context);
+    final snack = kkSnackFor(context);
     final controller = ref.read(otpsControllerProvider.notifier);
     setState(() => _saving = true);
     try {
@@ -329,7 +326,7 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
       // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.
     } on Exception {
       // Hesap bu sırada silinmiş olabilir: OtpNotFoundException.
-      messenger.showSnackBar(SnackBar(content: Text(l10n.loginSaveFailed)));
+      snack(l10n.loginSaveFailed);
     } finally {
       if (mounted) setState(() => _saving = false);
     }

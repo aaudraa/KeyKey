@@ -46,6 +46,17 @@ void showKkSnack(
   overlay.insert(entry);
 }
 
+/// Bildirimi sonra göstermek için bir ekranın bağlamından alınan işlev. `await`
+/// öncesinde alınır: o arada ekran kapansa da bildirim kök gezginde çıkar.
+typedef KkSnackShow = void Function(String message, {KkSnackAction? action});
+
+KkSnackShow kkSnackFor(BuildContext context) {
+  final root = Navigator.of(context, rootNavigator: true).context;
+  return (message, {action}) {
+    if (root.mounted) showKkSnack(root, message, action: action);
+  };
+}
+
 /// Açık bildirimi hemen kapatır (ör. kasa kilitlenince).
 void hideKkSnack() => _removeNow();
 

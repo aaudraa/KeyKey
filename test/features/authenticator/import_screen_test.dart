@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/platform/export_file_picker.dart';
 import 'package:keykey/features/authenticator/data/base32.dart';
 import 'package:keykey/features/authenticator/data/otp_content.dart';
@@ -172,7 +173,7 @@ void main() {
     await chooseAddOption(tester, 'Başka uygulamadan aktar');
 
     expect(files.calls, 1);
-    expect(find.byType(SnackBar), findsNothing);
+    expect(find.byType(KkSnack), findsNothing);
   });
 
   testWidgets("Google Authenticator QR'ı içe aktarma ekranını açıyor", (
