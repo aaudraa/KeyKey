@@ -1,6 +1,10 @@
 # fdroiddata'ya gönderilecek tarifin kopyası ve f-droid.yml iş akışının girdisi.
 # İş akışı son derleme bloğunun commit, versionName ve versionCode alanlarını
 # derlenen commit'e göre değiştirir. Tasarım: resources/docs/f-droid.md
+#
+# scanignore: sodium paketinin içindeki libsodium kaynak arşivi. Paketin
+# derleme kancası libsodium'u bu kaynaktan NDK ile derler; arşiv silinirse
+# derleme durur. Paket pubspec.lock'taki SHA-256 özetiyle doğrulanır.
 Categories:
   - Password & 2FA
   - Security
@@ -31,6 +35,8 @@ Builds:
       - $$flutter$$/bin/flutter config --no-analytics
       - $$flutter$$/bin/flutter pub get --enforce-lockfile
       - sed -i -e '/signingConfig = /d' android/app/build.gradle.kts
+    scanignore:
+      - .pub-cache/hosted/pub.dev/sodium-*/3rdparty/libsodium-*-stable.tar.gz
     scandelete:
       - .pub-cache
     build:
