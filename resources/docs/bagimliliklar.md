@@ -22,13 +22,13 @@ KeyKey GPL-3.0 ile yayımlanır. Bu yüzden içine giren her şeyin lisansı GPL
 |---|---|---|---|
 | `sodium` | 4.1.2+1 | BSD-3-Clause; içindeki libsodium 1.0.22 ISC | Bütün kriptografi: Argon2id, XChaCha20-Poly1305, rastgele sayı, korumalı bellek |
 | `sqlite3` | 3.9.1 | MIT; SQLite kamu malı | Veritabanı motoru |
-| `drift` | 2.35.3 | MIT | Veritabanı şeması, sorgular ve göçler |
+| `drift` | 2.35.4 | MIT | Veritabanı şeması, sorgular ve göçler |
 | `crypto` | 3.0.8 | BSD-3-Clause | 2FA kodları için HMAC-SHA1/256/512; içe aktarmada anahtar türetme |
 | `flutter_riverpod` | 3.5.0 | MIT | Uygulama durumunun yönetimi |
-| `go_router` | 18.1.3 | BSD-3-Clause | Ekranlar arası geçiş |
+| `go_router` | 18.1.4 | BSD-3-Clause | Ekranlar arası geçiş |
 | `intl` | 0.20.3 | BSD-3-Clause | Tarih ve sayı biçimleri, çeviriler (`flutter_localizations` ile) |
 | `camera` | 0.12.2 | BSD-3-Clause | 2FA QR kodunu kamerayla okuma |
-| `flutter_zxing` | 3.1.0 | MIT; içindeki zxing-cpp Apache-2.0, zint BSD-3-Clause | QR kodunu çözme |
+| `flutter_zxing` | 3.1.1 | MIT; içindeki zxing-cpp Apache-2.0, zint BSD-3-Clause | QR kodunu çözme |
 | `image_picker` | 1.2.4 | BSD-3-Clause, Apache-2.0 | QR kodunu galerideki görselden okuma |
 | `file_selector` | 1.1.0 | BSD-3-Clause | Yedek ve içe aktarma dosyası seçme, dışa aktarmayı kaydetme |
 | `path_provider` | 2.1.6 | BSD-3-Clause | Kasa dosyasının uygulama klasöründeki yeri |
@@ -53,7 +53,7 @@ Okurken bilinmesi gerekenler:
 
 | Paket | Sürüm | Tür | Lisans |
 |---|---|---|---|
-| `archive` | 4.6.0 | dolaylı | MIT |
+| `archive` | 4.7.1 | dolaylı | MIT |
 | `args` | 2.7.0 | dolaylı | BSD-3-Clause |
 | `async` | 2.13.1 | dolaylı | BSD-3-Clause |
 | `boolean_selector` | 2.1.2 | dolaylı | BSD-3-Clause |
@@ -70,8 +70,8 @@ Okurken bilinmesi gerekenler:
 | `cross_file` | 0.3.5+5 | dolaylı | BSD-3-Clause |
 | `crypto` | 3.0.8 | doğrudan | BSD-3-Clause |
 | `csslib` | 1.0.2 | dolaylı | BSD-3-Clause |
-| `cupertino_ui` | 1.1.6 | dolaylı | BSD-3-Clause |
-| `drift` | 2.35.3 | doğrudan | MIT |
+| `cupertino_ui` | 1.1.7 | dolaylı | BSD-3-Clause |
+| `drift` | 2.35.4 | doğrudan | MIT |
 | `fake_async` | 1.3.3 | dolaylı | Apache-2.0 |
 | `ffi` | 2.2.0 | dolaylı | BSD-3-Clause |
 | `file` | 7.0.1 | dolaylı | BSD-3-Clause |
@@ -90,15 +90,15 @@ Okurken bilinmesi gerekenler:
 | `flutter_riverpod` | 3.5.0 | doğrudan | MIT |
 | `flutter_test` | 0.0.0 | dolaylı | BSD-3-Clause (Flutter SDK) |
 | `flutter_web_plugins` | 0.0.0 | dolaylı | BSD-3-Clause (Flutter SDK) |
-| `flutter_zxing` | 3.1.0 | doğrudan | MIT |
+| `flutter_zxing` | 3.1.1 | doğrudan | MIT |
 | `freezed_annotation` | 3.1.0 | dolaylı | MIT |
 | `glob` | 2.2.0 | dolaylı | BSD-3-Clause |
-| `go_router` | 18.1.3 | doğrudan | BSD-3-Clause |
+| `go_router` | 18.1.4 | doğrudan | BSD-3-Clause |
 | `hooks` | 2.2.0 | dolaylı | BSD-3-Clause |
 | `html` | 0.15.7 | dolaylı | MIT |
 | `http` | 1.6.0 | dolaylı | BSD-3-Clause |
 | `http_parser` | 4.1.2 | dolaylı | BSD-3-Clause |
-| `image` | 4.12.0 | dolaylı | MIT |
+| `image` | 4.13.1 | dolaylı | MIT |
 | `image_picker` | 1.2.4 | doğrudan | BSD-3-Clause, Apache-2.0 |
 | `image_picker_android` | 0.8.13+25 | dolaylı | BSD-3-Clause, Apache-2.0 |
 | `image_picker_for_web` | 3.1.1 | dolaylı | BSD-3-Clause |
@@ -119,11 +119,11 @@ Okurken bilinmesi gerekenler:
 | `logging` | 1.3.0 | dolaylı | BSD-3-Clause |
 | `matcher` | 0.12.20 | dolaylı | BSD-3-Clause |
 | `material_color_utilities` | 0.13.0 | dolaylı | Apache-2.0 |
-| `material_ui` | 1.10.0 | dolaylı | BSD-3-Clause |
+| `material_ui` | 1.11.1 | dolaylı | BSD-3-Clause |
 | `meta` | 1.19.0 | dolaylı | BSD-3-Clause |
 | `mime` | 2.1.0 | dolaylı | BSD-3-Clause |
 | `native_toolchain_c` | 0.19.6 | dolaylı | BSD-3-Clause |
-| `objective_c` | 9.6.3 | dolaylı | BSD-3-Clause |
+| `objective_c` | 9.6.4 | dolaylı | BSD-3-Clause |
 | `package_config` | 3.0.0 | dolaylı | BSD-3-Clause |
 | `path` | 1.9.1 | dolaylı | BSD-3-Clause |
 | `path_provider` | 2.1.6 | doğrudan | BSD-3-Clause |
@@ -215,6 +215,8 @@ Ayarlar'daki "Lisanslar" ekranı Flutter'ın `LicenseRegistry`'sini gösterir. F
 
 Bu denetimde güncellenenler: `flutter_riverpod` 3.4.3 → 3.5.0, `sqlite3` 3.9.0 → 3.9.1, `pigeon` 29.1.0 → 29.1.1 (üretilen köprüde yalnızca sürüm satırı değişti), `androidx.autofill` 1.1.0 → 1.3.0, Guava 33.5.0 → 33.8.0 ve bunlarla gelen dolaylı paketler. Yerel kütüphanelerden libsodium (1.0.22) ve SQLite (3.54.1) son sürümde.
 
+1.0'dan sonraki bakımda (2026-11-16) güncellenenler: `drift` 2.35.3 → 2.35.4, `go_router` 18.1.3 → 18.1.4, `flutter_zxing` 3.1.0 → 3.1.1, `pigeon` 29.1.1 → 29.2.0 (üretilen Kotlin köprüsünde enum değeri artık sıra numarasıyla bulunuyor; KeyKey'in üç enum'unda değerler sıra numarasıyla aynı) ve bunlarla gelen dolaylı paketler; Gradle 9.8.2 → 9.9.0, Android eklentisi 9.5.0 → 9.5.1, `actions/setup-java` 6.1.0 → 6.2.0.
+
 Bekleyenler:
 
 | Paket | Kullanılan | Son | Neden bekliyor |
@@ -223,6 +225,7 @@ Bekleyenler:
 | `cross_file` | 0.3.5+5 | 0.4.0 | `file_selector` ve `image_picker` henüz 0.4'e izin vermiyor |
 | `material_color_utilities`, `test_api` | 0.13.0, 0.7.12 | 0.13.1, 0.7.15 | Flutter SDK'sı bu sürümlere sabitliyor; Flutter güncellenince gelir |
 | `built_collection` | 5.1.2 | 6.0.0 | Yalnızca kod üretim araçlarında; uygulamaya girmez |
+| `pigeon` | 29.2.0 | 30.0.3 | Büyük sürüm; köprü kodu yeniden üretilip ayrıca denenmeli. Yalnızca kod üretiminde, uygulamaya üretilen kod girer |
 
 ## Bilinen açıklar
 
