@@ -1,0 +1,31 @@
+KeyKey keeps your passwords and two-factor codes on your phone, encrypted, and nowhere else. There is no account and no server, and the app does not have the internet permission, so it cannot send your data anywhere.
+
+<b>Passwords</b>
+<ul>
+<li>Add, edit and search logins; folders, trash, custom fields</li>
+<li>Password generator and strength meter</li>
+<li>Offline report of weak and reused passwords</li>
+</ul>
+
+<b>Two-factor codes</b>
+<ul>
+<li>TOTP and HOTP codes, add by scanning a QR code or from an image</li>
+<li>Import from Google Authenticator export QR codes, Aegis and 2FAS</li>
+</ul>
+
+<b>Autofill</b>
+<ul>
+<li>Fills and saves passwords in Android apps and in Chrome</li>
+<li>Apps are matched by their signing certificate; suspicious cases show a warning</li>
+</ul>
+
+<b>Lock and backup</b>
+<ul>
+<li>Master password, fingerprint unlock, auto-lock, recovery key</li>
+<li>Encrypted backup that you save wherever you like, and restore</li>
+<li>Import from Bitwarden, Chrome, Firefox and KeePassXC; unencrypted export if you want to leave</li>
+</ul>
+
+Vault data is encrypted with XChaCha20-Poly1305 and the master password is stretched with Argon2id (libsodium). Builds are reproducible and signed by the developer.
+
+Much of KeyKey's code was written with an AI coding assistant. The project went through its own security review but has not been independently audited. Keep encrypted backups of your vault.

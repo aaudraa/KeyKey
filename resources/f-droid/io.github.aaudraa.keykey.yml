@@ -1,0 +1,6 @@
+# fdroiddata'ya gönderilecek tarifin kopyası ve f-droid.yml iş akışının girdisi.
+# Tasarım: resources/docs/f-droid.md. Görev 4'te dolduruluyor.
+Binaries: https://github.com/aaudraa/KeyKey/releases/download/v%v/keykey-%v.apk
+
+UpdateCheckMode: Tags ^v[0-9]+\.[0-9]+\.[0-9]+$
+UpdateCheckData: pubspec.yaml|version:\s.+\+(\d+)|.|version:\s(.+)\+

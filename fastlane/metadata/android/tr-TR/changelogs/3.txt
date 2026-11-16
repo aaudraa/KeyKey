@@ -1,0 +1,1 @@
+İlk kararlı sürüm, kalıcı yayın anahtarıyla imzalı. Yeni: Firefox CSV içe aktarma, tema seçimi (sistem, açık, koyu), ilk açılışta kısa tanıtım ve yeni görünüm. Eski v0.x sürümlerinin üstüne kurulamaz: yedek al, eskisini kaldır, 1.0'ı kur ve yedeği geri yükle.

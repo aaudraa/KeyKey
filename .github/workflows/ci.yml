@@ -42,6 +42,9 @@ jobs:
         run: flutter analyze
       - name: Test
         run: flutter test
+      # F-Droid'in okuduğu açıklamalar ve tarif: resources/docs/f-droid.md
+      - name: Mağaza açıklamaları
+        run: python3 resources/scripts/check-fastlane.py
 
   android:
     name: Android derlemesi

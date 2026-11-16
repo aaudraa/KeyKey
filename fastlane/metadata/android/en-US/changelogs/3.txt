@@ -1,0 +1,1 @@
+First stable release, signed with the permanent release key. New: Firefox CSV import, theme choice (system, light, dark), a short intro on first launch and a new look. Older v0.x builds were debug-signed and cannot be updated: make a backup, uninstall, install 1.0 and restore the backup.
