@@ -4,7 +4,7 @@ KeyKey is an offline, open-source password manager and TOTP/HOTP authenticator f
 
 This page summarises the security design for reviewers who don't read Turkish. The full and authoritative design is the Turkish [security design document](guvenlik-tasarimi.md); the [self-audit against OWASP MASVS](guvenlik-denetimi.md) is also in Turkish. Section links below point into those documents. If this summary and the Turkish document disagree, the Turkish document wins, and the disagreement is a bug worth reporting.
 
-**Status (2026-11-09, `v0.8.0`):** No public release yet. Not independently audited. The project's own MASVS audit is complete.
+**Status (2026-11-16, `v1.0.0`):** Released. Not independently audited. The project's own MASVS audit is complete.
 
 ## Goals and non-goals
 

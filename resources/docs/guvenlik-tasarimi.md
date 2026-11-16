@@ -2,7 +2,7 @@
 
 Bu belge KeyKey'in verileri nasıl şifrelediğini bayt düzeyinde anlatır. Kod bu belgeye göre yazılır; ikisi çelişirse bu bir hatadır. Dışarıdan inceleyenler için de başlangıç noktasıdır, eleştirileri [özel güvenlik bildirimiyle](https://github.com/aaudraa/KeyKey/security/advisories/new) veya tasarım sorusuysa issue ile iletebilirsin.
 
-**Durum:** Biçim sürümü 1, geliştirme aşamasında. Bağımsız bir denetimden geçmedi. 1.0'a kadar biçim değişebilir.
+**Durum:** Biçim sürümü 1, KeyKey 1.0 ile yayınlandı. Bağımsız bir denetimden geçmedi. Biçim bundan sonra değişirse eski dosyalar okunmaya devam etmeli; bu, 1.0'dan sonraki her biçim değişikliğinin şartıdır.
 
 ## Hedefler
 

@@ -56,6 +56,9 @@ jobs:
       - name: Anahtarı hazırla
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYKEY_KEYSTORE_BASE64 }}
+          KEYKEY_KEYSTORE_PASSWORD: ${{ secrets.KEYKEY_KEYSTORE_PASSWORD }}
+          KEYKEY_KEY_ALIAS: ${{ secrets.KEYKEY_KEY_ALIAS }}
+          KEYKEY_KEY_PASSWORD: ${{ secrets.KEYKEY_KEY_PASSWORD }}
         run: |
           if [[ -z "${KEYSTORE_BASE64}" ]]; then
             echo "HATA: yayin ortamında KEYKEY_KEYSTORE_BASE64 yok." >&2
@@ -64,6 +67,15 @@ jobs:
           umask 077
           printf '%s' "${KEYSTORE_BASE64}" | base64 --decode > "${RUNNER_TEMP}/keykey.jks"
           echo "KEYKEY_KEYSTORE=${RUNNER_TEMP}/keykey.jks" >> "$GITHUB_ENV"
+          # Parolalar derlemeden önce denenir: yanlışsa yedi dakikalık derlemenin
+          # sonunda değil, burada durur. -certreq özel anahtarı da açar.
+          if ! keytool -certreq -keystore "${RUNNER_TEMP}/keykey.jks" \
+              -alias "${KEYKEY_KEY_ALIAS}" \
+              -storepass:env KEYKEY_KEYSTORE_PASSWORD \
+              -keypass:env KEYKEY_KEY_PASSWORD >/dev/null 2>&1; then
+            echo "HATA: anahtar deposu ya da anahtar yayin ortamındaki parolalarla açılmıyor." >&2
+            exit 1
+          fi
 
       - run: flutter pub get
 

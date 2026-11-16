@@ -4,8 +4,8 @@ Android için çevrimdışı, açık kaynak parola yöneticisi ve 2FA doğrulama
 
 *English: see the [security design summary](resources/docs/security-summary.md), the [privacy policy](resources/docs/privacy.md) and the [security policy](.github/SECURITY.md#security-policy).*
 
-> [!WARNING]
-> **KeyKey henüz yayımlanmadı.** Kurulabilir bir sürümü yok ve bağımsız bir güvenlik denetiminden geçmedi; projenin kendi güvenlik denetimi tamamlandı. İlk sürüme kadar gerçek parolalarını emanet etme.
+> [!IMPORTANT]
+> **KeyKey 1.0 yayında:** [son sürümü indir](https://github.com/aaudraa/KeyKey/releases/latest). Projenin kendi güvenlik denetimi tamamlandı ama bağımsız bir denetimden geçmedi. Şifreli yedeğini düzenli al ve telefonun dışında da sakla. Eski bir `v0.x` sürümü kullanıyorsan önce [geçiş adımlarını](resources/docs/yayin.md#eski-sürümlerden-geçiş) oku.
 
 ## Neden KeyKey?
 
