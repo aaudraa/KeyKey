@@ -465,6 +465,8 @@ Güvenlik ya da veri kaybı sorunu çıkmadı. Ayrıntılar [denetim belgesinde]
 
 **Durum (2026-11-16):** Faz PR'ı [#109](https://github.com/aaudraa/KeyKey/pull/109) proje sahibinin onayıyla `main`'e birleşti. #101 eski bir commit'in `Closes` satırıyla kapandı, 1.0'dan önceki kısa tekrar için yeniden açıldı. Dışarıdan inceleme çağrısı (#90) proje sahibinin kararıyla 1.0'ın önkoşulu değil, milestone'dan çıkarıldı. Proje sahibi 1.0'dan önce ilk açılışa hareketli bir tanıtım istedi; altı sayfa yazıldı ([tasarım](docs/tanitim.md), [plan](docs/tanitim-plani.md)). Başka uygulamalar logosuz, aynı görünen ad rozetleriyle geçiyor (önce özgür lisanslı KeePassXC logosu konmuştu, proje sahibi telefonda gördükten sonra kaldırılmasını istedi). Entegrasyon testleri Android 17'de hepsi geçti. Proje sahibinin isteğiyle ayrıca: "+" menüsünün K logosunu yeniden oynatması düzeltildi, sekme adları büyüdü, ekran başlıkları Barlow Condensed eğik büyük harf ve 44 punto oldu. Kalan: telefonda son deneme (`keykey-deneme-14-spor-basliklar.apk`), ikinci PR, #101 kısa tekrarı, sürüm numarası ve `v1.0.0` etiketi.
 
+**Durum (2026-11-16, akşam):** Proje sahibi 14. denemeyi telefonda gördü, başlıkları beğendi. Birim testleri (1254) ve entegrasyon testleri Android 17'de geçti; tanıtım ve başlıklar için ikinci faz PR'ı açıldı. Kalan: PR'ın birleşmesi (proje sahibinin onayıyla), #101 kısa tekrarı, sürüm numarası ve `v1.0.0` etiketi.
+
 **Bitti sayılması için:** GitHub Release'teki APK dört emülatöre ve gerçek telefona kuruluyor; önceki sürümden yükseltmede veri korunuyor; README son durumu anlatıyor.
 
 ## 1.0 sonrası
