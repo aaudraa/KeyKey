@@ -169,25 +169,24 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
 
-    testWidgets(
-      'köşe çerçevesi karartmadaki pencereyle aynı boyda ve kameranın ortasında',
-      (tester) async {
-        await openCamera(tester, ambient: false);
-        final cameraRect = tester.getRect(find.byKey(FakeQrCamera.key));
-        final hole = QrScanScreen.holeFor(cameraRect.size);
-        // Okuyucu, kamera görüntüsünün kısa kenarının cropPercent'ini tarar;
-        // görüntü alanı kapladığı için bu pencere her zaman taranan alanın
-        // içinde kalır.
-        expect(hole.width, cameraRect.shortestSide * QrScanScreen.cropPercent);
-        final frame = tester.getRect(find.byKey(QrScanScreen.frameKey));
-        expect(frame.width, moreOrLessEquals(hole.width));
-        expect(frame.height, moreOrLessEquals(hole.height));
-        expect(frame.center.dx, moreOrLessEquals(cameraRect.center.dx));
-        expect(frame.center.dy, moreOrLessEquals(cameraRect.center.dy));
-        final shade = tester.getRect(find.byKey(QrScanScreen.shadeKey));
-        expect(shade, cameraRect);
-      },
-    );
+    testWidgets('köşe çerçevesi karartmadaki pencereyle aynı boyda ve ortada', (
+      tester,
+    ) async {
+      await openCamera(tester, ambient: false);
+      final cameraRect = tester.getRect(find.byKey(FakeQrCamera.key));
+      final hole = QrScanScreen.holeFor(cameraRect.size);
+      // Okuyucu, kamera görüntüsünün kısa kenarının cropPercent'ini tarar;
+      // görüntü alanı kapladığı için bu pencere her zaman taranan alanın
+      // içinde kalır.
+      expect(hole.width, cameraRect.shortestSide * QrScanScreen.cropPercent);
+      final frame = tester.getRect(find.byKey(QrScanScreen.frameKey));
+      expect(frame.width, moreOrLessEquals(hole.width));
+      expect(frame.height, moreOrLessEquals(hole.height));
+      expect(frame.center.dx, moreOrLessEquals(cameraRect.center.dx));
+      expect(frame.center.dy, moreOrLessEquals(cameraRect.center.dy));
+      final shade = tester.getRect(find.byKey(QrScanScreen.shadeKey));
+      expect(shade, cameraRect);
+    });
 
     testWidgets('fener destekleniyorsa üst çubuktan açılıp kapanıyor', (
       tester,

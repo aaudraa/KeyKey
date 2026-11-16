@@ -533,8 +533,7 @@ class FakeQrCamera {
   /// hata verir.
   void offerTorch({bool fails = false}) => _onTorch(() async {
     if (fails) throw StateError('fener yok');
-    torchOn = !torchOn;
-    return torchOn;
+    return torchOn = !torchOn;
   });
 
   Widget build({
