@@ -174,7 +174,7 @@ En küçük yazı 11 sp'nin altına inmez. %200 yazı boyutunda taşma testleri 
 
 | No | Olay | Hareket | Süre / eğri | Kodda |
 |---|---|---|---|---|
-| 2.1 | Kopyalama | Satırdaki kopyala simgesi onay işaretine döner (ölçek + solma), 1 sn sonra geri döner; alttaki cam bildirim de çıkar | `fast` + 1 sn | `vault_screen`, `login_detail_screen`, `otp_code_tile`, `kk_snack.dart`; yeni ortak `KkCopyIcon` |
+| 2.1 | Kopyalama | Satırdaki kopyala simgesi onay işaretine döner (ölçek + solma), 1 sn sonra geri döner; üstten inen cam bildirim de çıkar ([ust-bildirim.md](ust-bildirim.md)) | `fast` + 1 sn | `vault_screen`, `login_detail_screen`, `otp_code_tile`, `kk_snack.dart`; yeni ortak `KkCopyIcon` |
 | 2.2 | Kaydetme | Düğmedeki yazı onay işaretine döner, ekran kapanır, listede yeni/değişen kart bir kez parlar (zemin %0 → %10 → %0) | `emphasis` | `login_edit_screen`, `otp_edit_screen`, `kk_form.dart`, liste ekranları |
 | 2.3 | Silme / çöpe atma | Kart sola kayıp solar, yüksekliği sıfıra iner, alttakiler yukarı kayar | `base`, `exit` | `vault_screen`, `authenticator_screen`, `trash_screen`, `otp_trash_screen` |
 | 2.4 | Hata | Yanlış ana parolada ve boş zorunlu alanda kutu üç kısa salınımla titrer (±8 dp); hata metni solarak gelir | 300 ms | `lock_screen` (var), `kk_form.dart` (yeni) |

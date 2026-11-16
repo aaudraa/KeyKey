@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
+import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
@@ -31,7 +32,7 @@ String plaintextExportFileName(DateTime time) {
 /// yazılır; uygulamanın klasöründe kopya kalmaz.
 Future<void> exportPlaintext(BuildContext context, WidgetRef ref) async {
   final l10n = AppLocalizations.of(context);
-  final messenger = ScaffoldMessenger.of(context);
+  final snack = kkSnackFor(context);
   final warned = await showKkConfirm(
     context,
     title: l10n.exportWarningTitle,
@@ -75,10 +76,10 @@ Future<void> exportPlaintext(BuildContext context, WidgetRef ref) async {
       );
   switch (result) {
     case DocumentSaveResult.saved:
-      messenger.showSnackBar(SnackBar(content: Text(l10n.exportSaved)));
+      snack(l10n.exportSaved);
     case DocumentSaveResult.cancelled:
       break;
     case DocumentSaveResult.failed:
-      messenger.showSnackBar(SnackBar(content: Text(l10n.exportFailed)));
+      snack(l10n.exportFailed);
   }
 }

@@ -6,6 +6,7 @@ import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_form.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otp_import.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
@@ -76,7 +77,7 @@ class _OtpImportScreenState extends ConsumerState<OtpImportScreen> {
   Future<void> _save(ImportBatch batch) async {
     if (_saving || _selected.isEmpty) return;
     final l10n = AppLocalizations.of(context);
-    final messenger = ScaffoldMessenger.of(context);
+    final snack = kkSnackFor(context);
     setState(() => _saving = true);
     try {
       final contents = [
@@ -87,9 +88,7 @@ class _OtpImportScreenState extends ConsumerState<OtpImportScreen> {
           .read(otpsControllerProvider.notifier)
           .addAll(contents);
       if (mounted) context.pop();
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.otpImportDone(count))),
-      );
+      snack(l10n.otpImportDone(count));
     } on VaultLockedException {
       // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.
     } finally {

@@ -61,6 +61,11 @@ abstract final class KkMotion {
   /// Tanıtımın menü sayfasında bir simgenin vurgulu kaldığı süre.
   static const introTourStep = Duration(milliseconds: 900);
 
+  /// Üstten inen bildirimin ekranda kaldığı süre; düğmeli bildirimde daha
+  /// uzun, çünkü üstteki düğmeye ulaşmak zaman alıyor.
+  static const snack = Duration(seconds: 4);
+  static const snackWithAction = Duration(seconds: 6);
+
   /// Hafifçe hedefi geçip yerine oturan yay eğrisi.
   static const Curve spring = Cubic(0.2, 1.35, 0.4, 1);
 

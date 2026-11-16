@@ -187,21 +187,6 @@ void main() {
         }
       });
 
-      test('düz SnackBar opak ve yazısı okunur', () {
-        // showKkSnack kendi camını çizer; doğrudan SnackBar gösteren yerler
-        // temaya kalır.
-        final snack = theme.snackBarTheme;
-        expect(snack.backgroundColor?.a, 1);
-        expect(
-          contrast(snack.contentTextStyle!.color!, snack.backgroundColor!),
-          greaterThanOrEqualTo(4.5),
-        );
-        expect(
-          contrast(snack.actionTextColor!, snack.backgroundColor!),
-          greaterThanOrEqualTo(4.5),
-        );
-      });
-
       test('turuncu düğmenin yazısı okunur', () {
         expect(contrast(glass.onBrand, glass.brand), greaterThanOrEqualTo(4.5));
       });

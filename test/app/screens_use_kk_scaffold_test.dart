@@ -65,4 +65,13 @@ void main() {
     ];
     expect(offenders, isEmpty);
   });
+
+  test('bildirim yalnızca showKkSnack ile, üstten', () {
+    final offenders = [
+      for (final (path, line) in codeLines())
+        if (line.contains('SnackBar') || line.contains('ScaffoldMessenger'))
+          '$path: ${line.trim()}',
+    ];
+    expect(offenders, isEmpty);
+  });
 }

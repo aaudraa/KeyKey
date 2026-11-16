@@ -93,7 +93,7 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
           showKkSnack(
             context,
             l10n.loginMovedToTrash,
-            action: SnackBarAction(
+            action: KkSnackAction(
               label: l10n.loginUndo,
               onPressed: () => unawaited(controller.restoreById(item.id)),
             ),

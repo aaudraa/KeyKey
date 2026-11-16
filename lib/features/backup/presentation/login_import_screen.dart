@@ -6,6 +6,7 @@ import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
+import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
@@ -20,10 +21,7 @@ import 'package:keykey/l10n/generated/app_localizations.dart';
 /// ekranını açar. Dosyanın baytları okunduktan sonra sıfırlanır.
 Future<void> pickLoginExport(BuildContext context, WidgetRef ref) async {
   final l10n = AppLocalizations.of(context);
-  final messenger = ScaffoldMessenger.of(context);
-  void show(String message) => messenger
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(message)));
+  final show = kkSnackFor(context);
 
   final files = ref.read(documentFilesProvider);
   final result = await ref
@@ -85,7 +83,7 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
   Future<void> _save(LoginImportPlan plan) async {
     if (_saving || _selected.isEmpty) return;
     final l10n = AppLocalizations.of(context);
-    final messenger = ScaffoldMessenger.of(context);
+    final snack = kkSnackFor(context);
     setState(() => _saving = true);
     try {
       final chosen = [
@@ -106,9 +104,7 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
       if (!mounted) return;
       // Kayıt bitti; hatırlatma açıkken düğmede ilerleme halkası dönmesin.
       setState(() => _saving = false);
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.loginImportDone(items.length))),
-      );
+      snack(l10n.loginImportDone(items.length));
       await _remindToDelete(l10n);
       if (mounted) context.pop();
     } on VaultLockedException {

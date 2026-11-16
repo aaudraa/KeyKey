@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
+import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/platform/qr_image_reader.dart';
 import 'package:keykey/features/authenticator/application/scanned_code.dart';
 import 'package:keykey/features/authenticator/data/otp_parameters.dart';
@@ -301,7 +302,7 @@ void main() {
       await chooseAddOption(tester, 'Görseldeki QR kodunu oku');
 
       expect(images.calls, 1);
-      expect(find.byType(SnackBar), findsNothing);
+      expect(find.byType(KkSnack), findsNothing);
       expect(find.textContaining('Henüz 2FA hesabı yok'), findsOneWidget);
     });
   });

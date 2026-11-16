@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keykey/app/app.dart';
+import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:sodium/sodium_sumo.dart';
 
@@ -33,6 +36,20 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('kilitlenince açık bildirim kapanır', (tester) async {
+    await pumpApp(tester, locale: const Locale('tr'));
+    final context = tester.element(find.byType(KeyKeyApp));
+    showKkSnack(tester.element(find.text('KASA').first), 'Çöpe taşındı');
+    await tester.pumpAndSettle();
+    expect(find.byType(KkSnack), findsOneWidget);
+
+    ProviderScope.containerOf(context)
+        .read(vaultControllerProvider.notifier)
+        .lock();
+    await tester.pumpAndSettle();
+    expect(find.byType(KkSnack), findsNothing);
   });
 
   testWidgets('alt menüden ekranlar arasında geçiliyor', (tester) async {

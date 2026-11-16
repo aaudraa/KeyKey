@@ -270,19 +270,6 @@ abstract final class AppTheme {
         backgroundColor: surface,
         surfaceTintColor: Colors.transparent,
       ),
-      // showKkSnack kendi camını çizer. Doğrudan gösterilen SnackBar'lar
-      // opak yüzeyde kalır ki zeminin üstünde okunsun.
-      snackBarTheme: SnackBarThemeData(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: surface,
-        contentTextStyle: base.textTheme.bodyMedium?.copyWith(color: ink),
-        actionTextColor: ink,
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: const BorderRadius.all(Radius.circular(28)),
-          side: BorderSide(color: glass.hairline),
-        ),
-      ),
       popupMenuTheme: const PopupMenuThemeData(
         color: Colors.transparent,
         elevation: 0,

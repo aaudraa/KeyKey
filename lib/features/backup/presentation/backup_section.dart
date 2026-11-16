@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/ui/kk_section.dart';
+import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/presentation/scanned_code_handler.dart';
@@ -25,7 +26,7 @@ Future<bool> backUpVault(BuildContext context, WidgetRef ref) async {
   final status = ref.read(vaultControllerProvider);
   if (status is! VaultOpen) return false;
   final l10n = AppLocalizations.of(context);
-  final messenger = ScaffoldMessenger.of(context);
+  final snack = kkSnackFor(context);
   final settings = ref.read(settingsControllerProvider.notifier);
   final files = ref.read(documentFilesProvider);
   final now = ref.read(backupClockProvider)();
@@ -51,12 +52,12 @@ Future<bool> backUpVault(BuildContext context, WidgetRef ref) async {
       } on VaultLockedException {
         // Dosya kaydedildi; kasa kilitlendiği için zaman yazılamadı.
       }
-      messenger.showSnackBar(SnackBar(content: Text(l10n.backupSaved)));
+      snack(l10n.backupSaved);
       return true;
     case DocumentSaveResult.cancelled:
       return false;
     case DocumentSaveResult.failed:
-      messenger.showSnackBar(SnackBar(content: Text(l10n.backupFailed)));
+      snack(l10n.backupFailed);
       return false;
   }
 }

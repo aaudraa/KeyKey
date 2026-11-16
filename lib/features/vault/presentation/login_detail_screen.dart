@@ -195,18 +195,17 @@ class LoginDetailScreen extends ConsumerWidget {
     LoginItem item,
     AppLocalizations l10n,
   ) async {
-    final messenger = ScaffoldMessenger.of(context);
     final rootContext = Navigator.of(context, rootNavigator: true).context;
     await controller.moveToTrash(item, DateTime.now().toUtc());
     if (context.mounted) context.pop();
     if (!rootContext.mounted) {
-      messenger.hideCurrentSnackBar();
+      hideKkSnack();
       return;
     }
     showKkSnack(
       rootContext,
       l10n.loginMovedToTrash,
-      action: SnackBarAction(
+      action: KkSnackAction(
         label: l10n.loginUndo,
         onPressed: () => unawaited(controller.restoreById(item.id)),
       ),
