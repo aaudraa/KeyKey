@@ -2,9 +2,9 @@
 
 KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesinde](docs/yayin.md#sürüm-numarası). `v1.0.0`'dan önceki sürümler fazların sonunu işaretler ve hata ayıklama anahtarıyla imzalıdır; kalıcı bir kurulum için kullanılmamalıdır.
 
-## Yayımlanmamış
+## 1.0.0 (2026-11-16): İlk kararlı sürüm
 
-Faz 9 (1.0 yayını) sürüyor.
+Kalıcı yayın anahtarıyla imzalanan ilk sürüm.
 
 ### Eklenenler
 
@@ -27,6 +27,7 @@ Faz 9 (1.0 yayını) sürüyor.
 - Ayarların en üstünde yedek kartı (#103): son yedeğin kaç gün önce alındığını gösterir ve tek dokunuşla yedek alır.
 - Kilit ekranında zemin ve logo yavaşça hareket eder; yanlış parolada parola kutusu kısaca titrer (#103).
 - Android 14+ kenardan geri hareketinde sayfa parmağı izler (#103).
+- Uygulama içi bildirimler üstten iniyor: durum çubuğunun altında ortada duran cam bir hap, yazısı büyük ve kalın. Yukarı kaydırınca ya da dokununca kapanır; "Geri al" düğmeli bildirim 6 saniye kalır, TalkBack açıkken kendiliğinden kapanmaz. Kasa kilitlenince açık bildirim kapanır.
 - Yeni uygulama simgesi ve açılış ekranı: beyaz zeminde turuncu K (#103). Android 13+ temalı simge destekleniyor.
 - Otomatik doldurma yarım pencerede açılıyor (#103): giriş yapılan uygulama arkada karartılmış olarak görünür kalır. Önce yalnızca eşleşen kayıtlar var; "Başka bir kayıt ara" kutusu pencereyi uzatır ve bütün kayıtlarda arar. Kilit açma, uyarılar ve kaydetme de aynı pencerede. Pencere arkayı bulanıklaştırmaz, kendi cam zeminini çizer; tutamaç sürüklenince parmağı izler. Karartılmış alana dokunmak, hızlı aşağı kaydırmak ya da pencereyi yarısından fazla aşağı çekmek hiçbir şey doldurmadan kapatır; uyarıdayken geri tuşu listeye döner. Sahte olabilecek uygulama uyarısında "Yine de doldur" kırmızıdır.
 - Tek kesin eşleşme sorulmadan dolduruluyor (#103): tam olarak bir kayıt eşleşiyorsa, eşleşme kesinse (uygulamada imza, güvenilen tarayıcıda alan adı) ve hiçbir uyarı yoksa liste açılmaz. Her doldurmadan sonra kısa bir bildirim kaydın adını gösterir ("GitHub dolduruldu"); kullanıcı adı ve parola bildirime girmez. Bildirimin güvenli pencere dışında görünmesi [bilinen sınır](docs/guvenlik-tasarimi.md#bilinen-sınırlar) olarak yazıldı.

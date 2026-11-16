@@ -61,7 +61,7 @@ Gerçek yayın anahtarı yerine deneme anahtarı kullanıldı; Android için iki
 - Fazın ortasında ad, gidilen sürümün `-dev` ekli halidir (`1.0.0-dev`). Yayın commit'i eki kaldırır. Sürüm adında `-` olan etiketler ön sürüm sayılır.
 - Değişiklikler [değişiklik günlüğüne](../CHANGELOG.md) "Yayımlanmamış" başlığı altında yazılır; yayında başlık sürümün adını ve tarihini alır.
 
-`v0.8.0`'a kadar `pubspec.yaml` `0.1.0+1`'de kaldı; etiketler fazları işaretledi. Faz 9'da `1.0.0-dev+2` oldu.
+`v0.8.0`'a kadar `pubspec.yaml` `0.1.0+1`'de kaldı; etiketler fazları işaretledi. Faz 9'da `1.0.0-dev+2`, yayın commit'inde `1.0.0+3` oldu.
 
 ## Sürüm çıkarmak
 

@@ -471,6 +471,8 @@ Güvenlik ya da veri kaybı sorunu çıkmadı. Ayrıntılar [denetim belgesinde]
 
 **Durum (2026-11-16, gece, devam):** Proje sahibi 1.0'dan önce uygulama içi bildirimlerin üstten inmesini istedi. Bütün bildirimler artık durum çubuğunun altında, ortada duran cam bir hap: yazı 16 punto kalın, yukarı kaydırınca ya da dokununca kapanıyor, düğmeli olanlar 6 saniye kalıyor, kasa kilitlenince kapanıyor ([tasarım](docs/ust-bildirim.md), [plan](docs/ust-bildirim-plani.md)). Yeni gözle yapılan incelemede bulunan iki sorun (TalkBack'le kapatılamama, uzun bildirimin geri tuşunu örtmesi) testle düzeltildi. Birim testleri (1271) geçti. Kalan: proje sahibinin telefonda denemesi, PR, sürüm numarası ve `v1.0.0` etiketi.
 
+**Durum (2026-11-16, son):** Proje sahibi bildirimi telefonda (`keykey-deneme-15-ust-bildirim.apk`) beğendi. Sürüm `1.0.0+3` oldu, değişiklik günlüğünün başlığı 1.0.0 aldı; üçüncü faz PR'ı açıldı. Kalan: PR'ın birleşmesi (proje sahibinin onayıyla) ve `v1.0.0` etiketi.
+
 **Bitti sayılması için:** GitHub Release'teki APK dört emülatöre ve gerçek telefona kuruluyor; önceki sürümden yükseltmede veri korunuyor; README son durumu anlatıyor.
 
 ## 1.0 sonrası
