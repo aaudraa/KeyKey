@@ -2,7 +2,7 @@
 
 KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-13 · **Şu anki faz:** Faz 9
+**Son güncelleme:** 2026-11-16 · **Şu anki faz:** yok; Faz 9 bitti, [1.0.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.0.0) yayınlandı
 
 > [!IMPORTANT]
 > **Gerçek parolalarını 1.0'a kadar KeyKey'e koyma.** Projenin kendi güvenlik denetimi tamamlandı, ama yayımlanmış bir sürüm yok ve bağımsız bir denetim yapılmadı.
@@ -22,7 +22,7 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 | 6 | Otomatik doldurma | XL | 4 | `faz/6-otomatik-doldurma` | Tamamlandı |
 | 7 | Yedekleme, içe ve dışa aktarma | L | 4, 5 | `faz/7-yedekleme` | Tamamlandı |
 | 8 | Güvenlik sertleştirme ve denetim | L | 6, 7 | `faz/8-guvenlik-denetimi` | Tamamlandı |
-| 9 | 1.0 yayını | M | 8 | `faz/9-yayin` | Sürüyor |
+| 9 | 1.0 yayını | M | 8 | `faz/9-yayin` | Tamamlandı |
 
 Büyüklük göreli iş miktarını gösterir, takvim sözü değildir. Faz 4 ve 5 aynı anda ilerleyebilir. İlerlemeyi [milestone'lardan](https://github.com/aaudraa/KeyKey/milestones) da izleyebilirsin.
 
@@ -472,6 +472,8 @@ Güvenlik ya da veri kaybı sorunu çıkmadı. Ayrıntılar [denetim belgesinde]
 **Durum (2026-11-16, gece, devam):** Proje sahibi 1.0'dan önce uygulama içi bildirimlerin üstten inmesini istedi. Bütün bildirimler artık durum çubuğunun altında, ortada duran cam bir hap: yazı 16 punto kalın, yukarı kaydırınca ya da dokununca kapanıyor, düğmeli olanlar 6 saniye kalıyor, kasa kilitlenince kapanıyor ([tasarım](docs/ust-bildirim.md), [plan](docs/ust-bildirim-plani.md)). Yeni gözle yapılan incelemede bulunan iki sorun (TalkBack'le kapatılamama, uzun bildirimin geri tuşunu örtmesi) testle düzeltildi. Birim testleri (1271) geçti. Kalan: proje sahibinin telefonda denemesi, PR, sürüm numarası ve `v1.0.0` etiketi.
 
 **Durum (2026-11-16, son):** Proje sahibi bildirimi telefonda (`keykey-deneme-15-ust-bildirim.apk`) beğendi. Sürüm `1.0.0+3` oldu, değişiklik günlüğünün başlığı 1.0.0 aldı; üçüncü faz PR'ı açıldı. Kalan: PR'ın birleşmesi (proje sahibinin onayıyla) ve `v1.0.0` etiketi.
+
+**Durum (2026-11-16, yayın):** [#111](https://github.com/aaudraa/KeyKey/pull/111) proje sahibinin onayıyla birleşti, `v1.0.0` etiketlendi. İlk derleme imzalamada durdu: anahtar oluşturulurken parolanın sonunda görünmez bir CR kalmıştı ([ayrıntılar](docs/yayin.md#kalıcı-anahtar)). Aynı anahtar temiz parolayla yeniden paketlendi, sertifika değişmedi. Yeniden çalıştırılan iş akışı geçti; özetler ve imza yerelde doğrulandı. Proje sahibi [KeyKey 1.0.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.0.0)'ı yayınladı; #21 ve Faz 9 milestone'u kapandı. Ardından anahtar betikleri bu tuzaklara karşı düzeltildi, iş akışı parolaları derlemeden önce deniyor. **Faz 9 bitti.**
 
 **Bitti sayılması için:** GitHub Release'teki APK dört emülatöre ve gerçek telefona kuruluyor; önceki sürümden yükseltmede veri korunuyor; README son durumu anlatıyor.
 

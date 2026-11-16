@@ -35,6 +35,16 @@ Yedekler (3-2-1 kuralı: üç kopya, iki farklı ortam, biri evden uzakta):
 
 Anahtar sızarsa ya da kaybolursa: [Anahtar Döndürme](https://source.android.com/docs/security/features/apksigning/v3#key-rotation) (APK İmza Şeması v3) yalnızca eski anahtar elde varken yapılabilir. Kaybolursa kullanıcılar şifreli yedek alıp uygulamayı silmeli ve yeni imzalı sürümü kurmalıdır; bu README'de ve sürüm notlarında duyurulur.
 
+**İlk yayında parola hatası (2026-11-16).** `v1.0.0`'ın ilk derlemesi imzalamada "keystore password was incorrect" ile durdu. Sebep: betik parolayı Git Bash'teki openssl ile üretmişti; o openssl satırı CR LF ile bitirir, betik yalnızca LF'yi sildi. Anahtar deposu sonunda görünmez bir CR olan parolayla kilitlendi. Bilgi dosyasına parola CR'siyle yazıldı, gh ise GitHub'a yüklerken sondaki CR'yi kırptı. Betiğin kendi denetimi aynı CR'li parolayı kullandığı için hatayı görmedi.
+
+Onarım [`yayin-anahtari-onar.sh`](../scripts/yayin-anahtari-onar.sh) ile proje sahibinin bilgisayarında yapıldı. Betik arşivi açtı, depoyu CR'li parolanın açtığını buldu ve aynı anahtarı (sertifika aynı, `66ff7b5c…29a0`) CR'siz parolayla yeniden paketleyip GitHub'a yükledi. Yeniden çalıştırılan derleme bu anahtarla imzalandı. Arşivler değişmedi:
+
+- Arşivdeki `.jks` dosyası, bilgi dosyasındaki parolanın sonuna CR eklenmiş haliyle açılır.
+- GitHub'daki kopya aynı anahtarın CR'siz parolayla paketlenmiş halidir.
+- GitHub'daki kopya yeniden yüklenecekse onarma betiği iki durumu da kendisi ayırt eder.
+
+Oluşturma betiği artık CR'yi de siliyor. Git Bash'in "/" ile başlayan değerleri yol sanıp çevirmesini de kapatıyor; bu ikinci tuzak bu sefer tetiklenmemişti. İş akışı da parolaları derlemeden önce `keytool` ile deniyor; yanlışsa derlemeye başlamadan duruyor.
+
 Deneme: iş akışı önce bir deneme anahtarıyla (sertifika `baa13a57…af3f9`, `CN=KeyKey Deneme Anahtari`, artık kullanılmıyor), hiçbir dala girmeyen bir deneme commit'inde (`v1.0.0-deneme.1`) sınandı: taslak ön sürüm dört dosyayla oluştu, özetler ve imza yerelde `sha256sum -c` ve `apksigner` ile doğrulandı. Deneme etiketi ve taslak sonra silindi.
 
 ### Eski sürümlerden geçiş
