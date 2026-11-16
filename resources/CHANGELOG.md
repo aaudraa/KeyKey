@@ -2,6 +2,13 @@
 
 KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesinde](docs/yayin.md#sürüm-numarası). `v1.0.0`'dan önceki sürümler fazların sonunu işaretler ve hata ayıklama anahtarıyla imzalıdır; kalıcı bir kurulum için kullanılmamalıdır.
 
+## Yayınlanmamış
+
+### Değişenler
+
+- Bağımlılıklar güncellendi: Gradle 9.9.0, Android eklentisi 9.5.1, `drift` 2.35.4, `go_router` 18.1.4, `flutter_zxing` 3.1.1, `pigeon` 29.2.0 ve dolaylı paketler.
+- Yayın iş akışı anahtar parolalarını derlemeden önce deniyor; anahtar oluşturma betiği Git Bash'teki iki tuzağa karşı düzeltildi (#112).
+
 ## 1.0.0 (2026-11-16): İlk kararlı sürüm
 
 Kalıcı yayın anahtarıyla imzalanan ilk sürüm.
