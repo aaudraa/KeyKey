@@ -61,6 +61,7 @@ jobs:
             -keyalg RSA -keysize 4096 -validity 1 -dname CN=deneme \
             -storepass deneme-parola -keypass deneme-parola
           apksigner sign --ks "$RUNNER_TEMP/deneme.jks" --ks-pass pass:deneme-parola \
+            --v4-signing-enabled false \
             --in out/imzasiz.apk --out out/bizim.apk
           apksigner verify --print-certs out/bizim.apk
           sha256sum out/*.apk

@@ -1,6 +1,6 @@
 # Yayın
 
-KeyKey sürümleri GitHub Actions'ta, `v` ile başlayan bir etiket gönderilince derlenir ve imzalanır ([`.github/workflows/yayin.yml`](../../.github/workflows/yayin.yml)). İş akışı taslak bir GitHub Release oluşturur; taslağı yayımlamak elle yapılır.
+KeyKey sürümleri GitHub Actions'ta, `v` ile başlayan bir etiket gönderilince derlenir ve imzalanır ([`.github/workflows/yayin.yml`](../../.github/workflows/yayin.yml)). Derleme F-Droid'in derleme imajında ve derleme yolunda yapılır; aynı commit'i F-Droid'in kendi aracı da derler ve iki APK karşılaştırılır ([F-Droid tasarımı](f-droid.md)). İş akışı taslak bir GitHub Release oluşturur; taslağı yayımlamak elle yapılır.
 
 ## Yayın anahtarı
 
@@ -15,8 +15,9 @@ KeyKey sürümleri GitHub Actions'ta, `v` ile başlayan bir etiket gönderilince
 
 - `yayin` ortamı yalnızca `v*` etiketlerine açıktır. Bir dal ya da PR'daki iş akışı anahtara erişemez.
 - Ortamın onaylayıcısı proje sahibidir (`aaudraa`). Etiket gönderilince iş akışı GitHub'da onay bekler; GitHub hesabı ele geçirilip sahte bir etiket atılsa bile onaysız imzalı sürüm çıkmaz.
-- Gradle anahtarı yalnızca `KEYKEY_KEYSTORE` ve yanındaki ortam değişkenlerinden okur ([`android/app/build.gradle.kts`](../../android/app/build.gradle.kts)). Değişkenler yoksa yerel yayın derlemesi debug anahtarıyla imzalanır; iş akışı debug anahtarıyla imzalı bir APK'yı kabul etmez.
-- İş akışı anahtar dosyasını derlemeden hemen sonra siler. Önbellek kullanmaz, böylece yayın derlemesine başka işlerin yazdığı bir önbellek karışmaz.
+- Derleme anahtara hiç erişmez: APK ve AAB imzasız derlenir, anahtar yalnızca ayrı bir işte `apksigner` (APK) ve `jarsigner` (AAB) ile imza atarken kullanılır. `apksigner` zip içeriğine dokunmaz, yalnızca imza bloğunu ekler; F-Droid bu yüzden imzayı kendi imzasız derlemesine kopyalayıp doğrulayabilir. İş akışı debug anahtarıyla imzalı bir APK'yı kabul etmez.
+- Yerel derlemede Gradle anahtarı `KEYKEY_KEYSTORE` ve yanındaki ortam değişkenlerinden okur ([`android/app/build.gradle.kts`](../../android/app/build.gradle.kts)); değişkenler yoksa yayın derlemesi debug anahtarıyla imzalanır (telefon denemeleri için).
+- İş akışı anahtar dosyasını imzaladıktan hemen sonra siler. Önbellek kullanmaz, böylece yayın derlemesine başka işlerin yazdığı bir önbellek karışmaz.
 
 ### Kalıcı anahtar
 
@@ -76,17 +77,19 @@ Gerçek yayın anahtarı yerine deneme anahtarı kullanıldı; Android için iki
 ## Sürüm çıkarmak
 
 1. `pubspec.yaml`'daki `version` satırını güncelle ve değişiklik günlüğündeki "Yayımlanmamış" başlığını sürümün adıyla değiştir. Etiket, bu satırdaki sürümün başına `v` eklenmiş hali olmalı: `version: 1.0.0+3` için `v1.0.0`. Uyuşmazsa iş akışı durur.
-2. Değişikliği `main`'e birleştir.
-3. Etiketi at ve gönder: `git tag v1.0.0 && git push origin v1.0.0`. İş akışını GitHub'da onayla (Actions → çalışma → "Review deployments").
-4. İş akışı bitince GitHub'daki taslağı gözden geçir ve yayımla. Sürüm adında `-` varsa (`v1.1.0-beta.1` gibi) taslak ön sürüm olarak işaretlenir.
+2. F-Droid için iki dilde kısa değişiklik notu ekle: `fastlane/metadata/android/{en-US,tr-TR}/changelogs/<derleme numarası>.txt` (en çok 500 bayt). F-Droid notları etiketin commit'inden okur; etiketten **önce** girmeli. Yoksa CI'daki `check-fastlane.py` durur.
+3. Değişikliği `main`'e birleştir.
+4. Etiketi at ve gönder: `git tag v1.0.0 && git push origin v1.0.0`. İş akışını GitHub'da onayla (Actions → çalışma → "Review deployments").
+5. **"F-Droid karşılaştırması" işi yeşil olunca** taslağı gözden geçir ve yayımla. Kırmızıysa yayımlama: F-Droid bu sürümü bizim imzamızla alamaz; nedeni bulunur, düzeltme bir sonraki sürüme girer. Taslağı uzun süre bekletme: F-Droid yeni etiketi görünce APK'yı yayının adresinden indirmeye çalışır. Sürüm adında `-` varsa (`v1.1.0-beta.1` gibi) taslak ön sürüm olarak işaretlenir ve F-Droid onu almaz.
 
 İş akışının yaptıkları:
 
 1. Etiketin `pubspec.yaml` ile uyuştuğunu denetler.
-2. APK ve AAB derler, yayın anahtarıyla imzalar.
+2. APK ve AAB'yi F-Droid'in derleme imajında, `/home/vagrant/build/io.github.aaudraa.keykey` yolunda, tarifteki adımlarla imzasız derler ([`f-droid-yolunda-derle.sh`](../scripts/f-droid-yolunda-derle.sh)); onay gelince yayın anahtarıyla imzalar.
 3. APK'yı [`check-release-apk.sh`](../scripts/check-release-apk.sh) ile denetler: izinler, dışa açık bileşenler, R8, semboller, deneme değerleri.
 4. İmzayı `apksigner` ile doğrular; debug anahtarıyla imzalıysa durur.
 5. Taslağa şunları koyar: `keykey-<sürüm>.apk`, `keykey-<sürüm>.aab`, `keykey-<sürüm>-mapping.txt` (R8'in ad tablosu, yığın izlerini okumak için) ve hepsinin SHA-256 özetlerini içeren `SHA256SUMS`. Notlara APK'nın ve imza sertifikasının özetini yazar.
+6. Aynı commit'i F-Droid'in kendi aracıyla derler ([`f-droid-derle.sh`](../scripts/f-droid-derle.sh)) ve imzalı APK'yla karşılaştırır ([`f-droid-karsilastir.sh`](../scripts/f-droid-karsilastir.sh)).
 
 ## İndirilen APK'yı doğrulamak
 
