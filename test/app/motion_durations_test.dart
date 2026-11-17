@@ -12,7 +12,7 @@ const _allowed = {
   // Kameranın iki okuma arasındaki bekleme süresi.
   'qr_scan_screen.dart': ['scanDelay'],
   // Yanlış parola beklemesinin saniyelik sayacı.
-  'lock_screen.dart': ['Timer.periodic', '_wait - const Duration'],
+  'wait_countdown.dart': ['Timer.periodic', '_left - const Duration'],
 };
 
 void main() {

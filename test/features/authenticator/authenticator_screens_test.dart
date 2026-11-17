@@ -530,6 +530,34 @@ void main() {
       expect(find.text('Yeni'), findsOneWidget);
     });
 
+    testWidgets('aynı anahtar zaten varsa uyarıyor, onaylanırsa ekliyor', (
+      tester,
+    ) async {
+      await openForm(tester);
+      final before = otps.items.length;
+      await tester.enterText(find.widgetWithText(TextField, 'Servis'), 'Yine');
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Gizli anahtar'),
+        Base32.encode(rfcSecret),
+      );
+      await tester.tap(find.text('Kaydet'));
+      await settle(tester);
+
+      expect(find.text('Bu hesap zaten ekli'), findsOneWidget);
+      await tester.tap(find.text('Vazgeç'));
+      await settle(tester);
+      expect(otps.items, hasLength(before));
+      expect(find.widgetWithText(TextField, 'Servis'), findsOneWidget);
+
+      await tester.tap(find.text('Kaydet'));
+      await settle(tester);
+      await tester.tap(find.text('Yine de ekle'));
+      await settle(tester);
+      await settle(tester);
+      expect(otps.items, hasLength(before + 1));
+      expect(otps.items.last.content.issuer, 'Yine');
+    });
+
     testWidgets('kaydedince onay işareti, çift basış tek hesap, kart '
         'listede bir kez parlar', (tester) async {
       await openForm(tester);

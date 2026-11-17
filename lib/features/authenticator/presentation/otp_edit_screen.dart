@@ -14,6 +14,7 @@ import 'package:keykey/app/ui/kk_shake.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/vault/vault_session.dart';
+import 'package:keykey/features/authenticator/application/otp_import.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/data/base32.dart';
 import 'package:keykey/features/authenticator/data/otp_content.dart';
@@ -313,6 +314,23 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
     final l10n = AppLocalizations.of(context);
     final snack = kkSnackFor(context);
     final controller = ref.read(otpsControllerProvider.notifier);
+    // Aynı QR'ı iki kez okumak sessizce ikinci kopya oluşturmasın.
+    final current = ref.read(otpsControllerProvider);
+    if (_original == null &&
+        current is OtpsLoaded &&
+        hasSameSecret(content.parameters, current.items)) {
+      setState(() => _saving = true);
+      final addAnyway = await showKkConfirm(
+        context,
+        title: l10n.otpDuplicateTitle,
+        message: l10n.otpDuplicateMessage,
+        confirmLabel: l10n.otpDuplicateAdd,
+        cancelLabel: l10n.otpDuplicateCancel,
+      );
+      if (!mounted) return;
+      setState(() => _saving = false);
+      if (!addAnyway) return;
+    }
     setState(() => _saving = true);
     try {
       final original = _original;

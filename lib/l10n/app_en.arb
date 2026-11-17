@@ -760,6 +760,22 @@
   "@otpEmpty": {
     "description": "Empty state of the 2FA list."
   },
+  "otpDuplicateTitle": "This account is already added",
+  "@otpDuplicateTitle": {
+    "description": "Title when a 2FA account with the same secret already exists."
+  },
+  "otpDuplicateMessage": "A 2FA account with the same secret key already exists, possibly in the trash. If you add it anyway, you will have two copies.",
+  "@otpDuplicateMessage": {
+    "description": "Explains the duplicate 2FA account warning."
+  },
+  "otpDuplicateAdd": "Add anyway",
+  "@otpDuplicateAdd": {
+    "description": "Adds the duplicate 2FA account."
+  },
+  "otpDuplicateCancel": "Cancel",
+  "@otpDuplicateCancel": {
+    "description": "Keeps the form open without adding."
+  },
   "otpNoResults": "No matching accounts.",
   "@otpNoResults": {
     "description": "Search found nothing in the 2FA list."

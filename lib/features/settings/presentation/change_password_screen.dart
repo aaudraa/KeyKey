@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -12,7 +10,7 @@ import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/new_password_fields.dart';
-import 'package:keykey/features/lock/presentation/wait_format.dart';
+import 'package:keykey/features/lock/presentation/wait_countdown.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Ana parola değiştirme. Mevcut parola yeniden sorulur.
@@ -33,27 +31,18 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
 
   /// Yanlış parolalardan sonra kalan bekleme; kilit ekranındaki sayaçla aynı.
   Duration _wait = Duration.zero;
-  Timer? _waitTimer;
+  late final _countdown = WaitCountdown((left) => setState(() => _wait = left));
 
   @override
   void dispose() {
-    _waitTimer?.cancel();
+    _countdown.dispose();
     _current.dispose();
     _password.dispose();
     _confirmation.dispose();
     super.dispose();
   }
 
-  void _startWait(Duration wait) {
-    _waitTimer?.cancel();
-    setState(() => _wait = wait.isNegative ? Duration.zero : wait);
-    if (_wait == Duration.zero) return;
-    _waitTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      final left = _wait - const Duration(seconds: 1);
-      setState(() => _wait = left.isNegative ? Duration.zero : left);
-      if (_wait == Duration.zero) timer.cancel();
-    });
-  }
+  void _startWait(Duration wait) => _countdown.start(wait);
 
   bool get _canSubmit =>
       !_busy &&
