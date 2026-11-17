@@ -87,11 +87,17 @@ Gerçek yayın anahtarı yerine deneme anahtarı kullanıldı; Android için iki
 1. Etiketin `pubspec.yaml` ile uyuştuğunu denetler.
 2. APK ve AAB'yi F-Droid'in derleme imajında, `/home/vagrant/build/io.github.aaudraa.keykey` yolunda, tarifteki adımlarla imzasız derler ([`f-droid-yolunda-derle.sh`](../scripts/f-droid-yolunda-derle.sh)); onay gelince yayın anahtarıyla imzalar.
 3. APK'yı [`check-release-apk.sh`](../scripts/check-release-apk.sh) ile denetler: izinler, dışa açık bileşenler, R8, semboller, deneme değerleri.
-4. İmzayı `apksigner` ile doğrular; sertifika F-Droid tarifindeki `AllowedAPKSigningKeys` değeri değilse durur.
+4. İmzayı `apksigner` ile doğrular ([`imza-ozeti.sh`](../scripts/imza-ozeti.sh)); sertifika F-Droid tarifindeki `AllowedAPKSigningKeys` değeri değilse durur ([imza denetimi](#imza-denetimi)).
 5. Aynı commit'i F-Droid'in kendi aracıyla, imajın güncel haliyle derler ([`f-droid-derle.sh`](../scripts/f-droid-derle.sh)) ve imzalı APK'yla karşılaştırır ([`f-droid-karsilastir.sh`](../scripts/f-droid-karsilastir.sh)).
 6. Karşılaştırma yeşilse taslağa şunları koyar: `keykey-<sürüm>.apk`, `keykey-<sürüm>.aab`, `keykey-<sürüm>-mapping.txt` (R8'in ad tablosu, yığın izlerini okumak için) ve hepsinin SHA-256 özetlerini içeren `SHA256SUMS`. Notlara APK'nın ve imza sertifikasının özetini yazar.
 
-Yayın zincirinin tamamı (AAB dahil derleme, imzalama, APK denetimi, karşılaştırma) her PR'da ve haftada bir [`f-droid.yml`](../../.github/workflows/f-droid.yml)'da tek kullanımlık bir anahtarla denenir; etiket bu yüzden ilk kez çalışan bir zinciri tetiklemez.
+Yayın zincirinin tamamı (AAB dahil derleme, imzalama, APK denetimi, imza denetimi, karşılaştırma) her PR'da ve haftada bir [`f-droid.yml`](../../.github/workflows/f-droid.yml)'da tek kullanımlık bir anahtarla denenir; etiket bu yüzden ilk kez çalışan bir zinciri tetiklemez.
+
+### İmza denetimi
+
+İmzalı APK'nın sertifika özetini [`imza-ozeti.sh`](../scripts/imza-ozeti.sh) okur. `apksigner`'ın çıktısı sürüme göre değişiyor: build-tools 36 `Signer #1 certificate SHA-256 digest: …`, 37 her imza şeması için ayrı `V3.0 Signer: certificate SHA-256 digest: …` yazıyor. Betik ikisini de okur; bütün imzalayanlar aynı sertifikayı kullanmıyorsa durur. Okuyuşu [`imza-ozeti-test.sh`](../scripts/imza-ozeti-test.sh) iki biçimin gerçek örnekleriyle sınar; prova her PR'da ikisini de çalıştırır.
+
+2026-11-17'de bu denetim iş akışının içinde, yalnızca eski biçimi okuyan bir satırdı ve provada yoktu. GitHub'ın Ubuntu imajı build-tools 37'ye geçince `v1.1.0`'ın ilk denemesi, APK doğru anahtarla imzalandığı halde "imza sertifikası ''" hatasıyla durdu. `v1.0.1`'in bekleyen çalışması da aynı satırı taşıdığı için iptal edildi; 1.0.1 yayımlanmadı, değişiklikleri 1.1.0'da. `v1.1.0` etiketi düzeltmenin commit'ine taşındı (sürüm hiç yayımlanmamıştı).
 
 ### Derleme imajını güncellemek
 

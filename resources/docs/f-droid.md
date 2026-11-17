@@ -37,7 +37,7 @@ KeyKey bugün yalnızca GitHub Releases'tan elle indiriliyor. Hedef kitle (gizli
 
 - Kodun içine derleme klasörünün yolu giriyor: `libapp.so` Flutter'ın ürettiği `dart_plugin_registrant.dart` dosyasının mutlak yolunu, `libdartjni.so` dosya yollarından hesaplanan bir derleme kimliğini taşıyor ([yayin.md](yayin.md#yeniden-üretilebilir-derleme)). Aynı kod + aynı araç sürümleri + aynı yol = aynı APK; bu 2026-11-09'da gösterildi.
 - F-Droid uygulamayı `/home/vagrant/build/io.github.aaudraa.keykey` altında derler. Flutter SDK'yı srclib olarak (`/home/vagrant/build/srclib/flutter`) getirir. Pub önbelleğinin yolu da paket kaynaklarının yolunu belirler.
-- `v1.0.0` GitHub'ın `/home/runner/work/KeyKey/KeyKey` yolunda derlendi, F-Droid'in derlemesiyle aynı çıkamaz. **F-Droid'e giren ilk sürüm yeni bir sürüm olacak: 1.0.1 (versionCode 4).**
+- `v1.0.0` GitHub'ın `/home/runner/work/KeyKey/KeyKey` yolunda derlendi, F-Droid'in derlemesiyle aynı çıkamaz. **F-Droid'e giren ilk sürüm 1.1.0 (versionCode 5).** Bunun için 1.0.1 (versionCode 4) hazırlanmıştı ama yayımlanmadı: imzalı yayın işi, iş akışındaki imza denetiminin bir hatası yüzünden durdu ([ayrıntı](yayin.md#imza-denetimi)); değişiklikleri 1.1.0'da.
 - F-Droid derlemesi imzasız APK bekler. Bizim Gradle ayarımız anahtar yokken sürüm derlemesini hata ayıklama anahtarıyla imzalıyor (`android/app/build.gradle.kts`, `signingConfig ... else "debug"`); F-Droid derlemesinde bu imza olmamalı.
 - Özgür olmayan bağımlılık yok (Google servisleri, ML Kit, Firebase yok; QR için zxing). libsodium ve SQLite kaynaktan derleniyor, derlemede bir şey indirilmiyor ([bagimliliklar.md](bagimliliklar.md)). Flutter SDK'nın hazır parçaları F-Droid kurallarında izinli.
 - AGP'nin şifreli bağımlılık listesi zaten kapalı (`dependenciesInfo`).
@@ -81,7 +81,7 @@ en-US/                     (zorunlu yedek dil)
   full_description.txt     ≤ 4000 karakter
   images/icon.png          512×512, resources/design/keykey-simge.svg'den
   images/phoneScreenshots/ PNG
-  changelogs/4.txt         ≤ 500 karakter (1.0.1)
+  changelogs/<versionCode>.txt  ≤ 500 karakter, her sürüm için (F-Droid'deki ilki 5.txt)
 tr-TR/
   (aynı dosyalar, Türkçe)
 ```

@@ -22,6 +22,7 @@ on:
       - "resources/scripts/f-droid-*"
       - "resources/scripts/imzala.sh"
       - "resources/scripts/check-release-apk.sh"
+      - "resources/scripts/imza-ozeti*"
 
 permissions:
   contents: read
@@ -90,8 +91,21 @@ jobs:
             -keyalg RSA -keysize 4096 -validity 1 -dname CN=deneme \
             -storepass:env KEYKEY_KEYSTORE_PASSWORD -keypass:env KEYKEY_KEY_PASSWORD
           bash resources/scripts/imzala.sh out/imzasiz.apk out/bizim.apk out/imzasiz.aab out/bizim.aab
+          # Beklenen özet: sertifikanın DER baytlarının SHA-256'sı (apksigner'ınkiyle aynı).
+          keytool -exportcert -keystore "$KEYKEY_KEYSTORE" -alias deneme \
+            -storepass:env KEYKEY_KEYSTORE_PASSWORD | sha256sum | cut -d' ' -f1 > beklenen-imza.txt
       - name: APK güvenlik denetimi
         run: bash resources/scripts/check-release-apk.sh out/bizim.apk
+      # Yayındaki "İmza denetimi" ile aynı betik, burada tek kullanımlık anahtarla.
+      - name: İmza denetimi
+        run: |
+          bash resources/scripts/imza-ozeti-test.sh
+          cert="$(bash resources/scripts/imza-ozeti.sh out/bizim.apk)"
+          expected="$(cat beklenen-imza.txt)"
+          if [[ "$cert" != "$expected" ]]; then
+            echo "HATA: imza sertifikası '${cert}', beklenen '${expected}' (tek kullanımlık anahtar)." >&2
+            exit 1
+          fi
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: bizim
