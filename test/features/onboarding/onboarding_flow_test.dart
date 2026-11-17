@@ -1,6 +1,10 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:sodium/sodium_sumo.dart';
@@ -14,6 +18,8 @@ void main() {
 
   late SodiumSumo sodium;
   late FakeVaultService service;
+  late RecordingClipboard clipboard;
+  late FakeDocumentFiles documents;
 
   setUpAll(() async {
     sodium = await SodiumSumoInit.init();
@@ -21,10 +27,18 @@ void main() {
 
   setUp(() {
     service = FakeVaultService(sodium);
+    clipboard = RecordingClipboard();
+    documents = FakeDocumentFiles();
   });
 
   Future<void> pumpSetup(WidgetTester tester) async {
-    await pumpKeyKey(tester, status: const VaultNotSetUp(), service: service);
+    await pumpKeyKey(
+      tester,
+      status: const VaultNotSetUp(),
+      service: service,
+      clipboard: clipboard,
+      documents: documents,
+    );
     await skipIntro(tester);
   }
 
@@ -51,7 +65,7 @@ void main() {
 
   Future<void> goToVerify(WidgetTester tester) async {
     await goToShowKey(tester);
-    await tester.tap(find.widgetWithText(FilledButton, 'Yazdım'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Kaydettim'));
     await tester.pumpAndSettle();
   }
 
@@ -93,7 +107,7 @@ void main() {
       );
       final key = tester.widget<Text>(keyText).data!;
       expect(spoken(tester, key), isTrue);
-      await tester.tap(find.widgetWithText(FilledButton, 'Yazdım'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Kaydettim'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
       // Kayıp giden adım hâlâ çiziliyor ama okunmuyor, dokunulmuyor.
@@ -131,7 +145,7 @@ void main() {
       expect(progress(tester), closeTo(1 / 3, 0.001));
       await typePasswords(tester, password, password);
       await tester.tap(find.widgetWithText(FilledButton, 'Kasayı oluştur'));
-      final next = find.widgetWithText(FilledButton, 'Yazdım');
+      final next = find.widgetWithText(FilledButton, 'Kaydettim');
       for (var i = 0; i < 100 && next.evaluate().isEmpty; i++) {
         await tester.pump(const Duration(milliseconds: 16));
       }
@@ -302,6 +316,77 @@ void main() {
 
       // Aynı kasa kullanılıyor, yeni kasa üretilmiyor.
       expect(service.prepareCount, 1);
+    });
+
+    testWidgets('kopyala düğmesi anahtarı güvenli panoya koyuyor', (
+      tester,
+    ) async {
+      await goToShowKey(tester);
+      await tester.tap(find.text('Kopyala'));
+      await tester.pump();
+      expect(clipboard.copied, [FakeVaultService.recoveryKey]);
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('anahtar metin dosyası olarak kaydediliyor', (tester) async {
+      await goToShowKey(tester);
+      await tester.tap(find.text('Dosyaya kaydet'));
+      await tester.pump();
+      expect(documents.savedName, 'keykey-kurtarma-anahtari.txt');
+      expect(
+        utf8.decode(documents.savedBytes!),
+        contains(FakeVaultService.recoveryKey),
+      );
+      expect(find.textContaining('telefonda bırakma'), findsOneWidget);
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('kaydedilemezse söyleniyor', (tester) async {
+      documents.nextSave = DocumentSaveResult.failed;
+      await goToShowKey(tester);
+      await tester.tap(find.text('Dosyaya kaydet'));
+      await tester.pump();
+      expect(find.text('Dosya kaydedilemedi.'), findsOneWidget);
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('dosyadan okunan anahtarla kasa açılıyor', (tester) async {
+      documents.nextOpen = DocumentOpened(
+        Uint8List.fromList(
+          utf8.encode(
+            'KeyKey kurtarma anahtarı\n'
+            '${FakeVaultService.recoveryKey.toLowerCase()}\n',
+          ),
+        ),
+      );
+      await goToVerify(tester);
+      await tester.tap(find.text('Dosyadan oku'));
+      await tester.pumpAndSettle();
+      expect(find.text(FakeVaultService.recoveryKey), findsOneWidget);
+
+      await tester.tap(
+        find.widgetWithText(FilledButton, 'Doğrula ve kasayı aç'),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text(vaultText), findsOneWidget);
+    });
+
+    testWidgets('anahtar olmayan dosya söyleniyor', (tester) async {
+      documents.nextOpen = DocumentOpened(
+        Uint8List.fromList(utf8.encode('merhaba')),
+      );
+      await goToVerify(tester);
+      await tester.tap(find.text('Dosyadan oku'));
+      await tester.pump();
+      expect(
+        find.text('Dosyada kurtarma anahtarı bulunamadı.'),
+        findsOneWidget,
+      );
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        isEmpty,
+      );
+      await tester.pumpAndSettle();
     });
 
     testWidgets('anahtar kutusunda klavye öğrenmesi kapalı', (tester) async {
