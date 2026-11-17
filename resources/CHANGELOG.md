@@ -2,7 +2,7 @@
 
 KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesinde](docs/yayin.md#sürüm-numarası). `v1.0.0`'dan önceki sürümler fazların sonunu işaretler ve hata ayıklama anahtarıyla imzalıdır; kalıcı bir kurulum için kullanılmamalıdır.
 
-## Yayımlanmamış: Kullanıcı gözüyle iyileştirmeler
+## 1.1.0 (2026-11-17): Kullanıcı gözüyle iyileştirmeler
 
 Faz 11 ([tasarım](docs/kullanici-gozuyle.md)).
 
@@ -17,7 +17,6 @@ Faz 11 ([tasarım](docs/kullanici-gozuyle.md)).
 - Ana parola değişince eski yedeklerin eski parolayla açılmaya devam ettiğini söyleyen not ve oradan yeni yedek.
 - Android 13 ve üstünde uygulamanın dili sistem ayarlarından ayrıca seçilebiliyor.
 - Kayıttaki web adresi "Siteyi aç" ile tarayıcıda açılıyor; Hakkında'da kaynak kod, sorun bildirme ve gizlilik bildirimi bağlantıları. Yalnızca http ve https adresleri tarayıcıya devrediliyor; KeyKey'e internet izni eklenmedi.
-
 - Kullanım koşulları: kasa kurulmadan ya da açılmadan önce bir kez gösteriliyor ve onay istiyor ([metin](docs/kosullar.md)); Ayarlar → Hakkında'dan okunabiliyor. Kabul edilen koşul sürümü kasanın dışında, şifresiz `terms` dosyasında.
 - Lisanslar ekranı yeniden: önce KeyKey'in kendi lisansı, telif satırı ve "garanti yoktur" bildirimi; sonra KeyKey'in kullandığı parçalar ne işe yaradıkları ve lisans türleriyle; en sonda baş harflere göre bütün paketler. Lisanslar yeniden denetlendi ([sonuç](docs/bagimliliklar.md#lisans-denetimi-2026-11-17)).
 
