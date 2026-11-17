@@ -15,16 +15,6 @@ on:
       - ".github/workflows/**"
       - "resources/f-droid/**"
       - "resources/scripts/f-droid-*"
-  # Faz 10 boyunca geçici; faz PR'ından önce çıkarılacak.
-  push:
-    branches: [faz/10-f-droid]
-    paths:
-      - pubspec.lock
-      - pubspec.yaml
-      - "android/**"
-      - ".github/workflows/f-droid.yml"
-      - "resources/f-droid/**"
-      - "resources/scripts/f-droid-*"
 
 permissions:
   contents: read
