@@ -24,7 +24,7 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 | 8 | Güvenlik sertleştirme ve denetim | L | 6, 7 | `faz/8-guvenlik-denetimi` | Tamamlandı |
 | 9 | 1.0 yayını | M | 8 | `faz/9-yayin` | Tamamlandı |
 | 10 | F-Droid ve Obtainium | M | 9 | `faz/10-f-droid` | Sürüyor |
-| 11 | Kullanıcı gözüyle iyileştirmeler | M | 10 | `faz/11-kullanici-gozuyle` | Sürüyor |
+| 11 | Kullanıcı gözüyle iyileştirmeler | M | 10 | `faz/11-kullanici-gozuyle` | Tamamlandı |
 
 Büyüklük göreli iş miktarını gösterir, takvim sözü değildir. Faz 4 ve 5 aynı anda ilerleyebilir. İlerlemeyi [milestone'lardan](https://github.com/aaudraa/KeyKey/milestones) da izleyebilirsin.
 
@@ -508,7 +508,9 @@ Proje sahibinin isteği (2026-11-17, gece): uygulamaya bir kullanıcının göz�
 
 **Telefon denemesi 17 (2026-11-17, öğleden sonra):** koyu temada alt menüdeki beyaz çizgi kaldırıldı; lisanslar yeniden denetlendi ve Lisanslar ekranı sadeleşti; ilk açılışa kullanım koşulları ve onay eklendi. Kararlar [belgede](docs/kullanici-gozuyle.md#telefon-denemesi-17-2026-11-17-öğleden-sonra). Üçüncü PR #126 birleşti, `keykey-deneme-18` telefonda.
 
-**Telefon denemesi 18 (2026-11-17, akşamüstü):** koşullar kabul edildi, Lisanslar ekranı beğenildi; alt menüdeki beyaz çizgi açık temada da kaldırıldı ([belge](docs/kullanici-gozuyle.md#telefon-denemesi-18-2026-11-17-akşamüstü)).
+**Telefon denemesi 18 (2026-11-17, akşamüstü):** koşullar kabul edildi, Lisanslar ekranı beğenildi; alt menüdeki beyaz çizgi açık temada da kaldırıldı, telefonda iki temada da doğrulandı (PR #127) ([belge](docs/kullanici-gozuyle.md#telefon-denemesi-18-2026-11-17-akşamüstü)).
+
+**Kapanış (2026-11-17, akşam):** Proje sahibi telefonda başka bir şey görmedi ve kalan işleri bana bıraktı. Sürüm `1.1.0+5` oldu, değişiklik günlüğünün başlığı 1.1.0 aldı, iki dilde F-Droid sürüm notu eklendi. Klavye maddesi uygulanmadı; "1.0 sonrası" tablosunda proje sahibinin kararını bekliyor. #123, #124'teki `Closes` satırıyla erken kapanmıştı; yeniden açıldı, son faz PR'ıyla kapanıyor. `v1.1.0` etiketi birleştirme commit'ine atılır; dağıtım onayı ve yayımlama proje sahibinde. F-Droid tarifi `v1.0.1`'de kalıyor: başvuru o sürümle yapılır, sonraki sürümleri F-Droid etiketlerden kendisi bulur. **Faz 11 bitti.**
 
 **Bitti sayılması için:** belgedeki "Bu fazda" maddeleri `main`'de, telefon denemesi için APK proje sahibinde.
 
