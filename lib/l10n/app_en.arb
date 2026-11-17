@@ -1417,6 +1417,14 @@
   "@backupCreate": {
     "description": "Settings tile that saves an encrypted backup file."
   },
+  "backupFilePrefix": "keykey-backup",
+  "@backupFilePrefix": {
+    "description": "Start of the suggested backup file name, before the date. Lowercase, no spaces."
+  },
+  "exportFilePrefix": "keykey-export",
+  "@exportFilePrefix": {
+    "description": "Start of the suggested plaintext export file name, before the date. Lowercase, no spaces."
+  },
   "backupHelp": "The backup file is encrypted. It opens with your current master password or your recovery key. If you lose this phone, it is the only way to get your data back.",
   "@backupHelp": {
     "description": "Explains what a backup is and how it opens."

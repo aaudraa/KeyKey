@@ -132,5 +132,12 @@ void main() {
       plaintextExportFileName(DateTime(2026, 1, 5, 23)),
       'keykey-disa-aktarma-2026-01-05.csv',
     );
+    expect(
+      plaintextExportFileName(
+        DateTime(2026, 1, 5, 23),
+        prefix: 'keykey-export',
+      ),
+      'keykey-export-2026-01-05.csv',
+    );
   });
 }

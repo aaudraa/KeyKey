@@ -129,5 +129,12 @@ void main() {
       BackupService.fileNameFor(DateTime(2026, 3, 9, 23, 59)),
       'keykey-yedek-2026-03-09.keykey',
     );
+    expect(
+      BackupService.fileNameFor(
+        DateTime(2026, 3, 9, 23, 59),
+        prefix: 'keykey-backup',
+      ),
+      'keykey-backup-2026-03-09.keykey',
+    );
   });
 }
