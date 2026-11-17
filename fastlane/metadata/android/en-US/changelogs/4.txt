@@ -1,0 +1,1 @@
+Recovery key can be copied or saved to a file during setup, and read back from that file. QR scanner: the dimmed window and the frame line up, the flashlight button is in the top bar. Release builds now match F-Droid's own build byte for byte.

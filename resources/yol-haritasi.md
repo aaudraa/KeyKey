@@ -23,6 +23,7 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 | 7 | Yedekleme, içe ve dışa aktarma | L | 4, 5 | `faz/7-yedekleme` | Tamamlandı |
 | 8 | Güvenlik sertleştirme ve denetim | L | 6, 7 | `faz/8-guvenlik-denetimi` | Tamamlandı |
 | 9 | 1.0 yayını | M | 8 | `faz/9-yayin` | Tamamlandı |
+| 10 | F-Droid ve Obtainium | M | 9 | `faz/10-f-droid` | Sürüyor |
 
 Büyüklük göreli iş miktarını gösterir, takvim sözü değildir. Faz 4 ve 5 aynı anda ilerleyebilir. İlerlemeyi [milestone'lardan](https://github.com/aaudraa/KeyKey/milestones) da izleyebilirsin.
 
@@ -477,6 +478,23 @@ Güvenlik ya da veri kaybı sorunu çıkmadı. Ayrıntılar [denetim belgesinde]
 
 **Bitti sayılması için:** GitHub Release'teki APK dört emülatöre ve gerçek telefona kuruluyor; önceki sürümden yükseltmede veri korunuyor; README son durumu anlatıyor.
 
+### Faz 10 — F-Droid
+
+**Amaç:** KeyKey'i F-Droid ana deposuna bizim imzamızla (birebir aynı derleme) başvurmaya hazırlamak, bu düzenle 1.0.1'i yayımlamak ve README'ye Obtainium bağlantısı koymak. [Tasarım](docs/f-droid.md), [uygulama planı](docs/f-droid-plani.md). Takip: #120.
+
+- [ ] README'ye Obtainium bağlantısı (#114; telefonda deneme 1.0.1'den sonra)
+- [x] F-Droid için Fastlane açıklamaları ve denetimi (#115)
+- [x] F-Droid tarifi ve birebir aynı derleme denetimi (#116)
+- [x] Yayın iş akışı F-Droid yolunda ve F-Droid karşılaştırması (#117; gerçek sınama `v1.0.1` etiketinde)
+- [ ] 1.0.1 yayını (#118)
+- [ ] F-Droid başvurusu (#119)
+
+**Durum (2026-11-17):** Faz başladı. IzzyOnDroid'e başvurulmuyor: [kabul kuralları](https://izzyondroid.org/docs/general/AppInclusionPolicy/) yapay zekâyla yazılmış kodu kabul etmiyor, ayrıca APK başına 30 MB sınırı var (APK'mız 77 MB). F-Droid'in kurallarında yapay zekâ maddesi yok. Proje sahibi tek evrensel APK'yı seçti; işlemci türüne göre bölme sonraya kaldı. Faz başvurunun gönderilmesiyle biter; F-Droid'in kabulü ve README'ye F-Droid bağlantısı ayrı iş.
+
+**Durum (2026-11-17, gece):** F-Droid'in kendi aracıyla derlenen APK bizim imzamızı kabul ediyor: dokuzuncu denemede `apksigcopier compare` yeşil ([ayrıntılar](docs/yayin.md#yeniden-üretilebilir-derleme)). Yayın iş akışı artık F-Droid'in imajında ve yolunda imzasız derliyor, ayrı bir işte `apksigner` ile imzalıyor ve taslak yayımlanmadan önce F-Droid derlemesiyle karşılaştırıyor. README yeniden düzenlendi. Proje sahibinin isteğiyle aynı gece QR tarayıcının hizası ve feneri düzeltildi, kurulumda kurtarma anahtarı kopyalanabilir ve dosyaya kaydedilebilir oldu ([#121](https://github.com/aaudraa/KeyKey/pull/121)). Sürüm `1.0.1+4`. Kalan: faz PR'ı, `v1.0.1` etiketi (dağıtım onayı ve yayımlama proje sahibinde), Obtainium bağlantısının telefonda denenmesi, başvuru ([metin](f-droid/basvuru.md)).
+
+**Bitti sayılması için:** `v1.0.1` yayınlandı ve yayın iş akışındaki F-Droid karşılaştırması yeşil; fdroiddata'ya birleştirme isteği açıldı; README'deki Obtainium bağlantısı telefonda çalışıyor.
+
 ## 1.0 sonrası
 
 Bu fikirlerin hiçbiri henüz planlanmış değil. Sırası kullanıma göre belirlenecek.
@@ -488,8 +506,8 @@ Bu fikirlerin hiçbiri henüz planlanmış değil. Sırası kullanıma göre bel
 | Passkey ve Credential Manager sağlayıcısı | Android 14 ve üstü. |
 | Kart ve güvenli not kayıtları | Kayıt modeli türlere açık tasarlanacak. |
 | Steam Guard kodları, Wear OS | 2FA tarafı için. |
-| IzzyOnDroid | 1.0'dan hemen sonra. GitHub'daki imzalı APK'yı F-Droid uygulamasında listeler; imza bizim anahtarımız kalır. |
-| F-Droid ana deposu | IzzyOnDroid'den sonra. F-Droid kaynaktan derler, derleme bizimkiyle birebir aynıysa bizim imzamızla yayımlar. Bunun için CI'ın F-Droid'in derleme yolunda (`/home/vagrant/build/io.github.aaudraa.keykey`) derlemesi gerekiyor; yol farkı `libapp.so`'yu değiştiriyor ([yeniden üretilebilir derleme](docs/yayin.md#yeniden-üretilebilir-derleme)). |
+| IzzyOnDroid | Başvurulmuyor (2026-11-17): yapay zekâyla yazılmış kodu kabul etmiyor, APK başına 30 MB sınırı var. Ayrıntılar: [F-Droid tasarımı](docs/f-droid.md#izzyondroid-neden-yok). |
+| F-Droid ana deposu | Faz 10'da. F-Droid kaynaktan derler, derleme bizimkiyle birebir aynıysa bizim imzamızla yayımlar. Yayın derlemesi F-Droid'in derleme yolunda (`/home/vagrant/build/io.github.aaudraa.keykey`) yapılıyor; yol farkı `libapp.so`'yu değiştiriyor ([yeniden üretilebilir derleme](docs/yayin.md#yeniden-üretilebilir-derleme)). |
 | Play Store | Şimdilik yok (2026-11-09 kararı). 25 $ ücret ve kimlik, yeni hesaplarda 12 kişilik 14 günlük kapalı test; Google kendi imza anahtarını kullandığı için Play sürümü GitHub sürümünün üstüne kurulamaz. |
 | Google'ın geliştirici doğrulaması | 30 Eylül 2026'da dört ülkede başladı, 2027'den sonra yayılacak; Türkiye henüz kapsamda değil. Kapsama girince kayıtsız geliştiricinin uygulaması Play dışında yalnızca "gelişmiş kurulum" adımlarıyla kurulabilecek. O zaman yeniden değerlendirilecek. |
 | KeyKey klavyesi | Giriş kutularını doldurma sistemine bildirmeyen uygulamalarda da doldurmak için kendi klavyesi (KeePassDX'teki gibi). Erişilebilirlik servisi kullanmadan her uygulamada çalışır, ama büyük bir iş ve klavyenin kendisi de güvenlik incelemesi ister. Çıkış noktası: [#94](https://github.com/aaudraa/KeyKey/issues/94), [doldurma sistemine katılmayan ekranlar](docs/guvenlik-tasarimi.md#doldurma-sistemine-katılmayan-ekranlar). |

@@ -1,0 +1,1 @@
+Çevrimdışı parola yöneticisi ve 2FA doğrulayıcı. İnternet izni yok.

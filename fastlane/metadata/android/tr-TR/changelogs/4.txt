@@ -1,0 +1,1 @@
+Kurulumda kurtarma anahtarı kopyalanabiliyor ya da dosyaya kaydedilip dosyadan okunabiliyor. QR tarayıcıda karartmadaki pencere ve çerçeve hizalı, fener düğmesi üst çubukta. Yayın derlemesi F-Droid'in kendi derlemesiyle bayt bayt aynı.

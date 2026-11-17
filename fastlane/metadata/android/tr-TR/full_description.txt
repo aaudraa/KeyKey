@@ -1,0 +1,31 @@
+KeyKey parolalarını ve iki adımlı doğrulama kodlarını telefonunda, şifreli olarak tutar; başka hiçbir yerde değil. Hesap ve sunucu yok, uygulamanın internet izni de yok; yani verini hiçbir yere gönderemez.
+
+<b>Parolalar</b>
+<ul>
+<li>Kayıt ekleme, düzenleme ve arama; klasörler, çöp kutusu, özel alanlar</li>
+<li>Parola üretici ve güç ölçer</li>
+<li>Zayıf ve tekrar eden parolaları gösteren çevrimdışı rapor</li>
+</ul>
+
+<b>2FA kodları</b>
+<ul>
+<li>TOTP ve HOTP kodları; QR tarayarak ya da resimden ekleme</li>
+<li>Google Authenticator'ın dışa aktarma QR'larından, Aegis ve 2FAS'tan aktarım</li>
+</ul>
+
+<b>Otomatik doldurma</b>
+<ul>
+<li>Android uygulamalarında ve Chrome'da parola doldurma ve kaydetme</li>
+<li>Uygulamalar imza sertifikasıyla eşleşir; şüpheli durumlarda uyarı çıkar</li>
+</ul>
+
+<b>Kilit ve yedek</b>
+<ul>
+<li>Ana parola, parmak iziyle açma, otomatik kilitlenme, kurtarma anahtarı</li>
+<li>İstediğin yere kaydettiğin şifreli yedek ve geri yükleme</li>
+<li>Bitwarden, Chrome, Firefox ve KeePassXC'den içe aktarma; ayrılmak istersen şifresiz dışa aktarma</li>
+</ul>
+
+Kasadaki veriler XChaCha20-Poly1305 ile şifrelenir, ana parola Argon2id ile güçlendirilir (libsodium). Derlemeler yeniden üretilebilir ve geliştiricinin anahtarıyla imzalıdır.
+
+KeyKey'in kodunun büyük kısmı bir yapay zekâ kodlama asistanıyla yazıldı. Proje kendi güvenlik denetiminden geçti, ama bağımsız bir denetimden geçmedi. Kasanın şifreli yedeğini düzenli al.

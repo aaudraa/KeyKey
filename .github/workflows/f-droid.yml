@@ -1,0 +1,149 @@
+name: F-Droid
+
+# Yayın zincirinin (yayin.yml) yayın anahtarı yerine tek kullanımlık bir
+# anahtarla tam provası: APK ve AAB F-Droid'in derleme yolunda imzasız
+# derlenir, yayındaki gibi imzalanıp denetlenir, F-Droid'in kendi aracının
+# derlemesiyle karşılaştırılır. Gizli değerlere erişmez.
+# Bizim derleme sabit imaj özetiyle, F-Droid derlemesi imajın güncel haliyle
+# yapılır: F-Droid'in ortamı değişip bizimkinden ayrılırsa burada görünür.
+# Haftalık çalışma bunu etiketten önce yakalar. Ayrıntılar: resources/docs/f-droid.md
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 4 * * 1"
+  pull_request:
+    branches: [main]
+    paths:
+      - pubspec.lock
+      - pubspec.yaml
+      - "android/**"
+      - ".github/workflows/**"
+      - "resources/f-droid/**"
+      - "resources/scripts/f-droid-*"
+      - "resources/scripts/imzala.sh"
+      - "resources/scripts/check-release-apk.sh"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: f-droid-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  # PR'da birleştirme commit'i değil, F-Droid'in GitHub'dan çekebileceği dal ucu.
+  COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  bizim:
+    name: Bizim derleme (F-Droid yolunda, imzasız)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    container:
+      # yayin.yml'daki "derle" işiyle aynı özet. Güncellemesi: resources/docs/yayin.md
+      image: registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie@sha256:1ea8bef1820bff06c2974e31b4fc4c79c364cd24231b86e71fa4b926797e0dac
+      options: --user root
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.COMMIT }}
+          persist-credentials: false
+      - run: git config --global --add safe.directory '*'
+      - name: APK ve AAB
+        run: bash resources/scripts/f-droid-yolunda-derle.sh "$COMMIT" out/imzasiz.apk appbundle
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: imzasiz
+          path: out/
+          if-no-files-found: error
+
+  imzala:
+    name: İmza ve denetim (tek kullanımlık anahtar)
+    needs: bizim
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.COMMIT }}
+          persist-credentials: false
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: imzasiz
+          path: out
+      - name: İmzala
+        env:
+          KEYKEY_KEYSTORE_PASSWORD: deneme-parola
+          KEYKEY_KEY_PASSWORD: deneme-parola
+          KEYKEY_KEY_ALIAS: deneme
+        run: |
+          export KEYKEY_KEYSTORE="$RUNNER_TEMP/deneme.jks"
+          keytool -genkeypair -keystore "$KEYKEY_KEYSTORE" -alias deneme \
+            -keyalg RSA -keysize 4096 -validity 1 -dname CN=deneme \
+            -storepass:env KEYKEY_KEYSTORE_PASSWORD -keypass:env KEYKEY_KEY_PASSWORD
+          bash resources/scripts/imzala.sh out/imzasiz.apk out/bizim.apk out/imzasiz.aab out/bizim.aab
+      - name: APK güvenlik denetimi
+        run: bash resources/scripts/check-release-apk.sh out/bizim.apk
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: bizim
+          path: out/bizim.apk
+          if-no-files-found: error
+
+  f-droid:
+    name: F-Droid derlemesi (fdroid build, lint)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    container:
+      image: registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie
+      options: --user root
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.COMMIT }}
+          persist-credentials: false
+      - run: git config --global --add safe.directory '*'
+      - name: fdroid build
+        run: bash resources/scripts/f-droid-derle.sh "$COMMIT" out/fdroid.apk lint
+      - name: Günlükler
+        if: always()
+        run: ls -la /home/vagrant/logs /home/vagrant/tmp 2>/dev/null || true
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: fdroid
+          path: out/fdroid.apk
+          if-no-files-found: error
+
+  karsilastir:
+    name: Karşılaştır
+    needs: [imzala, f-droid]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    container:
+      image: registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie
+      options: --user root
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.COMMIT }}
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: bizim
+          path: out
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: fdroid
+          path: out
+      - run: |
+          apt-get update -qq && apt-get install -qy apksigcopier >/dev/null
+          sha256sum out/*.apk
+          bash resources/scripts/f-droid-karsilastir.sh out/bizim.apk out/fdroid.apk
