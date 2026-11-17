@@ -87,6 +87,14 @@ Proje sahibinin notları ve kararlar:
    - **Saklama:** Kabul edilen sürüm numarası kasanın dışında şifresiz `terms` dosyasında ([güvenlik tasarımı](guvenlik-tasarimi.md#depolama)). Koşullar değişirse sürüm artar, herkese bir kez daha sorulur.
    - **Sınır:** Bu metinler hukuki riski azaltır ama ortadan kaldırmaz; ağır kusur ve kast için sorumluluk önceden kaldırılamaz. Hukukçu görüşü alınmadı.
 
+**Bağımsız gözden geçirme (koşullar ve lisanslar):** Kritik bulgu yok. Etkisine göre derecelendirdim:
+
+- *Düzeltildi (önemli):* Otomatik doldurma penceresi, koşullar hiç kabul edilmeden kasayı açabiliyordu (güncelleyip uygulamayı açmamış kullanıcı). Pencere artık "Önce KeyKey'i aç ve kullanım koşullarını kabul et" diyor.
+- *Düzeltildi (önemli, doğruluk):* "Verilerin yalnızca bu telefondaki kasada durur" yedek ve dışa aktarmayla çelişiyordu; pano cümlesi klavyelerin pano geçmişini anmıyordu ([güvenlik tasarımı](guvenlik-tasarimi.md) bu korumayı "kısmen" sayıyor). İkisi de düzeltildi.
+- *Düzeltildi:* Lisans metinleri yüklenemezse sonsuz bekleme yerine mesaj; ekran okuyucu için paket başlıkları; kabul dosyası yazılamazsa hiçbir hata dışarı çıkmıyor; koşul belgesinin sürüm testi gerçekten sürüm satırını arıyor; kurtarma, "kullanılamıyor" ve geri tuşu için testler; parmak izi dışı cihaz betiğinin ön koşulu (koşulların elle kabulü).
+- *Kararım:* "Kasa kullanılamıyor" ekranından önce de koşullar soruluyor; zararsız ve kural basit kalıyor. Koşullar lisansın şartı değil, bir bildirim ve sorumluluk reddi (GPL-3.0 programı çalıştırmak için kabul istemez).
+- *Bırakıldı (küçük):* Lisans kataloğu arayüz iş parçacığında kuruluyor (telefonda yavaşlarsa ayrı iş parçacığına taşınır); uzun lisans tek metin olarak çiziliyor; GPL sürümü ayrıca denetlenmiyor ve bozuk başlık tanıma iki kalıpla sınırlı (bugünkü 204 girdinin hepsi doğru); entegrasyon testleri kapıyı değil kasa ekranlarını sınıyor (kapı widget testlerinde).
+
 ## Proje sahibinin kararına bırakılanlar
 
 Bunlar ya güvenlik tasarımını değiştiriyor ya da büyük iş; sırayı ve kararı proje sahibi verir. Yol haritasının "1.0 sonrası" tablosuna yazıldı.

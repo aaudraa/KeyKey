@@ -8,7 +8,7 @@ Please read this before you start using KeyKey. We kept it short; every point de
 
 ## Your data stays on this phone
 
-Your passwords, 2FA accounts and notes stay only in the vault on this phone. KeyKey has no internet permission: no account, no server, no ads, no usage data. When you open a link, the page opens in your browser. The developers cannot see, collect or store your data.
+Your passwords, 2FA accounts and notes are kept in the vault on this phone. A backup or export file is only created when you ask for it, and saved where you choose. KeyKey has no internet permission: no account, no server, no ads, no usage data. When you open a link, the page opens in your browser. The developers cannot see, collect or store your data.
 
 ## How the vault is protected
 
@@ -24,7 +24,7 @@ If the phone is lost or broken, or KeyKey is uninstalled, the vault is gone too.
 
 ## Your phone's security
 
-No app can protect your data on a compromised phone. Keep your phone updated and use a screen lock; don't use KeyKey on a rooted phone or alongside apps you don't trust. A copied password is cleared from the clipboard after 30 seconds; until then, apps that can access the clipboard may read it.
+No app can protect your data on a compromised phone. Keep your phone updated and use a screen lock; don't use KeyKey on a rooted phone or alongside apps you don't trust. A copied password is cleared from the clipboard after 30 seconds; until then, apps that can access the clipboard may read it, and some keyboards' clipboard history may keep it longer.
 
 ## Open source, not independently audited
 

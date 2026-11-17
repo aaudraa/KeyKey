@@ -63,6 +63,32 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  testWidgets('metinler yüklenemezse söylenir, sonsuz bekleme yok', (
+    tester,
+  ) async {
+    await pumpKeyKey(
+      tester,
+      status: VaultOpen(service.newSession()),
+      service: service,
+      extraOverrides: [
+        licenseCatalogProvider.overrideWith(
+          (ref) => Future<LicenseCatalog>.error(StateError('yok')),
+        ),
+      ],
+    );
+    await tester.tap(find.byIcon(Icons.settings_outlined));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Lisanslar'), 300);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Lisanslar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Lisans metinleri yüklenemedi.'), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    // KeyKey'in kendi bildirimi yine görünür.
+    expect(find.text('© 2026 KeyKey geliştiricileri'), findsOneWidget);
+  });
+
   testWidgets('kendi sayfası: Ayarlar arkada görünmez, alt menü yok', (
     tester,
   ) async {

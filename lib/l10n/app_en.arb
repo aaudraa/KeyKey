@@ -725,6 +725,10 @@
   "@licensesPurposeAndroid": {
     "description": "Purpose of the Android libraries."
   },
+  "licensesLoadFailed": "License texts could not be loaded.",
+  "@licensesLoadFailed": {
+    "description": "Licenses screen: the license texts failed to load."
+  },
   "termsTitle": "Terms of use",
   "@termsTitle": {
     "description": "Title of the terms of use screen and its settings row."
@@ -737,7 +741,7 @@
   "@termsDataTitle": {
     "description": "Terms section title: where data lives."
   },
-  "termsDataBody": "Your passwords, 2FA accounts and notes stay only in the vault on this phone. KeyKey has no internet permission: no account, no server, no ads, no usage data. When you open a link, the page opens in your browser. The developers cannot see, collect or store your data.",
+  "termsDataBody": "Your passwords, 2FA accounts and notes are kept in the vault on this phone. A backup or export file is only created when you ask for it, and saved where you choose. KeyKey has no internet permission: no account, no server, no ads, no usage data. When you open a link, the page opens in your browser. The developers cannot see, collect or store your data.",
   "@termsDataBody": {
     "description": "Terms section body: where data lives."
   },
@@ -769,7 +773,7 @@
   "@termsDeviceTitle": {
     "description": "Terms section title: device security."
   },
-  "termsDeviceBody": "No app can protect your data on a compromised phone. Keep your phone updated and use a screen lock; don't use KeyKey on a rooted phone or alongside apps you don't trust. A copied password is cleared from the clipboard after 30 seconds; until then, apps that can access the clipboard may read it.",
+  "termsDeviceBody": "No app can protect your data on a compromised phone. Keep your phone updated and use a screen lock; don't use KeyKey on a rooted phone or alongside apps you don't trust. A copied password is cleared from the clipboard after 30 seconds; until then, apps that can access the clipboard may read it, and some keyboards' clipboard history may keep it longer.",
   "@termsDeviceBody": {
     "description": "Terms section body: device security."
   },
@@ -1377,6 +1381,10 @@
   "autofillNoVault": "Create a vault in KeyKey first.",
   "@autofillNoVault": {
     "description": "Autofill requested before a vault exists."
+  },
+  "autofillNeedsTerms": "Open KeyKey first and accept the terms of use.",
+  "@autofillNeedsTerms": {
+    "description": "Autofill requested before the user accepted the terms of use in the app."
   },
   "autofillVaultUnavailable": "The vault cannot be opened here. Open KeyKey to check it.",
   "@autofillVaultUnavailable": {

@@ -7,9 +7,9 @@ import 'package:keykey/features/onboarding/data/terms_acceptance.dart';
 /// Repodaki koşul belgeleri uygulamadaki metinle aynı kalmalı: koşullar
 /// uygulamada değişip belgede eski kalırsa (ya da tersi) test kırılır.
 void main() {
-  for (final (arb, doc) in [
-    ('lib/l10n/app_tr.arb', 'resources/docs/kosullar.md'),
-    ('lib/l10n/app_en.arb', 'resources/docs/terms.md'),
+  for (final (arb, doc, version) in [
+    ('lib/l10n/app_tr.arb', 'resources/docs/kosullar.md', '**Sürüm:**'),
+    ('lib/l10n/app_en.arb', 'resources/docs/terms.md', '**Version:**'),
   ]) {
     test('$doc uygulamadaki koşullarla aynı', () {
       final strings =
@@ -23,7 +23,7 @@ void main() {
         if (key == 'termsTitle' || key == 'termsContinue') continue;
         expect(text, contains(strings[key] as String), reason: key);
       }
-      expect(text, contains('$currentTermsVersion'));
+      expect(text, contains('$version $currentTermsVersion '));
     });
   }
 }

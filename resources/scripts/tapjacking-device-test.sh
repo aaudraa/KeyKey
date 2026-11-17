@@ -4,8 +4,10 @@
 #
 # Kullanım: resources/scripts/tapjacking-device-test.sh [seri]
 #
-# Önce: KeyKey kurulu olmalı (kilit ya da kurulum ekranı, ikisinde de parola
-# kutusunun "Göster" düğmesi var) ve saldırgan uygulama derlenmiş olmalı:
+# Önce: KeyKey kurulu ve kullanım koşulları bir kez elle kabul edilmiş olmalı
+# (yeni kurulumda ve güncellemeden sonra ilk ekran koşullardır; kabulden
+# sonra kilit ya da kurulum ekranı gelir, ikisinde de parola kutusunun
+# "Göster" düğmesi var) ve saldırgan uygulama derlenmiş olmalı:
 #   android/gradlew -p resources/test-apps/saldirgan assembleDebug
 #
 # Denenenler:

@@ -6,9 +6,9 @@ KeyKey bu koşulları kasa kurulmadan ya da açılmadan önce bir kez gösterir;
 
 KeyKey'i kullanmaya başlamadan önce lütfen oku. Kısa tuttuk; her madde KeyKey'in gerçekte nasıl çalıştığını anlatıyor.
 
-## Verilerin yalnızca bu telefonda
+## Verilerin bu telefonda
 
-Parolaların, 2FA hesapların ve notların yalnızca bu telefondaki kasada durur. KeyKey'in internet izni yoktur: hesap açtırmaz, hiçbir sunucuya bağlanmaz, reklam göstermez, kullanım bilgisi toplamaz. Bir bağlantıyı açtığında sayfa tarayıcında açılır. Geliştiriciler verilerini göremez, toplamaz ve saklamaz.
+Parolaların, 2FA hesapların ve notların bu telefondaki kasada durur. Yedek ya da dışa aktarma dosyası yalnızca sen istersen oluşur ve senin seçtiğin yere kaydedilir. KeyKey'in internet izni yoktur: hesap açtırmaz, hiçbir sunucuya bağlanmaz, reklam göstermez, kullanım bilgisi toplamaz. Bir bağlantıyı açtığında sayfa tarayıcında açılır. Geliştiriciler verilerini göremez, toplamaz ve saklamaz.
 
 ## Kasa nasıl korunur
 
@@ -24,7 +24,7 @@ Telefon kaybolur, bozulur ya da KeyKey silinirse kasa da gider. Düzenli olarak 
 
 ## Telefonunun güvenliği
 
-Ele geçirilmiş bir telefonda hiçbir uygulama verilerini koruyamaz. Telefonunu güncel tut ve ekran kilidi kullan; root'lu bir telefonda ya da güvenmediğin uygulamaların yanında kullanma. Kopyaladığın parola 30 saniye sonra panodan silinir; o süre içinde panoya erişebilen uygulamalar onu okuyabilir.
+Ele geçirilmiş bir telefonda hiçbir uygulama verilerini koruyamaz. Telefonunu güncel tut ve ekran kilidi kullan; root'lu bir telefonda ya da güvenmediğin uygulamaların yanında kullanma. Kopyaladığın parola 30 saniye sonra panodan silinir; o süre içinde panoya erişebilen uygulamalar onu okuyabilir, bazı klavyelerin pano geçmişi onu daha uzun tutabilir.
 
 ## Açık kaynak, bağımsız denetimden geçmedi
 

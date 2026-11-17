@@ -21,7 +21,8 @@ class LicensesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final catalog = ref.watch(licenseCatalogProvider).value;
+    final loaded = ref.watch(licenseCatalogProvider);
+    final catalog = loaded.value;
     return KkScaffold(
       appBar: kkAppBar(context, title: l10n.settingsLicenses),
       body: ListView(
@@ -56,7 +57,9 @@ class LicensesScreen extends ConsumerWidget {
               ),
             ],
           ),
-          if (catalog == null)
+          if (loaded.hasError)
+            _LoadFailed(l10n.licensesLoadFailed)
+          else if (catalog == null)
             const Padding(
               padding: EdgeInsets.all(32),
               child: Center(child: CircularProgressIndicator()),
@@ -111,7 +114,8 @@ class LicensePackagesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final catalog = ref.watch(licenseCatalogProvider).value;
+    final loaded = ref.watch(licenseCatalogProvider);
+    final catalog = loaded.value;
     final groups = <String, List<LicensePackage>>{};
     for (final package in catalog?.packages ?? const <LicensePackage>[]) {
       final key = package.name == LicenseCatalog.unnamed
@@ -122,7 +126,9 @@ class LicensePackagesScreen extends ConsumerWidget {
     final entries = groups.entries.toList();
     return KkScaffold(
       appBar: kkAppBar(context, title: l10n.licensesAllPackages),
-      body: catalog == null
+      body: loaded.hasError
+          ? _LoadFailed(l10n.licensesLoadFailed)
+          : catalog == null
           ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
               padding: const EdgeInsets.only(bottom: 24),
@@ -164,7 +170,8 @@ class LicenseTextScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final catalog = ref.watch(licenseCatalogProvider).value;
+    final loaded = ref.watch(licenseCatalogProvider);
+    final catalog = loaded.value;
     final items = <Widget>[];
     for (final name in packages) {
       final package = catalog?[name];
@@ -173,10 +180,13 @@ class LicenseTextScreen extends ConsumerWidget {
         items.add(
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-            child: Text(
-              _displayName(l10n, name),
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
+            child: Semantics(
+              header: true,
+              child: Text(
+                _displayName(l10n, name),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),
@@ -210,7 +220,9 @@ class LicenseTextScreen extends ConsumerWidget {
     }
     return KkScaffold(
       appBar: kkAppBar(context, title: title),
-      body: catalog == null
+      body: loaded.hasError
+          ? _LoadFailed(l10n.licensesLoadFailed)
+          : catalog == null
           ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
               padding: const EdgeInsets.only(bottom: 24),
@@ -219,6 +231,19 @@ class LicenseTextScreen extends ConsumerWidget {
             ),
     );
   }
+}
+
+/// Metinler yüklenemedi: sonsuz bekleme yerine söylenir.
+class _LoadFailed extends StatelessWidget {
+  const new(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.all(32),
+    child: Center(child: Text(text, textAlign: TextAlign.center)),
+  );
 }
 
 typedef _Part = ({String name, String purpose, List<String> packages});

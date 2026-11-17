@@ -9,6 +9,7 @@ import 'package:keykey/features/autofill/presentation/autofill_save_screen.dart'
 import 'package:keykey/features/autofill/presentation/autofill_sheet_frame.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/lock_screen.dart';
+import 'package:keykey/features/onboarding/application/terms_controller.dart';
 import 'package:keykey/features/settings/application/theme_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
@@ -70,7 +71,12 @@ class AutofillHome extends ConsumerWidget {
             if (target == null) return _Message(l10n.autofillNoRequest);
             final save = target.save;
             final name = autofillTargetName(target);
-            return switch (ref.watch(vaultControllerProvider)) {
+            final status = ref.watch(vaultControllerProvider);
+            // Koşullar kabul edilmeden kasa açılmaz; kabul uygulamada yapılır.
+            if (status is! VaultNotSetUp && !ref.watch(termsAcceptedProvider)) {
+              return _Message(l10n.autofillNeedsTerms);
+            }
+            return switch (status) {
               VaultNotSetUp() => _Message(l10n.autofillNoVault),
               VaultUnavailable() ||
               VaultRecovering() => _Message(l10n.autofillVaultUnavailable),

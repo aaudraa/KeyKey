@@ -14,6 +14,12 @@ import 'package:sodium/sodium_sumo.dart';
 
 import '../../support/fake_vault_service.dart';
 
+class _FailingStore implements TermsAcceptanceStore {
+  @override
+  Future<void> write(int version) async =>
+      throw const FormatException('yazılamadı');
+}
+
 class _RecordingStore implements TermsAcceptanceStore {
   final written = <int>[];
 
@@ -83,6 +89,14 @@ void main() {
       expect(go(VaultLocked(header), AppRoutes.lock), AppRoutes.terms);
       expect(go(VaultLocked(header), AppRoutes.terms), isNull);
       expect(go(VaultOpen(session), AppRoutes.vault), AppRoutes.terms);
+      expect(
+        go(VaultRecovering(session), AppRoutes.newPassword),
+        AppRoutes.terms,
+      );
+      expect(
+        go(const VaultUnavailable(), AppRoutes.unavailable),
+        AppRoutes.terms,
+      );
     });
 
     test('kabul edilince koşullardan sıradaki yere geçilir', () {
@@ -155,6 +169,18 @@ void main() {
       expect(store.written, [currentTermsVersion]);
     });
 
+    testWidgets('kurulmamış kasada geri tuşu tanıtıma döner', (tester) async {
+      await pump(tester, const VaultNotSetUp());
+      await tester.tap(find.text('Atla'));
+      await tester.pumpAndSettle();
+      expect(find.byType(TermsScreen), findsOneWidget);
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.byType(TermsScreen), findsNothing);
+      expect(find.text('Atla'), findsOneWidget);
+    });
+
     testWidgets('kabul etmiş kullanıcıya bir daha sorulmaz', (tester) async {
       await pump(tester, const VaultNotSetUp(), accepted: true);
       await tester.tap(find.text('Atla'));
@@ -178,11 +204,16 @@ void main() {
       tester,
     ) async {
       await pump(tester, VaultLocked(service.header));
+      // Ekrandaki sırayla: liste yalnızca aşağı kaydırılır.
       for (final text in [
+        // Yedek ve dışa aktarma da var: veriler yalnızca telefonda değil.
+        'senin seçtiğin yere',
         'internet izni yoktur',
         'Argon2id',
         'kimse verilerini kurtaramaz',
-        'yedek',
+        'şifreli yedek',
+        // Pano 30 saniyede silinir ama klavyenin geçmişi tutabilir.
+        'pano geçmişi',
         'yapay zekâ',
         'hiçbir garanti olmadan',
       ]) {
@@ -205,6 +236,18 @@ void main() {
       expect(continueButton(), findsNothing);
       expect(find.byType(Checkbox), findsNothing);
     });
+  });
+
+  test('kabul yazılamasa da bu oturumda geçerli, hata dışarı çıkmaz', () async {
+    final container = ProviderContainer(
+      overrides: [
+        initialTermsAcceptedProvider.overrideWithValue(false),
+        termsAcceptanceStoreProvider.overrideWithValue(_FailingStore()),
+      ],
+    );
+    addTearDown(container.dispose);
+    await container.read(termsAcceptedProvider.notifier).accept();
+    expect(container.read(termsAcceptedProvider), isTrue);
   });
 
   test('sağlayıcı varsayılanı kabul edilmiş (testler ve bootstrap dışı)', () {

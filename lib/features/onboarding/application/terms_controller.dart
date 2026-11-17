@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/features/onboarding/data/terms_acceptance.dart';
 
@@ -29,7 +27,7 @@ class TermsController extends Notifier<bool> {
     state = true;
     try {
       await ref.read(termsAcceptanceStoreProvider).write(currentTermsVersion);
-    } on FileSystemException {
+    } on Exception {
       // Yeniden sorulması zarar vermez.
     }
   }
