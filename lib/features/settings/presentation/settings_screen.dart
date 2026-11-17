@@ -309,11 +309,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                   ),
                   ListTile(
+                    leading: const KkIconBox(icon: Icons.gavel_rounded),
+                    title: Text(l10n.termsTitle),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () => context.push(AppRoutes.settingsTerms),
+                  ),
+                  ListTile(
                     leading: const KkIconBox(icon: Icons.privacy_tip_rounded),
                     title: Text(l10n.aboutPrivacy),
                     trailing: const Icon(Icons.open_in_new_rounded),
                     onTap: () => unawaited(
-                      openWebPage(context, ref, _privacyPage(context)),
+                      openWebPage(context, ref, privacyPage(context)),
                     ),
                   ),
                   ListTile(
@@ -331,12 +337,4 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
     );
   }
-}
-
-/// Gizlilik bildirimi arayüz dilinde; Türkçe dışında İngilizcesi.
-Uri _privacyPage(BuildContext context) {
-  final file = Localizations.localeOf(context).languageCode == 'tr'
-      ? 'gizlilik.md'
-      : 'privacy.md';
-  return Uri.parse('$keyKeyRepository/blob/main/resources/docs/$file');
 }

@@ -19,8 +19,10 @@ import 'package:keykey/features/lock/presentation/lock_screen.dart';
 import 'package:keykey/features/lock/presentation/new_password_screen.dart';
 import 'package:keykey/features/lock/presentation/recovery_screen.dart';
 import 'package:keykey/features/lock/presentation/unavailable_screen.dart';
+import 'package:keykey/features/onboarding/application/terms_controller.dart';
 import 'package:keykey/features/onboarding/presentation/intro_screen.dart';
 import 'package:keykey/features/onboarding/presentation/onboarding_screen.dart';
+import 'package:keykey/features/onboarding/presentation/terms_screen.dart';
 import 'package:keykey/features/settings/presentation/change_password_screen.dart';
 import 'package:keykey/features/settings/presentation/licenses_screen.dart';
 import 'package:keykey/features/settings/presentation/settings_screen.dart';
@@ -44,9 +46,11 @@ abstract final class AppRoutes {
   static const changePassword = '/ayarlar/parola';
   static const loginImport = '/ayarlar/ice-aktar';
   static const licenses = '/ayarlar/lisanslar';
+  static const settingsTerms = '/ayarlar/kosullar';
   static const licensesAll = '/ayarlar/lisanslar/tum';
   static const setup = '/kurulum';
   static const intro = '/tanitim';
+  static const terms = '/kosullar';
   static const restore = '/geri-yukle';
   static const lock = '/kilit';
   static const recovery = '/kilit/kurtarma';
@@ -74,11 +78,33 @@ abstract final class AppRoutes {
 ///
 /// Kasa açık değilken kasa ekranlarına hiçbir yoldan ulaşılamaz. Kasa
 /// açılınca [resume]'a, yani kilitlenmeden önce kalınan yere gidilir.
+///
+/// Kullanım koşulları kabul edilmeden ([termsAccepted]) kasa kurulmaz ve
+/// açılmaz: yeni kullanıcı tanıtımı izleyebilir, kuruluma geçerken
+/// koşullara gelir; kasası olan kullanıcı kilit ekranından önce koşulları
+/// bir kez görür.
 String? vaultRedirect(
   VaultStatus status,
   String location, {
   String resume = AppRoutes.vault,
+  bool termsAccepted = true,
 }) {
+  if (!termsAccepted) {
+    if (location == AppRoutes.terms) return null;
+    if (status is VaultNotSetUp) {
+      // Önce tanıtım; kuruluma ya da yedekten dönüşe geçerken koşullar.
+      if (location == AppRoutes.intro) return null;
+      return location == AppRoutes.setup || location == AppRoutes.restore
+          ? AppRoutes.terms
+          : AppRoutes.intro;
+    }
+    return AppRoutes.terms;
+  }
+  // Kabulden sonra koşullardan kuruluma; diğer durumlarda aşağıdaki kapı
+  // kuralları kilit ya da kalınan yere götürür.
+  if (status is VaultNotSetUp && location == AppRoutes.terms) {
+    return AppRoutes.setup;
+  }
   return switch (status) {
     // Önce tanıtım; yeni telefonda kasa yedekten de kurulabilir.
     VaultNotSetUp() =>
@@ -114,6 +140,7 @@ String resumeLocationFor(String path) {
 final _vaultItem = RegExp(r'^/kasa/kayit/[^/]+$');
 
 const Set<String> _gateRoutes = {
+  AppRoutes.terms,
   AppRoutes.setup,
   AppRoutes.lock,
   AppRoutes.recovery,
@@ -125,6 +152,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   final statusChanges = ValueNotifier<int>(0);
   ref
     ..listen(vaultControllerProvider, (_, _) => statusChanges.value++)
+    ..listen(termsAcceptedProvider, (_, _) => statusChanges.value++)
     ..onDispose(statusChanges.dispose);
 
   // Kilitlenmeden önce kalınan yer; yalnızca bellekte tutulur.
@@ -140,12 +168,21 @@ final routerProvider = Provider<GoRouter>((ref) {
       final status = ref.read(vaultControllerProvider);
       // Yeni ya da yedekten kurulan kasa kasa sekmesinde açılır.
       if (status is VaultNotSetUp) resume = AppRoutes.vault;
-      return vaultRedirect(status, state.matchedLocation, resume: resume);
+      return vaultRedirect(
+        status,
+        state.matchedLocation,
+        resume: resume,
+        termsAccepted: ref.read(termsAcceptedProvider),
+      );
     },
     routes: [
       kkRoute(
         path: AppRoutes.intro,
         builder: (context, state) => const IntroScreen(),
+      ),
+      kkRoute(
+        path: AppRoutes.terms,
+        builder: (context, state) => const TermsScreen(),
       ),
       kkRoute(
         path: AppRoutes.setup,
@@ -288,6 +325,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                         state.extra is LoginExport ? null : AppRoutes.settings,
                     builder: (context, state) =>
                         LoginImportScreen(export: state.extra! as LoginExport),
+                  ),
+                  kkRoute(
+                    parentNavigatorKey: rootNavigatorKey,
+                    path: 'kosullar',
+                    builder: (context, state) =>
+                        const TermsScreen(readOnly: true),
                   ),
                   kkRoute(
                     parentNavigatorKey: rootNavigatorKey,

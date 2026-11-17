@@ -7,6 +7,14 @@ import 'package:keykey/l10n/generated/app_localizations.dart';
 /// KeyKey'in kaynak kodu ve sorun listesi.
 const keyKeyRepository = 'https://github.com/aaudraa/KeyKey';
 
+/// Gizlilik bildirimi arayüz dilinde; Türkçe dışında İngilizcesi.
+Uri privacyPage(BuildContext context) {
+  final file = Localizations.localeOf(context).languageCode == 'tr'
+      ? 'gizlilik.md'
+      : 'privacy.md';
+  return Uri.parse('$keyKeyRepository/blob/main/resources/docs/$file');
+}
+
 /// Sayfayı tarayıcıda açar; açacak uygulama yoksa kullanıcıya söyler.
 /// KeyKey arka plana geçtiği için kasa her zamanki gibi kilitlenir.
 Future<void> openWebPage(BuildContext context, WidgetRef ref, Uri page) async {
