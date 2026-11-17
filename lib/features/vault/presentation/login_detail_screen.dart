@@ -10,6 +10,7 @@ import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_copy_icon.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_menu.dart';
+import 'package:keykey/app/ui/kk_metrics.dart';
 import 'package:keykey/app/ui/kk_secret_text.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/app/ui/record_avatar.dart';
@@ -53,7 +54,9 @@ class LoginDetailScreen extends ConsumerWidget {
     final linkedOtps = otpsLinkedTo(ref.watch(otpsControllerProvider), item.id);
     final name = content.name.trim();
 
-    final cards = <Widget>[
+    // Giriş bilgileri bir kartta, ek bilgiler ikincide; satırlar arasında
+    // Ayarlar'daki gibi ince çizgi. Kayıt tek parça okunsun.
+    final access = <Widget>[
       if (content.username.isNotEmpty)
         _Field(label: l10n.loginUsername, value: content.username),
       if (content.password.isNotEmpty)
@@ -75,12 +78,16 @@ class LoginDetailScreen extends ConsumerWidget {
           title: Text(l10n.loginApp, style: theme.textTheme.labelMedium),
           subtitle: Text(app.packageName),
         ),
+    ];
+    final extra = <Widget>[
       if (content.folder != null)
         _Field(label: l10n.loginFolder, value: content.folder!),
       for (final field in content.customFields)
         _Field(label: field.name, value: field.value, hidden: field.hidden),
       if (content.notes.isNotEmpty)
         _Field(label: l10n.loginNotes, value: content.notes),
+    ];
+    final history = <Widget>[
       if (content.passwordHistory.isNotEmpty)
         Theme(
           // Açılır kartın kendi çizgileri cam kartta görünmesin.
@@ -167,15 +174,11 @@ class LoginDetailScreen extends ConsumerWidget {
               ),
             ),
           const SizedBox(height: 20),
-          for (final card in cards) ...[
-            GlassSurface(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.all(Radius.circular(22)),
-                child: Material(type: MaterialType.transparency, child: card),
-              ),
-            ),
-            const SizedBox(height: 10),
-          ],
+          for (final rows in [access, extra, history])
+            if (rows.isNotEmpty) ...[
+              _FieldGroup(rows: rows),
+              const SizedBox(height: 12),
+            ],
           const SizedBox(height: 6),
           Text(
             l10n.loginLastChanged(
@@ -211,6 +214,35 @@ class LoginDetailScreen extends ConsumerWidget {
       action: KkSnackAction(
         label: l10n.loginUndo,
         onPressed: () => unawaited(controller.restoreById(item.id)),
+      ),
+    );
+  }
+}
+
+/// Tek kartta, aralarında ince çizgi olan satırlar.
+class _FieldGroup extends StatelessWidget {
+  const new({required this.rows});
+
+  final List<Widget> rows;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassSurface(
+      child: ClipRRect(
+        borderRadius: const BorderRadius.all(
+          Radius.circular(KkMetrics.cardRadius),
+        ),
+        child: Material(
+          type: MaterialType.transparency,
+          child: Column(
+            children: [
+              for (var i = 0; i < rows.length; i++) ...[
+                if (i > 0) const Divider(height: 1, indent: 16),
+                rows[i],
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }

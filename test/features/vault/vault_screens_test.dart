@@ -482,21 +482,6 @@ void main() {
       expect(route.animation!.status, AnimationStatus.completed);
     });
 
-    testWidgets('her alan kendi kartında', (tester) async {
-      await openPosta(tester);
-
-      GlassSurface cardOf(String label) => tester.widget<GlassSurface>(
-        find
-            .ancestor(of: find.text(label), matching: find.byType(GlassSurface))
-            .first,
-      );
-      final username = cardOf('Kullanıcı adı');
-      final password = cardOf('Parola');
-      final url = cardOf('https://mail.example.com');
-      expect(identical(username, password), isFalse);
-      expect(identical(password, url), isFalse);
-    });
-
     testWidgets('parola varsayılan olarak gizli', (tester) async {
       await openPosta(tester);
 
@@ -590,6 +575,51 @@ void main() {
       expect(
         find.text('Bu adresi açacak bir tarayıcı bulunamadı.'),
         findsOneWidget,
+      );
+    });
+
+    testWidgets('alanlar iki kartta toplanıyor, aralarında çizgi', (
+      tester,
+    ) async {
+      logins = FakeLoginRepository(
+        items: [
+          FakeLoginRepository.item(
+            const LoginContent(
+              name: 'Dolu',
+              username: 'ali',
+              password: 'p',
+              urls: ['https://a.example'],
+              folder: 'İş',
+              notes: 'bir not',
+              customFields: [LoginCustomField(name: 'PIN', value: '1234')],
+            ),
+            id: 1,
+          ),
+        ],
+      );
+      await pumpVault(tester);
+      await tester.tap(find.text('Dolu'));
+      await tester.pumpAndSettle();
+
+      Element cardOf(String label) => tester.element(
+        find
+            .ancestor(of: find.text(label), matching: find.byType(GlassSurface))
+            .first,
+      );
+      final access = cardOf('Kullanıcı adı');
+      expect(cardOf('Parola'), same(access));
+      expect(cardOf('Web adresi'), same(access));
+      final extra = cardOf('Klasör');
+      expect(extra, isNot(same(access)));
+      expect(cardOf('PIN'), same(extra));
+      expect(cardOf('Notlar'), same(extra));
+      // İlk kartta üç satır: iki ayraç.
+      expect(
+        find.descendant(
+          of: find.byWidget(access.widget),
+          matching: find.byType(Divider),
+        ),
+        findsNWidgets(2),
       );
     });
 
