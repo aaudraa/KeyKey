@@ -32,6 +32,20 @@ Durum sütunu: ✓ yapıldı, → proje sahibine bırakıldı.
 
 Zaman kalırsa sırayla (ilki yapıldı: "Siteyi aç" ve Hakkında bağlantıları, [güvenlik tasarımı](guvenlik-tasarimi.md#tarayıcıda-açma)): kayıttaki siteyi tarayıcıda açma ve Hakkında'ya kaynak kod, sorun bildirme, gizlilik ve kılavuz bağlantıları (tarayıcıya devretmek `INTERNET` izni gerektirmez); parmak iziyle açan kullanıcıya ara sıra ana parolayı sorma (Aegis'teki parola hatırlatıcısı); 2FA hesabını başka uygulamaya taşımak için QR olarak gösterme ve düz `otpauth://` listesini içe aktarma.
 
+Ayrıca yapılanlar: boş 2FA listesinde "Başka uygulamadan aktar" kısayolu (boş kasadakiyle tutarlı).
+
+## Bağımsız gözden geçirme
+
+Faz bitince dal, kodu yazmamış ayrı bir model tarafından baştan incelendi. Bulunan önemli hata: kilit açılınca **listeden açılan kayda** dönülmüyordu (go_router'da push ile açılan sayfa temel adreste görünmüyor); düzeltildi, test listeden açılan kayıtla deniyor. Küçük bulguların hepsi düzeltildi: tek kayıttaki klasörün harf büyüklüğü, port taşıyan şemasız adres, kullanıcı bilgisi taşıyan yanıltıcı adres, bağlı 2FA kodunun kopyala düğmesi, parola değiştikten sonra düğmenin yeniden açılması, sıralama adının tam `switch`'le yazılması, iki zayıf test.
+
+Bilerek böyle bırakılanlar (kararlarım):
+
+- Düzenleme formundayken kilitlenirse kayda değil listeye dönülür: formlar geri açılmaz, yarım değişiklik bellekte tutulmaz.
+- ASCII dışı harfli alan adlarında "Siteyi aç" çıkmaz: benzer görünen alan adlarına karşı. Adres kopyalanıp tarayıcıya yapıştırılabilir.
+- Klasör eşleşmesi Türkçe harfleri de sadeleştirir ("Şirket" ile "Sirket" aynı klasör): aramadaki kuralla aynı.
+- Kilit açıldıktan hemen sonra liste önce ada göre çizilip ayarlar yüklenince bir kez yeniden sıralanabilir; ayarlar şifreli kayıtta, kilitten önce okunamaz.
+- "Siteyi aç" adresi o siteyi açtığını bildiren bir uygulamaya da (örneğin GitHub uygulaması) gidebilir; Android'in olağan davranışı.
+
 ## Proje sahibinin kararına bırakılanlar
 
 Bunlar ya güvenlik tasarımını değiştiriyor ya da büyük iş; sırayı ve kararı proje sahibi verir. Yol haritasının "1.0 sonrası" tablosuna yazıldı.
