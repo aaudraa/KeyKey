@@ -377,9 +377,9 @@ void main() {
     await submitChange(tester, current: FakeVaultService.correctPassword);
     expect(find.text('Sonra'), findsOneWidget);
 
-    ProviderScope.containerOf(
-      tester.element(find.text('Sonra')),
-    ).read(vaultControllerProvider.notifier).lock();
+    ProviderScope.containerOf(tester.element(find.text('Sonra')))
+        .read(vaultControllerProvider.notifier)
+        .lock();
     await tester.pumpAndSettle();
 
     expect(find.text('KeyKey kilitli'), findsOneWidget);

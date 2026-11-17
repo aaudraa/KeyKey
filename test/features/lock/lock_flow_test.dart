@@ -790,6 +790,9 @@ void main() {
       );
 
       expect(find.text('Kasa okunamadı'), findsOneWidget);
+      // Güncelleme dışında, dosya bozulduysa yedekten dönüş yolu da anlatılır.
+      expect(find.textContaining('depolama alanını temizle'), findsOneWidget);
+      expect(find.textContaining('Yedekten geri yükle'), findsOneWidget);
     });
   });
 }

@@ -14,7 +14,8 @@ class UnavailableScreen extends StatelessWidget {
     return KkScaffold(
       body: SafeArea(
         child: Center(
-          child: Padding(
+          // Uzun açıklama küçük ekranda ve büyük yazıda kayabilsin.
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: GlassSurface(
               padding: const EdgeInsets.all(24),
