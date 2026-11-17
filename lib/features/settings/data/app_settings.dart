@@ -90,7 +90,7 @@ final class AppSettings {
     }),
   );
 
-  static const _sortNames = {
+  static const Map<LoginSort, String> _sortNames = {
     LoginSort.name: 'name',
     LoginSort.recentlyUpdated: 'recent',
   };
