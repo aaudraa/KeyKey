@@ -7,7 +7,7 @@ KeyKey'i F-Droid ana deposuna eklemek için `fdroid/fdroiddata` deposuna açıla
 1. [GitLab](https://gitlab.com/users/sign_up)'da hesap aç (yoksa).
 2. [`fdroid/fdroiddata`](https://gitlab.com/fdroid/fdroiddata)'yı çatalla (Fork).
 3. Çatalda `io.github.aaudraa.keykey` adında bir dal aç.
-4. Dala `metadata/io.github.aaudraa.keykey.yml` dosyasını ekle: içeriği [`io.github.aaudraa.keykey.yml`](io.github.aaudraa.keykey.yml)'nin aynısı, yalnızca en üstteki Türkçe yorum satırları silinir (fdroiddata'daki dosyalarda yorum olmaz). `commit:` satırı `v1.0.1` etiketinin tam özetini taşımalı; `git rev-parse v1.0.1^{commit}` ile alınır.
+4. Dala `metadata/io.github.aaudraa.keykey.yml` dosyasını ekle: içeriği [`io.github.aaudraa.keykey.yml`](io.github.aaudraa.keykey.yml)'nin aynısı, yalnızca en üstteki Türkçe yorum satırları silinir (fdroiddata'daki dosyalarda yorum olmaz). `commit:` satırı `v1.1.0` etiketinin tam özetini taşımalı; `git rev-parse v1.1.0^{commit}` ile alınır. (`v1.0.1` etiketi var ama o sürüm yayımlanmadı; F-Droid'e giren ilk sürüm 1.1.0.)
 5. Commit mesajı: `New App: io.github.aaudraa.keykey`
 6. Birleştirme isteğini aç: hedef `fdroid/fdroiddata` → `master`, başlık `New App: io.github.aaudraa.keykey`, açıklama aşağıdaki İngilizce metin. "New App" etiketini seç.
 7. Açılan isteğin bağlantısını #119'a yaz. İncelemede gelen soruları birlikte yanıtlarız.

@@ -35,10 +35,11 @@ Faz 11 ([tasarım](docs/kullanici-gozuyle.md)).
 - Kayıttan bir alan silinince, açılmış gizli değer sonraki gizli alana geçip dokunmadan açık görünmüyor.
 - Alt menünün tepesindeki ince beyaz çizgi iki temada da kaldırıldı.
 - Metinler: kaydedilmeyen formdan çıkış "Değişiklikleri at", çöpten çıkarma "Geri yükle", "Kasanın yerine yedeği koy", "Bu anahtar bu kasaya ait değil."; kılavuzda sık kullanılana ekleme düğmesinin yeri.
+- Yayın iş akışındaki imza denetimi `apksigner` 37'nin çıktı biçimini okuyamıyordu ve `v1.1.0`'ın ilk denemesini durdurdu; denetim artık ayrı bir betikte ([`imza-ozeti.sh`](scripts/imza-ozeti.sh)), iki biçimi de okuyor ve PR'daki provada tek kullanımlık anahtarla da çalışıyor ([ayrıntı](docs/yayin.md#imza-denetimi)).
 
 ## 1.0.1 (2026-11-17): F-Droid hazırlığı
 
-F-Droid'e girecek ilk sürüm.
+Etiketlendi ama yayımlanmadı: imzalı yayın işi, yukarıdaki imza denetimi hatasıyla dururdu. Aşağıdaki değişiklikler 1.1.0'la geldi; F-Droid'e giren ilk sürüm 1.1.0.
 
 ### Eklenenler
 

@@ -150,9 +150,7 @@ jobs:
       - id: denetim
         name: İmza denetimi
         run: |
-          apksigner="$(find "$ANDROID_HOME/build-tools" -name apksigner | sort -V | tail -n 1)"
-          "$apksigner" verify --print-certs out/keykey.apk | tee imza.txt
-          cert="$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' imza.txt | head -n 1)"
+          cert="$(bash resources/scripts/imza-ozeti.sh out/keykey.apk)"
           expected="$(sed -n 's/^AllowedAPKSigningKeys: *//p' resources/f-droid/io.github.aaudraa.keykey.yml | tr -d '[:space:]')"
           if [[ -z "$cert" || "$cert" != "$expected" ]]; then
             echo "HATA: imza sertifikası '${cert}', beklenen '${expected}' (F-Droid tarifi)." >&2
