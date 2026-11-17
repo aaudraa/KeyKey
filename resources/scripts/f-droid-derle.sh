@@ -68,11 +68,22 @@ text = re.sub(r"^CurrentVersionCode: .*$", f"CurrentVersionCode: {code}", text, 
 open(dst, "w", encoding="utf-8").write(text)
 EOF
 sed -n '/^Builds:/,/^$/p' "$home_vagrant/metadata/$appid.yml"
-curl -sSfL https://gitlab.com/fdroid/fdroiddata/-/raw/master/srclibs/flutter.yml \
-  -o "$home_vagrant/srclibs/flutter.yml"
-# lint kategorileri fdroiddata'nın listesine göre denetler.
-curl -sSfL https://gitlab.com/fdroid/fdroiddata/-/raw/master/config/categories.yml \
-  -o "$home_vagrant/config/categories.yml"
+# fdroiddata'dan Flutter srclib'i ve config/ (lint kategorileri ve
+# simgelerini oradan okur). Seyrek ve sığ klon, üç deneme.
+fdroiddata="$(mktemp -d)"
+for try in 1 2 3; do
+  rm -rf "$fdroiddata"
+  if git clone --quiet --depth 1 --filter=blob:none --sparse \
+      https://gitlab.com/fdroid/fdroiddata.git "$fdroiddata" &&
+    git -C "$fdroiddata" sparse-checkout set --no-cone /config/ /srclibs/flutter.yml; then
+    break
+  fi
+  [[ $try == 3 ]] && exit 1
+  echo "fdroiddata klonlanamadı, yeniden deneniyor ($try)" >&2
+  sleep 30
+done
+cp "$fdroiddata/srclibs/flutter.yml" "$home_vagrant/srclibs/flutter.yml"
+cp -r "$fdroiddata/config/." "$home_vagrant/config/"
 
 chown -R vagrant "$home_vagrant"
 cd "$home_vagrant"
