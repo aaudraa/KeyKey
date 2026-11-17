@@ -487,7 +487,7 @@ Güvenlik ya da veri kaybı sorunu çıkmadı. Ayrıntılar [denetim belgesinde]
 - [x] F-Droid için Fastlane açıklamaları ve denetimi (#115)
 - [x] F-Droid tarifi ve birebir aynı derleme denetimi (#116)
 - [x] Yayın iş akışı F-Droid yolunda ve F-Droid karşılaştırması (#117; gerçek sınama `v1.1.0` etiketinde)
-- [ ] F-Droid düzeniyle ilk yayın (#118; 1.0.1 yayımlanmadı, ilk yayın 1.1.0)
+- [x] F-Droid düzeniyle ilk yayın (#118; 1.0.1 yayımlanmadı, ilk yayın 1.1.0)
 - [ ] F-Droid başvurusu (#119)
 
 **Durum (2026-11-17):** Faz başladı. IzzyOnDroid'e başvurulmuyor: [kabul kuralları](https://izzyondroid.org/docs/general/AppInclusionPolicy/) yapay zekâyla yazılmış kodu kabul etmiyor, ayrıca APK başına 30 MB sınırı var (APK'mız 77 MB). F-Droid'in kurallarında yapay zekâ maddesi yok. Proje sahibi tek evrensel APK'yı seçti; işlemci türüne göre bölme sonraya kaldı. Faz başvurunun gönderilmesiyle biter; F-Droid'in kabulü ve README'ye F-Droid bağlantısı ayrı iş.
@@ -497,6 +497,8 @@ Güvenlik ya da veri kaybı sorunu çıkmadı. Ayrıntılar [denetim belgesinde]
 **Durum (2026-11-17, sabaha karşı):** Faz PR'ı ([#122](https://github.com/aaudraa/KeyKey/pull/122)) birleşti; zincirin tamamı PR'da tek kullanımlık anahtarla yeşil. `v1.0.1` etiketi birleştirme commit'inde (`6e4d97e`); yayın iş akışında imzasız derleme ve F-Droid derlemesi yeşil, imzalı yayın işi proje sahibinin dağıtım onayını bekliyor. F-Droid tarifinin `commit:` alanı bu commit. Kalan, hepsi proje sahibinde: dağıtımı onaylamak ve taslağı yayımlamak (#118), GitLab'da birleştirme isteği ([adımlar](f-droid/basvuru.md), #119), Obtainium bağlantısını telefonda denemek (#114).
 
 **Durum (2026-11-17, akşam):** Proje sahibi önce `v1.1.0`'ın dağıtımını onayladı. İmzalı yayın işi, APK doğru anahtarla imzalandığı halde "İmza denetimi" adımında durdu: GitHub'ın imajındaki `apksigner` 37 sertifikayı yeni bir biçimde yazıyor, denetim satırı yalnızca eskisini okuyordu ve bu adım PR provasında yoktu ([ayrıntı](docs/yayin.md#imza-denetimi)). Denetim [`imza-ozeti.sh`](scripts/imza-ozeti.sh) betiğine taşındı, iki biçimi de okuyor, testi var ve provada tek kullanımlık anahtarla da çalışıyor. Proje sahibi gitmeden önce bütün adımları bana bıraktı ("hepsini yap, taslağı da yayımla"). `v1.0.1`'in bekleyen çalışması aynı satırı taşıdığı için iptal edildi; 1.0.1 yayımlanmadı, F-Droid'e giren ilk sürüm 1.1.0. `v1.1.0` etiketi düzeltmenin commit'ine taşındı, F-Droid tarifi ve başvuru metni 1.1.0'a göre güncellendi.
+
+**Durum (2026-11-17, yayın):** [#129](https://github.com/aaudraa/KeyKey/pull/129) birleşti, provada yeni imza denetimi `apksigner` 37 ile yeşil. Taşınan `v1.1.0` etiketinde zincirin tamamı yeşil: imzasız derleme, F-Droid derlemesi, imza ve imza denetimi, F-Droid karşılaştırması. İndirilen APK'nın özeti `SHA256SUMS` ile tutuyor, sertifikası `66ff7b5c…`, versionCode 5. Proje sahibinin yetkisiyle [KeyKey 1.1.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.1.0)'ı yayımladım; #118 kapandı. Kalan, hepsi proje sahibinde: GitLab'da birleştirme isteği ([adımlar](f-droid/basvuru.md), #119), Obtainium bağlantısını telefonda denemek (#114).
 
 **Bitti sayılması için:** ilk F-Droid sürümü (`v1.1.0`) yayınlandı ve yayın iş akışındaki F-Droid karşılaştırması yeşil; fdroiddata'ya birleştirme isteği açıldı; README'deki Obtainium bağlantısı telefonda çalışıyor.
 
