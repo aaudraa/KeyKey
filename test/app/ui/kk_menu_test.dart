@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/theme.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_menu.dart';
 
-Future<List<String>> _pump(WidgetTester tester) async {
+Future<List<String>> _pump(WidgetTester tester, {ThemeData? theme}) async {
   final selected = <String>[];
   await tester.pumpWidget(
     MaterialApp(
-      theme: AppTheme.light,
+      theme: theme ?? AppTheme.light,
       home: Scaffold(
         appBar: AppBar(
           actions: [
@@ -48,7 +49,7 @@ void main() {
     handle.dispose();
   });
 
-  testWidgets('açılınca öğeler görünür, seçili olanda onay, cam', (
+  testWidgets('açılınca öğeler görünür, seçili olanda onay, dolu yüzey', (
     tester,
   ) async {
     await _pump(tester);
@@ -57,7 +58,28 @@ void main() {
     expect(find.text('Ada göre sırala'), findsOneWidget);
     expect(find.text('Son değişene göre sırala'), findsOneWidget);
     expect(find.byIcon(Icons.check_rounded), findsOneWidget);
-    expect(find.byType(BackdropFilter), findsOneWidget);
+    // Cam yalnızca alt menüde; menü dolu, arkası görünmez.
+    expect(find.byType(BackdropFilter), findsNothing);
+    final surface = tester.widget<GlassSurface>(
+      find.ancestor(
+        of: find.text('Ada göre sırala'),
+        matching: find.byType(GlassSurface),
+      ),
+    );
+    expect(surface.fill?.a, 1.0);
+  });
+
+  testWidgets('koyu temada menü kartlardan bir ton açık', (tester) async {
+    await _pump(tester, theme: AppTheme.dark);
+    await tester.tap(find.byTooltip('Diğer işlemler'));
+    await tester.pumpAndSettle();
+    final surface = tester.widget<GlassSurface>(
+      find.ancestor(
+        of: find.text('Ada göre sırala'),
+        matching: find.byType(GlassSurface),
+      ),
+    );
+    expect(surface.fill, AppTheme.dark.extension<KkGlass>()!.raised);
   });
 
   testWidgets('öğeye dokununca seçilir ve menü kapanır', (tester) async {

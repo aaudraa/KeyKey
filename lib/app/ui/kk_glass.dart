@@ -11,6 +11,7 @@ class KkGlass extends ThemeExtension<KkGlass> {
   const new({
     required this.fill,
     required this.fillStrong,
+    required this.raised,
     required this.navFill,
     required this.border,
     required this.hairline,
@@ -31,8 +32,14 @@ class KkGlass extends ThemeExtension<KkGlass> {
   /// cam kartların okunurluğu düşürdüğü görüldü.
   final Color fill;
 
-  /// Menü, kutu ve pencere gibi bulanık yüzeylerin dolgusu.
+  /// "+" kutusu gibi bulanık yüzeylerin dolgusu.
   final Color fillStrong;
+
+  /// Ekranın üstüne açılan dolu yüzeyler: alttan açılan pencere, ⋮ menüsü,
+  /// üst bildirim. Saydam değil; cam yalnızca alt menüde ve "+" kutusunda
+  /// (proje sahibi, 2026-11-17). Koyu temada karttan bir ton açık, altındaki
+  /// kartlardan ayrılsın.
+  final Color raised;
 
   /// Alt menünün dolgusu: kartlardan saydam, altından kayan içerik bulanık
   /// ve canlı görünsün.
@@ -105,6 +112,7 @@ class KkGlass extends ThemeExtension<KkGlass> {
     return KkGlass(
       fill: c(fill, other.fill),
       fillStrong: c(fillStrong, other.fillStrong),
+      raised: c(raised, other.raised),
       navFill: c(navFill, other.navFill),
       border: c(border, other.border),
       hairline: c(hairline, other.hairline),
@@ -167,7 +175,7 @@ class GlassSurface extends StatelessWidget {
   final BorderRadius borderRadius;
   final bool blur;
 
-  /// Menü, kutu ve pencere için daha dolgun cam.
+  /// "+" kutusu gibi bulanık yüzeyler için daha dolgun cam.
   final bool strong;
   final EdgeInsetsGeometry? padding;
 

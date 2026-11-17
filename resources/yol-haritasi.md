@@ -504,6 +504,8 @@ Proje sahibinin isteği (2026-11-17, gece): uygulamaya bir kullanıcının göz�
 
 **Durum (2026-11-17, sabaha karşı):** Belgedeki 15 maddeden 14'ü yapıldı; klavye maddesi gerekçesiyle proje sahibinin kararına bırakıldı. Ek olarak kayıttaki siteyi ve Hakkında bağlantılarını tarayıcıda açma (`INTERNET` izni olmadan) ve boş 2FA listesinde aktarma kısayolu. Bağımsız gözden geçirmenin bulduğu önemli hata (listeden açılan kayda dönüş) ve küçük bulgular düzeltildi. 1320 birim testi ve Android 17 emülatöründe entegrasyon testleri yeşil. Faz PR'ı #124; telefon denemesi için `keykey-deneme-16-kullanici-gozuyle.apk` taslak ön sürümde. Sürüm numarası telefon denemesinden sonra `1.1.0` olur.
 
+**Tasarım (2026-11-17, sabah):** Proje sahibi camı yalnızca alt menüde istedi, gerisini bana bıraktı. Pencereler, menüler ve bildirim dolu yüzeye geçti; kayıt ayrıntısında alanlar iki kartta toplandı; kılavuz ve F-Droid görüntüleri yenilendi. Gerekçeler [belgede](docs/kullanici-gozuyle.md#tasarım-cam-yalnızca-alt-menüde). İkinci PR ve `keykey-deneme-17` APK'sı.
+
 **Bitti sayılması için:** belgedeki "Bu fazda" maddeleri `main`'de, telefon denemesi için APK proje sahibinde.
 
 ## 1.0 sonrası

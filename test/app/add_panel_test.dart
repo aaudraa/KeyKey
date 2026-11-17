@@ -126,6 +126,18 @@ void main() {
     });
   }
 
+  testWidgets('"+" kutusu alt menünün parçası: cam kalır', (tester) async {
+    await pumpApp(tester);
+    await openPanel(tester);
+    expect(
+      find.descendant(
+        of: find.byKey(AddPanel.boxKey),
+        matching: find.byType(BackdropFilter),
+      ),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('"2FA kodu" dört yolu gösterir, geri oku döner', (tester) async {
     await pumpApp(tester);
     await openPanel(tester);

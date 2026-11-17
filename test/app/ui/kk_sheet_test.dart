@@ -8,11 +8,14 @@ import 'package:keykey/app/ui/kk_section.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
 
 /// Onay penceresini açar; dönen fonksiyon o anki sonucu verir.
-Future<bool? Function()> _openConfirm(WidgetTester tester) async {
+Future<bool? Function()> _openConfirm(
+  WidgetTester tester, {
+  ThemeData? theme,
+}) async {
   late BuildContext ctx;
   await tester.pumpWidget(
     MaterialApp(
-      theme: AppTheme.light,
+      theme: theme ?? AppTheme.light,
       home: Builder(
         builder: (context) {
           ctx = context;
@@ -128,15 +131,33 @@ void main() {
     );
   });
 
-  testWidgets('pencere cam: arkasını bulanıklaştırır', (tester) async {
+  testWidgets('pencere dolu: arkası bulanık değil, görünmez', (tester) async {
     await _openConfirm(tester);
     expect(
       find.descendant(
         of: find.byType(BottomSheet),
         matching: find.byType(BackdropFilter),
       ),
-      findsOneWidget,
+      findsNothing,
     );
+    final surface = tester.widget<GlassSurface>(
+      find.descendant(
+        of: find.byType(BottomSheet),
+        matching: find.byType(GlassSurface),
+      ),
+    );
+    expect(surface.fill?.a, 1.0);
+  });
+
+  testWidgets('koyu temada pencere kartlardan bir ton açık', (tester) async {
+    await _openConfirm(tester, theme: AppTheme.dark);
+    final surface = tester.widget<GlassSurface>(
+      find.descendant(
+        of: find.byType(BottomSheet),
+        matching: find.byType(GlassSurface),
+      ),
+    );
+    expect(surface.fill, AppTheme.dark.extension<KkGlass>()!.raised);
   });
 
   testWidgets('animasyonlar kapalıyken pencere hemen yerinde', (tester) async {

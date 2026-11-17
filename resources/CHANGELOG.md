@@ -18,12 +18,19 @@ Faz 11 ([tasarım](docs/kullanici-gozuyle.md)).
 - Android 13 ve üstünde uygulamanın dili sistem ayarlarından ayrıca seçilebiliyor.
 - Kayıttaki web adresi "Siteyi aç" ile tarayıcıda açılıyor; Hakkında'da kaynak kod, sorun bildirme ve gizlilik bildirimi bağlantıları. Yalnızca http ve https adresleri tarayıcıya devrediliyor; KeyKey'e internet izni eklenmedi.
 
+### Değişenler
+
+- Cam yalnızca alt menüde ve "+" kutusunda: alttan açılan pencereler, ⋮ menüleri ve üst bildirim arkasını bulanıklaştırmıyor, dolu bir yüzeyle açılıyor (koyu temada kartlardan bir ton açık). Daha okunur ve daha akıcı.
+- Kayıt ayrıntısında alanlar iki kartta: giriş bilgileri (kullanıcı adı, parola, 2FA kodu, adresler, uygulamalar) ve ek bilgiler (klasör, özel alanlar, notlar); satırlar arasında ince çizgi.
+- Kılavuzun ve F-Droid'in ekran görüntüleri güncel tasarımla yenilendi.
+
 ### Düzeltilenler
 
 - Ana parola değiştirirken yanlış parola beklemesi saniye olarak değil, kilit ekranındaki gibi dakika:saniye geri sayımıyla gösteriliyor; bekleme bitene kadar düğme kapalı.
 - Yedek ve dışa aktarma dosyalarının adı arayüz dilinde (`keykey-backup-…` / `keykey-yedek-…`).
 - "Kasa okunamadı" ekranı bozuk dosyada yedekten dönüş yolunu da anlatıyor.
 - Ayrıntı ekranındaki kopyala düğmeleri ekran okuyucuya hangi alanı kopyaladığını söylüyor.
+- Kayıttan bir alan silinince, açılmış gizli değer sonraki gizli alana geçip dokunmadan açık görünmüyor.
 - Metinler: kaydedilmeyen formdan çıkış "Değişiklikleri at", çöpten çıkarma "Geri yükle", "Kasanın yerine yedeği koy", "Bu anahtar bu kasaya ait değil."; kılavuzda sık kullanılana ekleme düğmesinin yeri.
 
 ## 1.0.1 (2026-11-17): F-Droid hazırlığı

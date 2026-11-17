@@ -5,6 +5,7 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/theme.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
@@ -29,6 +30,7 @@ Future<(BuildContext, WidgetRef)> _pump(
   _Clipboard clipboard, {
   bool accessibleNavigation = false,
   bool disableAnimations = false,
+  ThemeData? theme,
 }) async {
   tester.view
     ..physicalSize = const Size(400, 800)
@@ -40,7 +42,7 @@ Future<(BuildContext, WidgetRef)> _pump(
     ProviderScope(
       overrides: [sensitiveClipboardProvider.overrideWithValue(clipboard)],
       child: MaterialApp(
-        theme: AppTheme.light,
+        theme: theme ?? AppTheme.light,
         locale: const Locale('tr'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -79,7 +81,7 @@ void main() {
     expect(find.text('bir'), findsNothing);
   });
 
-  testWidgets('bildirim cam: arkasını bulanıklaştırır', (tester) async {
+  testWidgets('bildirim dolu: arkası bulanık değil, görünmez', (tester) async {
     final (ctx, _) = await _pump(tester, _Clipboard());
     showKkSnack(ctx, 'bir');
     await tester.pumpAndSettle();
@@ -88,8 +90,28 @@ void main() {
         of: find.byType(KkSnack),
         matching: find.byType(BackdropFilter),
       ),
-      findsOneWidget,
+      findsNothing,
     );
+    final surface = tester.widget<GlassSurface>(
+      find.descendant(
+        of: find.byType(KkSnack),
+        matching: find.byType(GlassSurface),
+      ),
+    );
+    expect(surface.fill?.a, 1.0);
+  });
+
+  testWidgets('koyu temada bildirim kartlardan bir ton açık', (tester) async {
+    final (ctx, _) = await _pump(tester, _Clipboard(), theme: AppTheme.dark);
+    showKkSnack(ctx, 'bir');
+    await tester.pumpAndSettle();
+    final surface = tester.widget<GlassSurface>(
+      find.descendant(
+        of: find.byType(KkSnack),
+        matching: find.byType(GlassSurface),
+      ),
+    );
+    expect(surface.fill, AppTheme.dark.extension<KkGlass>()!.raised);
   });
 
   testWidgets('bildirim üstte ve ortada', (tester) async {

@@ -482,21 +482,6 @@ void main() {
       expect(route.animation!.status, AnimationStatus.completed);
     });
 
-    testWidgets('her alan kendi kartında', (tester) async {
-      await openPosta(tester);
-
-      GlassSurface cardOf(String label) => tester.widget<GlassSurface>(
-        find
-            .ancestor(of: find.text(label), matching: find.byType(GlassSurface))
-            .first,
-      );
-      final username = cardOf('Kullanıcı adı');
-      final password = cardOf('Parola');
-      final url = cardOf('https://mail.example.com');
-      expect(identical(username, password), isFalse);
-      expect(identical(password, url), isFalse);
-    });
-
     testWidgets('parola varsayılan olarak gizli', (tester) async {
       await openPosta(tester);
 
@@ -591,6 +576,92 @@ void main() {
         find.text('Bu adresi açacak bir tarayıcı bulunamadı.'),
         findsOneWidget,
       );
+    });
+
+    testWidgets('alanlar iki kartta toplanıyor, aralarında çizgi', (
+      tester,
+    ) async {
+      logins = FakeLoginRepository(
+        items: [
+          FakeLoginRepository.item(
+            const LoginContent(
+              name: 'Dolu',
+              username: 'ali',
+              password: 'p',
+              urls: ['https://a.example'],
+              folder: 'İş',
+              notes: 'bir not',
+              customFields: [LoginCustomField(name: 'PIN', value: '1234')],
+            ),
+            id: 1,
+          ),
+        ],
+      );
+      await pumpVault(tester);
+      await tester.tap(find.text('Dolu'));
+      await tester.pumpAndSettle();
+
+      Element cardOf(String label) => tester.element(
+        find
+            .ancestor(of: find.text(label), matching: find.byType(GlassSurface))
+            .first,
+      );
+      final access = cardOf('Kullanıcı adı');
+      expect(cardOf('Parola'), same(access));
+      expect(cardOf('Web adresi'), same(access));
+      final extra = cardOf('Klasör');
+      expect(extra, isNot(same(access)));
+      expect(cardOf('PIN'), same(extra));
+      expect(cardOf('Notlar'), same(extra));
+      // İlk kartta üç satır: iki ayraç.
+      expect(
+        find.descendant(
+          of: find.byWidget(access.widget),
+          matching: find.byType(Divider),
+        ),
+        findsNWidgets(2),
+      );
+    });
+
+    testWidgets('alan silinince açılmış değer sonraki gizli alana geçmiyor', (
+      tester,
+    ) async {
+      const content = LoginContent(
+        name: 'Kart',
+        customFields: [
+          LoginCustomField(name: 'PIN', value: '1234', hidden: true),
+          LoginCustomField(name: 'CVV', value: '987', hidden: true),
+        ],
+      );
+      final item = FakeLoginRepository.item(content, id: 1);
+      logins = FakeLoginRepository(items: [item]);
+      await pumpVault(tester);
+      await tester.tap(find.text('Kart'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Göster').first);
+      await tester.pumpAndSettle();
+      expect(find.text('1234'), findsOneWidget);
+
+      // Düzenleme ekranında PIN silinip kaydedilmiş gibi.
+      final container = ProviderScope.containerOf(
+        tester.element(find.text('CVV')),
+      );
+      await container
+          .read(loginsControllerProvider.notifier)
+          .update(
+            item,
+            const LoginContent(
+              name: 'Kart',
+              customFields: [
+                LoginCustomField(name: 'CVV', value: '987', hidden: true),
+              ],
+            ),
+          );
+      await tester.pumpAndSettle();
+
+      expect(find.text('PIN'), findsNothing);
+      expect(find.text('987'), findsNothing);
+      expect(find.byTooltip('Göster'), findsOneWidget);
     });
 
     testWidgets('gizli değer kopyalanabiliyor, süre bildiriliyor', (
