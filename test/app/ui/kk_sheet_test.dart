@@ -128,15 +128,22 @@ void main() {
     );
   });
 
-  testWidgets('pencere cam: arkasını bulanıklaştırır', (tester) async {
+  testWidgets('pencere dolu: arkası bulanık değil, görünmez', (tester) async {
     await _openConfirm(tester);
     expect(
       find.descendant(
         of: find.byType(BottomSheet),
         matching: find.byType(BackdropFilter),
       ),
-      findsOneWidget,
+      findsNothing,
     );
+    final surface = tester.widget<GlassSurface>(
+      find.descendant(
+        of: find.byType(BottomSheet),
+        matching: find.byType(GlassSurface),
+      ),
+    );
+    expect(surface.fill?.a, 1.0);
   });
 
   testWidgets('animasyonlar kapalıyken pencere hemen yerinde', (tester) async {

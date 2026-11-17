@@ -79,8 +79,7 @@ class _GlassMenuEntryState<T> extends State<_GlassMenuEntry<T>> {
     final glass = KkGlass.of(context);
     const radius = BorderRadius.all(Radius.circular(20));
     return GlassSurface(
-      blur: true,
-      strong: true,
+      fill: glass.raised,
       borderRadius: radius,
       child: ClipRRect(
         borderRadius: radius,

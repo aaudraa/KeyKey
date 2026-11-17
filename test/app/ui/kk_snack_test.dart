@@ -5,6 +5,7 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/theme.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
@@ -79,7 +80,7 @@ void main() {
     expect(find.text('bir'), findsNothing);
   });
 
-  testWidgets('bildirim cam: arkasını bulanıklaştırır', (tester) async {
+  testWidgets('bildirim dolu: arkası bulanık değil, görünmez', (tester) async {
     final (ctx, _) = await _pump(tester, _Clipboard());
     showKkSnack(ctx, 'bir');
     await tester.pumpAndSettle();
@@ -88,8 +89,15 @@ void main() {
         of: find.byType(KkSnack),
         matching: find.byType(BackdropFilter),
       ),
-      findsOneWidget,
+      findsNothing,
     );
+    final surface = tester.widget<GlassSurface>(
+      find.descendant(
+        of: find.byType(KkSnack),
+        matching: find.byType(GlassSurface),
+      ),
+    );
+    expect(surface.fill?.a, 1.0);
   });
 
   testWidgets('bildirim üstte ve ortada', (tester) async {

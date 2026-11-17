@@ -137,7 +137,13 @@ void main() {
       final glass = theme.extension<KkGlass>()!;
       final grounds = [
         for (final g in glass.worstGrounds()) ...[g, over(g, glass.fill)],
+        // Açılan pencere, menü ve bildirim.
+        glass.raised,
       ];
+
+      test('açılan yüzeyler dolu, cam yalnızca alt menüde', () {
+        expect(glass.raised.a, 1.0);
+      });
 
       test('en kötü zemin noktası en az dört renk', () {
         expect(glass.worstGrounds(), hasLength(4));

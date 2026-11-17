@@ -69,16 +69,15 @@ class _SheetFrame extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        const Positioned(
+        Positioned(
           left: 0,
           right: 0,
           top: 0,
           bottom: -80,
           child: GlassSurface(
-            blur: true,
-            strong: true,
+            fill: glass.raised,
             borderRadius: _sheetRadius,
-            child: SizedBox.expand(),
+            child: const SizedBox.expand(),
           ),
         ),
         Column(

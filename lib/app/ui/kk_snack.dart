@@ -174,8 +174,7 @@ class _KkSnackState extends State<KkSnack> with SingleTickerProviderStateMixin {
     final action = widget.action;
     final pill = GlassSurface(
       key: KkSnack.pillKey,
-      blur: true,
-      strong: true,
+      fill: KkGlass.of(context).raised,
       borderRadius: const BorderRadius.all(Radius.circular(28)),
       padding: EdgeInsets.only(
         left: 20,

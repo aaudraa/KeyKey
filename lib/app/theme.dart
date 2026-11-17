@@ -42,6 +42,10 @@ abstract final class KkColors {
 
   /// Koyu temada kartların dolu rengi (telefon denemesi 4: buzlu cam değil).
   static const darkCard = Color(0xFF2E2E32);
+
+  /// Koyu temada açılan pencere, menü ve bildirimin dolu rengi: karttan bir
+  /// ton açık, altındaki kartlardan ayrılsın.
+  static const darkRaised = Color(0xFF36363A);
   static const darkBrand = Color(0xFFFF8A4C);
   static const blobsDark = [
     Color(0xFF5A5A5E),
@@ -71,6 +75,7 @@ abstract final class AppTheme {
       fillStrong: isDark
           ? Colors.white.withValues(alpha: 0.12)
           : KkColors.card.withValues(alpha: 0.92),
+      raised: isDark ? KkColors.darkRaised : KkColors.card,
       navFill: Colors.white.withValues(alpha: isDark ? 0.03 : 0.05),
       // Kartın tepesindeki parlak beyaz şerit ve beyaz çerçeve koyu
       // temada siyahın, açık temada kremin üstünde göze batıyordu
