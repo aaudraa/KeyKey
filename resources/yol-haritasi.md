@@ -500,7 +500,7 @@ Güvenlik ya da veri kaybı sorunu çıkmadı. Ayrıntılar [denetim belgesinde]
 
 ### Faz 11 — Kullanıcı gözüyle iyileştirmeler
 
-Proje sahibinin isteği (2026-11-17, gece): uygulamaya bir kullanıcının gözüyle bakmak, eksik ya da takılan yerleri gidermek, tasarımı iyileştirmek. Seçimler ve gerekçeleri: [kullanıcı gözüyle iyileştirmeler](docs/kullanici-gozuyle.md). Hedef sürüm `1.1.0`; yeni özellikler yayından önce telefonda denenir.
+Proje sahibinin isteği (2026-11-17, gece): uygulamaya bir kullanıcının gözüyle bakmak, eksik ya da takılan yerleri gidermek, tasarımı iyileştirmek. Seçimler ve gerekçeleri: [kullanıcı gözüyle iyileştirmeler](docs/kullanici-gozuyle.md). Takip: #123. Hedef sürüm `1.1.0`; yeni özellikler yayından önce telefonda denenir.
 
 **Bitti sayılması için:** belgedeki "Bu fazda" maddeleri `main`'de, telefon denemesi için APK proje sahibinde.
 
