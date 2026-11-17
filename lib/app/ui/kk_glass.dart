@@ -134,7 +134,7 @@ class KkGlass extends ThemeExtension<KkGlass> {
 }
 
 /// Yarı saydam cam yüzey: dolgu, ince kenar ve yumuşak gölge; [sheen] ile
-/// üstte parlak çizgi. Gerçek bulanıklaştırma ([blur]) pahalıdır; yalnızca
+/// üstten sönen parıltı. Gerçek bulanıklaştırma ([blur]) pahalıdır; yalnızca
 /// içeriğin altından kaydığı ya da üstüne açıldığı yüzeylerde kullanılır.
 class GlassSurface extends StatelessWidget {
   const new({
@@ -167,8 +167,11 @@ class GlassSurface extends StatelessWidget {
   /// (yalnızca [blur] ile).
   final bool vibrant;
 
-  /// Üstten aşağı sönen beyaz parıltı ve tepede ince parlak şerit: buzlu
-  /// camın ışığı (alt menü).
+  /// Üstten aşağı sönen beyaz parıltı: buzlu camın ışığı (alt menü).
+  ///
+  /// Tepede ince parlak şerit yok: kartlarda (telefon denemesi 6) ve alt
+  /// menüde iki temada da beyaz çizgi olarak göze batıyordu (telefon
+  /// denemesi 17).
   final bool sheen;
 
   final Widget child;
@@ -182,7 +185,6 @@ class GlassSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final glass = KkGlass.of(context);
-    final inset = borderRadius.topLeft.x.clamp(0.0, 40.0);
     Widget surface = DecoratedBox(
       decoration: BoxDecoration(
         color: fill ?? (strong ? glass.fillStrong : glass.fill),
@@ -221,18 +223,6 @@ class GlassSurface extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
-          // Tepedeki ince parlak şerit yalnızca açık temada alt menünün
-          // camında: kartlarda koyu temada siyahın, açık temada kremin
-          // üstünde göze batıyordu (telefon denemesi 6); koyu temada alt
-          // menüde de beyaz çizgi olarak görünüyordu (telefon denemesi 17).
-          if (sheen && Theme.of(context).brightness == Brightness.light)
-            Positioned(
-              top: 0,
-              left: inset,
-              right: inset,
-              height: 1,
-              child: IgnorePointer(child: ColoredBox(color: glass.highlight)),
             ),
         ],
       ),

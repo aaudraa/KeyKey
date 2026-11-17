@@ -79,7 +79,7 @@ Turuncu ana renk olarak kalır (proje sahibinin ilk turdaki kararı; bu turda ö
 
 - **Kartlar** yarı saydamdır ama arkalarını bulanıklaştırmaz. Zemin zaten yumuşak olduğu için fark gözle görülmez; liste takılmadan kayar. *(Benim kararım.)*
 - **Gerçek bulanıklaştırma** yalnızca içeriğin altından kaydığı ya da üstüne açıldığı yerlerde kullanılır: alt menü, "+" kutusu ve arkasındaki karartma, üç nokta menüsü, alttan açılan pencereler, kopyalama bildirimi.
-- Cam yüzeylerin üst kenarında ince parlak bir çizgi ve altında yumuşak bir gölge bulunur; camı cam gibi gösteren ayrıntı budur.
+- Cam yüzeylerin üst kenarında ince parlak bir çizgi ve altında yumuşak bir gölge bulunur; camı cam gibi gösteren ayrıntı budur. *(Sonradan kaldırıldı: parlak çizgi kartlarda telefon denemesi 6'da, alt menüde denemeler 17 ve 18'de beyaz çizgi olarak göze battığı için çıktı; üstten sönen parıltı ve gölge kaldı. Bkz. [kullanıcı gözüyle](kullanici-gozuyle.md).)*
 - Köşeler: kartlar yaklaşık 22 dp, gruplar ve kutular 24-30 dp, düğmeler ve arama kutusu tam yuvarlak uçlu.
 
 ### Kayıt simgeleri
