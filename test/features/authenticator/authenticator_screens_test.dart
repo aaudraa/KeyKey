@@ -384,6 +384,37 @@ void main() {
       expect(find.widgetWithText(TextField, 'Ara'), findsNothing);
     });
 
+    testWidgets('hesap yoksa başka uygulamadan aktarma kısayolu', (
+      tester,
+    ) async {
+      otps.items.clear();
+      final files = FakeExportFilePicker();
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        otps: otps,
+        clock: () => now,
+        files: files,
+      );
+      await tester.tap(find.byIcon(Icons.shield_outlined));
+      await settle(tester);
+
+      await tester.tap(
+        find.widgetWithText(TextButton, 'Başka uygulamadan aktar'),
+      );
+      await settle(tester);
+      expect(files.calls, 1);
+    });
+
+    testWidgets('hesap varken aktarma kısayolu yok', (tester) async {
+      await openAuthenticator(tester);
+      expect(
+        find.widgetWithText(TextButton, 'Başka uygulamadan aktar'),
+        findsNothing,
+      );
+    });
+
     testWidgets('okunamayan kayıt sayısı bildiriliyor', (tester) async {
       otps = FakeOtpRepository(items: otps.items, unreadableCount: 2);
       await openAuthenticator(tester);

@@ -100,7 +100,7 @@ KeyKey, Google Authenticator gibi bir doğrulama uygulamasının yerini tutar: g
 - **Anahtarı elle gir:** Site QR yerine bir metin anahtarı veriyorsa onu yaz.
 - **Başka uygulamadan aktar:** Google Authenticator'ın dışa aktarma QR'ları, Aegis ve 2FAS dosyaları.
 
-Aynı gizli anahtarla bir hesap zaten varsa (çöp kutusundakiler de) KeyKey uyarır; istersen yine de eklersin.
+Henüz hesabın yoksa listedeki **Başka uygulamadan aktar** kısayolu da aynı yere götürür. Aynı gizli anahtarla bir hesap zaten varsa (çöp kutusundakiler de) KeyKey uyarır; istersen yine de eklersin.
 
 **Kullanırken:** Koda dokununca kopyalanır. Sağdaki halka kodun kaç saniye daha geçerli olduğunu gösterir; son saniyelerde atmaya başlar. Karta uzun basınca düzenleme, favori ve silme seçenekleri açılır.
 

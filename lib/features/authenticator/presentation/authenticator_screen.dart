@@ -26,6 +26,7 @@ import 'package:keykey/features/authenticator/presentation/otp_clock_builder.dar
 import 'package:keykey/features/authenticator/presentation/otp_code_tile.dart';
 import 'package:keykey/features/authenticator/presentation/otp_display.dart';
 import 'package:keykey/features/authenticator/presentation/otp_gate.dart';
+import 'package:keykey/features/authenticator/presentation/scanned_code_handler.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
@@ -219,10 +220,9 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
         keyOf: otpIdHex,
         // Altta yüzen menü için boşluk.
         padding: EdgeInsets.fromLTRB(16, 4, 16, navClearance(context)),
-        empty: Text(
-          hasAccounts ? l10n.otpNoResults : l10n.otpEmpty,
-          textAlign: TextAlign.center,
-        ),
+        empty: hasAccounts
+            ? Text(l10n.otpNoResults, textAlign: TextAlign.center)
+            : const _EmptyAccounts(),
         // Kart kendi Consumer'ında izler: öğeler saatle her saniye
         // yeniden kurulur ve ekranın ref'iyle yapılan seçici
         // izlemeler her seferinde yeni dinleyici bırakırdı.
@@ -288,4 +288,27 @@ Future<void> showClockHelp(BuildContext context, DateTime now) {
       ),
     ),
   );
+}
+
+/// Hesap yok: "+" ipucu ve başka doğrulama uygulamasından gelen kullanıcı
+/// için aktarma kısayolu.
+class _EmptyAccounts extends ConsumerWidget {
+  const new();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(l10n.otpEmpty, textAlign: TextAlign.center),
+        const SizedBox(height: 16),
+        TextButton.icon(
+          icon: const Icon(Icons.download_rounded),
+          label: Text(l10n.otpAddImport),
+          onPressed: () => unawaited(importFromFile(context, ref)),
+        ),
+      ],
+    );
+  }
 }

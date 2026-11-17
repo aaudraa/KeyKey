@@ -13,7 +13,7 @@ Faz 11 ([tasarım](docs/kullanici-gozuyle.md)).
 - Tek bir 2FA hesabı eklenirken aynı gizli anahtarlı hesap varsa uyarı.
 - Klasör kutusu var olan klasörleri öneriyor; harf büyüklüğü farklı yazılan ad var olan klasöre bağlanıyor.
 - Çöp kutularında "Tümünü geri yükle" ve onaylı "Çöpü boşalt".
-- Boş kasada "Parolaları içe aktar" ve "Yedekten geri yükle" kısayolları.
+- Boş kasada "Parolaları içe aktar" ve "Yedekten geri yükle", boş 2FA listesinde "Başka uygulamadan aktar" kısayolları.
 - Ana parola değişince eski yedeklerin eski parolayla açılmaya devam ettiğini söyleyen not ve oradan yeni yedek.
 - Android 13 ve üstünde uygulamanın dili sistem ayarlarından ayrıca seçilebiliyor.
 - Kayıttaki web adresi "Siteyi aç" ile tarayıcıda açılıyor; Hakkında'da kaynak kod, sorun bildirme ve gizlilik bildirimi bağlantıları. Yalnızca http ve https adresleri tarayıcıya devrediliyor; KeyKey'e internet izni eklenmedi.
