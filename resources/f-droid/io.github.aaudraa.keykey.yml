@@ -23,7 +23,7 @@ Binaries: https://github.com/aaudraa/KeyKey/releases/download/v%v/keykey-%v.apk
 Builds:
   - versionName: 1.0.1
     versionCode: 4
-    commit: 0000000000000000000000000000000000000000
+    commit: 6e4d97e2c64634f2a9e057fe9e44e8204e7d47d4
     sudo:
       - apt-get update
       - apt-get install -y make
