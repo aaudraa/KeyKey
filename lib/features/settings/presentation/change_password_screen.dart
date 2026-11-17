@@ -6,8 +6,10 @@ import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_form.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/vault/vault_service.dart';
+import 'package:keykey/features/backup/presentation/backup_section.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/new_password_fields.dart';
 import 'package:keykey/features/lock/presentation/wait_countdown.dart';
@@ -68,8 +70,26 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       if (!mounted) return;
       switch (attempt) {
         case PasswordAccepted():
-          snack(l10n.changePasswordDone);
-          context.pop();
+          // Parola değişti; not açıkken düğme dönmesin.
+          setState(() => _busy = false);
+          // Eski yedekler eski parolayla açılır (bilinen sınır 5).
+          final backUp = await showKkConfirm(
+            context,
+            title: l10n.changePasswordDone,
+            message: l10n.changePasswordBackupNote,
+            confirmLabel: l10n.changePasswordBackupNow,
+            cancelLabel: l10n.changePasswordBackupLater,
+          );
+          // Not açıkken kasa kilitlendiyse kilit ekranındayız.
+          if (!mounted || ref.read(vaultControllerProvider) is! VaultOpen) {
+            return;
+          }
+          if (backUp) {
+            await backUpVault(context, ref);
+          } else {
+            snack(l10n.changePasswordDone);
+          }
+          if (mounted) context.pop();
         case PasswordInterrupted():
           break;
         case PasswordRejected(:final wait):

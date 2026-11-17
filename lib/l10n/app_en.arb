@@ -263,6 +263,18 @@
   "@changePasswordDone": {
     "description": "Message after the password was changed."
   },
+  "changePasswordBackupNote": "Backups you made before still open with the old password. Anyone who knows the old password can open them; make a new backup and delete the old ones.",
+  "@changePasswordBackupNote": {
+    "description": "Shown after changing the master password."
+  },
+  "changePasswordBackupNow": "Make a new backup",
+  "@changePasswordBackupNow": {
+    "description": "Starts a backup right after the password change."
+  },
+  "changePasswordBackupLater": "Later",
+  "@changePasswordBackupLater": {
+    "description": "Closes the note without a backup."
+  },
   "settingsLockNow": "Lock now",
   "@settingsLockNow": {
     "description": "Settings entry: lock the vault immediately."

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/kk_section.dart';
@@ -361,7 +362,50 @@ void main() {
 
     expect(service.changedPassword, newPassword);
     expect(find.text('Ana parola değiştirildi.'), findsOneWidget);
+    // Eski yedekler eski parolayla açılır; kullanıcıya söylenir.
+    expect(find.textContaining('eski parolayla açılmaya devam eder'), findsOne);
+    await tester.tap(find.text('Sonra'));
+    await tester.pumpAndSettle();
     // Ayarlar ekranına dönüldü.
+    expect(find.text('Ana parolayı değiştir'), findsOneWidget);
+  });
+
+  testWidgets('not açıkken kasa kilitlenirse kilit ekranı gelir', (
+    tester,
+  ) async {
+    await openChangePassword(tester);
+    await submitChange(tester, current: FakeVaultService.correctPassword);
+    expect(find.text('Sonra'), findsOneWidget);
+
+    ProviderScope.containerOf(
+      tester.element(find.text('Sonra')),
+    ).read(vaultControllerProvider.notifier).lock();
+    await tester.pumpAndSettle();
+
+    expect(find.text('KeyKey kilitli'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('parola değişince oradan yeni yedek alınabiliyor', (
+    tester,
+  ) async {
+    final documents = FakeDocumentFiles();
+    await pumpKeyKey(
+      tester,
+      status: VaultOpen(service.newSession()),
+      service: service,
+      documents: documents,
+      backups: FakeBackupService(),
+    );
+    await tester.tap(find.byIcon(Icons.settings_outlined));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ana parolayı değiştir'));
+    await tester.pumpAndSettle();
+    await submitChange(tester, current: FakeVaultService.correctPassword);
+
+    await tester.tap(find.text('Yeni yedek al'));
+    await tester.pumpAndSettle();
+    expect(documents.saves, 1);
     expect(find.text('Ana parolayı değiştir'), findsOneWidget);
   });
 
