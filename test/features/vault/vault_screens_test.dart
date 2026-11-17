@@ -666,6 +666,57 @@ void main() {
       expect(find.widgetWithText(ActionChip, 'Not'), findsNothing);
     });
 
+    testWidgets('klasör kutusu var olan klasörleri öneriyor', (tester) async {
+      await pumpVault(tester);
+      await openAddPassword(tester);
+      await tapVisible(tester, find.text('Daha fazla seçenek'));
+      await tapVisible(tester, find.widgetWithText(ActionChip, 'Klasör'));
+
+      final suggestions = find.byKey(const Key('folder-suggestions'));
+      expect(
+        find.descendant(of: suggestions, matching: find.text('Banka')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: suggestions, matching: find.text('Kişisel')),
+        findsOneWidget,
+      );
+
+      await tester.enterText(find.widgetWithText(TextField, 'Klasör'), 'ki');
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(of: suggestions, matching: find.text('Banka')),
+        findsNothing,
+      );
+      await tapVisible(
+        tester,
+        find.descendant(of: suggestions, matching: find.text('Kişisel')),
+      );
+      final field = tester.widget<TextField>(
+        find.widgetWithText(TextField, 'Klasör'),
+      );
+      expect(field.controller?.text, 'Kişisel');
+      // Tam eşleşen klasör yeniden önerilmez.
+      expect(suggestions, findsNothing);
+    });
+
+    testWidgets('harf büyüklüğü farklı klasör adı var olana bağlanıyor', (
+      tester,
+    ) async {
+      await pumpVault(tester);
+      await openAddPassword(tester);
+      await tester.enterText(find.widgetWithText(TextField, 'Ad'), 'Yeni');
+      await tester.enterText(find.widgetWithText(TextField, 'Parola'), 'p');
+      await tapVisible(tester, find.text('Daha fazla seçenek'));
+      await tapVisible(tester, find.widgetWithText(ActionChip, 'Klasör'));
+      await tester.enterText(find.widgetWithText(TextField, 'Klasör'), 'BANKA');
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Kaydet'));
+      await tester.pumpAndSettle();
+
+      expect(logins.items.last.content.folder, 'Banka');
+    });
+
     testWidgets('"Başka site" iki kez: üç adres alanı', (tester) async {
       await pumpVault(tester);
       await openAddPassword(tester);
