@@ -451,16 +451,27 @@ Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/googl
 
 ```json
 {
-  "version": 3,
+  "version": 4,
   "otpRequireAuth": false,
   "autofillCopyOtp": true,
   "lastBackupAt": 1730000000000,
-  "backupReminderSnoozedUntil": null
+  "backupReminderSnoozedUntil": null,
+  "vaultSort": "name",
+  "generator": {
+    "passphrase": false,
+    "length": 20,
+    "lowercase": true,
+    "uppercase": true,
+    "digits": true,
+    "symbols": true,
+    "words": 6
+  }
 }
 ```
 
 - `autofillCopyOtp` sürüm 2 ile geldi ve [doldurmadan sonra 2FA kodunu kopyalamayı](#2fa-kodu) açar. Sürüm 1 kaydı okunmaya devam eder; o zaman bu ayar açık sayılır.
 - `lastBackupAt` ve `backupReminderSnoozedUntil` sürüm 3 ile geldi: son yedeğin zamanı ve [yedek hatırlatıcısının](#yedek-hatırlatıcısı) susturulduğu son an, 1970'ten beri geçen milisaniye ya da `null`. Daha eski kayıtlarda ikisi de `null` sayılır.
+- `vaultSort` (`name` ya da `recent`) ve `generator` sürüm 4 ile geldi: kasa listesinin sıralaması ve parola üreticisinin son **kullanılan** seçenekleri (uzunluk 8–64, en az bir karakter türü, cümlede 4–12 sözcük). Üretilen parola yazılmaz. Daha eski kayıtlarda ada göre sıralama ve varsayılan üretici kullanılır. Sınır dışı bir değer kaydın tamamını okunamaz yapar (aşağıdaki kural). Sürüm 4 kaydını içeren bir yedek KeyKey'in eski bir sürümünde açılırsa ayar kaydı okunamaz sayılır, ek onay açık gelir.
 - Kayıt yoksa ek onay kapalıdır. Kayıt var ama okunamıyorsa, biçime uymuyorsa veya türü farklıysa ek onay **açık** sayılır: dosyayı değiştiren biri ayarı böyle kapatamasın. Kod kopyalama ise kapalı sayılır. Kullanıcı doğrulayıp ek onayı kapatabilir. Kaydın tamamen silinmesi ise [kayıt silme sınırına](#bilinen-sınırlar) girer.
 
 **Sınır:** Bu, kasa anahtarını değiştirmez. 2FA anahtarı yine kasa anahtarından türetilir, çünkü ana parola ve kurtarma anahtarı da 2FA kayıtlarını açabilmelidir. Ayar, kilidi açık telefonu eline alan birine karşı koruma sağlar, cihazdaki zararlı yazılıma karşı korumaz.

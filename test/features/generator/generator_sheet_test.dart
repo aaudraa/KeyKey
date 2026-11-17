@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keykey/features/generator/application/generator_preferences.dart';
 import 'package:keykey/features/generator/application/password_generator.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../../support/add_flow.dart';
@@ -21,12 +23,16 @@ void main() {
     logins = FakeLoginRepository();
   });
 
-  Future<void> openGenerator(WidgetTester tester) async {
+  Future<void> openGenerator(
+    WidgetTester tester, {
+    FakeSettingsRepository? settings,
+  }) async {
     await pumpKeyKey(
       tester,
       status: VaultOpen(service.newSession()),
       service: service,
       logins: logins,
+      settings: settings,
     );
     await openAddPassword(tester);
     await tester.tap(find.text('Üret'));
@@ -111,6 +117,75 @@ void main() {
       find.widgetWithText(FilledButton, 'Bunu kullan'),
     );
     expect(use.onPressed, isNull);
+  });
+
+  testWidgets('son kullanılan seçeneklerle açılıyor', (tester) async {
+    final settings = FakeSettingsRepository(
+      AppSettings.defaults.copyWith(
+        generator: const GeneratorPreferences(
+          password: PasswordOptions(length: 32, symbols: false),
+        ),
+      ),
+    );
+    await openGenerator(tester, settings: settings);
+
+    final value = generated(tester);
+    expect(value, hasLength(32));
+    expect(
+      value.split('').any(PasswordGenerator.symbolChars.contains),
+      isFalse,
+    );
+  });
+
+  testWidgets('kullanılan seçenekler ayara yazılıyor, parola yazılmıyor', (
+    tester,
+  ) async {
+    final settings = FakeSettingsRepository();
+    await openGenerator(tester, settings: settings);
+    await tester.ensureVisible(find.text('İşaretler'));
+    await tester.tap(find.text('İşaretler'));
+    await tester.pumpAndSettle();
+    final value = generated(tester);
+
+    // Kullanılmayan seçenek yazılmaz.
+    expect(settings.settings.generator.password.symbols, isTrue);
+
+    await tester.ensureVisible(find.text('Bunu kullan'));
+    await tester.tap(find.text('Bunu kullan'));
+    await tester.pumpAndSettle();
+
+    expect(settings.settings.generator.password.symbols, isFalse);
+    expect(settings.settings.generator.passphrase, isFalse);
+    expect(
+      String.fromCharCodes(settings.settings.toJsonBytes()),
+      isNot(contains(value)),
+    );
+  });
+
+  testWidgets('cümle kullanılırken türsüz parola seçeneği yazılmıyor', (
+    tester,
+  ) async {
+    final settings = FakeSettingsRepository();
+    await openGenerator(tester, settings: settings);
+    for (final label in [
+      'Küçük harfler',
+      'Büyük harfler',
+      'Rakamlar',
+      'İşaretler',
+    ]) {
+      await tester.ensureVisible(find.text(label));
+      await tester.tap(find.text(label));
+      await tester.pumpAndSettle();
+    }
+    await tester.tap(find.text('Parola cümlesi'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Bunu kullan'));
+    await tester.tap(find.text('Bunu kullan'));
+    await tester.pumpAndSettle();
+
+    expect(settings.settings.generator.passphrase, isTrue);
+    expect(settings.settings.generator.password.hasAnyClass, isTrue);
+    expect(AppSettings.tryParse(settings.settings.toJsonBytes()), isNotNull);
   });
 
   testWidgets('vazgeçince form değişmiyor', (tester) async {

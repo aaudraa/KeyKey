@@ -17,6 +17,7 @@ import 'package:keykey/app/ui/kk_menu.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/features/backup/presentation/backup_reminder_banner.dart';
+import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/vault/application/login_search.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
@@ -43,6 +44,9 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
   final _scroll = ScrollController();
   LoginFilter _filter = const LoginFilter();
 
+  /// Bu açılışta seçilen sıralama; ayara yazılana kadar ekranda bu görünür.
+  LoginSort? _sort;
+
   @override
   void dispose() {
     _search.dispose();
@@ -54,11 +58,9 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
   void _onAction(_VaultAction action) {
     switch (action) {
       case _VaultAction.sortName:
-        setState(() => _filter = _filter.copyWith(sort: LoginSort.name));
+        _setSort(LoginSort.name);
       case _VaultAction.sortRecent:
-        setState(
-          () => _filter = _filter.copyWith(sort: LoginSort.recentlyUpdated),
-        );
+        _setSort(LoginSort.recentlyUpdated);
       case _VaultAction.report:
         unawaited(context.push(AppRoutes.vaultReport));
       case _VaultAction.trash:
@@ -66,10 +68,25 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
     }
   }
 
+  /// Seçim kasadaki ayara yazılır; kilitten sonra da kalır.
+  void _setSort(LoginSort sort) {
+    setState(() => _sort = sort);
+    unawaited(
+      ref
+          .read(settingsControllerProvider.notifier)
+          .setVaultSort(sort)
+          .catchError((Object _) {}),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final state = ref.watch(loginsControllerProvider);
+    final savedSort = ref.watch(
+      settingsControllerProvider.select((settings) => settings?.vaultSort),
+    );
+    _filter = _filter.copyWith(sort: _sort ?? savedSort ?? LoginSort.name);
     return KkScaffold(
       appBar: kkRootAppBar(
         context,

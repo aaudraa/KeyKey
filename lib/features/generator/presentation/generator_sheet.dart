@@ -1,11 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_rolling_text.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/app/ui/kk_switch.dart';
+import 'package:keykey/features/generator/application/generator_preferences.dart';
 import 'package:keykey/features/generator/application/password_generator.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
+import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Parola üretici. Seçilen parolayı döndürür, vazgeçilirse `null`.
@@ -35,7 +39,35 @@ class _GeneratorSheetState extends ConsumerState<GeneratorSheet> {
   @override
   void initState() {
     super.initState();
+    // Son kullanılan seçenekler; ayarlar henüz okunmadıysa varsayılanlar.
+    final saved =
+        ref.read(settingsControllerProvider)?.generator ??
+        GeneratorPreferences.defaults;
+    _mode = saved.passphrase ? _Mode.passphrase : _Mode.password;
+    _password = saved.password;
+    _passphrase = saved.passphraseOptions;
     _regenerate();
+  }
+
+  /// Seçenekler yalnızca kullanılınca ayara yazılır; parola yazılmaz.
+  void _use() {
+    unawaited(
+      ref
+          .read(settingsControllerProvider.notifier)
+          .setGenerator(
+            GeneratorPreferences(
+              passphrase: _mode == _Mode.passphrase,
+              // Cümle kullanılırken parola seçeneklerinde hiç tür kalmamış
+              // olabilir; geçersiz seçenek ayar kaydını okunamaz yapardı.
+              password: _password.hasAnyClass
+                  ? _password
+                  : const PasswordOptions(),
+              passphraseOptions: _passphrase,
+            ),
+          )
+          .catchError((Object _) {}),
+    );
+    Navigator.pop(context, _value);
   }
 
   void _regenerate() {
@@ -155,9 +187,7 @@ class _GeneratorSheetState extends ConsumerState<GeneratorSheet> {
             ..._options(l10n),
             const SizedBox(height: 16),
             FilledButton(
-              onPressed: _value.isEmpty
-                  ? null
-                  : () => Navigator.pop(context, _value),
+              onPressed: _value.isEmpty ? null : _use,
               child: Text(l10n.generatorUse),
             ),
           ],

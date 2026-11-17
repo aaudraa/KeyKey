@@ -5,6 +5,8 @@ import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/crypto/record_cipher.dart';
 import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/vault_session.dart';
+import 'package:keykey/features/generator/application/generator_preferences.dart';
+import 'package:keykey/features/vault/application/login_search.dart';
 
 /// Kasanın içinde, şifreli saklanan ayarlar.
 ///
@@ -15,6 +17,8 @@ final class AppSettings {
     required this.autofillCopyOtp,
     this.lastBackupAt,
     this.backupReminderSnoozedUntil,
+    this.vaultSort = LoginSort.name,
+    this.generator = GeneratorPreferences.defaults,
   });
 
   static const defaults = AppSettings(
@@ -31,8 +35,9 @@ final class AppSettings {
   );
 
   /// Sürüm 2 [autofillCopyOtp], sürüm 3 yedek bilgilerini ([lastBackupAt],
-  /// [backupReminderSnoozedUntil]) ekledi. Eski sürümler okunmaya devam eder.
-  static const currentVersion = 3;
+  /// [backupReminderSnoozedUntil]), sürüm 4 [vaultSort] ve [generator]
+  /// alanlarını ekledi. Eski sürümler okunmaya devam eder.
+  static const currentVersion = 4;
 
   /// 2FA kodlarını göstermeden önce parmak izi veya ana parola istenir.
   final bool otpRequireAuth;
@@ -47,6 +52,12 @@ final class AppSettings {
   /// Yedek hatırlatıcısı bu zamana kadar gösterilmez.
   final DateTime? backupReminderSnoozedUntil;
 
+  /// Kasa listesinin sıralaması.
+  final LoginSort vaultSort;
+
+  /// Parola üreticisinin son kullanılan seçenekleri.
+  final GeneratorPreferences generator;
+
   /// Yedek zamanları yalnızca ileri alınır, silinmez; bu yüzden `null`
   /// verilen alan olduğu gibi kalır.
   AppSettings copyWith({
@@ -54,12 +65,16 @@ final class AppSettings {
     bool? autofillCopyOtp,
     DateTime? lastBackupAt,
     DateTime? backupReminderSnoozedUntil,
+    LoginSort? vaultSort,
+    GeneratorPreferences? generator,
   }) => AppSettings(
     otpRequireAuth: otpRequireAuth ?? this.otpRequireAuth,
     autofillCopyOtp: autofillCopyOtp ?? this.autofillCopyOtp,
     lastBackupAt: lastBackupAt ?? this.lastBackupAt,
     backupReminderSnoozedUntil:
         backupReminderSnoozedUntil ?? this.backupReminderSnoozedUntil,
+    vaultSort: vaultSort ?? this.vaultSort,
+    generator: generator ?? this.generator,
   );
 
   Uint8List toJsonBytes() => utf8.encode(
@@ -70,8 +85,15 @@ final class AppSettings {
       'lastBackupAt': lastBackupAt?.millisecondsSinceEpoch,
       'backupReminderSnoozedUntil':
           backupReminderSnoozedUntil?.millisecondsSinceEpoch,
+      'vaultSort': _sortNames[vaultSort],
+      'generator': generator.toJson(),
     }),
   );
+
+  static const _sortNames = {
+    LoginSort.name: 'name',
+    LoginSort.recentlyUpdated: 'recent',
+  };
 
   /// Biçime uymayan içerikte `null` döner.
   static AppSettings? tryParse(Uint8List bytes) {
@@ -83,17 +105,19 @@ final class AppSettings {
     }
     if (decoded is! Map<String, Object?>) return null;
     // Sürüm 1'de kod kopyalama yoktu; varsayılanı açık. Sürüm 3'ten önce
-    // yedek bilgisi yoktu.
+    // yedek bilgisi, sürüm 4'ten önce sıralama ve üretici yoktu.
+    const v3 = {
+      'version',
+      'otpRequireAuth',
+      'autofillCopyOtp',
+      'lastBackupAt',
+      'backupReminderSnoozedUntil',
+    };
     final keys = switch (decoded['version']) {
       1 => const {'version', 'otpRequireAuth'},
       2 => const {'version', 'otpRequireAuth', 'autofillCopyOtp'},
-      currentVersion => const {
-        'version',
-        'otpRequireAuth',
-        'autofillCopyOtp',
-        'lastBackupAt',
-        'backupReminderSnoozedUntil',
-      },
+      3 => v3,
+      currentVersion => const {...v3, 'vaultSort', 'generator'},
       _ => null,
     };
     if (keys == null ||
@@ -108,11 +132,26 @@ final class AppSettings {
     final lastBackupAt = decoded['lastBackupAt'];
     final snoozedUntil = decoded['backupReminderSnoozedUntil'];
     if (!_isTime(lastBackupAt) || !_isTime(snoozedUntil)) return null;
+    var vaultSort = LoginSort.name;
+    var generator = GeneratorPreferences.defaults;
+    if (decoded['version'] == currentVersion) {
+      final sortName = decoded['vaultSort'];
+      final sort = _sortNames.entries
+          .where((e) => e.value == sortName)
+          .firstOrNull
+          ?.key;
+      final parsed = GeneratorPreferences.tryParse(decoded['generator']);
+      if (sort == null || parsed == null) return null;
+      vaultSort = sort;
+      generator = parsed;
+    }
     return AppSettings(
       otpRequireAuth: otpRequireAuth,
       autofillCopyOtp: autofillCopyOtp,
       lastBackupAt: _toTime(lastBackupAt),
       backupReminderSnoozedUntil: _toTime(snoozedUntil),
+      vaultSort: vaultSort,
+      generator: generator,
     );
   }
 

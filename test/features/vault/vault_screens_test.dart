@@ -12,6 +12,7 @@ import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_secret_text.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/vault/application/login_search.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
@@ -220,6 +221,36 @@ void main() {
       await tester.tap(find.text('Çöp kutusu'));
       await tester.pumpAndSettle();
       expect(find.text('Çöp kutusu boş.'), findsOneWidget);
+    });
+
+    testWidgets('sıralama seçimi ayarlara yazılıyor ve sonra kullanılıyor', (
+      tester,
+    ) async {
+      final settings = FakeSettingsRepository();
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        logins: logins,
+        settings: settings,
+      );
+      final byName = visibleNames(tester);
+      await openMenu(tester);
+      await tester.tap(find.text('Son değişene göre sırala'));
+      await tester.pumpAndSettle();
+      final byRecent = visibleNames(tester);
+      expect(byRecent, isNot(byName));
+      expect(settings.settings.vaultSort, LoginSort.recentlyUpdated);
+
+      // Kilit kasa ekranını yeniden kurar; seçim ayardan gelir.
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        logins: logins,
+        settings: settings,
+      );
+      expect(visibleNames(tester), byRecent);
     });
 
     testWidgets('listeden parola kopyalanıyor, kayıt açılmıyor', (
