@@ -22,6 +22,7 @@ import 'package:keykey/features/lock/presentation/unavailable_screen.dart';
 import 'package:keykey/features/onboarding/presentation/intro_screen.dart';
 import 'package:keykey/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:keykey/features/settings/presentation/change_password_screen.dart';
+import 'package:keykey/features/settings/presentation/licenses_screen.dart';
 import 'package:keykey/features/settings/presentation/settings_screen.dart';
 import 'package:keykey/features/vault/presentation/login_detail_screen.dart';
 import 'package:keykey/features/vault/presentation/login_edit_screen.dart';
@@ -42,6 +43,8 @@ abstract final class AppRoutes {
   static const settings = '/ayarlar';
   static const changePassword = '/ayarlar/parola';
   static const loginImport = '/ayarlar/ice-aktar';
+  static const licenses = '/ayarlar/lisanslar';
+  static const licensesAll = '/ayarlar/lisanslar/tum';
   static const setup = '/kurulum';
   static const intro = '/tanitim';
   static const restore = '/geri-yukle';
@@ -51,6 +54,15 @@ abstract final class AppRoutes {
   static const unavailable = '/kullanilamiyor';
 
   static String vaultItem(String idHex) => '/kasa/kayit/$idHex';
+
+  /// Bir ya da birkaç paketin lisans metni; adlar sorgu parametresinde.
+  static String licenseText({
+    required String title,
+    required List<String> packages,
+  }) => Uri(
+    path: '/ayarlar/lisanslar/metin',
+    queryParameters: {'ad': title, 'p': packages},
+  ).toString();
 
   static String vaultItemEdit(String idHex) => '/kasa/kayit/$idHex/duzenle';
 
@@ -276,6 +288,28 @@ final routerProvider = Provider<GoRouter>((ref) {
                         state.extra is LoginExport ? null : AppRoutes.settings,
                     builder: (context, state) =>
                         LoginImportScreen(export: state.extra! as LoginExport),
+                  ),
+                  kkRoute(
+                    parentNavigatorKey: rootNavigatorKey,
+                    path: 'lisanslar',
+                    builder: (context, state) => const LicensesScreen(),
+                    routes: [
+                      kkRoute(
+                        parentNavigatorKey: rootNavigatorKey,
+                        path: 'tum',
+                        builder: (context, state) =>
+                            const LicensePackagesScreen(),
+                      ),
+                      kkRoute(
+                        parentNavigatorKey: rootNavigatorKey,
+                        path: 'metin',
+                        builder: (context, state) => LicenseTextScreen(
+                          title: state.uri.queryParameters['ad'] ?? '',
+                          packages:
+                              state.uri.queryParametersAll['p'] ?? const [],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

@@ -290,30 +290,6 @@ void main() {
       );
     });
 
-    testWidgets('lisanslar sayfasının zemini saydam değil', (tester) async {
-      await pumpSettings(tester);
-      // Son satır; menünün altında kalmasın diye liste sonuna kaydırılır.
-      // Liste tembel kurulur; ilk kaydırmada uzunluğu eksik tahmin edildiği
-      // için en alta iki kaydırmada inilir.
-      for (var i = 0; i < 2; i++) {
-        await tester.drag(find.byType(ListView).first, const Offset(0, -3000));
-        await tester.pumpAndSettle();
-      }
-      await tester.tap(find.text('Lisanslar'));
-      await tester.pumpAndSettle();
-
-      final page = find.byType(LicensePage);
-      expect(page, findsOneWidget);
-      final scaffold = find
-          .descendant(of: page, matching: find.byType(Scaffold))
-          .first;
-      final background = Theme.of(tester.element(scaffold))
-          .scaffoldBackgroundColor;
-      expect(background.a, 1);
-      // Kendi sayfası; alttaki menü görünmüyor.
-      expect(find.byKey(GlassNavBar.pillKey), findsNothing);
-    });
-
     testWidgets('satırlar aynı boyda', (tester) async {
       service.biometricSupportValue = BiometricSupport.available;
       await pumpSettings(tester);

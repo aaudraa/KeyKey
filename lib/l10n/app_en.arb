@@ -636,6 +636,95 @@
   "@settingsLicenses": {
     "description": "Settings entry that opens the license page."
   },
+  "licensesKeyKeyBody": "KeyKey is free and open-source software, distributed under the GNU General Public License 3.0 (GPL-3.0): you may study, change and share it under the same license. It comes with absolutely no warranty; it is provided as is.",
+  "@licensesKeyKeyBody": {
+    "description": "Licenses screen: KeyKey's own license, freedoms and no-warranty notice."
+  },
+  "licensesCopyright": "© 2026 The KeyKey authors",
+  "@licensesCopyright": {
+    "description": "Licenses screen: KeyKey's copyright line."
+  },
+  "licensesReadKeyKey": "Read the license",
+  "@licensesReadKeyKey": {
+    "description": "Licenses screen: opens the full GPL-3.0 text."
+  },
+  "licensesUsed": "What KeyKey uses",
+  "@licensesUsed": {
+    "description": "Licenses screen: section of the main third-party parts with their purpose."
+  },
+  "licensesAll": "All licenses",
+  "@licensesAll": {
+    "description": "Licenses screen: section that leads to every package."
+  },
+  "licensesAllPackages": "All packages",
+  "@licensesAllPackages": {
+    "description": "Licenses screen: row that opens the full package list."
+  },
+  "licensesAllCount": "{count} packages and components",
+  "@licensesAllCount": {
+    "description": "Licenses screen: number of packages and components with license texts.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "licensesUnnamed": "Unlabelled texts",
+  "@licensesUnnamed": {
+    "description": "License list: texts whose package name could not be read from the package's license file."
+  },
+  "licenseKindPublicDomain": "Public domain",
+  "@licenseKindPublicDomain": {
+    "description": "License kind: public domain (e.g. SQLite)."
+  },
+  "licenseKindOther": "Other license",
+  "@licenseKindOther": {
+    "description": "License kind: not recognised automatically."
+  },
+  "licensesAndroid": "Android libraries",
+  "@licensesAndroid": {
+    "description": "Licenses screen: AndroidX, Kotlin and other Android libraries."
+  },
+  "licensesPurposeCrypto": "Encryption",
+  "@licensesPurposeCrypto": {
+    "description": "Purpose of libsodium."
+  },
+  "licensesPurposeDatabase": "Vault database",
+  "@licensesPurposeDatabase": {
+    "description": "Purpose of SQLite."
+  },
+  "licensesPurposeUi": "User interface",
+  "@licensesPurposeUi": {
+    "description": "Purpose of Flutter."
+  },
+  "licensesPurposeQr": "QR code reading",
+  "@licensesPurposeQr": {
+    "description": "Purpose of zxing-cpp and zint."
+  },
+  "licensesPurposeCamera": "Camera",
+  "@licensesPurposeCamera": {
+    "description": "Purpose of the camera plugin."
+  },
+  "licensesPurposeFont": "Title typeface",
+  "@licensesPurposeFont": {
+    "description": "Purpose of Barlow Condensed."
+  },
+  "licensesPurposePassphrase": "Passphrase words",
+  "@licensesPurposePassphrase": {
+    "description": "Purpose of the EFF word list."
+  },
+  "licensesPurposeCommon": "Common password warning",
+  "@licensesPurposeCommon": {
+    "description": "Purpose of the SecLists password list."
+  },
+  "licensesPurposeDomains": "Matching sites in autofill",
+  "@licensesPurposeDomains": {
+    "description": "Purpose of the Public Suffix List."
+  },
+  "licensesPurposeAndroid": "Fingerprint, autofill, camera",
+  "@licensesPurposeAndroid": {
+    "description": "Purpose of the Android libraries."
+  },
   "aboutSource": "Source code",
   "@aboutSource": {
     "description": "About row that opens the source code on GitHub."
