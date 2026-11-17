@@ -20,6 +20,27 @@ void main() {
       );
     });
 
+    test('şemasız adres port taşıyabilir', () {
+      expect(
+        webPageUri('nas.example:5001'),
+        Uri.parse('https://nas.example:5001'),
+      );
+      expect(
+        webPageUri('router.local:8080/admin'),
+        Uri.parse('https://router.local:8080/admin'),
+      );
+      expect(
+        webPageUri('192.168.1.1:8080'),
+        Uri.parse('https://192.168.1.1:8080'),
+      );
+    });
+
+    test('kullanıcı bilgisi taşıyan adres açılmaz', () {
+      // Ekranda mybank gibi okunur, tarayıcı phish.example'ı açardı.
+      expect(webPageUri('https://mybank.example@phish.example'), isNull);
+      expect(webPageUri('ali:parola@site.example'), isNull);
+    });
+
     test('web sayfası olmayan adresler açılmaz', () {
       for (final text in [
         '',

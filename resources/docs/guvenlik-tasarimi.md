@@ -374,9 +374,10 @@ Ana uygulama ve doldurma ekranı aynı korumayı kullanır (`WindowProtection`).
 
 ## Tarayıcıda açma
 
-Kayıt ayrıntısındaki **Siteyi aç** ve Hakkında'daki bağlantılar adresi `ACTION_VIEW` ve `CATEGORY_BROWSABLE` ile sistemin tarayıcısına devreder; KeyKey'in `INTERNET` izni yine yok.
+Kayıt ayrıntısındaki **Siteyi aç** ve Hakkında'daki bağlantılar adresi `ACTION_VIEW` ve `CATEGORY_BROWSABLE` ile sisteme devreder; sayfayı tarayıcı ya da o siteyi açtığını bildiren uygulama (örneğin GitHub uygulaması) açar. KeyKey'in `INTERNET` izni yine yok.
 
-- **Yalnızca web sayfası:** Adres hem Dart'ta hem Kotlin'de denetlenir; http ve https dışındaki şemalar (`intent:`, `javascript:`, `file:`, `content:`, `androidapp://`) açılmaz. Böylece içe aktarılmış ya da yazılmış bir adres başka bir uygulamanın bileşenini başlatamaz. Şeması olmayan adrese `https://` eklenir.
+- **Yalnızca web sayfası:** Adres hem Dart'ta hem Kotlin'de denetlenir; http ve https dışındaki şemalar (`intent:`, `javascript:`, `file:`, `content:`, `androidapp://`) açılmaz. Böylece içe aktarılmış ya da yazılmış bir adres başka bir uygulamanın bileşenini başlatamaz. Şeması olmayan adrese `https://` eklenir (`nas.example:5001` gibi port taşıyan ad şema sayılmaz).
+- **Yanıltıcı adresler:** Kullanıcı bilgisi taşıyan adres (`https://banka.example@baska.example`) açılmaz; ekranda banka gibi okunur ama tarayıcı başka siteyi açardı. ASCII dışı harfli alan adları da açılmaz, çünkü benzer görünen alan adlarıyla karıştırılabilir; bu kayıtlarda adres kopyalanıp tarayıcıya yapıştırılır.
 - **Yalnızca dokununca:** Adres kendiliğinden hiçbir yere gönderilmez; tarayıcıya yalnızca o adres gider.
 - **Kilit:** Tarayıcı açılınca KeyKey arka plana geçer ve her zamanki gibi kilitlenir; kilit açılınca aynı kayda dönülür.
 

@@ -85,14 +85,16 @@ final class AppSettings {
       'lastBackupAt': lastBackupAt?.millisecondsSinceEpoch,
       'backupReminderSnoozedUntil':
           backupReminderSnoozedUntil?.millisecondsSinceEpoch,
-      'vaultSort': _sortNames[vaultSort],
+      'vaultSort': _sortName(vaultSort),
       'generator': generator.toJson(),
     }),
   );
 
-  static const Map<LoginSort, String> _sortNames = {
-    LoginSort.name: 'name',
-    LoginSort.recentlyUpdated: 'recent',
+  /// Yeni bir sıralama eklenirse derleyici burada adını ister; yoksa kayıt
+  /// `null` yazar ve bir sonraki açılışta okunamazdı.
+  static String _sortName(LoginSort sort) => switch (sort) {
+    LoginSort.name => 'name',
+    LoginSort.recentlyUpdated => 'recent',
   };
 
   /// Biçime uymayan içerikte `null` döner.
@@ -136,10 +138,9 @@ final class AppSettings {
     var generator = GeneratorPreferences.defaults;
     if (decoded['version'] == currentVersion) {
       final sortName = decoded['vaultSort'];
-      final sort = _sortNames.entries
-          .where((e) => e.value == sortName)
-          .firstOrNull
-          ?.key;
+      final sort = LoginSort.values
+          .where((s) => _sortName(s) == sortName)
+          .firstOrNull;
       final parsed = GeneratorPreferences.tryParse(decoded['generator']);
       if (sort == null || parsed == null) return null;
       vaultSort = sort;

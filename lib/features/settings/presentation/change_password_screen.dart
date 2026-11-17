@@ -29,6 +29,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
   final _password = TextEditingController();
   final _confirmation = TextEditingController();
   bool _busy = false;
+
+  /// Parola değişti; alanlardaki eski parola bir daha gönderilmez.
+  bool _changed = false;
   String? _error;
 
   /// Yanlış parolalardan sonra kalan bekleme; kilit ekranındaki sayaçla aynı.
@@ -48,6 +51,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
 
   bool get _canSubmit =>
       !_busy &&
+      !_changed &&
       _wait == Duration.zero &&
       _current.text.isNotEmpty &&
       NewPasswordFields.isValid(_password.text, _confirmation.text);
@@ -71,7 +75,10 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       switch (attempt) {
         case PasswordAccepted():
           // Parola değişti; not açıkken düğme dönmesin.
-          setState(() => _busy = false);
+          setState(() {
+            _busy = false;
+            _changed = true;
+          });
           // Eski yedekler eski parolayla açılır (bilinen sınır 5).
           final backUp = await showKkConfirm(
             context,

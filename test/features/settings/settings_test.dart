@@ -419,6 +419,15 @@ void main() {
     expect(find.text('Ana parola değiştirildi.'), findsOneWidget);
     // Eski yedekler eski parolayla açılır; kullanıcıya söylenir.
     expect(find.textContaining('eski parolayla açılmaya devam eder'), findsOne);
+    // Not açıkken parola artık değişti; düğme ikinci kez gönderemez.
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.widgetWithText(FilledButton, 'Parolayı değiştir'),
+          )
+          .onPressed,
+      isNull,
+    );
     await tester.tap(find.text('Sonra'));
     await tester.pumpAndSettle();
     // Ayarlar ekranına dönüldü.

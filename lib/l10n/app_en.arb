@@ -283,7 +283,7 @@
   "@unavailableTitle": {
     "description": "Title when the vault file cannot be read."
   },
-  "unavailableMessage": "The file is damaged or belongs to a newer version of KeyKey. Your data was not changed.\n\nIf you came from a newer version, update KeyKey. If the file is damaged and you have a backup: clear KeyKey's storage in Android settings (Apps → KeyKey → Storage), then choose \"Restore from backup\" during setup. If you have no backup, don't clear it; this file may still be recoverable later.",
+  "unavailableMessage": "The file is damaged or belongs to a newer version of KeyKey. Your data was not changed.\n\nIf you came from a newer version, update KeyKey. If the file is damaged and you have a backup: clear KeyKey's storage in Android settings (Apps → KeyKey → Storage), then choose \"Restore from backup\" during setup. Changes made after that backup will not come back. If you have no backup, don't clear it; this file may still be recoverable later.",
   "@unavailableMessage": {
     "description": "Message when the vault file cannot be read."
   },

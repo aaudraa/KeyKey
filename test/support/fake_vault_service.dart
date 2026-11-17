@@ -230,7 +230,6 @@ final Uint8List fakeIconPng = Uint8List.fromList(const [
   0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
 ]);
 
-/// Verilen paketlerin simgesini döndürür, diğerlerinde `null`.
 /// Açılan sayfaları kaydeder; [result] `false` ise tarayıcı yok gibi davranır.
 class RecordingWebLinks implements WebLinks {
   final opened = <Uri>[];
@@ -243,6 +242,7 @@ class RecordingWebLinks implements WebLinks {
   }
 }
 
+/// Verilen paketlerin simgesini döndürür, diğerlerinde `null`.
 class FakeAppPackages implements AppPackages {
   new({Set<String> installed = const {}, this.version = '1.0.0'})
     : installed = {...installed};

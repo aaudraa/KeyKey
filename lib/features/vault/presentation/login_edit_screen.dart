@@ -121,9 +121,12 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
     _initialized = true;
   }
 
-  /// Var olan klasörler, çöptekiler hariç.
+  /// Başka kayıtlardaki klasörler, çöptekiler hariç. Düzenlenen kaydın
+  /// kendi klasörü sayılmaz; yoksa tek kayıttaki "is" hiç "İş" yapılamazdı.
   List<String> get _folders => switch (ref.read(loginsControllerProvider)) {
-    LoginsLoaded(:final items) => foldersOf(items),
+    LoginsLoaded(:final items) => foldersOf(
+      items.where((item) => item.id != _original?.id),
+    ),
     _ => const [],
   };
 

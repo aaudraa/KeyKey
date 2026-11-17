@@ -384,6 +384,33 @@ void main() {
       expect(find.widgetWithText(TextField, 'Ara'), findsNothing);
     });
 
+    testWidgets('kayda bağlı 2FA kodunun kopyala düğmesi alanı söylüyor', (
+      tester,
+    ) async {
+      final login = FakeLoginRepository.item(
+        const LoginContent(name: 'GitHub'),
+        id: 7,
+      );
+      otps.items[0] = FakeOtpRepository.item(
+        totp('GitHub', account: 'ali@example.com').copyWith(loginId: login.id),
+        id: 1,
+      );
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        otps: otps,
+        logins: FakeLoginRepository(items: [login]),
+        clock: () => now,
+        clipboard: clipboard,
+      );
+      await tester.tap(find.text('GitHub'));
+      await settle(tester);
+
+      expect(find.byTooltip('Kopyala: 2FA kodu'), findsOneWidget);
+      expect(find.byTooltip('Kopyala'), findsNothing);
+    });
+
     testWidgets('hesap yoksa başka uygulamadan aktarma kısayolu', (
       tester,
     ) async {

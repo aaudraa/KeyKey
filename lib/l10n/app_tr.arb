@@ -63,7 +63,7 @@
   "changePasswordBackupLater": "Sonra",
   "settingsLockNow": "Şimdi kilitle",
   "unavailableTitle": "Kasa okunamadı",
-  "unavailableMessage": "Dosya bozuk ya da KeyKey'in daha yeni bir sürümüne ait. Verilerine dokunulmadı.\n\nDaha yeni bir sürümden geldiysen KeyKey'i güncelle. Dosya bozulduysa ve bir yedeğin varsa: Android ayarlarında KeyKey'in depolama alanını temizle (Uygulamalar → KeyKey → Depolama), sonra kurulumda \"Yedekten geri yükle\"yi seç. Yedeğin yoksa temizleme; bu dosya ileride kurtarılabilir.",
+  "unavailableMessage": "Dosya bozuk ya da KeyKey'in daha yeni bir sürümüne ait. Verilerine dokunulmadı.\n\nDaha yeni bir sürümden geldiysen KeyKey'i güncelle. Dosya bozulduysa ve bir yedeğin varsa: Android ayarlarında KeyKey'in depolama alanını temizle (Uygulamalar → KeyKey → Depolama), sonra kurulumda \"Yedekten geri yükle\"yi seç. Yedekten sonraki değişiklikler geri gelmez. Yedeğin yoksa temizleme; bu dosya ileride kurtarılabilir.",
   "settingsBiometric": "Parmak iziyle aç",
   "settingsBiometricHint": "Telefona yeni parmak izi eklenirse bu kapanır ve ana parola istenir.",
   "settingsBiometricNotEnrolled": "Önce telefonunun ayarlarından parmak izi ekle.",

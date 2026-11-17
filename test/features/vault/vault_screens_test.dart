@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,6 +13,7 @@ import 'package:keykey/app/ui/kk_form.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_secret_text.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
+import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/platform/web_links.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/application/login_search.dart';
@@ -174,6 +177,35 @@ void main() {
       expect(documents.opens, 2);
     });
 
+    testWidgets('boş kasadan içe aktarma bitince kasaya dönülüyor', (
+      tester,
+    ) async {
+      logins = FakeLoginRepository();
+      final documents = FakeDocumentFiles()
+        ..nextOpen = DocumentOpened(
+          File('test/fixtures/import/logins/bitwarden.json').readAsBytesSync(),
+        );
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        logins: logins,
+        documents: documents,
+      );
+
+      await tester.tap(find.widgetWithText(TextButton, 'Parolaları içe aktar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('2 kaydı ekle'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Tamam'));
+      await tester.pumpAndSettle();
+
+      // Ayarlar sekmesine değil, başlanan kasa listesine dönülür.
+      expect(find.text('Şirket'), findsOneWidget);
+      expect(find.text('Basit'), findsOneWidget);
+      expect(find.text('Yedekle'), findsNothing);
+    });
+
     testWidgets('kayıt varken kısayollar yok', (tester) async {
       await pumpVault(tester);
       expect(find.text('Parolaları içe aktar'), findsNothing);
@@ -271,7 +303,9 @@ void main() {
       expect(byRecent, isNot(byName));
       expect(settings.settings.vaultSort, LoginSort.recentlyUpdated);
 
-      // Kilit kasa ekranını yeniden kurar; seçim ayardan gelir.
+      // Kilit kasa ekranını yeniden kurar; seçim ayardan gelir. Araya başka
+      // bir ağaç konur ki ekranın durumu taşınmasın.
+      await tester.pumpWidget(const SizedBox());
       await pumpKeyKey(
         tester,
         status: VaultOpen(service.newSession()),
@@ -796,6 +830,29 @@ void main() {
       expect(field.controller?.text, 'Kişisel');
       // Tam eşleşen klasör yeniden önerilmez.
       expect(suggestions, findsNothing);
+    });
+
+    testWidgets('tek kayıttaki klasörün harf büyüklüğü düzeltilebiliyor', (
+      tester,
+    ) async {
+      logins = FakeLoginRepository(
+        items: [
+          FakeLoginRepository.item(
+            const LoginContent(name: 'Tek', password: 'p', folder: 'is'),
+            id: 1,
+          ),
+        ],
+      );
+      await pumpVault(tester);
+      await tester.tap(find.text('Tek'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Düzenle'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.widgetWithText(TextField, 'Klasör'), 'İş');
+      await tester.pumpAndSettle();
+      await tapVisible(tester, find.widgetWithText(FilledButton, 'Kaydet'));
+
+      expect(logins.items.single.content.folder, 'İş');
     });
 
     testWidgets('harf büyüklüğü farklı klasör adı var olana bağlanıyor', (
