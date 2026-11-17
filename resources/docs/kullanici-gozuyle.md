@@ -59,6 +59,12 @@ Proje sahibi (2026-11-17, sabah): "Benim istediğim cam tasarımı sadece alttak
 
 **Doğrulama:** Değişiklikler emülatörde önce/sonra ekran görüntüleriyle karşılaştırılır (emülatörün kendi kaydedicisi uygulamanın ekran koruması açıkken de görüntü alır); sonra telefon denemesi.
 
+**Durum (2026-11-17):** İkisi de yapıldı.
+
+- Açılan yüzeyler için temaya ayrı bir dolu renk (`raised`) eklendi: açık temada kart kremi, koyu temada karttan bir ton açık `#36363A`. Daha açık bir ton (`#3A3A3F`) ikincil yazıda 4,5:1 kontrastın altında kaldığı için seçilmedi; tema testi açılan yüzeyi de kontrast ölçümüne katıyor.
+- Ayrıntı ekranında iki kart; parola geçmişi kendi kartında kalıyor. Eski "her alan kendi kartında" testi kaldırıldı, yerine kartların gruplandığını sınayan test geldi.
+- Kılavuzdaki değişen ekranların görüntüleri (04-09, 12-15) ve F-Droid ekran görüntüleri bu tasarımla yeniden alındı. 01-03, 10 ve 11 değişmeyen ekranlar.
+
 ## Proje sahibinin kararına bırakılanlar
 
 Bunlar ya güvenlik tasarımını değiştiriyor ya da büyük iş; sırayı ve kararı proje sahibi verir. Yol haritasının "1.0 sonrası" tablosuna yazıldı.
