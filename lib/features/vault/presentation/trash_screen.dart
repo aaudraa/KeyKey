@@ -10,6 +10,7 @@ import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
+import 'package:keykey/features/vault/presentation/trash_actions.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Çöp kutusu. Kayıtlar 30 gün sonra kendiliğinden kalıcı olarak silinir.
@@ -22,8 +23,31 @@ class TrashScreen extends ConsumerWidget {
     final state = ref.watch(loginsControllerProvider);
     final controller = ref.read(loginsControllerProvider.notifier);
 
+    final trashed = switch (state) {
+      LoginsLoaded(:final trashed) => trashed,
+      LoginsLoading() => const <LoginItem>[],
+    };
     return KkScaffold(
-      appBar: kkAppBar(context, title: l10n.trashTitle),
+      appBar: kkAppBar(
+        context,
+        title: l10n.trashTitle,
+        actions: [
+          TrashActions(
+            count: trashed.length,
+            emptyMessage: l10n.trashEmptyMessage(trashed.length),
+            onRestoreAll: () async {
+              for (final item in [...trashed]) {
+                await controller.restore(item);
+              }
+            },
+            onEmptyAll: () async {
+              for (final item in [...trashed]) {
+                await controller.deletePermanently(item);
+              }
+            },
+          ),
+        ],
+      ),
       body: switch (state) {
         LoginsLoading() => const Center(child: CircularProgressIndicator()),
         LoginsLoaded(:final trashed) => Column(

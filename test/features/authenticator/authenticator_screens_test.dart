@@ -942,10 +942,26 @@ void main() {
     testWidgets('geri alma', (tester) async {
       await openTrash(tester);
 
-      await tester.tap(find.byTooltip('Geri al'));
+      await tester.tap(find.byTooltip('Geri yükle'));
       await settle(tester);
 
       expect(otps.items[1].content.isTrashed, isFalse);
+      expect(find.text('Çöp kutusu boş.'), findsOneWidget);
+    });
+
+    testWidgets('boşaltma 2FA uyarısıyla soruluyor', (tester) async {
+      await openTrash(tester);
+      await tester.tap(find.byTooltip('Diğer işlemler'));
+      await settle(tester);
+      await tester.tap(find.text('Çöpü boşalt'));
+      await settle(tester);
+      expect(
+        find.textContaining('o servislere giriş yapamayabilirsin'),
+        findsOneWidget,
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Boşalt'));
+      await settle(tester);
+      expect(otps.items.where((i) => i.content.isTrashed), isEmpty);
       expect(find.text('Çöp kutusu boş.'), findsOneWidget);
     });
 

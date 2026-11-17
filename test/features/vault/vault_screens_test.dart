@@ -936,7 +936,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Posta'), findsOneWidget);
 
-      await tester.tap(find.byTooltip('Geri al'));
+      await tester.tap(find.byTooltip('Geri yükle'));
       await tester.pumpAndSettle();
       expect(find.text('Çöp kutusu boş.'), findsOneWidget);
       expect(logins.items.first.content.isTrashed, isFalse);
@@ -962,6 +962,74 @@ void main() {
       await tester.pumpAndSettle();
       expect(logins.items, hasLength(2));
       expect(find.text('Çöp kutusu boş.'), findsOneWidget);
+    });
+  });
+
+  group('çöp kutusunun tamamı', () {
+    Future<void> openTrashWithAll(WidgetTester tester) async {
+      final trashedAt = DateTime.utc(2026, 11, 10);
+      logins = FakeLoginRepository(
+        items: [
+          for (final (i, name) in ['Posta', 'Banka', 'Oyun'].indexed)
+            FakeLoginRepository.item(
+              LoginContent(name: name, password: 'p$i', trashedAt: trashedAt),
+              id: i + 1,
+            ),
+        ],
+      );
+      await pumpVault(tester);
+      await openMenu(tester);
+      await tester.tap(find.text('Çöp kutusu'));
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> openTrashMenu(WidgetTester tester) async {
+      await tester.tap(find.byTooltip('Diğer işlemler'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('hepsi tek dokunuşla geri yükleniyor', (tester) async {
+      await openTrashWithAll(tester);
+      await openTrashMenu(tester);
+      await tester.tap(find.text('Tümünü geri yükle'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Çöp kutusu boş.'), findsOneWidget);
+      expect(logins.items.where((i) => i.content.isTrashed), isEmpty);
+      expect(logins.items, hasLength(3));
+    });
+
+    testWidgets('boşaltma onay istiyor, onaylanınca hepsi siliniyor', (
+      tester,
+    ) async {
+      await openTrashWithAll(tester);
+      await openTrashMenu(tester);
+      await tester.tap(find.text('Çöpü boşalt'));
+      await tester.pumpAndSettle();
+      expect(find.text('Çöp kutusu boşaltılsın mı?'), findsOneWidget);
+      expect(
+        find.text('3 kayıt kalıcı olarak silinecek ve geri getirilemeyecek.'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Vazgeç'));
+      await tester.pumpAndSettle();
+      expect(logins.items, hasLength(3));
+
+      await openTrashMenu(tester);
+      await tester.tap(find.text('Çöpü boşalt'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Boşalt'));
+      await tester.pumpAndSettle();
+      expect(logins.items, isEmpty);
+      expect(find.text('Çöp kutusu boş.'), findsOneWidget);
+    });
+
+    testWidgets('çöp boşken toplu işlemler kapalı', (tester) async {
+      await pumpVault(tester);
+      await openMenu(tester);
+      await tester.tap(find.text('Çöp kutusu'));
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Diğer işlemler'), findsNothing);
     });
   });
 

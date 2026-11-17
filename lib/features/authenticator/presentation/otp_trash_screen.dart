@@ -11,6 +11,7 @@ import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/authenticator/presentation/otp_display.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
+import 'package:keykey/features/vault/presentation/trash_actions.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// 2FA çöp kutusu. Hesaplar 30 gün sonra kendiliğinden kalıcı olarak silinir.
@@ -26,8 +27,31 @@ class OtpTrashScreen extends ConsumerWidget {
     final state = ref.watch(otpsControllerProvider);
     final controller = ref.read(otpsControllerProvider.notifier);
 
+    final trashed = switch (state) {
+      OtpsLoaded(:final trashed) => trashed,
+      _ => const <OtpItem>[],
+    };
     return KkScaffold(
-      appBar: kkAppBar(context, title: l10n.trashTitle),
+      appBar: kkAppBar(
+        context,
+        title: l10n.trashTitle,
+        actions: [
+          TrashActions(
+            count: trashed.length,
+            emptyMessage: l10n.otpTrashEmptyMessage(trashed.length),
+            onRestoreAll: () async {
+              for (final item in [...trashed]) {
+                await controller.restore(item);
+              }
+            },
+            onEmptyAll: () async {
+              for (final item in [...trashed]) {
+                await controller.deletePermanently(item);
+              }
+            },
+          ),
+        ],
+      ),
       body: switch (state) {
         OtpsLoading() => const Center(child: CircularProgressIndicator()),
         OtpsLoaded(:final trashed) => Column(

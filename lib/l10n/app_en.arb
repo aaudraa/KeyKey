@@ -528,6 +528,31 @@
       }
     }
   },
+  "trashRestoreAll": "Restore all",
+  "@trashRestoreAll": {
+    "description": "Menu item in the trash: restores every item."
+  },
+  "trashEmptyAll": "Empty trash",
+  "@trashEmptyAll": {
+    "description": "Menu item in the trash: deletes every item permanently, after a confirmation."
+  },
+  "trashEmptyTitle": "Empty the trash?",
+  "@trashEmptyTitle": {
+    "description": "Confirmation title before emptying the trash."
+  },
+  "trashEmptyMessage": "{count, plural, =1{1 item will be deleted permanently and cannot be recovered.} other{{count} items will be deleted permanently and cannot be recovered.}}",
+  "@trashEmptyMessage": {
+    "description": "Confirmation text before emptying the trash.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashEmptyConfirm": "Empty",
+  "@trashEmptyConfirm": {
+    "description": "Confirms emptying the trash."
+  },
   "generatorPassword": "Password",
   "@generatorPassword": {
     "description": "Generator mode."
@@ -967,6 +992,15 @@
     "placeholders": {
       "name": {
         "type": "String"
+      }
+    }
+  },
+  "otpTrashEmptyMessage": "{count, plural, =1{1 account will be deleted permanently and cannot be recovered. Without its key you may not be able to sign in to that service.} other{{count} accounts will be deleted permanently and cannot be recovered. Without their keys you may not be able to sign in to those services.}}",
+  "@otpTrashEmptyMessage": {
+    "description": "Confirmation text before emptying the 2FA trash.",
+    "placeholders": {
+      "count": {
+        "type": "int"
       }
     }
   },
