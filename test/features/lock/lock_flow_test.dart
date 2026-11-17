@@ -469,7 +469,7 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Devam et'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Bu, bu kasanın anahtarı değil.'), findsOneWidget);
+      expect(find.text('Bu anahtar bu kasaya ait değil.'), findsOneWidget);
       expect(find.text('Yeni ana parola'), findsNothing);
     });
 

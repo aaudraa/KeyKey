@@ -12,7 +12,7 @@ void main() {
 
     final config = File('android/app/src/main/res/xml/locales_config.xml')
         .readAsStringSync();
-    final listed = RegExp(r'<locale android:name="([^"]+)"')
+    final listed = RegExp('<locale android:name="([^"]+)"')
         .allMatches(config)
         .map((m) => m.group(1))
         .toSet();

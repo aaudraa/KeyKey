@@ -516,11 +516,17 @@ void main() {
           )
           .first;
       await tester.tap(
-        find.descendant(of: passwordTile, matching: find.byTooltip('Kopyala')),
+        find.descendant(
+          of: passwordTile,
+          matching: find.byTooltip('Kopyala: Parola'),
+        ),
       );
       await tester.pump();
 
       expect(clipboard.copied, ['posta-parolasi']);
+      // Ekran okuyucu her düğmenin hangi alanı kopyaladığını söyler.
+      expect(find.byTooltip('Kopyala: Kullanıcı adı'), findsOneWidget);
+      expect(find.byTooltip('Kopyala'), findsNothing);
       expect(find.text('posta-parolasi'), findsNothing);
       expect(
         find.textContaining('30 saniye sonra temizlenecek'),
@@ -891,7 +897,7 @@ void main() {
 
       await tester.tap(find.byTooltip('Geri'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Sil'));
+      await tester.tap(find.text('Değişiklikleri at'));
       await tester.pumpAndSettle();
       expect(find.byType(VaultScreen), findsOneWidget);
       expect(

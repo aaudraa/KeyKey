@@ -610,7 +610,7 @@ void main() {
 
       await tester.binding.handlePopRoute();
       await settle(tester);
-      await tester.tap(find.text('Sil'));
+      await tester.tap(find.text('Değişiklikleri at'));
       await settle(tester);
       expect(find.text('Yeni 2FA hesabı'), findsNothing);
       expect(otps.items, hasLength(3));

@@ -784,6 +784,15 @@
   "@copy": {
     "description": "Tooltip of the copy button."
   },
+  "copyField": "Copy {field}",
+  "@copyField": {
+    "description": "Tooltip of a copy button next to a field, so screen readers say which value it copies.",
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
   "copiedWillClear": "Copied. The clipboard will be cleared in {seconds} seconds.",
   "@copiedWillClear": {
     "description": "Snack bar after copying a value.",

@@ -264,7 +264,7 @@ class _FieldState extends ConsumerState<_Field> {
               onPressed: () => setState(() => _revealed = !_revealed),
             ),
           KkCopyIcon(
-            tooltip: l10n.copy,
+            tooltip: l10n.copyField(widget.label),
             color: accent,
             onCopy: () => copySensitive(context, ref, widget.value),
           ),
