@@ -73,6 +73,28 @@ Proje sahibi (2026-11-17, sabah): "Benim istediğim cam tasarımı sadece alttak
 - *Düzeltildi:* Bu yüzeyleri hâlâ "cam" diye anlatan yorumlar.
 - *Bırakıldı (küçük):* Ayrıntı kartında iç içe iki kırpma katmanı (Ayarlar'daki grupla aynı yapı, görünüşe etkisi yok); boş grubun atlandığı ve geçmiş kartının ayrı olduğu için ayrı test yok; açık temada menü kartlarla aynı renk, kenar ve gölgeyle ayrılıyor; ayarlar yüklenirken bağlı 2FA satırı bir an boş kalabiliyor.
 
+## Telefon denemesi 17 (2026-11-17, öğleden sonra)
+
+Proje sahibinin notları ve kararlar:
+
+1. **"Navbarda koyu temada yine ince bir beyaz çizgi çıkıyor, istemiyorum."** Çizgi, alt menünün camının tepesindeki 1 piksellik parlak şeritti (kartlardan telefon denemesi 6'da kaldırılmıştı). Şerit artık yalnızca açık temada; koyu temada camın yumuşak parıltısı kalıyor. Sekmeler ile "+" arasındaki dikey ayraç ayrı ve soluk gri, dokunulmadı.
+2. **"Lisans konusuna iyi bakmanı istiyorum, sonra dava yemeyelim."** Lisanslar yeniden denetlendi; çakışma yok. Eksik olan KeyKey'in kendi telif ve "garanti yoktur" bildirimiydi, eklendi. Ayrıntılar ve sınırlar: [bağımlılıklar belgesi](bagimliliklar.md#lisans-denetimi-2026-11-17).
+3. **"Ayarlardaki lisanslar ekranını da düzeltelim, çok karışık."** Flutter'ın hazır sayfasının yerine üç bölümlü kendi ekranımız: KeyKey'in lisansı, KeyKey'in kullandıkları (ne işe yaradıklarıyla), bütün paketler (baş harflere göre). [Ayrıntı](bagimliliklar.md#lisanslar-ekranı).
+4. **"Tanıtım ekranında koşul onaylama da olsa iyi olur; verilerin gizliliği hakkında her şeyi açıklayalım."** [Kullanım koşulları](kosullar.md) eklendi. Kararlarım:
+   - **Ne zaman:** Yeni kullanıcıya tanıtımdan sonra, kasa oluşturmaya ya da yedekten dönmeye geçerken; kasası olan kullanıcıya güncellemeden sonra kilit ekranından önce bir kez. Tanıtım onaysız izlenebilir.
+   - **Nasıl:** Yedi kısa bölüm, sonunda "Okudum, anladım ve kabul ediyorum" kutusu; işaretlenmeden "Kabul et ve devam et" çalışmaz. Ayarlar → Hakkında'dan onaysız okunur.
+   - **İçerik:** Yalnızca KeyKey'in gerçekte yaptığı (internet izni yok, Argon2id + XChaCha20-Poly1305, Keystore, 30 saniyelik pano); kullanıcının elinde olanlar (ana parola, kurtarma anahtarı, yedek, telefonun güvenliği); kodun büyük kısmının yapay zekâ asistanıyla yazıldığı ve bağımsız denetimden geçmediği; garanti olmadığı. Abartılı bir güvenlik vaadi yok: sorumluluk reddini güçlü kılan da açık ve doğru bilgilendirme.
+   - **Saklama:** Kabul edilen sürüm numarası kasanın dışında şifresiz `terms` dosyasında ([güvenlik tasarımı](guvenlik-tasarimi.md#depolama)). Koşullar değişirse sürüm artar, herkese bir kez daha sorulur.
+   - **Sınır:** Bu metinler hukuki riski azaltır ama ortadan kaldırmaz; ağır kusur ve kast için sorumluluk önceden kaldırılamaz. Hukukçu görüşü alınmadı.
+
+**Bağımsız gözden geçirme (koşullar ve lisanslar):** Kritik bulgu yok. Etkisine göre derecelendirdim:
+
+- *Düzeltildi (önemli):* Otomatik doldurma penceresi, koşullar hiç kabul edilmeden kasayı açabiliyordu (güncelleyip uygulamayı açmamış kullanıcı). Pencere artık "Önce KeyKey'i aç ve kullanım koşullarını kabul et" diyor.
+- *Düzeltildi (önemli, doğruluk):* "Verilerin yalnızca bu telefondaki kasada durur" yedek ve dışa aktarmayla çelişiyordu; pano cümlesi klavyelerin pano geçmişini anmıyordu ([güvenlik tasarımı](guvenlik-tasarimi.md) bu korumayı "kısmen" sayıyor). İkisi de düzeltildi.
+- *Düzeltildi:* Lisans metinleri yüklenemezse sonsuz bekleme yerine mesaj; ekran okuyucu için paket başlıkları; kabul dosyası yazılamazsa hiçbir hata dışarı çıkmıyor; koşul belgesinin sürüm testi gerçekten sürüm satırını arıyor; kurtarma, "kullanılamıyor" ve geri tuşu için testler; parmak izi dışı cihaz betiğinin ön koşulu (koşulların elle kabulü).
+- *Kararım:* "Kasa kullanılamıyor" ekranından önce de koşullar soruluyor; zararsız ve kural basit kalıyor. Koşullar lisansın şartı değil, bir bildirim ve sorumluluk reddi (GPL-3.0 programı çalıştırmak için kabul istemez).
+- *Bırakıldı (küçük):* Lisans kataloğu arayüz iş parçacığında kuruluyor (telefonda yavaşlarsa ayrı iş parçacığına taşınır); uzun lisans tek metin olarak çiziliyor; GPL sürümü ayrıca denetlenmiyor ve bozuk başlık tanıma iki kalıpla sınırlı (bugünkü 204 girdinin hepsi doğru); entegrasyon testleri kapıyı değil kasa ekranlarını sınıyor (kapı widget testlerinde).
+
 ## Proje sahibinin kararına bırakılanlar
 
 Bunlar ya güvenlik tasarımını değiştiriyor ya da büyük iş; sırayı ve kararı proje sahibi verir. Yol haritasının "1.0 sonrası" tablosuna yazıldı.

@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
-import 'package:keykey/app/ui/keykey_logo.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_entrance.dart';
@@ -119,29 +118,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     } on Exception {
       snack(l10n.loginSaveFailed);
     }
-  }
-
-  /// Flutter'ın lisans sayfası kendi `Scaffold`'unu kullanır. Temadaki
-  /// saydam zeminle sayfanın arkası boş kalırdı; sayfa opak zeminli bir
-  /// temayla ve alttaki menünün üstünde açılır.
-  void _openLicenses(String? version) {
-    final theme = Theme.of(context);
-    final ground = KkGlass.of(context).ground;
-    Navigator.of(context, rootNavigator: true).push(
-      MaterialPageRoute<void>(
-        builder: (context) => Theme(
-          data: theme.copyWith(
-            scaffoldBackgroundColor: ground,
-            appBarTheme: theme.appBarTheme.copyWith(backgroundColor: ground),
-          ),
-          child: LicensePage(
-            applicationName: 'KeyKey',
-            applicationVersion: version,
-            applicationIcon: const KeyKeyLogo(size: 48),
-          ),
-        ),
-      ),
-    );
   }
 
   static String _themeName(AppLocalizations l10n, ThemeMode mode) =>
@@ -333,18 +309,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                   ),
                   ListTile(
+                    leading: const KkIconBox(icon: Icons.gavel_rounded),
+                    title: Text(l10n.termsTitle),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () => context.push(AppRoutes.settingsTerms),
+                  ),
+                  ListTile(
                     leading: const KkIconBox(icon: Icons.privacy_tip_rounded),
                     title: Text(l10n.aboutPrivacy),
                     trailing: const Icon(Icons.open_in_new_rounded),
                     onTap: () => unawaited(
-                      openWebPage(context, ref, _privacyPage(context)),
+                      openWebPage(context, ref, privacyPage(context)),
                     ),
                   ),
                   ListTile(
                     leading: const KkIconBox(icon: Icons.description_rounded),
                     title: Text(l10n.settingsLicenses),
                     trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () => _openLicenses(version),
+                    onTap: () => context.push(AppRoutes.licenses),
                   ),
                 ],
               ),
@@ -355,12 +337,4 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
     );
   }
-}
-
-/// Gizlilik bildirimi arayüz dilinde; Türkçe dışında İngilizcesi.
-Uri _privacyPage(BuildContext context) {
-  final file = Localizations.localeOf(context).languageCode == 'tr'
-      ? 'gizlilik.md'
-      : 'privacy.md';
-  return Uri.parse('$keyKeyRepository/blob/main/resources/docs/$file');
 }

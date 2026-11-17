@@ -222,10 +222,11 @@ class GlassSurface extends StatelessWidget {
                 ),
               ),
             ),
-          // Tepedeki ince parlak şerit yalnızca alt menünün camında: kartlarda
-          // koyu temada siyahın, açık temada kremin üstünde göze batıyordu
-          // (telefon denemesi 6).
-          if (sheen)
+          // Tepedeki ince parlak şerit yalnızca açık temada alt menünün
+          // camında: kartlarda koyu temada siyahın, açık temada kremin
+          // üstünde göze batıyordu (telefon denemesi 6); koyu temada alt
+          // menüde de beyaz çizgi olarak görünüyordu (telefon denemesi 17).
+          if (sheen && Theme.of(context).brightness == Brightness.light)
             Positioned(
               top: 0,
               left: inset,

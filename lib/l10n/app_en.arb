@@ -636,6 +636,171 @@
   "@settingsLicenses": {
     "description": "Settings entry that opens the license page."
   },
+  "licensesKeyKeyBody": "KeyKey is free and open-source software, distributed under the GNU General Public License 3.0 (GPL-3.0): you may study, change and share it under the same license. It comes with absolutely no warranty; it is provided as is.",
+  "@licensesKeyKeyBody": {
+    "description": "Licenses screen: KeyKey's own license, freedoms and no-warranty notice."
+  },
+  "licensesCopyright": "© 2026 The KeyKey authors",
+  "@licensesCopyright": {
+    "description": "Licenses screen: KeyKey's copyright line."
+  },
+  "licensesReadKeyKey": "Read the license",
+  "@licensesReadKeyKey": {
+    "description": "Licenses screen: opens the full GPL-3.0 text."
+  },
+  "licensesUsed": "What KeyKey uses",
+  "@licensesUsed": {
+    "description": "Licenses screen: section of the main third-party parts with their purpose."
+  },
+  "licensesAll": "All licenses",
+  "@licensesAll": {
+    "description": "Licenses screen: section that leads to every package."
+  },
+  "licensesAllPackages": "All packages",
+  "@licensesAllPackages": {
+    "description": "Licenses screen: row that opens the full package list."
+  },
+  "licensesAllCount": "{count} packages and components",
+  "@licensesAllCount": {
+    "description": "Licenses screen: number of packages and components with license texts.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "licensesUnnamed": "Unlabelled texts",
+  "@licensesUnnamed": {
+    "description": "License list: texts whose package name could not be read from the package's license file."
+  },
+  "licenseKindPublicDomain": "Public domain",
+  "@licenseKindPublicDomain": {
+    "description": "License kind: public domain (e.g. SQLite)."
+  },
+  "licenseKindOther": "Other license",
+  "@licenseKindOther": {
+    "description": "License kind: not recognised automatically."
+  },
+  "licensesAndroid": "Android libraries",
+  "@licensesAndroid": {
+    "description": "Licenses screen: AndroidX, Kotlin and other Android libraries."
+  },
+  "licensesPurposeCrypto": "Encryption",
+  "@licensesPurposeCrypto": {
+    "description": "Purpose of libsodium."
+  },
+  "licensesPurposeDatabase": "Vault database",
+  "@licensesPurposeDatabase": {
+    "description": "Purpose of SQLite."
+  },
+  "licensesPurposeUi": "User interface",
+  "@licensesPurposeUi": {
+    "description": "Purpose of Flutter."
+  },
+  "licensesPurposeQr": "QR code reading",
+  "@licensesPurposeQr": {
+    "description": "Purpose of zxing-cpp and zint."
+  },
+  "licensesPurposeCamera": "Camera",
+  "@licensesPurposeCamera": {
+    "description": "Purpose of the camera plugin."
+  },
+  "licensesPurposeFont": "Title typeface",
+  "@licensesPurposeFont": {
+    "description": "Purpose of Barlow Condensed."
+  },
+  "licensesPurposePassphrase": "Passphrase words",
+  "@licensesPurposePassphrase": {
+    "description": "Purpose of the EFF word list."
+  },
+  "licensesPurposeCommon": "Common password warning",
+  "@licensesPurposeCommon": {
+    "description": "Purpose of the SecLists password list."
+  },
+  "licensesPurposeDomains": "Matching sites in autofill",
+  "@licensesPurposeDomains": {
+    "description": "Purpose of the Public Suffix List."
+  },
+  "licensesPurposeAndroid": "Fingerprint, autofill, camera",
+  "@licensesPurposeAndroid": {
+    "description": "Purpose of the Android libraries."
+  },
+  "licensesLoadFailed": "License texts could not be loaded.",
+  "@licensesLoadFailed": {
+    "description": "Licenses screen: the license texts failed to load."
+  },
+  "termsTitle": "Terms of use",
+  "@termsTitle": {
+    "description": "Title of the terms of use screen and its settings row."
+  },
+  "termsIntro": "Please read this before you start using KeyKey. We kept it short; every point describes how KeyKey actually works.",
+  "@termsIntro": {
+    "description": "Terms: opening paragraph."
+  },
+  "termsDataTitle": "Your data stays on this phone",
+  "@termsDataTitle": {
+    "description": "Terms section title: where data lives."
+  },
+  "termsDataBody": "Your passwords, 2FA accounts and notes are kept in the vault on this phone. A backup or export file is only created when you ask for it, and saved where you choose. KeyKey has no internet permission: no account, no server, no ads, no usage data. When you open a link, the page opens in your browser. The developers cannot see, collect or store your data.",
+  "@termsDataBody": {
+    "description": "Terms section body: where data lives."
+  },
+  "termsCryptoTitle": "How the vault is protected",
+  "@termsCryptoTitle": {
+    "description": "Terms section title: encryption."
+  },
+  "termsCryptoBody": "The vault is protected by a key derived from your master password with Argon2id; entries are encrypted with XChaCha20-Poly1305. Your master password is never stored. If you turn on fingerprint unlock, the vault key is protected by a key kept in the phone's secure hardware (Android Keystore).",
+  "@termsCryptoBody": {
+    "description": "Terms section body: encryption."
+  },
+  "termsSecretsTitle": "Only you hold the master password and recovery key",
+  "@termsSecretsTitle": {
+    "description": "Terms section title: master password and recovery key."
+  },
+  "termsSecretsBody": "Only you know your master password and recovery key. If you lose both, your vault cannot be opened; no one, including the developers, can recover your data. Don't share either of them: KeyKey will never ask for your master password by email or message.",
+  "@termsSecretsBody": {
+    "description": "Terms section body: master password and recovery key."
+  },
+  "termsBackupTitle": "Backups are up to you",
+  "@termsBackupTitle": {
+    "description": "Terms section title: backups."
+  },
+  "termsBackupBody": "If the phone is lost or broken, or KeyKey is uninstalled, the vault is gone too. Taking regular encrypted backups and keeping them somewhere safe is your responsibility. An unencrypted export file is not protected; delete it when you are done.",
+  "@termsBackupBody": {
+    "description": "Terms section body: backups."
+  },
+  "termsDeviceTitle": "Your phone's security",
+  "@termsDeviceTitle": {
+    "description": "Terms section title: device security."
+  },
+  "termsDeviceBody": "No app can protect your data on a compromised phone. Keep your phone updated and use a screen lock; don't use KeyKey on a rooted phone or alongside apps you don't trust. A copied password is cleared from the clipboard after 30 seconds; until then, apps that can access the clipboard may read it, and some keyboards' clipboard history may keep it longer.",
+  "@termsDeviceBody": {
+    "description": "Terms section body: device security."
+  },
+  "termsOpenSourceTitle": "Open source, not independently audited",
+  "@termsOpenSourceTitle": {
+    "description": "Terms section title: open source and audit status."
+  },
+  "termsOpenSourceBody": "KeyKey is free and open source (GPL-3.0); anyone can review its code. Most of the code was written with an AI assistant. KeyKey has not yet had an independent security audit.",
+  "@termsOpenSourceBody": {
+    "description": "Terms section body: open source, AI disclosure, audit status."
+  },
+  "termsWarrantyTitle": "No warranty",
+  "@termsWarrantyTitle": {
+    "description": "Terms section title: warranty and liability."
+  },
+  "termsWarrantyBody": "KeyKey is provided as is, without any warranty. To the extent permitted by applicable law, the developers are not liable for data loss, for your data falling into others' hands, or for any damage arising from using KeyKey. See sections 15 and 16 of the GPL-3.0 license (Settings → About → Licenses).",
+  "@termsWarrantyBody": {
+    "description": "Terms section body: no warranty, limitation of liability."
+  },
+  "termsAgree": "I have read and understood this, and I accept it.",
+  "@termsAgree": {
+    "description": "Terms: checkbox the user must tick before continuing."
+  },
+  "termsContinue": "Accept and continue",
+  "@termsContinue": {
+    "description": "Terms: button that records acceptance and continues."
+  },
   "aboutSource": "Source code",
   "@aboutSource": {
     "description": "About row that opens the source code on GitHub."
@@ -1216,6 +1381,10 @@
   "autofillNoVault": "Create a vault in KeyKey first.",
   "@autofillNoVault": {
     "description": "Autofill requested before a vault exists."
+  },
+  "autofillNeedsTerms": "Open KeyKey first and accept the terms of use.",
+  "@autofillNeedsTerms": {
+    "description": "Autofill requested before the user accepted the terms of use in the app."
   },
   "autofillVaultUnavailable": "The vault cannot be opened here. Open KeyKey to check it.",
   "@autofillVaultUnavailable": {

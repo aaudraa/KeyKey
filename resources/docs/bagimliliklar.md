@@ -1,6 +1,6 @@
 # KeyKey Bağımlılıkları
 
-Uygulamaya giren her paketin neden orada olduğu, sürümü, lisansı ve derlemede nereden geldiği. Faz 8'de ([#86](https://github.com/aaudraa/KeyKey/issues/86)) yazıldı. **Tarih:** 2026-11-08. **Flutter:** 3.47.9 (stable).
+Uygulamaya giren her paketin neden orada olduğu, sürümü, lisansı ve derlemede nereden geldiği. Faz 8'de ([#86](https://github.com/aaudraa/KeyKey/issues/86)) yazıldı. **Tarih:** 2026-11-08. **Lisans denetimi yenilendi:** 2026-11-17 ([aşağıda](#lisans-denetimi-2026-11-17)). **Flutter:** 3.47.9 (stable).
 
 KeyKey GPL-3.0 ile yayımlanır. Bu yüzden içine giren her şeyin lisansı GPL-3.0 ile birlikte dağıtılabilir olmalı.
 
@@ -204,14 +204,34 @@ libsodium'un ve zxing-cpp'nin kaynağı derleme sırasında indirilmez, paketler
 
 ## Lisanslar ekranı
 
-Ayarlar'daki "Lisanslar" ekranı Flutter'ın `LicenseRegistry`'sini gösterir. Flutter, Dart paketlerinin `LICENSE` dosyalarını derlemede kendisi toplar (`NOTICES`). Yayın APK'sındaki `NOTICES` dosyası bu listeyle karşılaştırıldı:
+Ayarlar → Hakkında → Lisanslar, Flutter'ın `LicenseRegistry`'sindeki bütün metinleri gösterir, ama Flutter'ın hazır sayfasıyla değil (2026-11-17'den beri). Hazır sayfa yaklaşık 200 adı tek listede gösteriyordu: geliştirme araçları (`analyzer`, `build_runner`; Flutter `package_config`'teki her paketi topluyor), Flutter motorunun üçüncü taraf parçaları ve bozuk başlıklar. Proje sahibi "çok karışık" dedi.
 
-- **Dart paketleri:** Hepsinin lisans metni var.
-- **Yanlış başlık:** Üç eklentinin lisans metni kendi adının altında görünmüyor, çünkü `LICENSE` dosyaları Flutter'ın beklediği biçimde değil. `file_selector_android`'inki "Copyright 2013 The Flutter Authors" başlığı altında, `image_picker_android` ve `image_picker_ios`'unki `image_picker` altında. Metinler eksiksiz; sorun eklentilerin kendi dosyasında.
-- **Elle eklenenler** ([`licenses.dart`](../../lib/app/licenses.dart)): EFF sözcük listesi, SecLists, Barlow Condensed yazı tipi (SIL OFL 1.1), Public Suffix List, zxing-cpp, zint, SQLite ve Android kütüphaneleri.
-- **Eksikti, eklendi:**
-  - Gradle'dan gelen Android kütüphaneleri hiç yoktu, çünkü Flutter yalnızca Dart paketlerini topluyor. Şimdi "Android libraries" başlığı altında, Apache-2.0 metniyle birlikte listeleniyor.
-  - SQLite'ın kamu malı olduğunu belirten kayıt.
+Yeni ekran ([`licenses_screen.dart`](../../lib/features/settings/presentation/licenses_screen.dart)) üç bölümden oluşur:
+
+1. **KeyKey:** GPL-3.0, özgürlükler, "hiçbir garanti olmadan" ve telif satırı (© 2026 KeyKey geliştiricileri); lisansın tam metni.
+2. **KeyKey'in kullandıkları:** libsodium, SQLite, Flutter, zxing-cpp ve zint, kamera eklentisi, Barlow Condensed, EFF sözcük listesi, SecLists, Public Suffix List ve Android kütüphaneleri; her biri ne işe yaradığı ve lisans türüyle.
+3. **Bütün paketler:** baş harflerine göre gruplanmış tam liste; her metin eksiksiz.
+
+Lisans türü metinden tanınır ([`license_catalog.dart`](../../lib/features/settings/data/license_catalog.dart)); yol göstermek içindir, metnin kendisi esastır. Başka lisansları anan metinler (OFL'deki MIT cümlesi, GPL'nin sonundaki LGPL, MPL'deki ikincil lisanslar) doğru tanınır; APK'daki 204 girdiyle denendi. Tanınan bir lisansın yanında "diğer" gösterilmez: motorun tanınmayan metinleri çoğunlukla lisans gövdesi olmayan telif satırlarıdır.
+
+- **Bozuk başlıklar:** Bazı eklentilerin `LICENSE` dosyası Flutter'ın beklediği biçimde olmadığı için metin bir satır parçasının ("-", "Copyright 2013 The Flutter Authors") altında görünüyordu (ör. `file_selector_android`). Bu metinler "Adı belirtilmemiş metinler" başlığında toplanır, kaybolmaz.
+- **Elle eklenenler** ([`licenses.dart`](../../lib/app/licenses.dart)): EFF sözcük listesi, SecLists, Barlow Condensed yazı tipi (SIL OFL 1.1), Public Suffix List, zxing-cpp, zint, SQLite ve Android kütüphaneleri (Flutter yalnızca Dart paketlerini topluyor).
+
+## Lisans denetimi (2026-11-17)
+
+Proje sahibi "sonra dava yemeyelim" diye lisanslara yeniden bakılmasını istedi. Yapılanlar:
+
+| Konu | Sonuç |
+|---|---|
+| Dart paketleri | Uygulamaya giren 139 paketin lisans dosyası yeniden sınıflandırıldı: 106 BSD, 16 MIT, 4 Apache-2.0, 4 Apache-2.0 ve BSD, 1 BSD ve ISC (`sodium`, içindeki libsodium), 8 SDK. GPL, LGPL, AGPL ya da lisanssız paket yok. |
+| Android kütüphaneleri | `releaseRuntimeClasspath` yeniden listelendi; hepsi "Android libraries" kaydının kapsadığı Apache-2.0 kütüphaneleri (AndroidX, CameraX, Kotlin, Guava, Dagger, ReLinker ve notasyonlar). Yeni ya da eksik grup yok. |
+| APK'daki `NOTICES` | libsodium'un ISC metni var. Tek GPL metni KeyKey'in kendisi. |
+| Veri ve yazı tipi | EFF (CC BY 3.0, atıf var), SecLists (MIT), Public Suffix List (MPL-2.0, değiştirilmeden), Barlow Condensed (OFL 1.1, yazı tipiyle birlikte dağıtılabilir) ekranda. |
+| KeyKey'in kendi bildirimi | **Eksikti, eklendi.** Telif satırı ve "garanti yoktur" bildirimi hiçbir yerde yoktu. GPL-3.0 etkileşimli programların bunu göstermesini öneriyor; şimdi Lisanslar ekranında, kullanım koşullarında ve README'de. |
+| Kullanım koşulları | **Eklendi** ([kosullar.md](kosullar.md)): verilerin nerede durduğu, nasıl korunduğu, kullanıcının sorumlulukları, yapay zekâ ile yazıldığı, bağımsız denetimden geçmediği ve garanti olmadığı; ilk açılışta onay. |
+| Ad | Aramada kayıtlı bir "KeyKey" markası çıkmadı. Mac için aynı adlı, ücretli bir klavye eğitimi uygulaması var (başka bir ürün türü). Kesin sonuç için TÜRKPATENT'te ve hedef ülkelerin marka kayıtlarında arama gerekir; bu bir hukuk danışmanlığı değildir. |
+
+**Sınır:** Bu bir hukuki görüş değil. Garanti ve sorumluluk reddi "yürürlükteki hukukun izin verdiği ölçüde" geçerlidir; örneğin Türk Borçlar Kanunu (m. 115) ağır kusur ve kast için önceden sorumsuzluk anlaşmasını geçersiz sayar. KeyKey ücretsiz ve ticari olmayan bir açık kaynak proje; ücretli sürüm, bağış karşılığı hizmet ya da şirket kurulursa bir hukukçuya danışılmalı.
 
 ## Güncellik
 

@@ -20,6 +20,8 @@ import 'package:keykey/features/backup/application/backup_service.dart';
 import 'package:keykey/features/backup/application/restore_service.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/onboarding/application/terms_controller.dart';
+import 'package:keykey/features/onboarding/data/terms_acceptance.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/settings/application/theme_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
@@ -44,12 +46,23 @@ Future<List<Override>> bootstrap() async {
     initialThemeModeProvider.overrideWithValue(await themeStore.read()),
   ];
 
+  // Kullanım koşullarının kabulü de kasadan bağımsız: kasa kurulmadan ve
+  // kilit açılmadan önce sorulur.
+  final termsStore = FileTermsAcceptanceStore(File('${directory.path}/terms'));
+  final terms = [
+    termsAcceptanceStoreProvider.overrideWithValue(termsStore),
+    initialTermsAcceptedProvider.overrideWithValue(
+      await termsStore.read() >= currentTermsVersion,
+    ),
+  ];
+
   final VaultDatabase database;
   try {
     database = VaultDatabase.openFile(File('${directory.path}/keykey.db'));
   } on UnsupportedSchemaException {
     return [
       ...theme,
+      ...terms,
       initialVaultStatusProvider.overrideWithValue(const VaultUnavailable()),
     ];
   }
@@ -62,6 +75,7 @@ Future<List<Override>> bootstrap() async {
   );
   return [
     ...theme,
+    ...terms,
     randomSourceProvider.overrideWithValue(SodiumRandomSource(sodium)),
     sensitiveClipboardProvider.overrideWithValue(PigeonSensitiveClipboard()),
     qrImageReaderProvider.overrideWithValue(ZxingQrImageReader()),

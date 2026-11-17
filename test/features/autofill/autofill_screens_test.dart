@@ -19,6 +19,8 @@ import 'package:keykey/features/autofill/domain/public_suffix_list.dart';
 import 'package:keykey/features/autofill/presentation/autofill_app.dart';
 import 'package:keykey/features/autofill/presentation/autofill_sheet_frame.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/lock/presentation/lock_screen.dart';
+import 'package:keykey/features/onboarding/application/terms_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
@@ -177,6 +179,7 @@ void main() {
     required VaultStatus status,
     AutofillTarget? target = app,
     bool settle = true,
+    bool termsAccepted = true,
   }) async {
     tester.platformDispatcher.localesTestValue = [const Locale('tr')];
     addTearDown(tester.platformDispatcher.clearLocalesTestValue);
@@ -193,6 +196,7 @@ void main() {
           otpClockProvider.overrideWithValue(() => now),
           autofillBridgeProvider.overrideWithValue(bridge),
           publicSuffixListProvider.overrideWith((ref) => psl),
+          initialTermsAcceptedProvider.overrideWithValue(termsAccepted),
         ],
         child: const AutofillApp(),
       ),
@@ -220,6 +224,21 @@ void main() {
     await pumpAutofill(tester, status: const VaultNotSetUp());
 
     expect(find.text("Önce KeyKey'de bir kasa oluştur."), findsOneWidget);
+  });
+
+  testWidgets('koşullar kabul edilmeden kasa burada açılmıyor', (tester) async {
+    // Güncelleyip KeyKey'i hiç açmamış kullanıcı.
+    await pumpAutofill(
+      tester,
+      status: VaultLocked(service.header),
+      termsAccepted: false,
+    );
+
+    expect(
+      find.text("Önce KeyKey'i aç ve kullanım koşullarını kabul et."),
+      findsOneWidget,
+    );
+    expect(find.byType(LockScreen), findsNothing);
   });
 
   testWidgets('kilitliyken kayıt adı görünmüyor, kurtarma yok', (tester) async {

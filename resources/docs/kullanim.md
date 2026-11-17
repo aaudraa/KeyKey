@@ -38,6 +38,8 @@ Bilgisayarda denetlemek istersen [yayın belgesindeki](yayin.md) "İndirilen APK
 
 Uygulamayı ilk açtığında kısa, hareketli bir tanıtım gelir: KeyKey'in ne olduğu, menüde nerede ne bulunduğu, otomatik doldurma, başka uygulamalardan geçiş ve yedek. Kaydırarak ya da **İleri** ile geçebilir, sağ üstteki **Atla** ile hemen kasa oluşturmaya geçebilirsin. Sonra yeniden izlemek istersen: Ayarlar → Hakkında → **Tanıtımı yeniden göster**.
 
+Kasa oluşturmadan önce [kullanım koşulları](kosullar.md) gelir: verilerinin nerede durduğu, kasanın nasıl korunduğu, nelerin senin elinde olduğu ve garanti olmadığı. "Okudum, anladım ve kabul ediyorum" kutusunu işaretleyip **Kabul et ve devam et**'e dokunursun. Koşullar bir kez sorulur; Ayarlar → Hakkında → **Kullanım koşulları**'ndan yeniden okuyabilirsin. KeyKey'i daha önce kullanıyorsan güncellemeden sonra kilit ekranından önce bir kez gösterilir.
+
 <img src="../design/kilavuz/01-kasa-olustur.webp" width="240" alt="Kasa oluşturma ekranı"> <img src="../design/kilavuz/02-kurtarma-anahtari.webp" width="240" alt="Kurtarma anahtarı ekranı">
 
 1. **Ana parolanı seç.** Kasanı bu parola korur. En az 10 karakter olmalı; birbiriyle ilgisiz birkaç kelimeden oluşan bir cümle hem güçlü hem akılda kalıcıdır. Güç göstergesi parolanın ne kadar tahmin edilebilir olduğunu söyler.
@@ -166,6 +168,8 @@ KeyKey verilerini hiçbir yere göndermediği için **telefon kaybolursa ya da b
 Ayarlar → Görünüm → **Tema**: **Sistem** (telefonunun ayarını izler), **Açık** ya da **Koyu**. Seçim kilit ekranında ve otomatik doldurma penceresinde de geçerlidir.
 
 Telefonunda "Animasyonları kaldır" erişilebilirlik ayarı açıksa KeyKey'in hareketleri de kapanır.
+
+Ayarlar → Hakkında → **Lisanslar**: önce KeyKey'in kendi lisansı (GPL-3.0), sonra KeyKey'in kullandığı parçalar ne işe yaradıklarıyla (şifreleme, veritabanı, QR kod okuma, sözcük listeleri…), en sonda bütün paketlerin lisans metinleri.
 
 ## Bilinen sınırlar
 

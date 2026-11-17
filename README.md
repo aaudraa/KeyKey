@@ -105,4 +105,4 @@ Repoyu `C:\KeyKey` gibi kısa bir yola klonla. Uzun yollarda libsodium derlemesi
 
 ## Lisans
 
-KeyKey, [GNU GPL v3.0](LICENSE) lisansıyla dağıtılır.
+© 2026 KeyKey geliştiricileri. KeyKey, [GNU GPL v3.0](LICENSE) lisansıyla dağıtılır: kaynak kodunu inceleyebilir, değiştirebilir ve aynı lisansla paylaşabilirsin. KeyKey **hiçbir garanti olmadan**, olduğu gibi sunulur (lisansın 15. ve 16. maddeleri). Uygulamayı ilk açtığında [kullanım koşulları](resources/docs/kosullar.md) ([English](resources/docs/terms.md)) gösterilir. Kullanılan kütüphanelerin lisansları uygulamada Ayarlar → Hakkında → Lisanslar'da ve [bağımlılıklar belgesinde](resources/docs/bagimliliklar.md).
