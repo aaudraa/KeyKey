@@ -482,14 +482,16 @@ Güvenlik ya da veri kaybı sorunu çıkmadı. Ayrıntılar [denetim belgesinde]
 
 **Amaç:** KeyKey'i F-Droid ana deposuna bizim imzamızla (birebir aynı derleme) başvurmaya hazırlamak, bu düzenle 1.0.1'i yayımlamak ve README'ye Obtainium bağlantısı koymak. [Tasarım](docs/f-droid.md), [uygulama planı](docs/f-droid-plani.md). Takip: #120.
 
-- [ ] README'ye Obtainium bağlantısı (#114)
-- [ ] F-Droid için Fastlane açıklamaları ve denetimi (#115)
-- [ ] F-Droid tarifi ve birebir aynı derleme denetimi (#116)
-- [ ] Yayın iş akışı F-Droid yolunda ve F-Droid karşılaştırması (#117)
+- [ ] README'ye Obtainium bağlantısı (#114; telefonda deneme 1.0.1'den sonra)
+- [x] F-Droid için Fastlane açıklamaları ve denetimi (#115)
+- [x] F-Droid tarifi ve birebir aynı derleme denetimi (#116)
+- [x] Yayın iş akışı F-Droid yolunda ve F-Droid karşılaştırması (#117; gerçek sınama `v1.0.1` etiketinde)
 - [ ] 1.0.1 yayını (#118)
 - [ ] F-Droid başvurusu (#119)
 
 **Durum (2026-11-17):** Faz başladı. IzzyOnDroid'e başvurulmuyor: [kabul kuralları](https://izzyondroid.org/docs/general/AppInclusionPolicy/) yapay zekâyla yazılmış kodu kabul etmiyor, ayrıca APK başına 30 MB sınırı var (APK'mız 77 MB). F-Droid'in kurallarında yapay zekâ maddesi yok. Proje sahibi tek evrensel APK'yı seçti; işlemci türüne göre bölme sonraya kaldı. Faz başvurunun gönderilmesiyle biter; F-Droid'in kabulü ve README'ye F-Droid bağlantısı ayrı iş.
+
+**Durum (2026-11-17, gece):** F-Droid'in kendi aracıyla derlenen APK bizim imzamızı kabul ediyor: dokuzuncu denemede `apksigcopier compare` yeşil ([ayrıntılar](docs/yayin.md#yeniden-üretilebilir-derleme)). Yayın iş akışı artık F-Droid'in imajında ve yolunda imzasız derliyor, ayrı bir işte `apksigner` ile imzalıyor ve taslak yayımlanmadan önce F-Droid derlemesiyle karşılaştırıyor. README yeniden düzenlendi. Proje sahibinin isteğiyle aynı gece QR tarayıcının hizası ve feneri düzeltildi, kurulumda kurtarma anahtarı kopyalanabilir ve dosyaya kaydedilebilir oldu ([#121](https://github.com/aaudraa/KeyKey/pull/121)). Sürüm `1.0.1+4`. Kalan: faz PR'ı, `v1.0.1` etiketi (dağıtım onayı ve yayımlama proje sahibinde), Obtainium bağlantısının telefonda denenmesi, başvuru ([metin](f-droid/basvuru.md)).
 
 **Bitti sayılması için:** `v1.0.1` yayınlandı ve yayın iş akışındaki F-Droid karşılaştırması yeşil; fdroiddata'ya birleştirme isteği açıldı; README'deki Obtainium bağlantısı telefonda çalışıyor.
 

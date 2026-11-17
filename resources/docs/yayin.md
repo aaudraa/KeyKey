@@ -107,16 +107,16 @@ Amaç: herkes aynı koddan aynı APK'yı derleyip yayındaki APK'nın gerçekten
 | Aynı klasörde iki temiz derleme (`flutter clean` arasında) | Zip içeriği ve v2 imzası aynı. Tek fark, Android Gradle eklentisinin APK'nın imza bloğuna gömdüğü şifreli bağımlılık listesiydi; her derlemede farklı şifreleniyor. Kapatıldı (`dependenciesInfo`), sonra iki derleme bayt bayt aynı. |
 | Farklı klasörde temiz klon (`C:\KeyKey` ve `C:\KK2`) | 460 dosyadan 6'sı farklı: üç işlemci türü için `libapp.so` ve `libdartjni.so`. |
 | Yayın iş akışında aynı commit'ten iki derleme (GitHub, Ubuntu 24.04, deneme etiketi `v1.0.0-deneme.1`) | APK, AAB ve `mapping.txt` bayt bayt aynı; imzalar da aynı (RSA imzası belirlenimci). |
+| F-Droid'in derleme imajında bizim derleme ve `fdroid build` (Faz 10, 2026-11-17, [`f-droid.yml`](../../.github/workflows/f-droid.yml)) | Dokuzuncu denemede aynı: F-Droid'in derlemesi bizim imzamızı kabul etti (`apksigcopier compare`). Yolda giderilenler: imajda `make` yok (libsodium); F-Droid'in tarayıcısı `sodium` paketindeki libsodium kaynak arşivini siliyordu (`scanignore`); Debian'ın `apksigner`'ı v1 imzası ekliyordu ve zaten hizalı girdileri yeniden hizalıyordu (`--v1-signing-enabled false`, `--alignment-preserved true`). Girdilerin içeriği her denemede bayt bayt aynıydı. |
 
 Klasöre bağlı farkların nedenleri:
 
 - `libapp.so` (Dart kodunun derlenmiş hali), Flutter'ın ürettiği `dart_plugin_registrant.dart` dosyasının mutlak yolunu içeriyor. Bu Flutter'ın davranışı, projeden değiştirilemiyor.
 - `libdartjni.so` (`jni` paketi) yalnızca 20 baytlık derleme kimliğinde (`NT_GNU_BUILD_ID`) ayrılıyor. Kimlik, derlemedeki dosya yollarından hesaplanıyor.
 
-Sonuç: **Aynı kod, aynı araç sürümleri ve aynı klasör yolu aynı APK'yı veriyor.** F-Droid de doğrulama derlemelerini sabit bir yolda yapar. Doğrulamak için:
+Sonuç: **Aynı kod, aynı araç sürümleri ve aynı klasör yolu aynı APK'yı veriyor.** Bu yüzden `v1.0.1`'den beri yayın derlemesi F-Droid'in derleme imajında (`registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie`: Debian OpenJDK 21, `/opt/android-sdk`, NDK r28c) ve F-Droid'in derleme yolunda (`/home/vagrant/build/io.github.aaudraa.keykey`, Flutter `/home/vagrant/build/srclib/flutter`) yapılıyor. Doğrulamak için:
 
-1. Yayının commit'ini, yayın iş akışının kullandığı yola klonla. GitHub'ın Ubuntu makinesinde bu yol `/home/runner/work/KeyKey/KeyKey`.
-2. İş akışındaki sürümlerle derle: Flutter 3.47.9, Temurin JDK 21, NDK'yı Flutter seçer. Komut: `flutter build apk --release`.
-3. İmzalar farklı anahtarla atıldığı için APK'nın tamamı değil, içindeki dosyalar karşılaştırılır: `unzip -v` çıktısındaki CRC'ler ya da [apksigcopier](https://github.com/obfusk/apksigcopier) ile yayındaki imzayı kendi derlemene kopyalayıp özeti karşılaştırmak.
+1. Aynı imajda, yayının commit'iyle [`f-droid-yolunda-derle.sh`](../scripts/f-droid-yolunda-derle.sh)'yi çalıştır (imzasız APK verir) ya da F-Droid'in kendi aracını [`f-droid-derle.sh`](../scripts/f-droid-derle.sh) ile.
+2. Yayındaki APK'nın imzasını kendi derlemene kopyalayıp doğrula: `apksigcopier compare keykey-<sürüm>.apk --unsigned <senin-derlemen>.apk` ([`f-droid-karsilastir.sh`](../scripts/f-droid-karsilastir.sh) aynısını yapar, tutmazsa farklı dosyaları listeler). `v1.0.0` eski yolda (`/home/runner/work/KeyKey/KeyKey`, Temurin JDK 21) derlendi.
 
 [`check-release-apk.sh`](../scripts/check-release-apk.sh) imza bloğunda imzalar ve dolgu dışında bir şey bulursa durur ([`imza-blogu.mjs`](../scripts/imza-blogu.mjs)); şifreli bağımlılık listesi yanlışlıkla geri gelirse yakalanır.

@@ -55,6 +55,8 @@ import re, sys
 src, dst, commit, version, code = sys.argv[1:]
 text = open(src, encoding="utf-8").read()
 text = re.sub(r"^Binaries:.*\n", "", text, flags=re.M)
+# fdroiddata'daki dosyalarda yorum olmaz (basvuru.md); baştaki yorumlar atılır.
+text = re.sub(r"\A(#.*\n)+", "", text)
 # Son derleme bloğu: "  - versionName:" ile başlayan son bölüm.
 head, sep, last = text.rpartition("\n  - versionName:")
 last = re.sub(r"^ (.*)$", f" {version}", last, count=1, flags=re.M)
@@ -79,6 +81,16 @@ fdroid=(sudo --preserve-env --user vagrant
   fdroid)
 "${fdroid[@]}" fetchsrclibs "$appid:$code" --verbose
 (unset CI; "${fdroid[@]}" build --verbose --test --refresh-scanner --on-server --no-tarball "$appid:$code")
+
+# fdroiddata'nın CI'ı da bunları çalıştırır; rewritemeta yalnızca önerir.
+# fdroid build sudo'yu kaldırıyor, yeniden kurulur.
+apt-get install -qy sudo >/dev/null
+"${fdroid[@]}" lint "$appid"
+cp "metadata/$appid.yml" "tmp/$appid.yml.once"
+"${fdroid[@]}" rewritemeta "$appid"
+if ! diff -u "tmp/$appid.yml.once" "metadata/$appid.yml"; then
+  echo "UYARI: fdroid rewritemeta tarifin biçiminde değişiklik öneriyor (yukarıda)." >&2
+fi
 
 mkdir -p "$(dirname "$out")"
 cp "$home_vagrant/tmp/${appid}_${code}.apk" "$out"
