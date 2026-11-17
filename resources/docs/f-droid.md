@@ -1,6 +1,6 @@
 # F-Droid ve Obtainium tasarımı
 
-Durum: taslak, kullanıcı onayı bekliyor (2026-11-17). Faz 10, dal `faz/10-f-droid`.
+Durum: onaylandı ve uygulandı (2026-11-17). Faz 10, dal `faz/10-f-droid`. Uygulamada değişenler: deneme iş akışı (`f-droid.yml`) yayın zincirinin tek kullanımlık anahtarla tam provası oldu (AAB, imzalama betiği [`imzala.sh`](../scripts/imzala.sh), APK denetimi); PR'larda ve haftada bir çalışır. Bizim derleme imajın sabit özetiyle, F-Droid derlemesi imajın güncel haliyle yapılır; F-Droid'in ortamı ayrılırsa karşılaştırma bunu gösterir. Yayında taslak, F-Droid karşılaştırması yeşil olmadan oluşmaz.
 
 ## Amaç
 

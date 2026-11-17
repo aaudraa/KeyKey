@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[2]
 FASTLANE = ROOT / "fastlane" / "metadata" / "android"
 RECIPE = ROOT / "resources" / "f-droid" / "io.github.aaudraa.keykey.yml"
 WORKFLOW = ROOT / ".github" / "workflows" / "yayin.yml"
+TRIAL_WORKFLOW = ROOT / ".github" / "workflows" / "f-droid.yml"
 PUBSPEC = ROOT / "pubspec.yaml"
 
 LOCALES = ("en-US", "tr-TR")
@@ -94,6 +95,8 @@ def check_locale(locale: str, code: str | None) -> None:
         size = len(c.read_bytes())
         if size > CHANGELOG_MAX_BYTES:
             err(c, f"{size} bayt, en çok {CHANGELOG_MAX_BYTES}")
+        if not c.read_text(encoding="utf-8").strip():
+            err(c, "boş")
     if code is not None and not (changelogs / f"{code}.txt").is_file():
         err(changelogs / f"{code}.txt", "pubspec.yaml'daki sürümün changelog'u yok")
 
@@ -123,6 +126,13 @@ def check_workflow() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
     if 'dist/keykey-${VERSION}.apk' not in text:
         err(WORKFLOW, "APK artık dist/keykey-${VERSION}.apk adıyla yayımlanmıyor; tarifteki Binaries kırılır")
+    # Bizim derleme sabit imaj özetiyle yapılır; prova (f-droid.yml) yayınla
+    # aynı imajı kullanmazsa yeşil prova yayın hakkında bir şey söylemez.
+    digest = re.compile(r"image: (\S+@sha256:[0-9a-f]{64})")
+    release = set(digest.findall(text))
+    trial = set(digest.findall(TRIAL_WORKFLOW.read_text(encoding="utf-8")))
+    if len(release) != 1 or release != trial:
+        err(WORKFLOW, f"sabit imaj özeti yayin.yml {sorted(release)} ve f-droid.yml {sorted(trial)} arasında tek ve aynı olmalı")
 
 
 def main() -> int:

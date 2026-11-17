@@ -1,10 +1,10 @@
 name: Yayın
 
 # v ile başlayan bir etiket gönderilince APK ve AAB'yi F-Droid'in derleme
-# yolunda imzasız derler, yayın anahtarıyla imzalar, denetler ve taslak bir
-# GitHub Release oluşturur. Aynı commit'i F-Droid'in kendi aracı da derler;
-# "F-Droid karşılaştırması" yeşil olmadan taslak yayımlanmaz. Taslağı
-# yayımlamak elle yapılır.
+# yolunda imzasız derler, yayın anahtarıyla imzalar, denetler ve aynı commit'in
+# F-Droid'in kendi aracıyla derlenmiş haliyle karşılaştırır. Karşılaştırma
+# yeşilse taslak bir GitHub Release oluşturur; taslağı yayımlamak elle yapılır.
+# Zincirin tek kullanımlık anahtarla provası: f-droid.yml.
 # Ayrıntılar: resources/docs/yayin.md, resources/docs/f-droid.md
 on:
   push:
@@ -23,30 +23,33 @@ defaults:
 
 env:
   TAG: ${{ github.ref_name }}
-  IMAGE: registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie
 
 jobs:
-  # Derleme anahtara erişmez; F-Droid'in derleme imajında, F-Droid'in
-  # derleyeceği yolda ve tarifteki adımlarla yapılır.
+  # Derleme anahtara erişmez; F-Droid'in derleme imajında (sabit özet),
+  # F-Droid'in derleyeceği yolda ve tarifteki adımlarla yapılır.
   derle:
     name: Derleme (F-Droid yolunda, imzasız)
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     container:
-      image: registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie
+      # f-droid.yml'daki "bizim" işiyle aynı özet. Güncellemesi: resources/docs/yayin.md
+      image: registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie@sha256:1ea8bef1820bff06c2974e31b4fc4c79c364cd24231b86e71fa4b926797e0dac
       options: --user root
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - run: git config --global --add safe.directory '*'
-      - name: Sürüm denetimi
+      - name: Sürüm ve mağaza açıklamaları
+        env:
+          PYTHONIOENCODING: utf-8
         run: |
           version="$(sed -n 's/^version: *\([^+ ]*\).*$/\1/p' pubspec.yaml)"
           if [[ "v${version}" != "${TAG}" ]]; then
             echo "HATA: etiket ${TAG}, pubspec.yaml sürümü ${version}." >&2
             exit 1
           fi
+          python3 resources/scripts/check-fastlane.py
       - name: APK ve AAB
         run: bash resources/scripts/f-droid-yolunda-derle.sh "$GITHUB_SHA" out/imzasiz.apk appbundle
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -55,6 +58,7 @@ jobs:
           path: out/
           if-no-files-found: error
 
+  # F-Droid'in aracı, imajın güncel haliyle: F-Droid'in bugün derleyeceği APK.
   f-droid:
     name: F-Droid derlemesi (fdroid build)
     runs-on: ubuntu-24.04
@@ -83,8 +87,9 @@ jobs:
     # Anahtar bu ortamın gizli değerlerinde. Ortam yalnızca v* etiketlerine
     # açık; başka bir dal ya da PR anahtara erişemez.
     environment: yayin
-    permissions:
-      contents: write
+    outputs:
+      version: ${{ steps.surum.outputs.version }}
+      cert: ${{ steps.denetim.outputs.cert }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -93,9 +98,11 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      - run: |
+      - id: surum
+        run: |
           version="$(sed -n 's/^version: *\([^+ ]*\).*$/\1/p' pubspec.yaml)"
           echo "VERSION=${version}" >> "$GITHUB_ENV"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: imzasiz
@@ -124,26 +131,12 @@ jobs:
             exit 1
           fi
 
-      # apksigner zip içeriğine dokunmaz, yalnızca imza bloğunu ekler; bu yüzden
-      # F-Droid imzayı kendi imzasız derlemesine kopyalayıp doğrulayabilir.
-      # Şemalar açıkça yazılı: v1 (JAR) imzası META-INF'e dosya ekler, Android
-      # 11+ için gereksiz; 1.0.0'da Gradle de eklemiyordu. Hizalama korunur:
-      # derleme zaten hizalı, apksigner yeniden hizalarsa yerleşim değişir.
       - name: İmzala
         env:
           KEYKEY_KEYSTORE_PASSWORD: ${{ secrets.KEYKEY_KEYSTORE_PASSWORD }}
           KEYKEY_KEY_ALIAS: ${{ secrets.KEYKEY_KEY_ALIAS }}
           KEYKEY_KEY_PASSWORD: ${{ secrets.KEYKEY_KEY_PASSWORD }}
-        run: |
-          apksigner="$(find "$ANDROID_HOME/build-tools" -name apksigner | sort -V | tail -n 1)"
-          "$apksigner" sign --ks "$KEYKEY_KEYSTORE" --ks-key-alias "$KEYKEY_KEY_ALIAS" \
-            --ks-pass env:KEYKEY_KEYSTORE_PASSWORD --key-pass env:KEYKEY_KEY_PASSWORD \
-            --v1-signing-enabled false --v2-signing-enabled true --v3-signing-enabled true --v4-signing-enabled false --alignment-preserved true \
-            --in out/imzasiz.apk --out out/keykey.apk
-          jarsigner -keystore "$KEYKEY_KEYSTORE" \
-            -storepass:env KEYKEY_KEYSTORE_PASSWORD -keypass:env KEYKEY_KEY_PASSWORD \
-            -sigalg SHA256withRSA -digestalg SHA-256 \
-            -signedjar out/keykey.aab out/imzasiz.aab "$KEYKEY_KEY_ALIAS" >/dev/null
+        run: bash resources/scripts/imzala.sh out/imzasiz.apk out/keykey.apk out/imzasiz.aab out/keykey.aab
 
       - name: Anahtarı sil
         if: always()
@@ -152,23 +145,20 @@ jobs:
       - name: APK güvenlik denetimi
         run: bash resources/scripts/check-release-apk.sh out/keykey.apk
 
-      - name: İmza denetimi
+      # Sertifika, F-Droid tarifindeki AllowedAPKSigningKeys ile aynı olmalı;
+      # başka bir anahtarla imzalı APK'yı F-Droid kabul etmez.
+      - id: denetim
+        name: İmza denetimi
         run: |
           apksigner="$(find "$ANDROID_HOME/build-tools" -name apksigner | sort -V | tail -n 1)"
-          "$apksigner" verify --verbose --print-certs out/keykey.apk | tee imza.txt
-          if grep -q "CN=Android Debug" imza.txt; then
-            echo "HATA: APK debug anahtarıyla imzalanmış." >&2
+          "$apksigner" verify --print-certs out/keykey.apk | tee imza.txt
+          cert="$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' imza.txt | head -n 1)"
+          expected="$(sed -n 's/^AllowedAPKSigningKeys: *//p' resources/f-droid/io.github.aaudraa.keykey.yml | tr -d '[:space:]')"
+          if [[ -z "$cert" || "$cert" != "$expected" ]]; then
+            echo "HATA: imza sertifikası '${cert}', beklenen '${expected}' (F-Droid tarifi)." >&2
             exit 1
           fi
-          # --verbose ile satır "V2 Signer: certificate SHA-256 digest: ...", onsuz
-          # "Signer #1 certificate SHA-256 digest: ..." biçiminde.
-          cert="$(sed -n -E 's/^(V2 Signer:|Signer #1) certificate SHA-256 digest: //p' imza.txt | head -n 1)"
-          if [[ -z "$cert" ]]; then
-            echo "HATA: sertifika özeti okunamadı." >&2
-            exit 1
-          fi
-          echo "CERT_SHA256=${cert}" >> "$GITHUB_ENV"
-          jarsigner -verify out/keykey.aab >/dev/null
+          echo "cert=${cert}" >> "$GITHUB_OUTPUT"
 
       - name: Dosyaları topla
         run: |
@@ -181,17 +171,60 @@ jobs:
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: imzali
-          path: dist/keykey-${{ env.VERSION }}.apk
+          name: dist
+          path: dist/
           if-no-files-found: error
 
-      - name: Taslak GitHub Release
-        env:
+  karsilastir:
+    name: F-Droid karşılaştırması
+    needs: [yayin, f-droid]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    container:
+      image: registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie
+      options: --user root
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: dist
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: fdroid
+          path: out
+      - run: |
+          apt-get update -qq && apt-get install -qy apksigcopier >/dev/null
+          sha256sum dist/*.apk out/*.apk
+          bash resources/scripts/f-droid-karsilastir.sh dist/keykey-*.apk out/fdroid.apk
+
+  # Taslak ancak F-Droid karşılaştırması yeşilse oluşur.
+  taslak:
+    name: Taslak GitHub Release
+    needs: [yayin, karsilastir]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: dist
+      - env:
           GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.yayin.outputs.version }}
+          CERT_SHA256: ${{ needs.yayin.outputs.cert }}
         run: |
           prerelease=()
           [[ "$VERSION" == *-* ]] && prerelease=(--prerelease)
           apk_sha="$(sed -n "s/  keykey-${VERSION}\.apk$//p" dist/SHA256SUMS)"
+          if [[ -z "$apk_sha" || -z "$CERT_SHA256" ]]; then
+            echo "HATA: APK özeti ya da sertifika özeti boş." >&2
+            exit 1
+          fi
           cat > notlar.md <<EOF
           ## Doğrulama
 
@@ -207,33 +240,10 @@ jobs:
           ${CERT_SHA256}
           \`\`\`
 
-          Bu sürümü yayın iş akışı (\`.github/workflows/yayin.yml\`) \`${GITHUB_SHA}\` commit'inden, F-Droid'in derleme imajında ve derleme yolunda derledi; aynı commit'i F-Droid'in kendi aracı da derleyip bu APK'yla karşılaştırdı. \`mapping.txt\` yalnızca hata raporlarındaki yığın izlerini okumak içindir, kurulmaz.
+          Bu sürümü yayın iş akışı (\`.github/workflows/yayin.yml\`) \`${GITHUB_SHA}\` commit'inden, F-Droid'in derleme imajında ve derleme yolunda derledi; aynı commit'i F-Droid'in kendi aracı da derledi ve bu APK'yla bayt bayt aynı çıktı. \`mapping.txt\` yalnızca hata raporlarındaki yığın izlerini okumak içindir, kurulmaz.
           EOF
           gh release create "$TAG" dist/* \
             --repo "$GITHUB_REPOSITORY" \
             --draft --verify-tag "${prerelease[@]}" \
             --title "KeyKey ${VERSION}" \
             --notes-file notlar.md
-
-  # Taslak yayımlanmadan önce: F-Droid'in derlemesi bizim imzamızı kabul
-  # ediyor mu. Kırmızıysa taslak yayımlanmaz (resources/docs/yayin.md).
-  karsilastir:
-    name: F-Droid karşılaştırması
-    needs: [yayin, f-droid]
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    container:
-      image: registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie
-      options: --user root
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          path: out
-          merge-multiple: true
-      - run: |
-          apt-get update -qq && apt-get install -qy apksigcopier >/dev/null
-          sha256sum out/*.apk
-          bash resources/scripts/f-droid-karsilastir.sh out/keykey-*.apk out/fdroid.apk

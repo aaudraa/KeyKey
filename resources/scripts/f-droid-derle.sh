@@ -4,15 +4,18 @@
 # (registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie) root olarak
 # çalıştırılır.
 #
-# Kullanım: f-droid-derle.sh <commit> <çıktı-apk>
+# Kullanım: f-droid-derle.sh <commit> <çıktı-apk> [lint]
 #
 # Tarifin son derleme bloğundaki commit, versionName ve versionCode bu
-# commit'teki pubspec.yaml'a göre değiştirilir; Binaries satırı çıkarılır
-# (taslak ya da henüz olmayan bir sürümü indirmeye çalışmasın,
-# karşılaştırmayı f-droid-karsilastir.sh yapar).
+# commit'teki pubspec.yaml'a göre değiştirilir; derlemede Binaries satırı
+# çıkarılır (taslak ya da henüz olmayan bir sürümü indirmeye çalışmasın,
+# karşılaştırmayı f-droid-karsilastir.sh yapar). "lint" verilirse derlemeden
+# sonra tarifin tamamı (Binaries dahil) fdroid lint ve rewritemeta'dan geçer;
+# yayın iş akışı vermez, böylece yeni bir lint kuralı yayını durdurmaz.
 set -euo pipefail
 
 commit="$1"
+lint="${3:-}"
 # Betik başka klasörlere geçiyor; çıktı yolu baştan mutlak olmalı.
 out="$(realpath -m "$2")"
 
@@ -30,7 +33,8 @@ apt-get install -qy sudo openjdk-21-jdk-headless >/dev/null
 update-alternatives --set java /usr/lib/jvm/java-21-openjdk-amd64/bin/java
 sdkmanager "platform-tools" "build-tools;31.0.0" >/dev/null
 
-# fdroiddata CI'ındaki gibi fdroidserver'ın güncel ana dalı.
+# fdroiddata CI'ındaki gibi fdroidserver'ın güncel ana dalı (fdroiddata
+# önce sabit bir commit'i doğrular, sonra ana dala ileri sarar).
 # GitLab'dan klonlama zaman zaman yarıda kopuyor; üç kez denenir.
 for try in 1 2 3; do
   rm -rf "$fdroidserver"
@@ -50,11 +54,10 @@ code="$(sed -n 's/^version: *\([^+ ]*\)+\([0-9]*\).*$/\2/p' <<<"$pubspec")"
 mkdir -p "$home_vagrant/config" "$home_vagrant/metadata" "$home_vagrant/srclibs" "$home_vagrant/tmp" \
   "$home_vagrant/unsigned" "$home_vagrant/logs" "$home_vagrant/build"
 python3 - "$repo/resources/f-droid/$appid.yml" "$home_vagrant/metadata/$appid.yml" \
-  "$commit" "$version" "$code" <<'EOF'
+  "$home_vagrant/tmp/$appid.yml.tam" "$commit" "$version" "$code" <<'EOF'
 import re, sys
-src, dst, commit, version, code = sys.argv[1:]
+src, dst, full, commit, version, code = sys.argv[1:]
 text = open(src, encoding="utf-8").read()
-text = re.sub(r"^Binaries:.*\n", "", text, flags=re.M)
 # fdroiddata'daki dosyalarda yorum olmaz (basvuru.md); baştaki yorumlar atılır.
 text = re.sub(r"\A(#.*\n)+", "", text)
 # Son derleme bloğu: "  - versionName:" ile başlayan son bölüm.
@@ -65,7 +68,8 @@ last = re.sub(r"^    commit: .*$", f"    commit: {commit}", last, count=1, flags
 text = head + sep + last
 text = re.sub(r"^CurrentVersion: .*$", f"CurrentVersion: {version}", text, flags=re.M)
 text = re.sub(r"^CurrentVersionCode: .*$", f"CurrentVersionCode: {code}", text, flags=re.M)
-open(dst, "w", encoding="utf-8").write(text)
+open(full, "w", encoding="utf-8").write(text)
+open(dst, "w", encoding="utf-8").write(re.sub(r"^Binaries:.*\n", "", text, flags=re.M))
 EOF
 sed -n '/^Builds:/,/^$/p' "$home_vagrant/metadata/$appid.yml"
 # fdroiddata'dan Flutter srclib'i ve config/ (lint kategorileri ve
@@ -96,16 +100,20 @@ fdroid=(sudo --preserve-env --user vagrant
 "${fdroid[@]}" fetchsrclibs "$appid:$code" --verbose
 (unset CI; "${fdroid[@]}" build --verbose --test --refresh-scanner --on-server --no-tarball "$appid:$code")
 
-# fdroiddata'nın CI'ı da bunları çalıştırır; rewritemeta yalnızca önerir.
-# fdroid build sudo'yu kaldırıyor, yeniden kurulur.
-apt-get install -qy sudo >/dev/null
-"${fdroid[@]}" lint "$appid"
-cp "metadata/$appid.yml" "tmp/$appid.yml.once"
-"${fdroid[@]}" rewritemeta "$appid"
-if ! diff -u "tmp/$appid.yml.once" "metadata/$appid.yml"; then
-  echo "UYARI: fdroid rewritemeta tarifin biçiminde değişiklik öneriyor (yukarıda)." >&2
-fi
-
 mkdir -p "$(dirname "$out")"
 cp "$home_vagrant/tmp/${appid}_${code}.apk" "$out"
 echo "F-Droid derledi: $out ($appid $version, $code)"
+
+if [[ "$lint" == lint ]]; then
+  # fdroiddata'nın CI'ı da bunları çalıştırır; rewritemeta yalnızca önerir.
+  # Başvurulacak tarif Binaries satırıyla denetlenir.
+  # fdroid build sudo'yu kaldırıyor, yeniden kurulur.
+  apt-get install -qy sudo >/dev/null
+  cp "tmp/$appid.yml.tam" "metadata/$appid.yml"
+  "${fdroid[@]}" lint "$appid"
+  cp "metadata/$appid.yml" "tmp/$appid.yml.once"
+  "${fdroid[@]}" rewritemeta "$appid"
+  if ! diff -u "tmp/$appid.yml.once" "metadata/$appid.yml"; then
+    echo "UYARI: fdroid rewritemeta tarifin biçiminde değişiklik öneriyor (yukarıda)." >&2
+  fi
+fi
