@@ -2,10 +2,14 @@
 
 KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesinde](docs/yayin.md#sürüm-numarası). `v1.0.0`'dan önceki sürümler fazların sonunu işaretler ve hata ayıklama anahtarıyla imzalıdır; kalıcı bir kurulum için kullanılmamalıdır.
 
-## Yayınlanmamış
+## 1.0.1 (2026-11-17): F-Droid hazırlığı
+
+F-Droid'e girecek ilk sürüm.
 
 ### Eklenenler
 
+- F-Droid için uygulama açıklamaları, simge ve ekran görüntüleri (Fastlane, Türkçe ve İngilizce); CI uzunluk sınırlarını ve her sürümün değişiklik notunu denetliyor (#115).
+- README'de ve kılavuzda Obtainium'a tek dokunuşla ekleme bağlantısı (#114).
 - Kurulumda kurtarma anahtarı kopyalanabiliyor (güvenli pano, 30 saniyede temizlenir) ve metin dosyası olarak kaydedilebiliyor; doğrulama adımı yapıştırmayı ve dosyadan okumayı kabul ediyor. Düğme "Yazdım" yerine "Kaydettim".
 
 ### Düzeltilenler
@@ -14,6 +18,8 @@ KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesind
 
 ### Değişenler
 
+- Yayın derlemesi F-Droid'in derleme imajında ve derleme yolunda (`/home/vagrant/build/io.github.aaudraa.keykey`) imzasız yapılıyor; imza ayrı bir işte `apksigner` ile atılıyor. Aynı commit'i F-Droid'in kendi aracı da derliyor ve taslak yayımlanmadan önce iki APK karşılaştırılıyor; F-Droid böylece bizim imzalı APK'mızı dağıtabilecek (#116, #117).
+- README yeniden düzenlendi: kurulum yolları tek yerde, kodun büyük kısmının bir yapay zekâ asistanıyla yazıldığı açıkça yazılı.
 - Bağımlılıklar güncellendi: Gradle 9.9.0, Android eklentisi 9.5.1, `drift` 2.35.4, `go_router` 18.1.4, `flutter_zxing` 3.1.1, `pigeon` 29.2.0 ve dolaylı paketler.
 - Yayın iş akışı anahtar parolalarını derlemeden önce deniyor; anahtar oluşturma betiği Git Bash'teki iki tuzağa karşı düzeltildi (#112).
 
