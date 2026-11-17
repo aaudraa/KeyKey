@@ -47,7 +47,7 @@ pubspec="$(git -C "$repo" show "$commit:pubspec.yaml")"
 version="$(sed -n 's/^version: *\([^+ ]*\)+\([0-9]*\).*$/\1/p' <<<"$pubspec")"
 code="$(sed -n 's/^version: *\([^+ ]*\)+\([0-9]*\).*$/\2/p' <<<"$pubspec")"
 
-mkdir -p "$home_vagrant/metadata" "$home_vagrant/srclibs" "$home_vagrant/tmp" \
+mkdir -p "$home_vagrant/config" "$home_vagrant/metadata" "$home_vagrant/srclibs" "$home_vagrant/tmp" \
   "$home_vagrant/unsigned" "$home_vagrant/logs" "$home_vagrant/build"
 python3 - "$repo/resources/f-droid/$appid.yml" "$home_vagrant/metadata/$appid.yml" \
   "$commit" "$version" "$code" <<'EOF'
@@ -70,6 +70,9 @@ EOF
 sed -n '/^Builds:/,/^$/p' "$home_vagrant/metadata/$appid.yml"
 curl -sSfL https://gitlab.com/fdroid/fdroiddata/-/raw/master/srclibs/flutter.yml \
   -o "$home_vagrant/srclibs/flutter.yml"
+# lint kategorileri fdroiddata'nın listesine göre denetler.
+curl -sSfL https://gitlab.com/fdroid/fdroiddata/-/raw/master/config/categories.yml \
+  -o "$home_vagrant/config/categories.yml"
 
 chown -R vagrant "$home_vagrant"
 cd "$home_vagrant"
