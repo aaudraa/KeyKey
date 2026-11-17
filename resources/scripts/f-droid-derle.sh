@@ -31,8 +31,16 @@ update-alternatives --set java /usr/lib/jvm/java-21-openjdk-amd64/bin/java
 sdkmanager "platform-tools" "build-tools;31.0.0" >/dev/null
 
 # fdroiddata CI'ındaki gibi fdroidserver'ın güncel ana dalı.
-rm -rf "$fdroidserver"
-git clone --quiet --depth 1 https://gitlab.com/fdroid/fdroidserver.git "$fdroidserver"
+# GitLab'dan klonlama zaman zaman yarıda kopuyor; üç kez denenir.
+for try in 1 2 3; do
+  rm -rf "$fdroidserver"
+  if git clone --quiet --depth 1 https://gitlab.com/fdroid/fdroidserver.git "$fdroidserver"; then
+    break
+  fi
+  [[ $try == 3 ]] && exit 1
+  echo "fdroidserver klonlanamadı, yeniden deneniyor ($try)" >&2
+  sleep 30
+done
 echo "fdroidserver: $(git -C "$fdroidserver" rev-parse HEAD)"
 
 pubspec="$(git -C "$repo" show "$commit:pubspec.yaml")"
