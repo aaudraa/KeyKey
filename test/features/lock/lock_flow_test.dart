@@ -12,6 +12,7 @@ import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/lock_screen.dart';
+import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../../support/fake_vault_service.dart';
@@ -571,6 +572,42 @@ void main() {
       await enterPassword(tester, FakeVaultService.correctPassword);
       expect(find.text(otpEmptyText), findsOneWidget);
       expect(find.text(vaultText), findsNothing);
+    });
+
+    testWidgets('kilit açılınca listeden açılan kayda dönülüyor', (
+      tester,
+    ) async {
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        logins: FakeLoginRepository(
+          items: [
+            FakeLoginRepository.item(
+              const LoginContent(
+                name: 'Banka',
+                username: 'kullanici-banka',
+                password: 'p',
+              ),
+              id: 1,
+            ),
+          ],
+        ),
+      );
+      // Kayıt listeden açılır (push); adres çubuğundaki temel yer /kasa kalır.
+      await tester.tap(find.text('Banka'));
+      await tester.pumpAndSettle();
+      // Yalnızca ayrıntı ekranında olan düğme.
+      final detail = find.byTooltip('Kopyala: Kullanıcı adı');
+      expect(detail, findsOneWidget);
+
+      setLifecycle(tester, AppLifecycleState.hidden);
+      setLifecycle(tester, AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(find.text(lockedTitle), findsOneWidget);
+
+      await enterPassword(tester, FakeVaultService.correctPassword);
+      expect(detail, findsOneWidget);
     });
 
     group("KeyKey'in açtığı dosya seçicisi", () {

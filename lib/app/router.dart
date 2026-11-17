@@ -287,9 +287,12 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
   // Geri dönüşler yönlendirmeden geçmez; kalınan yer gezginin kendisinden
   // okunur. Kilitliyken değişmez, böylece kilit ekranı kayda geçmez.
+  // `currentConfiguration.uri` push ile açılan kaydı göstermez (temel yer
+  // /kasa kalır); en üstteki eşleşmenin durumu kaydın kendi adresini verir.
   void remember() {
     if (ref.read(vaultControllerProvider) is! VaultOpen) return;
-    final path = router.routerDelegate.currentConfiguration.uri.path;
+    if (router.routerDelegate.currentConfiguration.isEmpty) return;
+    final path = router.state.uri.path;
     if (!_gateRoutes.contains(path)) resume = resumeLocationFor(path);
   }
 
