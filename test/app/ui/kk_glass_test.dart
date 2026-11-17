@@ -31,24 +31,23 @@ void main() {
       expect(_strip(glass), findsNothing);
     });
 
-    // Telefon denemesi 17: koyu temada alt menünün tepesindeki ince beyaz
-    // çizgi de istenmedi. Açık temada kremin üstünde belli belirsiz kalır.
-    testWidgets(
-      name == 'açık'
-          ? '$name: alt menünün camında parlak şerit kalır'
-          : '$name: alt menünün camında da parlak şerit yok',
-      (tester) async {
-        await tester.pumpWidget(
-          _host(
-            theme,
-            const GlassSurface(
-              sheen: true,
-              child: SizedBox(width: 200, height: 80),
-            ),
+    // Telefon denemesi 17: alt menünün tepesindeki ince beyaz çizgi önce
+    // koyu temada, sonra açık temada da istenmedi.
+    testWidgets('$name: alt menünün camında da parlak şerit yok', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          theme,
+          const GlassSurface(
+            sheen: true,
+            child: SizedBox(width: 200, height: 80),
           ),
-        );
-        expect(_strip(glass), name == 'açık' ? findsOneWidget : findsNothing);
-      },
-    );
+        ),
+      );
+      expect(_strip(glass), findsNothing);
+      // Üstten sönen yumuşak parıltı kalır: çizgi değil, camın ışığı.
+      expect(find.byType(DecoratedBox), findsNWidgets(2));
+    });
   }
 }

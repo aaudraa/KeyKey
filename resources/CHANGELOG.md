@@ -34,7 +34,7 @@ Faz 11 ([tasarım](docs/kullanici-gozuyle.md)).
 - "Kasa okunamadı" ekranı bozuk dosyada yedekten dönüş yolunu da anlatıyor.
 - Ayrıntı ekranındaki kopyala düğmeleri ekran okuyucuya hangi alanı kopyaladığını söylüyor.
 - Kayıttan bir alan silinince, açılmış gizli değer sonraki gizli alana geçip dokunmadan açık görünmüyor.
-- Koyu temada alt menünün tepesindeki ince beyaz çizgi kaldırıldı.
+- Alt menünün tepesindeki ince beyaz çizgi iki temada da kaldırıldı.
 - Metinler: kaydedilmeyen formdan çıkış "Değişiklikleri at", çöpten çıkarma "Geri yükle", "Kasanın yerine yedeği koy", "Bu anahtar bu kasaya ait değil."; kılavuzda sık kullanılana ekleme düğmesinin yeri.
 
 ## 1.0.1 (2026-11-17): F-Droid hazırlığı

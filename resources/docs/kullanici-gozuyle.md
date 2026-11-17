@@ -77,7 +77,7 @@ Proje sahibi (2026-11-17, sabah): "Benim istediğim cam tasarımı sadece alttak
 
 Proje sahibinin notları ve kararlar:
 
-1. **"Navbarda koyu temada yine ince bir beyaz çizgi çıkıyor, istemiyorum."** Çizgi, alt menünün camının tepesindeki 1 piksellik parlak şeritti (kartlardan telefon denemesi 6'da kaldırılmıştı). Şerit artık yalnızca açık temada; koyu temada camın yumuşak parıltısı kalıyor. Sekmeler ile "+" arasındaki dikey ayraç ayrı ve soluk gri, dokunulmadı.
+1. **"Navbarda koyu temada yine ince bir beyaz çizgi çıkıyor, istemiyorum."** Çizgi, alt menünün camının tepesindeki 1 piksellik parlak şeritti (kartlardan telefon denemesi 6'da kaldırılmıştı). Şerit önce yalnızca koyu temada kaldırıldı; telefon denemesi 18'de açık temada da istenmedi ve tamamen kalktı. Camın üstten sönen yumuşak parıltısı kalıyor. Sekmeler ile "+" arasındaki dikey ayraç ayrı ve soluk gri, dokunulmadı.
 2. **"Lisans konusuna iyi bakmanı istiyorum, sonra dava yemeyelim."** Lisanslar yeniden denetlendi; çakışma yok. Eksik olan KeyKey'in kendi telif ve "garanti yoktur" bildirimiydi, eklendi. Ayrıntılar ve sınırlar: [bağımlılıklar belgesi](bagimliliklar.md#lisans-denetimi-2026-11-17).
 3. **"Ayarlardaki lisanslar ekranını da düzeltelim, çok karışık."** Flutter'ın hazır sayfasının yerine üç bölümlü kendi ekranımız: KeyKey'in lisansı, KeyKey'in kullandıkları (ne işe yaradıklarıyla), bütün paketler (baş harflere göre). [Ayrıntı](bagimliliklar.md#lisanslar-ekranı).
 4. **"Tanıtım ekranında koşul onaylama da olsa iyi olur; verilerin gizliliği hakkında her şeyi açıklayalım."** [Kullanım koşulları](kosullar.md) eklendi. Kararlarım:
@@ -94,6 +94,12 @@ Proje sahibinin notları ve kararlar:
 - *Düzeltildi:* Lisans metinleri yüklenemezse sonsuz bekleme yerine mesaj; ekran okuyucu için paket başlıkları; kabul dosyası yazılamazsa hiçbir hata dışarı çıkmıyor; koşul belgesinin sürüm testi gerçekten sürüm satırını arıyor; kurtarma, "kullanılamıyor" ve geri tuşu için testler; parmak izi dışı cihaz betiğinin ön koşulu (koşulların elle kabulü).
 - *Kararım:* "Kasa kullanılamıyor" ekranından önce de koşullar soruluyor; zararsız ve kural basit kalıyor. Koşullar lisansın şartı değil, bir bildirim ve sorumluluk reddi (GPL-3.0 programı çalıştırmak için kabul istemez).
 - *Bırakıldı (küçük):* Lisans kataloğu arayüz iş parçacığında kuruluyor (telefonda yavaşlarsa ayrı iş parçacığına taşınır); uzun lisans tek metin olarak çiziliyor; GPL sürümü ayrıca denetlenmiyor ve bozuk başlık tanıma iki kalıpla sınırlı (bugünkü 204 girdinin hepsi doğru); entegrasyon testleri kapıyı değil kasa ekranlarını sınıyor (kapı widget testlerinde).
+
+## Telefon denemesi 18 (2026-11-17, akşamüstü)
+
+Proje sahibi koşulları kabul etti ve yeni Lisanslar ekranını beğendi ("lisanslar ekranı güzel olmuş"). Tek not:
+
+1. **"Navbardaki beyaz çizgiyi iki tema için de kaldır, beyaz temada da olmasın."** Alt menünün tepesindeki 1 piksellik parlak şerit açık temada da kaldırıldı; artık hiçbir cam yüzeyde yok. Camı cam gibi gösteren üstten sönen yumuşak parıltı, ince kenar ve gölge kalıyor. Sekmeler ile "+" arasındaki dikey ayraç soluk gri, beyaz değil; dokunulmadı.
 
 ## Proje sahibinin kararına bırakılanlar
 
