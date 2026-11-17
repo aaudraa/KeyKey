@@ -15,7 +15,9 @@ KeyKey hiçbir veri toplamaz ve hiçbir yere göndermez. Uygulamanın internet i
 
 - Girdiğin parolalar, 2FA hesapları, notlar ve ayarlar yalnızca senin cihazında, ana parolandan türetilen anahtarla şifrelenmiş bir veritabanında durur. Şifreleme ayrıntıları [güvenlik tasarımında](guvenlik-tasarimi.md).
 - Android'in bulut yedeği kapalıdır; kasa Google hesabına yedeklenmez.
-- Tek istisna tema seçimin (sistem, açık ya da koyu): kilit ekranı da seçtiğin temayla açılsın diye uygulamanın kendi klasöründe ayrı, şifresiz küçük bir dosyada durur. Bu dosya başka hiçbir bilgi içermez.
+- İki istisna var, ikisi de uygulamanın kendi klasöründe ayrı, şifresiz küçük birer dosya ve başka hiçbir bilgi içermez:
+  - Tema seçimin (sistem, açık ya da koyu): kilit ekranı da seçtiğin temayla açılsın diye.
+  - [Kullanım koşullarını](kosullar.md) kabul ettiğin: yalnızca kabul edilen koşulların sürüm numarası. Koşullar kasa açılmadan önce sorulduğu için kasanın içinde tutulamaz.
 - Uygulamayı kaldırınca bütün verisi silinir. Önce bir yedek almazsan veri geri getirilemez.
 
 ## İzinler

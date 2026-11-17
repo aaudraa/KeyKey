@@ -18,6 +18,9 @@ Faz 11 ([tasarım](docs/kullanici-gozuyle.md)).
 - Android 13 ve üstünde uygulamanın dili sistem ayarlarından ayrıca seçilebiliyor.
 - Kayıttaki web adresi "Siteyi aç" ile tarayıcıda açılıyor; Hakkında'da kaynak kod, sorun bildirme ve gizlilik bildirimi bağlantıları. Yalnızca http ve https adresleri tarayıcıya devrediliyor; KeyKey'e internet izni eklenmedi.
 
+- Kullanım koşulları: kasa kurulmadan ya da açılmadan önce bir kez gösteriliyor ve onay istiyor ([metin](docs/kosullar.md)); Ayarlar → Hakkında'dan okunabiliyor. Kabul edilen koşul sürümü kasanın dışında, şifresiz `terms` dosyasında.
+- Lisanslar ekranı yeniden: önce KeyKey'in kendi lisansı, telif satırı ve "garanti yoktur" bildirimi; sonra KeyKey'in kullandığı parçalar ne işe yaradıkları ve lisans türleriyle; en sonda baş harflere göre bütün paketler. Lisanslar yeniden denetlendi ([sonuç](docs/bagimliliklar.md#lisans-denetimi-2026-11-17)).
+
 ### Değişenler
 
 - Cam yalnızca alt menüde ve "+" kutusunda: alttan açılan pencereler, ⋮ menüleri ve üst bildirim arkasını bulanıklaştırmıyor, dolu bir yüzeyle açılıyor (koyu temada kartlardan bir ton açık). Daha okunur ve daha akıcı.
@@ -31,6 +34,7 @@ Faz 11 ([tasarım](docs/kullanici-gozuyle.md)).
 - "Kasa okunamadı" ekranı bozuk dosyada yedekten dönüş yolunu da anlatıyor.
 - Ayrıntı ekranındaki kopyala düğmeleri ekran okuyucuya hangi alanı kopyaladığını söylüyor.
 - Kayıttan bir alan silinince, açılmış gizli değer sonraki gizli alana geçip dokunmadan açık görünmüyor.
+- Koyu temada alt menünün tepesindeki ince beyaz çizgi kaldırıldı.
 - Metinler: kaydedilmeyen formdan çıkış "Değişiklikleri at", çöpten çıkarma "Geri yükle", "Kasanın yerine yedeği koy", "Bu anahtar bu kasaya ait değil."; kılavuzda sık kullanılana ekleme düğmesinin yeri.
 
 ## 1.0.1 (2026-11-17): F-Droid hazırlığı
