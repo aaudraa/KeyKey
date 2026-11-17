@@ -2,6 +2,29 @@
 
 KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesinde](docs/yayin.md#sürüm-numarası). `v1.0.0`'dan önceki sürümler fazların sonunu işaretler ve hata ayıklama anahtarıyla imzalıdır; kalıcı bir kurulum için kullanılmamalıdır.
 
+## Yayınlanmamış: Kullanıcı gözüyle iyileştirmeler
+
+Faz 11 ([tasarım](docs/kullanici-gozuyle.md)).
+
+### Eklenenler
+
+- Kilidi açınca kaldığın yere dönülüyor: kilitlenmeden önceki sekme ya da açık olan kasa kaydı. Formlar ve tek seferlik ekranlar geri açılmıyor; yer yalnızca bellekte tutuluyor.
+- Kasadaki sıralama seçimi ve parola üreticinin son seçenekleri (uzunluk ve türler; parola değil) kasanın içindeki ayarlarda saklanıyor. Ayar kaydı sürüm 4; sürüm 3 kayıtları okunmaya devam ediyor.
+- Tek bir 2FA hesabı eklenirken aynı gizli anahtarlı hesap varsa uyarı.
+- Klasör kutusu var olan klasörleri öneriyor; harf büyüklüğü farklı yazılan ad var olan klasöre bağlanıyor.
+- Çöp kutularında "Tümünü geri yükle" ve onaylı "Çöpü boşalt".
+- Boş kasada "Parolaları içe aktar" ve "Yedekten geri yükle" kısayolları.
+- Ana parola değişince eski yedeklerin eski parolayla açılmaya devam ettiğini söyleyen not ve oradan yeni yedek.
+- Android 13 ve üstünde uygulamanın dili sistem ayarlarından ayrıca seçilebiliyor.
+
+### Düzeltilenler
+
+- Ana parola değiştirirken yanlış parola beklemesi saniye olarak değil, kilit ekranındaki gibi dakika:saniye geri sayımıyla gösteriliyor; bekleme bitene kadar düğme kapalı.
+- Yedek ve dışa aktarma dosyalarının adı arayüz dilinde (`keykey-backup-…` / `keykey-yedek-…`).
+- "Kasa okunamadı" ekranı bozuk dosyada yedekten dönüş yolunu da anlatıyor.
+- Ayrıntı ekranındaki kopyala düğmeleri ekran okuyucuya hangi alanı kopyaladığını söylüyor.
+- Metinler: kaydedilmeyen formdan çıkış "Değişiklikleri at", çöpten çıkarma "Geri yükle", "Kasanın yerine yedeği koy", "Bu anahtar bu kasaya ait değil."; kılavuzda sık kullanılana ekleme düğmesinin yeri.
+
 ## 1.0.1 (2026-11-17): F-Droid hazırlığı
 
 F-Droid'e girecek ilk sürüm.

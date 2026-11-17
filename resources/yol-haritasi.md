@@ -522,6 +522,7 @@ Bu fikirlerin hiçbiri henüz planlanmış değil. Sırası kullanıma göre bel
 | Arka plan kilidinde bekleme süresi | Kullanıcının seçtiği kısa süre (30 sn, 1 dk), varsayılan "hemen". Telefon başkasının eline geçtiğinde kasa açık kalabilir; proje sahibinin kararı. Faz 11'de kilit açılınca kalınan yere dönülmesi sürtünmenin çoğunu giderdi. |
 | Seçilen klasöre otomatik şifreli yedek | Drive ya da Syncthing klasörüne kendiliğinden yedek. Yedeğin anahtarı ve zamanı güvenlik tasarımında ayrı karar. |
 | Yeni kurtarma anahtarı üretme | Kâğıt kaybolursa ya da kaydedilen dosya sızarsa. Kripto çekirdeğinde yeni işlem; eski yedekler eski anahtarla açılmaya devam eder. |
+| Gizli olmayan alanlarda normal klavye | Ad, site, klasör ve aramada büyük harf ve adres klavyesi. Bugün bütün kutular bilerek `visiblePassword` açıyor, çünkü klavyelerin çoğu öğrenme kapatma isteğini ancak böyle uyguluyor; normal klavyede kayıt adları ve siteler klavyenin sözlüğüne girebilir. Proje sahibinin kararı ([ayrıntı](docs/kullanici-gozuyle.md#proje-sahibinin-kararına-bırakılanlar)). |
 | KeePass (`.kdbx`) içe aktarma, toplu seçim | KDBX çoğunlukla Argon2d kullanır, libsodium'da yok. Toplu seçim: çoklu silme ve klasöre taşıma. |
 
 ## Riskler
