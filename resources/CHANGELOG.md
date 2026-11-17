@@ -2,7 +2,7 @@
 
 KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesinde](docs/yayin.md#sürüm-numarası). `v1.0.0`'dan önceki sürümler fazların sonunu işaretler ve hata ayıklama anahtarıyla imzalıdır; kalıcı bir kurulum için kullanılmamalıdır.
 
-## Yayınlanmamış: Kullanıcı gözüyle iyileştirmeler
+## Yayımlanmamış: Kullanıcı gözüyle iyileştirmeler
 
 Faz 11 ([tasarım](docs/kullanici-gozuyle.md)).
 
