@@ -15,6 +15,7 @@ import 'package:keykey/app/ui/kk_shake.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/lock/presentation/wait_format.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Kasa kilitliyken açılan ekran.
@@ -167,12 +168,6 @@ class _LockScreenState extends ConsumerState<LockScreen> {
     }
   }
 
-  static String _formatWait(Duration wait) {
-    final minutes = wait.inMinutes;
-    final seconds = wait.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return '$minutes:$seconds';
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -219,7 +214,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
         field,
         if (_wait > Duration.zero) ...[
           const SizedBox(height: 12),
-          Text(l10n.lockWait(_formatWait(_wait)), textAlign: TextAlign.center),
+          Text(l10n.lockWait(formatWait(_wait)), textAlign: TextAlign.center),
         ],
         const SizedBox(height: 16),
         FilledButton(

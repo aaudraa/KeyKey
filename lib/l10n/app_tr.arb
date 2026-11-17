@@ -58,7 +58,6 @@
   "changePasswordCurrent": "Mevcut ana parola",
   "changePasswordSave": "Parolayı değiştir",
   "changePasswordDone": "Ana parola değiştirildi.",
-  "changePasswordWait": "Çok fazla hatalı deneme. {seconds} saniye sonra yeniden dene.",
   "settingsLockNow": "Şimdi kilitle",
   "unavailableTitle": "Kasa okunamadı",
   "unavailableMessage": "Dosya bozuk veya KeyKey'in daha yeni bir sürümüne ait. Verilerine dokunulmadı. Yeniden denemek için KeyKey'i güncelle.",

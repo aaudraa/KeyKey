@@ -150,6 +150,7 @@ class FakeVaultService implements VaultService {
     required String currentPassword,
     required String newPassword,
   }) async {
+    if (currentWait > Duration.zero) return PasswordMustWait(currentWait);
     if (currentPassword != correctPassword) {
       return PasswordRejected(waitAfterReject);
     }

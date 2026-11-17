@@ -60,6 +60,45 @@ void main() {
   // Ayarlarda birden çok anahtar var, parmak izi anahtarı adıyla bulunur.
   final biometricSwitch = find.widgetWithText(KkSwitchTile, 'Parmak iziyle aç');
 
+  group('ana parola değiştirme beklemesi', () {
+    testWidgets('yanlış paroladan sonra bekleme dakika:saniye sayılıyor', (
+      tester,
+    ) async {
+      service.waitAfterReject = const Duration(minutes: 15);
+      await openChangePassword(tester);
+      await submitChange(tester, current: 'yanlis-parola-1');
+
+      expect(
+        find.text('Çok fazla hatalı deneme. 15:00 sonra yeniden dene.'),
+        findsOneWidget,
+      );
+      await tester.pump(const Duration(seconds: 1));
+      expect(
+        find.text('Çok fazla hatalı deneme. 14:59 sonra yeniden dene.'),
+        findsOneWidget,
+      );
+      final save = tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, 'Parolayı değiştir'),
+      );
+      expect(save.onPressed, isNull);
+
+      await tester.pump(const Duration(minutes: 15));
+      expect(find.textContaining('Çok fazla hatalı deneme'), findsNothing);
+    });
+
+    testWidgets('bekleme sürerken açılan ekran da sayıyor', (tester) async {
+      service.currentWait = const Duration(seconds: 90);
+      await openChangePassword(tester);
+      await submitChange(tester, current: FakeVaultService.correctPassword);
+
+      expect(
+        find.text('Çok fazla hatalı deneme. 1:30 sonra yeniden dene.'),
+        findsOneWidget,
+      );
+      expect(service.changedPassword, isNull);
+    });
+  });
+
   group('düzen', () {
     // Telefon denemesi 5: başlık üst çubukta sabit, kaydırınca değişmez.
     testWidgets('başlık çubukta sabit durur', (tester) async {

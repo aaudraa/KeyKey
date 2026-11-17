@@ -263,15 +263,6 @@
   "@changePasswordDone": {
     "description": "Message after the password was changed."
   },
-  "changePasswordWait": "{seconds, plural, =1{Too many wrong attempts. Try again in 1 second.} other{Too many wrong attempts. Try again in {seconds} seconds.}}",
-  "@changePasswordWait": {
-    "description": "Error while waiting after wrong passwords.",
-    "placeholders": {
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
   "settingsLockNow": "Lock now",
   "@settingsLockNow": {
     "description": "Settings entry: lock the vault immediately."

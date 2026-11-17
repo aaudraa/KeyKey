@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +12,7 @@ import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/new_password_fields.dart';
+import 'package:keykey/features/lock/presentation/wait_format.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Ana parola değiştirme. Mevcut parola yeniden sorulur.
@@ -28,16 +31,33 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
   bool _busy = false;
   String? _error;
 
+  /// Yanlış parolalardan sonra kalan bekleme; kilit ekranındaki sayaçla aynı.
+  Duration _wait = Duration.zero;
+  Timer? _waitTimer;
+
   @override
   void dispose() {
+    _waitTimer?.cancel();
     _current.dispose();
     _password.dispose();
     _confirmation.dispose();
     super.dispose();
   }
 
+  void _startWait(Duration wait) {
+    _waitTimer?.cancel();
+    setState(() => _wait = wait.isNegative ? Duration.zero : wait);
+    if (_wait == Duration.zero) return;
+    _waitTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      final left = _wait - const Duration(seconds: 1);
+      setState(() => _wait = left.isNegative ? Duration.zero : left);
+      if (_wait == Duration.zero) timer.cancel();
+    });
+  }
+
   bool get _canSubmit =>
       !_busy &&
+      _wait == Duration.zero &&
       _current.text.isNotEmpty &&
       NewPasswordFields.isValid(_password.text, _confirmation.text);
 
@@ -63,11 +83,12 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
           context.pop();
         case PasswordInterrupted():
           break;
-        case PasswordRejected():
+        case PasswordRejected(:final wait):
           _current.clear();
           setState(() => _error = l10n.lockWrongPassword);
+          _startWait(wait);
         case PasswordMustWait(:final wait):
-          setState(() => _error = l10n.changePasswordWait(wait.inSeconds));
+          _startWait(wait);
       }
     } on Exception {
       if (mounted) setState(() => _error = l10n.setupFailed);
@@ -100,7 +121,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                 label: l10n.changePasswordCurrent,
                 autofocus: true,
                 enabled: !_busy,
-                errorText: _error,
+                errorText: _wait > Duration.zero
+                    ? l10n.lockWait(formatWait(_wait))
+                    : _error,
                 textInputAction: TextInputAction.next,
               ),
             ),
