@@ -151,6 +151,34 @@ void main() {
       );
     });
 
+    testWidgets('boş kasada içe aktarma ve geri yükleme kısayolları', (
+      tester,
+    ) async {
+      logins = FakeLoginRepository();
+      final documents = FakeDocumentFiles();
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        logins: logins,
+        documents: documents,
+      );
+
+      await tester.tap(find.widgetWithText(TextButton, 'Parolaları içe aktar'));
+      await tester.pumpAndSettle();
+      expect(documents.opens, 1);
+
+      await tester.tap(find.widgetWithText(TextButton, 'Yedekten geri yükle'));
+      await tester.pumpAndSettle();
+      expect(documents.opens, 2);
+    });
+
+    testWidgets('kayıt varken kısayollar yok', (tester) async {
+      await pumpVault(tester);
+      expect(find.text('Parolaları içe aktar'), findsNothing);
+      expect(find.text('Yedekten geri yükle'), findsNothing);
+    });
+
     testWidgets('boş kasada arama kutusu yalnızca "Ara"', (tester) async {
       logins = FakeLoginRepository();
       await pumpVault(tester);

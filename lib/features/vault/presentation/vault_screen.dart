@@ -17,6 +17,8 @@ import 'package:keykey/app/ui/kk_menu.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/features/backup/presentation/backup_reminder_banner.dart';
+import 'package:keykey/features/backup/presentation/login_import_screen.dart';
+import 'package:keykey/features/backup/presentation/restore_screen.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/vault/application/login_search.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
@@ -234,11 +236,45 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
       keyOf: (item) => loginIdHex(item.id),
       // Altta yüzen menü için boşluk.
       padding: EdgeInsets.fromLTRB(16, 4, 16, navClearance(context)),
-      empty: Text(
-        count > 0 ? l10n.vaultNoResults : l10n.vaultEmpty,
-        textAlign: TextAlign.center,
-      ),
+      empty: count > 0
+          ? Text(l10n.vaultNoResults, textAlign: TextAlign.center)
+          : const _EmptyVault(),
       itemBuilder: (context, item, index) => _LoginTile(item: item),
+    );
+  }
+}
+
+/// Boş kasa: "+" ipucu ve başka uygulamadan ya da eski telefondan gelen
+/// kullanıcı için iki kısayol.
+class _EmptyVault extends ConsumerWidget {
+  const new();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(l10n.vaultEmpty, textAlign: TextAlign.center),
+        const SizedBox(height: 16),
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 8,
+          runSpacing: 4,
+          children: [
+            TextButton.icon(
+              icon: const Icon(Icons.input_rounded),
+              label: Text(l10n.loginImportTitle),
+              onPressed: () => unawaited(pickLoginExport(context, ref)),
+            ),
+            TextButton.icon(
+              icon: const Icon(Icons.settings_backup_restore_rounded),
+              label: Text(l10n.restoreTitle),
+              onPressed: () => unawaited(pickBackupToRestore(context, ref)),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
