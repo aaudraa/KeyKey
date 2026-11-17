@@ -222,6 +222,9 @@ void main() {
     // Ekranın başlığı da "Ana parolayı değiştir"; Argon2id bitene kadar
     // onay mesajı beklenir.
     await pumpUntilFound(tester, find.text('Ana parola değiştirildi.'));
+    // Eski yedekler için not; yedek almadan geçilir.
+    await pumpUntilFound(tester, find.text('Sonra'));
+    await tester.tap(find.text('Sonra'));
     await pumpUntilFound(tester, find.text('Ana parolayı değiştir'));
 
     // Eski parola artık çalışmıyor, yenisi çalışıyor.
