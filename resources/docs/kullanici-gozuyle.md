@@ -46,6 +46,19 @@ Bilerek böyle bırakılanlar (kararlarım):
 - Kilit açıldıktan hemen sonra liste önce ada göre çizilip ayarlar yüklenince bir kez yeniden sıralanabilir; ayarlar şifreli kayıtta, kilitten önce okunamaz.
 - "Siteyi aç" adresi o siteyi açtığını bildiren bir uygulamaya da (örneğin GitHub uygulaması) gidebilir; Android'in olağan davranışı.
 
+## Tasarım: cam yalnızca alt menüde
+
+Proje sahibi (2026-11-17, sabah): "Benim istediğim cam tasarımı sadece alttaki navbar, harici şart değil, kalanı sana emanet." Kararlar benim.
+
+**Ne değişiyor:**
+
+1. **Gerçek bulanıklık yalnızca alt menüde ve ona bağlı "+" panelinde kalır.** Alttan açılan pencereler (parola üretici, onaylar, bilgi pencereleri), ⋮ menüleri ve üstten inen bildirim dolu yüzey olur: kartların rengi, aynı kenar ve gölge, aynı karartma ve hareketler. Neden: okunurluk (dördüncü telefon denemesinde buzlu kartlarda görülen sorunun aynısı), bulanıklık en pahalı çizim olduğu için daha akıcı açılış ve kaydırma, kartlarla tutarlılık.
+2. **Kayıt ayrıntısında alanlar gruplanır.** Kullanıcı adı, parola, bağlı 2FA kodları, web adresleri ve uygulamalar tek kartta; klasör, özel alanlar ve notlar ikinci kartta. Satırlar arasında Ayarlar'daki gibi ince çizgi. Neden: kayıt tek parça okunur, ekran sakinleşir, daha az kaydırılır.
+
+**Değişmeyenler (proje sahibinin seçtikleri ya da telefonda onayladıkları):** renkler ve turuncunun yeri, başlık yazı tipi, harfli daireler, kasa ve 2FA listelerindeki ayrı kartlar, form alanları, zemindeki kayan ışıklar, bütün hareketler, alt menünün ve "+" panelinin camı.
+
+**Doğrulama:** Değişiklikler emülatörde önce/sonra ekran görüntüleriyle karşılaştırılır (emülatörün kendi kaydedicisi uygulamanın ekran koruması açıkken de görüntü alır); sonra telefon denemesi.
+
 ## Proje sahibinin kararına bırakılanlar
 
 Bunlar ya güvenlik tasarımını değiştiriyor ya da büyük iş; sırayı ve kararı proje sahibi verir. Yol haritasının "1.0 sonrası" tablosuna yazıldı.
