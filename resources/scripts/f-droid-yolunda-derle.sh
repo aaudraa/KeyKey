@@ -34,6 +34,12 @@ apt-get update -qq
 apt-get install -qy sudo openjdk-21-jdk-headless make >/dev/null
 update-alternatives --set java /usr/lib/jvm/java-21-openjdk-amd64/bin/java
 sdkmanager --install "ndk;$ndk_version" >/dev/null
+# flutter build appbundle, AAB'deki yerel kütüphanelerin ayıklandığını
+# cmdline-tools'taki apkanalyzer ile denetler; yoksa derlemeyi durdurur.
+# Yalnızca denetim içindir, çıktıya girmez. F-Droid AAB derlemez.
+if [[ -n "$bundle" ]]; then
+  sdkmanager --install "cmdline-tools;latest" >/dev/null
+fi
 
 rm -rf "$build" "$flutter"
 mkdir -p "$home_vagrant/build/srclib"
