@@ -75,6 +75,41 @@ void main() {
       );
     });
 
+    test('OFL metnindeki MIT kalıbı MIT sayılmaz', () {
+      // OFL 1.1 de "Permission is hereby granted, free of charge" der.
+      expect(
+        licenseKindsOf(
+          'SIL OPEN FONT LICENSE Version 1.1\n\nPermission is hereby '
+          'granted, free of charge, to any person obtaining a copy of the '
+          'Font Software',
+        ),
+        {LicenseKind.ofl},
+      );
+    });
+
+    test("GPL'nin sonunda LGPL'nin anılması GPL'yi değiştirmez", () {
+      expect(
+        licenseKindsOf(
+          '$_gpl\n\n...consider it more useful to permit linking '
+          'proprietary applications with the library. If this is what you '
+          'want to do, use the GNU Lesser General Public License instead of '
+          'this License.',
+        ),
+        {LicenseKind.gpl3},
+      );
+    });
+
+    test("MPL'nin ikincil lisans olarak GPL'yi anması GPL sayılmaz", () {
+      expect(
+        licenseKindsOf(
+          'Mozilla Public License Version 2.0\n\n1.12. "Secondary License" '
+          'means either the GNU General Public License, Version 2.0, the GNU '
+          'Lesser General Public License, Version 2.1',
+        ),
+        {LicenseKind.mpl2},
+      );
+    });
+
     test('Apache metnini anan MIT lisansı yalnızca MIT', () {
       expect(licenseKindsOf('$_mit\n\nUnlike the Apache License...'), {
         LicenseKind.mit,
@@ -100,6 +135,20 @@ void main() {
       expect(sodium.texts, hasLength(2));
       expect(sodium.kinds, {LicenseKind.bsd3, LicenseKind.isc});
       expect(catalog['libsodium']!.kinds, {LicenseKind.isc});
+    });
+
+    test('tanınan lisansın yanında "diğer" gösterilmez', () async {
+      // Motorun telif satırları lisans gövdesi taşımaz.
+      final catalog = await LicenseCatalog.fromRegistry(
+        entries([
+          (['flutter'], _bsd3),
+          (['flutter'], 'Copyright 2014 The Chromium Authors.'),
+          (['dawn'], 'Copyright 2017 The Dawn Authors.'),
+        ]),
+      );
+      expect(catalog['flutter']!.kinds, {LicenseKind.bsd3});
+      expect(catalog['flutter']!.texts, hasLength(2));
+      expect(catalog['dawn']!.kinds, {LicenseKind.other});
     });
 
     test('paketler harf sırasında, büyük küçük harf ayrımı yok', () async {

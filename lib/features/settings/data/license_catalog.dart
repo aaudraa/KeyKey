@@ -32,15 +32,21 @@ enum LicenseKind {
 Set<LicenseKind> licenseKindsOf(String text) {
   final t = text.toUpperCase();
   final kinds = <LicenseKind>{};
-  final lesser = t.contains('GNU LESSER GENERAL PUBLIC LICENSE');
-  if (lesser) kinds.add(LicenseKind.lgpl);
-  if (!lesser && t.contains('GNU GENERAL PUBLIC LICENSE')) {
-    kinds.add(LicenseKind.gpl3);
+  final mpl = t.contains('MOZILLA PUBLIC LICENSE');
+  final ofl = t.contains('SIL OPEN FONT LICENSE');
+  // GPL'nin sonu LGPL'yi, LGPL'nin girişi GPL'yi, MPL ikincil lisans
+  // olarak ikisini de anar: hangisi olduğu baştaki başlıktan anlaşılır.
+  final gplAt = t.indexOf('GNU GENERAL PUBLIC LICENSE');
+  final lgplAt = t.indexOf('GNU LESSER GENERAL PUBLIC LICENSE');
+  if (!mpl && (gplAt >= 0 || lgplAt >= 0)) {
+    final lesserFirst = lgplAt >= 0 && (gplAt < 0 || lgplAt < gplAt);
+    kinds.add(lesserFirst ? LicenseKind.lgpl : LicenseKind.gpl3);
   }
   if (t.contains('APACHE LICENSE') && t.contains('VERSION 2.0')) {
     kinds.add(LicenseKind.apache2);
   }
-  if (t.contains('PERMISSION IS HEREBY GRANTED, FREE OF CHARGE')) {
+  // OFL de MIT'in izin cümlesiyle başlar.
+  if (!ofl && t.contains('PERMISSION IS HEREBY GRANTED, FREE OF CHARGE')) {
     kinds.add(LicenseKind.mit);
   }
   if (t.contains('REDISTRIBUTION AND USE IN SOURCE AND BINARY FORMS')) {
@@ -54,8 +60,8 @@ Set<LicenseKind> licenseKindsOf(String text) {
       t.contains('PERMISSION TO USE, COPY, MODIFY, AND DISTRIBUTE')) {
     kinds.add(LicenseKind.isc);
   }
-  if (t.contains('MOZILLA PUBLIC LICENSE')) kinds.add(LicenseKind.mpl2);
-  if (t.contains('SIL OPEN FONT LICENSE')) kinds.add(LicenseKind.ofl);
+  if (mpl) kinds.add(LicenseKind.mpl2);
+  if (ofl) kinds.add(LicenseKind.ofl);
   if (t.contains('CREATIVE COMMONS ATTRIBUTION 3.0')) {
     kinds.add(LicenseKind.ccBy3);
   }
@@ -112,9 +118,18 @@ class LicenseCatalog {
         key: LicensePackage(
           name: key,
           texts: List.unmodifiable(value),
-          kinds: {for (final text in value) ...licenseKindsOf(text)},
+          kinds: _merge([for (final text in value) licenseKindsOf(text)]),
         ),
     });
+  }
+
+  /// Tanınan bir lisans varsa "diğer" düşer: tanınmayan metinler çoğunlukla
+  /// lisans gövdesi olmayan telif satırlarıdır. Metinlerin hepsi yine
+  /// ayrıntıda görünür.
+  static Set<LicenseKind> _merge(List<Set<LicenseKind>> each) {
+    final all = {for (final kinds in each) ...kinds};
+    if (all.length > 1) all.remove(LicenseKind.other);
+    return all;
   }
 
   static bool _isBroken(String name) {
