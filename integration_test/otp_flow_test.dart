@@ -88,7 +88,7 @@ void main() {
     await tester.enterText(find.byType(TextField), password);
     await tester.pump();
     await tester.tap(find.widgetWithText(FilledButton, 'Aç'));
-    await pumpUntilFound(tester, find.byIcon(Icons.shield_outlined));
+    await pumpUntilFound(tester, find.byType(GlassNavBar));
   }
 
   testWidgets('2FA hesabının yaşam döngüsü', (tester) async {
@@ -163,8 +163,8 @@ void main() {
     expect(currentCodes(), contains(copied));
 
     debugPrint('KKADIM Kilitleyip açınca hesap duruyor.');
+    // Kilit açılınca kilitlenmeden önceki 2FA sekmesine dönülür.
     await lockAndUnlock(tester);
-    await tester.tap(_otpTab());
     await pumpUntilFound(tester, find.text('Deneme'));
     await pumpUntilFound(tester, anyCurrentCode());
 
@@ -193,7 +193,6 @@ void main() {
 
     debugPrint('KKADIM Kilitten sonra kodlar yeniden gizli.');
     await lockAndUnlock(tester);
-    await tester.tap(_otpTab());
     await pumpUntilFound(tester, find.text('Kodlar gizli'));
     expect(anyCurrentCode(), findsNothing);
 

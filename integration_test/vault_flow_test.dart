@@ -232,7 +232,14 @@ void main() {
     await tapLockNow(tester);
     await pumpUntilFound(tester, find.text(lockedTitle));
     await unlock(tester, firstPassword, expecting: find.text('Parola yanlış.'));
-    await unlock(tester, secondPassword, expecting: find.text(vaultText));
+    // Kilit açılınca kilitlenmeden önceki Ayarlar sekmesine dönülür.
+    await unlock(
+      tester,
+      secondPassword,
+      expecting: find.text('Ana parolayı değiştir'),
+    );
+    await tester.tap(find.byIcon(Icons.lock_outline));
+    await pumpUntilFound(tester, find.text(vaultText));
 
     // Parola unutuldu: kurtarma anahtarıyla yeni parola.
     debugPrint('KKADIM Parola unutuldu: kurtarma anahtarıyla yeni parola.');
