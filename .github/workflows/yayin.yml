@@ -126,6 +126,8 @@ jobs:
 
       # apksigner zip içeriğine dokunmaz, yalnızca imza bloğunu ekler; bu yüzden
       # F-Droid imzayı kendi imzasız derlemesine kopyalayıp doğrulayabilir.
+      # Şemalar açıkça yazılı: v1 (JAR) imzası META-INF'e dosya ekler, Android
+      # 11+ için gereksiz; 1.0.0'da Gradle de eklemiyordu.
       - name: İmzala
         env:
           KEYKEY_KEYSTORE_PASSWORD: ${{ secrets.KEYKEY_KEYSTORE_PASSWORD }}
@@ -135,7 +137,7 @@ jobs:
           apksigner="$(find "$ANDROID_HOME/build-tools" -name apksigner | sort -V | tail -n 1)"
           "$apksigner" sign --ks "$KEYKEY_KEYSTORE" --ks-key-alias "$KEYKEY_KEY_ALIAS" \
             --ks-pass env:KEYKEY_KEYSTORE_PASSWORD --key-pass env:KEYKEY_KEY_PASSWORD \
-            --v4-signing-enabled false \
+            --v1-signing-enabled false --v2-signing-enabled true --v3-signing-enabled true --v4-signing-enabled false \
             --in out/imzasiz.apk --out out/keykey.apk
           jarsigner -keystore "$KEYKEY_KEYSTORE" \
             -storepass:env KEYKEY_KEYSTORE_PASSWORD -keypass:env KEYKEY_KEY_PASSWORD \
