@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,7 +13,10 @@ import 'package:keykey/app/ui/kk_form.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_secret_text.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
+import 'package:keykey/core/platform/document_files.dart';
+import 'package:keykey/core/platform/web_links.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/vault/application/login_search.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
@@ -150,6 +155,63 @@ void main() {
       );
     });
 
+    testWidgets('boş kasada içe aktarma ve geri yükleme kısayolları', (
+      tester,
+    ) async {
+      logins = FakeLoginRepository();
+      final documents = FakeDocumentFiles();
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        logins: logins,
+        documents: documents,
+      );
+
+      await tester.tap(find.widgetWithText(TextButton, 'Parolaları içe aktar'));
+      await tester.pumpAndSettle();
+      expect(documents.opens, 1);
+
+      await tester.tap(find.widgetWithText(TextButton, 'Yedekten geri yükle'));
+      await tester.pumpAndSettle();
+      expect(documents.opens, 2);
+    });
+
+    testWidgets('boş kasadan içe aktarma bitince kasaya dönülüyor', (
+      tester,
+    ) async {
+      logins = FakeLoginRepository();
+      final documents = FakeDocumentFiles()
+        ..nextOpen = DocumentOpened(
+          File('test/fixtures/import/logins/bitwarden.json').readAsBytesSync(),
+        );
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        logins: logins,
+        documents: documents,
+      );
+
+      await tester.tap(find.widgetWithText(TextButton, 'Parolaları içe aktar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('2 kaydı ekle'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Tamam'));
+      await tester.pumpAndSettle();
+
+      // Ayarlar sekmesine değil, başlanan kasa listesine dönülür.
+      expect(find.text('Şirket'), findsOneWidget);
+      expect(find.text('Basit'), findsOneWidget);
+      expect(find.text('Yedekle'), findsNothing);
+    });
+
+    testWidgets('kayıt varken kısayollar yok', (tester) async {
+      await pumpVault(tester);
+      expect(find.text('Parolaları içe aktar'), findsNothing);
+      expect(find.text('Yedekten geri yükle'), findsNothing);
+    });
+
     testWidgets('boş kasada arama kutusu yalnızca "Ara"', (tester) async {
       logins = FakeLoginRepository();
       await pumpVault(tester);
@@ -220,6 +282,38 @@ void main() {
       await tester.tap(find.text('Çöp kutusu'));
       await tester.pumpAndSettle();
       expect(find.text('Çöp kutusu boş.'), findsOneWidget);
+    });
+
+    testWidgets('sıralama seçimi ayarlara yazılıyor ve sonra kullanılıyor', (
+      tester,
+    ) async {
+      final settings = FakeSettingsRepository();
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        logins: logins,
+        settings: settings,
+      );
+      final byName = visibleNames(tester);
+      await openMenu(tester);
+      await tester.tap(find.text('Son değişene göre sırala'));
+      await tester.pumpAndSettle();
+      final byRecent = visibleNames(tester);
+      expect(byRecent, isNot(byName));
+      expect(settings.settings.vaultSort, LoginSort.recentlyUpdated);
+
+      // Kilit kasa ekranını yeniden kurar; seçim ayardan gelir. Araya başka
+      // bir ağaç konur ki ekranın durumu taşınmasın.
+      await tester.pumpWidget(const SizedBox());
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        logins: logins,
+        settings: settings,
+      );
+      expect(visibleNames(tester), byRecent);
     });
 
     testWidgets('listeden parola kopyalanıyor, kayıt açılmıyor', (
@@ -436,6 +530,69 @@ void main() {
       expect(find.text('KeyKey kilitli'), findsOneWidget);
     });
 
+    testWidgets('web adresi tarayıcıda açılıyor', (tester) async {
+      final links = RecordingWebLinks();
+      logins = FakeLoginRepository(
+        items: [
+          FakeLoginRepository.item(
+            const LoginContent(
+              name: 'Banka',
+              password: 'p',
+              urls: ['banka.example/giris', 'androidapp://com.banka'],
+            ),
+            id: 1,
+          ),
+        ],
+      );
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        logins: logins,
+        extraOverrides: [webLinksProvider.overrideWithValue(links)],
+      );
+      await tester.tap(find.text('Banka'));
+      await tester.pumpAndSettle();
+
+      // Uygulama bağlantısı web sayfası değil; onun için düğme yok.
+      expect(find.byTooltip('Siteyi aç'), findsOneWidget);
+      await tester.tap(find.byTooltip('Siteyi aç'));
+      await tester.pumpAndSettle();
+      expect(links.opened, [Uri.parse('https://banka.example/giris')]);
+    });
+
+    testWidgets('tarayıcı yoksa söyleniyor', (tester) async {
+      final links = RecordingWebLinks()..result = false;
+      logins = FakeLoginRepository(
+        items: [
+          FakeLoginRepository.item(
+            const LoginContent(
+              name: 'Banka',
+              password: 'p',
+              urls: ['https://banka.example'],
+            ),
+            id: 1,
+          ),
+        ],
+      );
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        logins: logins,
+        extraOverrides: [webLinksProvider.overrideWithValue(links)],
+      );
+      await tester.tap(find.text('Banka'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Siteyi aç'));
+      await tester.pump();
+
+      expect(
+        find.text('Bu adresi açacak bir tarayıcı bulunamadı.'),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('gizli değer kopyalanabiliyor, süre bildiriliyor', (
       tester,
     ) async {
@@ -457,11 +614,17 @@ void main() {
           )
           .first;
       await tester.tap(
-        find.descendant(of: passwordTile, matching: find.byTooltip('Kopyala')),
+        find.descendant(
+          of: passwordTile,
+          matching: find.byTooltip('Kopyala: Parola'),
+        ),
       );
       await tester.pump();
 
       expect(clipboard.copied, ['posta-parolasi']);
+      // Ekran okuyucu her düğmenin hangi alanı kopyaladığını söyler.
+      expect(find.byTooltip('Kopyala: Kullanıcı adı'), findsOneWidget);
+      expect(find.byTooltip('Kopyala'), findsNothing);
       expect(find.text('posta-parolasi'), findsNothing);
       expect(
         find.textContaining('30 saniye sonra temizlenecek'),
@@ -635,6 +798,80 @@ void main() {
       expect(find.widgetWithText(ActionChip, 'Not'), findsNothing);
     });
 
+    testWidgets('klasör kutusu var olan klasörleri öneriyor', (tester) async {
+      await pumpVault(tester);
+      await openAddPassword(tester);
+      await tapVisible(tester, find.text('Daha fazla seçenek'));
+      await tapVisible(tester, find.widgetWithText(ActionChip, 'Klasör'));
+
+      final suggestions = find.byKey(const Key('folder-suggestions'));
+      expect(
+        find.descendant(of: suggestions, matching: find.text('Banka')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: suggestions, matching: find.text('Kişisel')),
+        findsOneWidget,
+      );
+
+      await tester.enterText(find.widgetWithText(TextField, 'Klasör'), 'ki');
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(of: suggestions, matching: find.text('Banka')),
+        findsNothing,
+      );
+      await tapVisible(
+        tester,
+        find.descendant(of: suggestions, matching: find.text('Kişisel')),
+      );
+      final field = tester.widget<TextField>(
+        find.widgetWithText(TextField, 'Klasör'),
+      );
+      expect(field.controller?.text, 'Kişisel');
+      // Tam eşleşen klasör yeniden önerilmez.
+      expect(suggestions, findsNothing);
+    });
+
+    testWidgets('tek kayıttaki klasörün harf büyüklüğü düzeltilebiliyor', (
+      tester,
+    ) async {
+      logins = FakeLoginRepository(
+        items: [
+          FakeLoginRepository.item(
+            const LoginContent(name: 'Tek', password: 'p', folder: 'is'),
+            id: 1,
+          ),
+        ],
+      );
+      await pumpVault(tester);
+      await tester.tap(find.text('Tek'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Düzenle'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.widgetWithText(TextField, 'Klasör'), 'İş');
+      await tester.pumpAndSettle();
+      await tapVisible(tester, find.widgetWithText(FilledButton, 'Kaydet'));
+
+      expect(logins.items.single.content.folder, 'İş');
+    });
+
+    testWidgets('harf büyüklüğü farklı klasör adı var olana bağlanıyor', (
+      tester,
+    ) async {
+      await pumpVault(tester);
+      await openAddPassword(tester);
+      await tester.enterText(find.widgetWithText(TextField, 'Ad'), 'Yeni');
+      await tester.enterText(find.widgetWithText(TextField, 'Parola'), 'p');
+      await tapVisible(tester, find.text('Daha fazla seçenek'));
+      await tapVisible(tester, find.widgetWithText(ActionChip, 'Klasör'));
+      await tester.enterText(find.widgetWithText(TextField, 'Klasör'), 'BANKA');
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Kaydet'));
+      await tester.pumpAndSettle();
+
+      expect(logins.items.last.content.folder, 'Banka');
+    });
+
     testWidgets('"Başka site" iki kez: üç adres alanı', (tester) async {
       await pumpVault(tester);
       await openAddPassword(tester);
@@ -781,7 +1018,7 @@ void main() {
 
       await tester.tap(find.byTooltip('Geri'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Sil'));
+      await tester.tap(find.text('Değişiklikleri at'));
       await tester.pumpAndSettle();
       expect(find.byType(VaultScreen), findsOneWidget);
       expect(
@@ -905,7 +1142,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Posta'), findsOneWidget);
 
-      await tester.tap(find.byTooltip('Geri al'));
+      await tester.tap(find.byTooltip('Geri yükle'));
       await tester.pumpAndSettle();
       expect(find.text('Çöp kutusu boş.'), findsOneWidget);
       expect(logins.items.first.content.isTrashed, isFalse);
@@ -931,6 +1168,74 @@ void main() {
       await tester.pumpAndSettle();
       expect(logins.items, hasLength(2));
       expect(find.text('Çöp kutusu boş.'), findsOneWidget);
+    });
+  });
+
+  group('çöp kutusunun tamamı', () {
+    Future<void> openTrashWithAll(WidgetTester tester) async {
+      final trashedAt = DateTime.utc(2026, 11, 10);
+      logins = FakeLoginRepository(
+        items: [
+          for (final (i, name) in ['Posta', 'Banka', 'Oyun'].indexed)
+            FakeLoginRepository.item(
+              LoginContent(name: name, password: 'p$i', trashedAt: trashedAt),
+              id: i + 1,
+            ),
+        ],
+      );
+      await pumpVault(tester);
+      await openMenu(tester);
+      await tester.tap(find.text('Çöp kutusu'));
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> openTrashMenu(WidgetTester tester) async {
+      await tester.tap(find.byTooltip('Diğer işlemler'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('hepsi tek dokunuşla geri yükleniyor', (tester) async {
+      await openTrashWithAll(tester);
+      await openTrashMenu(tester);
+      await tester.tap(find.text('Tümünü geri yükle'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Çöp kutusu boş.'), findsOneWidget);
+      expect(logins.items.where((i) => i.content.isTrashed), isEmpty);
+      expect(logins.items, hasLength(3));
+    });
+
+    testWidgets('boşaltma onay istiyor, onaylanınca hepsi siliniyor', (
+      tester,
+    ) async {
+      await openTrashWithAll(tester);
+      await openTrashMenu(tester);
+      await tester.tap(find.text('Çöpü boşalt'));
+      await tester.pumpAndSettle();
+      expect(find.text('Çöp kutusu boşaltılsın mı?'), findsOneWidget);
+      expect(
+        find.text('3 kayıt kalıcı olarak silinecek ve geri getirilemeyecek.'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Vazgeç'));
+      await tester.pumpAndSettle();
+      expect(logins.items, hasLength(3));
+
+      await openTrashMenu(tester);
+      await tester.tap(find.text('Çöpü boşalt'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Boşalt'));
+      await tester.pumpAndSettle();
+      expect(logins.items, isEmpty);
+      expect(find.text('Çöp kutusu boş.'), findsOneWidget);
+    });
+
+    testWidgets('çöp boşken toplu işlemler kapalı', (tester) async {
+      await pumpVault(tester);
+      await openMenu(tester);
+      await tester.tap(find.text('Çöp kutusu'));
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Diğer işlemler'), findsNothing);
     });
   });
 

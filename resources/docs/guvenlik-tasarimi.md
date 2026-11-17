@@ -305,6 +305,7 @@ Kasa üç durumdan birindedir: **kurulmamış**, **kilitli** veya **açık**. Ka
 - **İstisna:** KeyKey'in kendi açtığı belge seçici, belge oluşturma ekranı ve fotoğraf seçici ayrı birer etkinliktir ve uygulamayı arka plana alır. Bunlar açıkken arka plan kilidi en fazla 3 dakika ertelenir; yoksa kullanıcı dosyayı seçip döndüğünde kasa kilitli olur ve işlem sonuçsuz kalır. Süre dolunca kasa, seçici hâlâ açık olsa bile kilitlenir. Dokunmama kilidi bu sırada da çalışır. Bedeli: seçici açıkken kullanıcı telefonu bırakırsa kasa en fazla 3 dakika açık kalır. Sistem ayarlarına giden bağlantılar bu istisnaya girmez.
 - Ekrana 5 dakika dokunulmazsa kilitlenir.
 - Kilitlenince kasa ve alt anahtarlar `dispose` edilir, çözülmüş veri tutan durumlar sıfırlanır, yönlendirme kilit ekranına gider ve önceki ekranlar yığından çıkarılır.
+- Kilit açılınca kilitlenmeden önceki sekmeye ya da açık olan kasa kaydının ayrıntısına dönülür. Yalnızca bu yol bellekte tutulur; ekranlar yeniden kurulur, gösterilen parolalar gizli açılır, formlar ve tek seferlik ekranlar geri gelmez.
 
 ## Biyometri
 
@@ -370,6 +371,15 @@ Ana uygulama ve doldurma ekranı aynı korumayı kullanır (`WindowProtection`).
 1. Android arka plandaki uygulamaya panoyu okutmaz. Kullanıcı bu sürede başka bir şey kopyaladıysa onu da silebiliriz.
 2. Alarm tam zamanında çalışmayabilir. Android, kesin alarm izni olmadan onu geciktirebilir. Cihaz testi, süreç ayaktayken arka planda temizlendiğini doğruluyor; sürecin kapatıldığı durum yalnızca alarma dayanıyor ve otomatik test edilmedi. Bu izni almıyoruz, çünkü parolanın panoda birkaç dakika daha kalması, izin listesini büyütmeye değmez.
 3. O sürede panoyu okuyan etkin klavye veya kötü amaçlı uygulama parolayı görebilir. Bu, [tehdit modelinde](#tehdit-modeli) "kısmen" olarak yazıyor.
+
+## Tarayıcıda açma
+
+Kayıt ayrıntısındaki **Siteyi aç** ve Hakkında'daki bağlantılar adresi `ACTION_VIEW` ve `CATEGORY_BROWSABLE` ile sisteme devreder; sayfayı tarayıcı ya da o siteyi açtığını bildiren uygulama (örneğin GitHub uygulaması) açar. KeyKey'in `INTERNET` izni yine yok.
+
+- **Yalnızca web sayfası:** Adres hem Dart'ta hem Kotlin'de denetlenir; http ve https dışındaki şemalar (`intent:`, `javascript:`, `file:`, `content:`, `androidapp://`) açılmaz. Böylece içe aktarılmış ya da yazılmış bir adres başka bir uygulamanın bileşenini başlatamaz. Şeması olmayan adrese `https://` eklenir (`nas.example:5001` gibi port taşıyan ad şema sayılmaz).
+- **Yanıltıcı adresler:** Kullanıcı bilgisi taşıyan adres (`https://banka.example@baska.example`) açılmaz; ekranda banka gibi okunur ama tarayıcı başka siteyi açardı. ASCII dışı harfli alan adları da açılmaz, çünkü benzer görünen alan adlarıyla karıştırılabilir; bu kayıtlarda adres kopyalanıp tarayıcıya yapıştırılır.
+- **Yalnızca dokununca:** Adres kendiliğinden hiçbir yere gönderilmez; tarayıcıya yalnızca o adres gider.
+- **Kilit:** Tarayıcı açılınca KeyKey arka plana geçer ve her zamanki gibi kilitlenir; kilit açılınca aynı kayda dönülür.
 
 ## Parola üretici ve güç tahmini
 
@@ -450,16 +460,27 @@ Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/googl
 
 ```json
 {
-  "version": 3,
+  "version": 4,
   "otpRequireAuth": false,
   "autofillCopyOtp": true,
   "lastBackupAt": 1730000000000,
-  "backupReminderSnoozedUntil": null
+  "backupReminderSnoozedUntil": null,
+  "vaultSort": "name",
+  "generator": {
+    "passphrase": false,
+    "length": 20,
+    "lowercase": true,
+    "uppercase": true,
+    "digits": true,
+    "symbols": true,
+    "words": 6
+  }
 }
 ```
 
 - `autofillCopyOtp` sürüm 2 ile geldi ve [doldurmadan sonra 2FA kodunu kopyalamayı](#2fa-kodu) açar. Sürüm 1 kaydı okunmaya devam eder; o zaman bu ayar açık sayılır.
 - `lastBackupAt` ve `backupReminderSnoozedUntil` sürüm 3 ile geldi: son yedeğin zamanı ve [yedek hatırlatıcısının](#yedek-hatırlatıcısı) susturulduğu son an, 1970'ten beri geçen milisaniye ya da `null`. Daha eski kayıtlarda ikisi de `null` sayılır.
+- `vaultSort` (`name` ya da `recent`) ve `generator` sürüm 4 ile geldi: kasa listesinin sıralaması ve parola üreticisinin son **kullanılan** seçenekleri (uzunluk 8–64, en az bir karakter türü, cümlede 4–12 sözcük). Üretilen parola yazılmaz. Daha eski kayıtlarda ada göre sıralama ve varsayılan üretici kullanılır. Sınır dışı bir değer kaydın tamamını okunamaz yapar (aşağıdaki kural). Sürüm 4 kaydını içeren bir yedek KeyKey'in eski bir sürümünde açılırsa ayar kaydı okunamaz sayılır, ek onay açık gelir.
 - Kayıt yoksa ek onay kapalıdır. Kayıt var ama okunamıyorsa, biçime uymuyorsa veya türü farklıysa ek onay **açık** sayılır: dosyayı değiştiren biri ayarı böyle kapatamasın. Kod kopyalama ise kapalı sayılır. Kullanıcı doğrulayıp ek onayı kapatabilir. Kaydın tamamen silinmesi ise [kayıt silme sınırına](#bilinen-sınırlar) girer.
 
 **Sınır:** Bu, kasa anahtarını değiştirmez. 2FA anahtarı yine kasa anahtarından türetilir, çünkü ana parola ve kurtarma anahtarı da 2FA kayıtlarını açabilmelidir. Ayar, kilidi açık telefonu eline alan birine karşı koruma sağlar, cihazdaki zararlı yazılıma karşı korumaz.

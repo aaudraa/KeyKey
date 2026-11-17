@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/core/vault/vault_session.dart';
+import 'package:keykey/features/generator/application/generator_preferences.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
+import 'package:keykey/features/vault/application/login_search.dart';
 
 /// Açık oturum için depoyu kurar. Testler ve `main` doldurur.
 final settingsRepositoryFactoryProvider =
@@ -74,6 +76,13 @@ class SettingsController extends Notifier<AppSettings?> {
   /// Yedek hatırlatıcısını [until] anına kadar susturur.
   Future<void> snoozeBackupReminder(DateTime until) =>
       _update((current) => current.copyWith(backupReminderSnoozedUntil: until));
+
+  Future<void> setVaultSort(LoginSort sort) =>
+      _update((current) => current.copyWith(vaultSort: sort));
+
+  /// Üreticinin son kullanılan seçenekleri; üretilen parola değil.
+  Future<void> setGenerator(GeneratorPreferences generator) =>
+      _update((current) => current.copyWith(generator: generator));
 
   Future<void> _update(AppSettings Function(AppSettings) change) async {
     final repository = _repository;

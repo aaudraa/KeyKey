@@ -1,6 +1,6 @@
 # Privacy policy
 
-**Applies to:** KeyKey 1.0 and later · **Last updated:** 2026-11-15 · Türkçe: [gizlilik.md](gizlilik.md)
+**Applies to:** KeyKey 1.0 and later · **Last updated:** 2026-11-17 · Türkçe: [gizlilik.md](gizlilik.md)
 
 KeyKey collects no data and sends nothing anywhere. The app has no internet permission, so it could not send data off the device even if it tried. Anyone can verify this from the installed app's permissions or from the source code.
 
@@ -39,6 +39,10 @@ Copied passwords and 2FA codes are marked as sensitive on the clipboard (Android
 ## Files
 
 Backup, export and import files are written to or read from only the location you pick in Android's file picker. If you pick a location such as Drive, Android itself moves the file there; KeyKey does not go online. Plain-text export asks for confirmation twice and states clearly that the file is unencrypted.
+
+## Links
+
+When you tap **Open website** on an entry, or a link under About in settings, KeyKey hands that one address to your browser and the browser loads the page. Nothing else is passed along, and KeyKey itself still does not go online.
 
 ## Changes
 

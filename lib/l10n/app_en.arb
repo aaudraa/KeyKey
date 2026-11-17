@@ -263,14 +263,17 @@
   "@changePasswordDone": {
     "description": "Message after the password was changed."
   },
-  "changePasswordWait": "{seconds, plural, =1{Too many wrong attempts. Try again in 1 second.} other{Too many wrong attempts. Try again in {seconds} seconds.}}",
-  "@changePasswordWait": {
-    "description": "Error while waiting after wrong passwords.",
-    "placeholders": {
-      "seconds": {
-        "type": "int"
-      }
-    }
+  "changePasswordBackupNote": "Backups you made before still open with the old password. Anyone who knows the old password can open them; make a new backup and delete the old ones.",
+  "@changePasswordBackupNote": {
+    "description": "Shown after changing the master password."
+  },
+  "changePasswordBackupNow": "Make a new backup",
+  "@changePasswordBackupNow": {
+    "description": "Starts a backup right after the password change."
+  },
+  "changePasswordBackupLater": "Later",
+  "@changePasswordBackupLater": {
+    "description": "Closes the note without a backup."
   },
   "settingsLockNow": "Lock now",
   "@settingsLockNow": {
@@ -280,7 +283,7 @@
   "@unavailableTitle": {
     "description": "Title when the vault file cannot be read."
   },
-  "unavailableMessage": "The file is damaged or belongs to a newer version of KeyKey. Your data was not changed. Update KeyKey to try again.",
+  "unavailableMessage": "The file is damaged or belongs to a newer version of KeyKey. Your data was not changed.\n\nIf you came from a newer version, update KeyKey. If the file is damaged and you have a backup: clear KeyKey's storage in Android settings (Apps → KeyKey → Storage), then choose \"Restore from backup\" during setup. Changes made after that backup will not come back. If you have no backup, don't clear it; this file may still be recoverable later.",
   "@unavailableMessage": {
     "description": "Message when the vault file cannot be read."
   },
@@ -537,6 +540,31 @@
       }
     }
   },
+  "trashRestoreAll": "Restore all",
+  "@trashRestoreAll": {
+    "description": "Menu item in the trash: restores every item."
+  },
+  "trashEmptyAll": "Empty trash",
+  "@trashEmptyAll": {
+    "description": "Menu item in the trash: deletes every item permanently, after a confirmation."
+  },
+  "trashEmptyTitle": "Empty the trash?",
+  "@trashEmptyTitle": {
+    "description": "Confirmation title before emptying the trash."
+  },
+  "trashEmptyMessage": "{count, plural, =1{1 item will be deleted permanently and cannot be recovered.} other{{count} items will be deleted permanently and cannot be recovered.}}",
+  "@trashEmptyMessage": {
+    "description": "Confirmation text before emptying the trash.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashEmptyConfirm": "Empty",
+  "@trashEmptyConfirm": {
+    "description": "Confirms emptying the trash."
+  },
   "generatorPassword": "Password",
   "@generatorPassword": {
     "description": "Generator mode."
@@ -607,6 +635,18 @@
   "settingsLicenses": "Licenses",
   "@settingsLicenses": {
     "description": "Settings entry that opens the license page."
+  },
+  "aboutSource": "Source code",
+  "@aboutSource": {
+    "description": "About row that opens the source code on GitHub."
+  },
+  "aboutIssues": "Report a problem",
+  "@aboutIssues": {
+    "description": "About row that opens the GitHub issue list."
+  },
+  "aboutPrivacy": "Privacy policy",
+  "@aboutPrivacy": {
+    "description": "About row that opens the privacy policy."
   },
   "introSkip": "Skip",
   "@introSkip": {
@@ -756,6 +796,23 @@
   "@copy": {
     "description": "Tooltip of the copy button."
   },
+  "copyField": "Copy {field}",
+  "@copyField": {
+    "description": "Tooltip of a copy button next to a field, so screen readers say which value it copies.",
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "loginOpenSite": "Open website",
+  "@loginOpenSite": {
+    "description": "Tooltip of the button that opens an entry's web address in the browser."
+  },
+  "webPageNoBrowser": "No browser was found to open this address.",
+  "@webPageNoBrowser": {
+    "description": "Shown when no app can open a web page."
+  },
   "copiedWillClear": "Copied. The clipboard will be cleared in {seconds} seconds.",
   "@copiedWillClear": {
     "description": "Snack bar after copying a value.",
@@ -768,6 +825,22 @@
   "otpEmpty": "No 2FA accounts yet. Tap + below to set up the first one.",
   "@otpEmpty": {
     "description": "Empty state of the 2FA list."
+  },
+  "otpDuplicateTitle": "This account is already added",
+  "@otpDuplicateTitle": {
+    "description": "Title when a 2FA account with the same secret already exists."
+  },
+  "otpDuplicateMessage": "A 2FA account with the same secret key already exists, possibly in the trash. If you add it anyway, you will have two copies.",
+  "@otpDuplicateMessage": {
+    "description": "Explains the duplicate 2FA account warning."
+  },
+  "otpDuplicateAdd": "Add anyway",
+  "@otpDuplicateAdd": {
+    "description": "Adds the duplicate 2FA account."
+  },
+  "otpDuplicateCancel": "Cancel",
+  "@otpDuplicateCancel": {
+    "description": "Keeps the form open without adding."
   },
   "otpNoResults": "No matching accounts.",
   "@otpNoResults": {
@@ -960,6 +1033,15 @@
     "placeholders": {
       "name": {
         "type": "String"
+      }
+    }
+  },
+  "otpTrashEmptyMessage": "{count, plural, =1{1 account will be deleted permanently and cannot be recovered. Without its key you may not be able to sign in to that service.} other{{count} accounts will be deleted permanently and cannot be recovered. Without their keys you may not be able to sign in to those services.}}",
+  "@otpTrashEmptyMessage": {
+    "description": "Confirmation text before emptying the 2FA trash.",
+    "placeholders": {
+      "count": {
+        "type": "int"
       }
     }
   },
@@ -1409,6 +1491,14 @@
   "backupCreate": "Back up now",
   "@backupCreate": {
     "description": "Settings tile that saves an encrypted backup file."
+  },
+  "backupFilePrefix": "keykey-backup",
+  "@backupFilePrefix": {
+    "description": "Start of the suggested backup file name, before the date. Lowercase, no spaces."
+  },
+  "exportFilePrefix": "keykey-export",
+  "@exportFilePrefix": {
+    "description": "Start of the suggested plaintext export file name, before the date. Lowercase, no spaces."
   },
   "backupHelp": "The backup file is encrypted. It opens with your current master password or your recovery key. If you lose this phone, it is the only way to get your data back.",
   "@backupHelp": {

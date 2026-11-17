@@ -6,10 +6,13 @@ import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_form.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/vault/vault_service.dart';
+import 'package:keykey/features/backup/presentation/backup_section.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/new_password_fields.dart';
+import 'package:keykey/features/lock/presentation/wait_countdown.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Ana parola değiştirme. Mevcut parola yeniden sorulur.
@@ -26,18 +29,30 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
   final _password = TextEditingController();
   final _confirmation = TextEditingController();
   bool _busy = false;
+
+  /// Parola değişti; alanlardaki eski parola bir daha gönderilmez.
+  bool _changed = false;
   String? _error;
+
+  /// Yanlış parolalardan sonra kalan bekleme; kilit ekranındaki sayaçla aynı.
+  Duration _wait = Duration.zero;
+  late final _countdown = WaitCountdown((left) => setState(() => _wait = left));
 
   @override
   void dispose() {
+    _countdown.dispose();
     _current.dispose();
     _password.dispose();
     _confirmation.dispose();
     super.dispose();
   }
 
+  void _startWait(Duration wait) => _countdown.start(wait);
+
   bool get _canSubmit =>
       !_busy &&
+      !_changed &&
+      _wait == Duration.zero &&
       _current.text.isNotEmpty &&
       NewPasswordFields.isValid(_password.text, _confirmation.text);
 
@@ -59,15 +74,37 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       if (!mounted) return;
       switch (attempt) {
         case PasswordAccepted():
-          snack(l10n.changePasswordDone);
-          context.pop();
+          // Parola değişti; not açıkken düğme dönmesin.
+          setState(() {
+            _busy = false;
+            _changed = true;
+          });
+          // Eski yedekler eski parolayla açılır (bilinen sınır 5).
+          final backUp = await showKkConfirm(
+            context,
+            title: l10n.changePasswordDone,
+            message: l10n.changePasswordBackupNote,
+            confirmLabel: l10n.changePasswordBackupNow,
+            cancelLabel: l10n.changePasswordBackupLater,
+          );
+          // Not açıkken kasa kilitlendiyse kilit ekranındayız.
+          if (!mounted || ref.read(vaultControllerProvider) is! VaultOpen) {
+            return;
+          }
+          if (backUp) {
+            await backUpVault(context, ref);
+          } else {
+            snack(l10n.changePasswordDone);
+          }
+          if (mounted) context.pop();
         case PasswordInterrupted():
           break;
-        case PasswordRejected():
+        case PasswordRejected(:final wait):
           _current.clear();
           setState(() => _error = l10n.lockWrongPassword);
+          _startWait(wait);
         case PasswordMustWait(:final wait):
-          setState(() => _error = l10n.changePasswordWait(wait.inSeconds));
+          _startWait(wait);
       }
     } on Exception {
       if (mounted) setState(() => _error = l10n.setupFailed);
@@ -100,7 +137,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                 label: l10n.changePasswordCurrent,
                 autofocus: true,
                 enabled: !_busy,
-                errorText: _error,
+                errorText: _wait > Duration.zero
+                    ? l10n.lockWait(formatWait(_wait))
+                    : _error,
                 textInputAction: TextInputAction.next,
               ),
             ),

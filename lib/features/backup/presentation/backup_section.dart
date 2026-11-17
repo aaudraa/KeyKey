@@ -40,7 +40,10 @@ Future<bool> backUpVault(BuildContext context, WidgetRef ref) async {
       .read(externalActivityGateProvider.notifier)
       .run(
         () => files.save(
-          suggestedName: BackupService.fileNameFor(now),
+          suggestedName: BackupService.fileNameFor(
+            now,
+            prefix: l10n.backupFilePrefix,
+          ),
           mimeType: BackupService.mimeType,
           bytes: bytes,
         ),

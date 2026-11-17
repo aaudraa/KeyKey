@@ -15,6 +15,7 @@ import 'package:keykey/app/ui/kk_shake.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/lock/presentation/wait_countdown.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Kasa kilitliyken açılan ekran.
@@ -49,8 +50,8 @@ class _LockScreenState extends ConsumerState<LockScreen> {
 
   /// Yanlış parolada kutunun yana titremesi.
   final _shake = KkShakeController();
-  Timer? _waitTimer;
   Duration _wait = Duration.zero;
+  late final _countdown = WaitCountdown((left) => setState(() => _wait = left));
   bool _busy = false;
   bool _biometricReady = false;
   String? _error;
@@ -111,7 +112,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
 
   @override
   void dispose() {
-    _waitTimer?.cancel();
+    _countdown.dispose();
     _shake.dispose();
     _password.dispose();
     super.dispose();
@@ -124,16 +125,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
     if (mounted) _startWait(wait);
   }
 
-  void _startWait(Duration wait) {
-    _waitTimer?.cancel();
-    setState(() => _wait = wait);
-    if (wait <= Duration.zero) return;
-    _waitTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      final left = _wait - const Duration(seconds: 1);
-      setState(() => _wait = left.isNegative ? Duration.zero : left);
-      if (_wait == Duration.zero) timer.cancel();
-    });
-  }
+  void _startWait(Duration wait) => _countdown.start(wait);
 
   bool get _canSubmit => !_busy && _wait == Duration.zero;
 
@@ -165,12 +157,6 @@ class _LockScreenState extends ConsumerState<LockScreen> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
-  }
-
-  static String _formatWait(Duration wait) {
-    final minutes = wait.inMinutes;
-    final seconds = wait.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return '$minutes:$seconds';
   }
 
   @override
@@ -219,7 +205,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
         field,
         if (_wait > Duration.zero) ...[
           const SizedBox(height: 12),
-          Text(l10n.lockWait(_formatWait(_wait)), textAlign: TextAlign.center),
+          Text(l10n.lockWait(formatWait(_wait)), textAlign: TextAlign.center),
         ],
         const SizedBox(height: 16),
         FilledButton(

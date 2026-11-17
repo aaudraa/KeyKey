@@ -13,6 +13,7 @@ import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/generator/presentation/generator_sheet.dart';
 import 'package:keykey/features/generator/presentation/password_strength_meter.dart';
+import 'package:keykey/features/vault/application/login_search.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
@@ -120,9 +121,28 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
     _initialized = true;
   }
 
+  /// Başka kayıtlardaki klasörler, çöptekiler hariç. Düzenlenen kaydın
+  /// kendi klasörü sayılmaz; yoksa tek kayıttaki "is" hiç "İş" yapılamazdı.
+  List<String> get _folders => switch (ref.read(loginsControllerProvider)) {
+    LoginsLoaded(:final items) => foldersOf(
+      items.where((item) => item.id != _original?.id),
+    ),
+    _ => const [],
+  };
+
+  /// Harf büyüklüğü farklı yazılmış ad var olan klasöre bağlanır; "İş" ve
+  /// "iş" iki klasör olmasın.
+  String _matchingFolder(String typed) {
+    final key = foldForSearch(typed);
+    for (final folder in _folders) {
+      if (foldForSearch(folder) == key) return folder;
+    }
+    return typed;
+  }
+
   LoginContent _collect() {
     final base = _original?.content ?? const LoginContent(name: '');
-    final folder = _folder.text.trim();
+    final folder = _matchingFolder(_folder.text.trim());
     return base.copyWith(
       name: _name.text.trim(),
       username: _username.text.trim(),
@@ -385,13 +405,26 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
                     _showFolder = false;
                     _dirty = true;
                   }),
-                  child: SecretField(
-                    controller: _folder,
-                    label: l10n.loginFolder,
-                    obscure: false,
-                    focusNode: _focusFor('folder'),
-                    textInputAction: TextInputAction.next,
-                    onChanged: _changed,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SecretField(
+                        controller: _folder,
+                        label: l10n.loginFolder,
+                        obscure: false,
+                        focusNode: _focusFor('folder'),
+                        textInputAction: TextInputAction.next,
+                        onChanged: _changed,
+                      ),
+                      _FolderSuggestions(
+                        folders: _folders,
+                        controller: _folder,
+                        onPicked: (folder) {
+                          _folder.text = folder;
+                          _changed(folder);
+                        },
+                      ),
+                    ],
                   ),
                 ),
               if (_showNotes)
@@ -486,6 +519,52 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Klasör kutusunun altında, yazılana uyan var olan klasörler.
+class _FolderSuggestions extends StatelessWidget {
+  const new({
+    required this.folders,
+    required this.controller,
+    required this.onPicked,
+  });
+
+  final List<String> folders;
+  final TextEditingController controller;
+  final ValueChanged<String> onPicked;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: controller,
+      builder: (context, _) {
+        final typed = foldForSearch(controller.text.trim());
+        final matches = [
+          for (final folder in folders)
+            if (foldForSearch(folder).contains(typed) &&
+                foldForSearch(folder) != typed)
+              folder,
+        ];
+        if (matches.isEmpty) return const SizedBox.shrink();
+        return Padding(
+          key: const Key('folder-suggestions'),
+          padding: const EdgeInsets.only(top: 8),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              for (final folder in matches)
+                ActionChip(
+                  avatar: const Icon(Icons.folder_outlined, size: 18),
+                  label: Text(folder),
+                  onPressed: () => onPicked(folder),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

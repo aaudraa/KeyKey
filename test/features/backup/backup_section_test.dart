@@ -207,6 +207,26 @@ void main() {
     expect(most, greaterThan(1.02));
   });
 
+  testWidgets('İngilizce arayüzde yedek dosyasının adı İngilizce', (
+    tester,
+  ) async {
+    await pumpKeyKey(
+      tester,
+      status: VaultOpen(service.newSession()),
+      service: service,
+      documents: documents,
+      backups: backups,
+      settings: settings,
+      clock: () => now,
+      locale: const Locale('en'),
+    );
+    await tester.tap(find.byIcon(Icons.settings_outlined));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Back up'));
+    await tester.pumpAndSettle();
+    expect(documents.savedName, 'keykey-backup-2026-11-07.keykey');
+  });
+
   testWidgets('yedek kaydediliyor ve zamanı yazılıyor', (tester) async {
     await pumpSettings(tester);
 

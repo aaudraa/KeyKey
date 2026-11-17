@@ -16,11 +16,15 @@ import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
-/// Önerilen dosya adı: `keykey-disa-aktarma-2026-11-07.csv`.
-String plaintextExportFileName(DateTime time) {
+/// Önerilen dosya adı: `keykey-disa-aktarma-2026-11-07.csv`. [prefix]
+/// arayüz dilinden gelir (`keykey-export`).
+String plaintextExportFileName(
+  DateTime time, {
+  String prefix = 'keykey-disa-aktarma',
+}) {
   String two(int value) => value.toString().padLeft(2, '0');
   final local = time.toLocal();
-  return 'keykey-disa-aktarma-${local.year}-${two(local.month)}-'
+  return '$prefix-${local.year}-${two(local.month)}-'
       '${two(local.day)}.csv';
 }
 
@@ -69,7 +73,10 @@ Future<void> exportPlaintext(BuildContext context, WidgetRef ref) async {
       .read(externalActivityGateProvider.notifier)
       .run(
         () => files.save(
-          suggestedName: plaintextExportFileName(now),
+          suggestedName: plaintextExportFileName(
+            now,
+            prefix: l10n.exportFilePrefix,
+          ),
           mimeType: 'text/csv',
           bytes: bytes,
         ),

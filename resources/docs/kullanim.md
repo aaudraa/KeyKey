@@ -53,19 +53,19 @@ Eski telefonundan bir KeyKey yedeğin varsa kasa oluşturmak yerine **Yedekten g
 
 <img src="../design/kilavuz/03-kilit-ekrani.webp" width="240" alt="Kilit ekranı">
 
-- KeyKey arka plana geçtiği anda ve 5 dakika dokunulmazsa kilitlenir. Ayarlar'daki **Şimdi kilitle** ile hemen kilitleyebilirsin.
+- KeyKey arka plana geçtiği anda ve 5 dakika dokunulmazsa kilitlenir. Ayarlar'daki **Şimdi kilitle** ile hemen kilitleyebilirsin. Kilidi açınca kaldığın yere dönersin: 2FA sekmesindeysen 2FA'ya, bir kaydın ayrıntısındaysan o kayda.
 - **Parmak izi:** Ayarlar → Güvenlik → **Parmak iziyle aç**. Telefonunda parmak izi kayıtlı olmalı. Ana parola her zaman geçerlidir. Telefona yeni bir parmak izi eklersen ya da ekran kilidini kaldırırsan güvenlik gereği parmak iziyle açma kapanır; ana parolayla açıp yeniden açabilirsin.
 - **Yanlış parola:** Birkaç hatalı denemeden sonra yeni deneme için kısa bir süre beklemen gerekir; süre denemeler arttıkça uzar.
 - **Parolamı unuttum:** Kilit ekranındaki bu bağlantıyla kurtarma anahtarını girip kasayı açarsın, ardından yeni bir ana parola belirlersin.
-- **Ana parolayı değiştirmek için:** Ayarlar → Güvenlik → **Ana parolayı değiştir**.
+- **Ana parolayı değiştirmek için:** Ayarlar → Güvenlik → **Ana parolayı değiştir**. Daha önce aldığın yedekler eski parolayla açılmaya devam eder; değişiklikten sonra çıkan nottan yeni bir yedek alıp eskilerini silebilirsin.
 
 ## Parolalar
 
 <img src="../design/kilavuz/04-kasa-listesi.webp" width="240" alt="Kasa listesi"> <img src="../design/kilavuz/05-kayit-ayrintisi.webp" width="240" alt="Kayıt ayrıntısı">
 
-**Kasa** sekmesi bütün kayıtlarını gösterir. Üstteki kutuyla arayabilir, **Favoriler** ve klasör düğmeleriyle süzebilirsin. Kartın sağındaki simge parolayı doğrudan kopyalar.
+**Kasa** sekmesi bütün kayıtlarını gösterir. Üstteki kutuyla arayabilir, **Favoriler** ve klasör düğmeleriyle süzebilirsin. Sağ üstteki **⋮** menüsünden ada ya da son değişene göre sıralarsın; seçimin kilitten sonra da kalır. Kartın sağındaki simge parolayı doğrudan kopyalar. Kasa boşken başka bir uygulamadan **Parolaları içe aktar** ya da **Yedekten geri yükle** kısayollarını da görürsün.
 
-Bir kayda dokununca ayrıntıları açılır: kullanıcı adı, parola, bağlı 2FA kodu, web adresi ve klasör. Her satırın yanında kopyalama düğmesi var. Parola **Göster**'e dokunana kadar gizli kalır. Düzenlemek için üstteki kalem simgesine dokun.
+Bir kayda dokununca ayrıntıları açılır: kullanıcı adı, parola, bağlı 2FA kodu, web adresi ve klasör. Her satırın yanında kopyalama düğmesi var. Parola **Göster**'e dokunana kadar gizli kalır. Web adresinin yanındaki **Siteyi aç** sayfayı tarayıcında açar. Düzenlemek için üstteki kalem simgesine dokun. Kaydı favorilere eklemek ya da çöpe taşımak için ayrıntı ekranının sağ üstündeki **⋮** menüsünü kullan.
 
 **Kopyalanan parola 30 saniye sonra panodan kendiliğinden silinir.** Android 13 ve üstünde pano önizlemesinde de görünmez.
 
@@ -74,8 +74,8 @@ Bir kayda dokununca ayrıntıları açılır: kullanıcı adı, parola, bağlı 
 <img src="../design/kilavuz/06-ekle-paneli.webp" width="240" alt="Ekle paneli"> <img src="../design/kilavuz/07-yeni-parola.webp" width="240" alt="Yeni parola formu"> <img src="../design/kilavuz/08-parola-uretici.webp" width="240" alt="Parola üretici">
 
 1. Alttaki turuncu **+** düğmesine dokun ve **Parola**'yı seç.
-2. Ad, kullanıcı adı, parola ve web adresini yaz. Not, klasör, favori ve özel alanlar **Daha fazla seçenek**'in altında.
-3. Yeni bir parola istiyorsan **Üret**'e dokun. Rastgele karakterlerden ya da kelimelerden (**Parola cümlesi**) parola üretebilir, uzunluğunu ve içereceği karakterleri seçebilirsin. **Bunu kullan** parolayı forma koyar.
+2. Ad, kullanıcı adı, parola ve web adresini yaz. Not, klasör, özel alan ve başka site **Daha fazla seçenek**'in altında. Klasör kutusu var olan klasörlerini önerir.
+3. Yeni bir parola istiyorsan **Üret**'e dokun. Rastgele karakterlerden ya da kelimelerden (**Parola cümlesi**) parola üretebilir, uzunluğunu ve içereceği karakterleri seçebilirsin. **Bunu kullan** parolayı forma koyar; seçtiğin uzunluk ve türler bir dahaki sefere hatırlanır.
 4. **Kaydet**.
 
 Bir parolayı değiştirdiğinde eskisi kaydın geçmişinde kalır.
@@ -84,7 +84,7 @@ Bir parolayı değiştirdiğinde eskisi kaydın geçmişinde kalır.
 
 Kasa ekranının sağ üstündeki **⋮** menüsünde:
 
-- **Çöp kutusu:** Sildiğin kayıtlar burada 30 gün durur, sonra kalıcı olarak silinir. Yanlışlıkla sildiğini buradan geri alırsın.
+- **Çöp kutusu:** Sildiğin kayıtlar burada 30 gün durur, sonra kalıcı olarak silinir. Yanlışlıkla sildiğini buradan geri yüklersin. Çöp kutusunun **⋮** menüsünde **Tümünü geri yükle** ve onay isteyen **Çöpü boşalt** var.
 - **Parola raporu:** Zayıf ve birden çok kayıtta kullandığın parolaları gösterir. Hesaplama telefonda yapılır, hiçbir yere gönderilmez.
 
 ## 2FA kodları
@@ -99,6 +99,8 @@ KeyKey, Google Authenticator gibi bir doğrulama uygulamasının yerini tutar: g
 - **Görseldeki QR kodunu oku:** QR kodun ekran görüntüsü ya da fotoğrafı varsa onu seç.
 - **Anahtarı elle gir:** Site QR yerine bir metin anahtarı veriyorsa onu yaz.
 - **Başka uygulamadan aktar:** Google Authenticator'ın dışa aktarma QR'ları, Aegis ve 2FAS dosyaları.
+
+Henüz hesabın yoksa listedeki **Başka uygulamadan aktar** kısayolu da aynı yere götürür. Aynı gizli anahtarla bir hesap zaten varsa (çöp kutusundakiler de) KeyKey uyarır; istersen yine de eklersin.
 
 **Kullanırken:** Koda dokununca kopyalanır. Sağdaki halka kodun kaç saniye daha geçerli olduğunu gösterir; son saniyelerde atmaya başlar. Karta uzun basınca düzenleme, favori ve silme seçenekleri açılır.
 

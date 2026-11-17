@@ -8,7 +8,10 @@ import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
+import 'package:keykey/features/generator/application/generator_preferences.dart';
+import 'package:keykey/features/generator/application/password_generator.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
+import 'package:keykey/features/vault/application/login_search.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:sodium/sodium_sumo.dart';
 
@@ -178,6 +181,84 @@ void main() {
         final settings = await repository.load();
         expect(settings.otpRequireAuth, isTrue, reason: json);
         expect(settings.lastBackupAt, isNull, reason: json);
+      }
+    });
+  });
+
+  group('sürüm 4: sıralama ve üretici', () {
+    const v3 =
+        '{"version":3,"otpRequireAuth":false,"autofillCopyOtp":true,'
+        '"lastBackupAt":null,"backupReminderSnoozedUntil":null}';
+    String v4(String sort, String generator) =>
+        '{"version":4,"otpRequireAuth":false,"autofillCopyOtp":true,'
+        '"lastBackupAt":null,"backupReminderSnoozedUntil":null,'
+        '"vaultSort":$sort,"generator":$generator}';
+    const generator =
+        '{"passphrase":false,"length":20,"lowercase":true,'
+        '"uppercase":true,"digits":true,"symbols":true,"words":6}';
+
+    test(
+      'sürüm 3 kaydı okunuyor, ada göre sıralama ve varsayılan üretici',
+      () async {
+        await putRaw(encrypt(v3));
+        final settings = await repository.load();
+        expect(settings.otpRequireAuth, isFalse);
+        expect(settings.vaultSort, LoginSort.name);
+        expect(settings.generator.passphrase, isFalse);
+        expect(settings.generator.password.length, 20);
+        expect(settings.generator.passphraseOptions.words, 6);
+      },
+    );
+
+    test('sıralama ve üretici seçenekleri yazılıp okunuyor', () async {
+      await repository.save(
+        AppSettings.defaults.copyWith(
+          vaultSort: LoginSort.recentlyUpdated,
+          generator: const GeneratorPreferences(
+            passphrase: true,
+            password: PasswordOptions(length: 32, symbols: false),
+            passphraseOptions: PassphraseOptions(words: 8),
+          ),
+        ),
+      );
+      final settings = await repository.load();
+      expect(settings.vaultSort, LoginSort.recentlyUpdated);
+      expect(settings.generator.passphrase, isTrue);
+      expect(settings.generator.password.length, 32);
+      expect(settings.generator.password.symbols, isFalse);
+      expect(settings.generator.password.digits, isTrue);
+      expect(settings.generator.passphraseOptions.words, 8);
+      expect(settings.otpRequireAuth, isFalse);
+    });
+
+    test('copyWith sıralamayı ve üreticiyi koruyor', () {
+      final settings = AppSettings.defaults
+          .copyWith(vaultSort: LoginSort.recentlyUpdated)
+          .copyWith(otpRequireAuth: true);
+      expect(settings.vaultSort, LoginSort.recentlyUpdated);
+    });
+
+    test('geçersiz sıralama ya da üretici kaydı okunamaz yapıyor', () async {
+      for (final json in [
+        v4('"tarih"', generator),
+        v4('null', generator),
+        v4('"name"', generator.replaceFirst('"length":20', '"length":7')),
+        v4('"name"', generator.replaceFirst('"length":20', '"length":65')),
+        v4('"name"', generator.replaceFirst('"words":6', '"words":3')),
+        v4('"name"', generator.replaceFirst('"words":6', '"words":13')),
+        v4('"name"', generator.replaceFirst('"digits":true', '"digits":1')),
+        v4(
+          '"name"',
+          '{"passphrase":false,"length":20,"lowercase":false,'
+              '"uppercase":false,"digits":false,"symbols":false,"words":6}',
+        ),
+        v4('"name"', generator.replaceFirst('"words":6', '"words":6,"x":1')),
+        v4('"name"', generator.replaceFirst(',"words":6', '')),
+        v4('"name"', '[]'),
+        v3.replaceFirst('"version":3', '"version":4'),
+      ]) {
+        await putRaw(encrypt(json));
+        expect((await repository.load()).otpRequireAuth, isTrue, reason: json);
       }
     });
   });

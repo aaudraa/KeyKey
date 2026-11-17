@@ -12,6 +12,7 @@ import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/lock_screen.dart';
+import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../../support/fake_vault_service.dart';
@@ -23,6 +24,8 @@ void main() {
   const lockedTitle = 'KeyKey kilitli';
   const vaultText =
       'Henüz parola yok. İlkini kaydetmek için alttaki + düğmesine dokun.';
+  const otpEmptyText =
+      'Henüz 2FA hesabı yok. İlkini kurmak için alttaki + düğmesine dokun.';
 
   setUpAll(() async {
     sodium = await SodiumSumoInit.init();
@@ -72,6 +75,33 @@ void main() {
       final status = VaultRecovering(session);
       expect(vaultRedirect(status, AppRoutes.vault), AppRoutes.newPassword);
       expect(vaultRedirect(status, AppRoutes.newPassword), isNull);
+    });
+
+    test('kilit açılınca kaldığı yere dönülüyor', () {
+      final session = FakeVaultService(sodium).newSession();
+      addTearDown(session.dispose);
+      final status = VaultOpen(session);
+      expect(
+        vaultRedirect(status, AppRoutes.lock, resume: AppRoutes.authenticator),
+        AppRoutes.authenticator,
+      );
+      expect(resumeLocationFor(AppRoutes.vault), AppRoutes.vault);
+      expect(resumeLocationFor('/kasa/kayit/0a1b'), '/kasa/kayit/0a1b');
+      // Formlar ve tek seferlik ekranlar geri açılmaz, sekmenin köküne dönülür.
+      expect(resumeLocationFor('/kasa/kayit/0a1b/duzenle'), AppRoutes.vault);
+      expect(resumeLocationFor(AppRoutes.vaultNew), AppRoutes.vault);
+      expect(resumeLocationFor(AppRoutes.vaultTrash), AppRoutes.vault);
+      expect(
+        resumeLocationFor(AppRoutes.authenticator),
+        AppRoutes.authenticator,
+      );
+      expect(
+        resumeLocationFor(AppRoutes.authenticatorScan),
+        AppRoutes.authenticator,
+      );
+      expect(resumeLocationFor(AppRoutes.settings), AppRoutes.settings);
+      expect(resumeLocationFor(AppRoutes.changePassword), AppRoutes.settings);
+      expect(resumeLocationFor(AppRoutes.lock), AppRoutes.vault);
     });
 
     test('kasa açıkken kilit ekranları kasaya dönüyor', () {
@@ -440,7 +470,7 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Devam et'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Bu, bu kasanın anahtarı değil.'), findsOneWidget);
+      expect(find.text('Bu anahtar bu kasaya ait değil.'), findsOneWidget);
       expect(find.text('Yeni ana parola'), findsNothing);
     });
 
@@ -524,6 +554,60 @@ void main() {
       await tester.pumpAndSettle();
       await enterPassword(tester, FakeVaultService.correctPassword);
       expect(find.text(vaultText), findsOneWidget);
+    });
+
+    testWidgets('kilit açılınca kilitlenmeden önceki sekmeye dönülüyor', (
+      tester,
+    ) async {
+      await pumpOpen(tester);
+      await tester.tap(find.byIcon(Icons.shield_outlined));
+      await tester.pumpAndSettle();
+      expect(find.text(otpEmptyText), findsOneWidget);
+
+      setLifecycle(tester, AppLifecycleState.hidden);
+      setLifecycle(tester, AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(find.text(lockedTitle), findsOneWidget);
+
+      await enterPassword(tester, FakeVaultService.correctPassword);
+      expect(find.text(otpEmptyText), findsOneWidget);
+      expect(find.text(vaultText), findsNothing);
+    });
+
+    testWidgets('kilit açılınca listeden açılan kayda dönülüyor', (
+      tester,
+    ) async {
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        logins: FakeLoginRepository(
+          items: [
+            FakeLoginRepository.item(
+              const LoginContent(
+                name: 'Banka',
+                username: 'kullanici-banka',
+                password: 'p',
+              ),
+              id: 1,
+            ),
+          ],
+        ),
+      );
+      // Kayıt listeden açılır (push); adres çubuğundaki temel yer /kasa kalır.
+      await tester.tap(find.text('Banka'));
+      await tester.pumpAndSettle();
+      // Yalnızca ayrıntı ekranında olan düğme.
+      final detail = find.byTooltip('Kopyala: Kullanıcı adı');
+      expect(detail, findsOneWidget);
+
+      setLifecycle(tester, AppLifecycleState.hidden);
+      setLifecycle(tester, AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(find.text(lockedTitle), findsOneWidget);
+
+      await enterPassword(tester, FakeVaultService.correctPassword);
+      expect(detail, findsOneWidget);
     });
 
     group("KeyKey'in açtığı dosya seçicisi", () {
@@ -743,6 +827,9 @@ void main() {
       );
 
       expect(find.text('Kasa okunamadı'), findsOneWidget);
+      // Güncelleme dışında, dosya bozulduysa yedekten dönüş yolu da anlatılır.
+      expect(find.textContaining('depolama alanını temizle'), findsOneWidget);
+      expect(find.textContaining('Yedekten geri yükle'), findsOneWidget);
     });
   });
 }

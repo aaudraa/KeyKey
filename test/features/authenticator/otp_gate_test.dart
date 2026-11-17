@@ -183,9 +183,9 @@ void main() {
         .read(vaultControllerProvider.notifier)
         .unlockWithPassword(FakeVaultService.correctPassword);
     await settle(tester);
-    await tester.tap(find.byIcon(Icons.shield_outlined));
-    await settle(tester);
 
+    // Kilit açılınca kalınan 2FA sekmesine dönülür; onay sıfırlanmıştır.
+    expect(find.byIcon(Icons.shield), findsOneWidget);
     expect(find.text('Kodlar gizli'), findsOneWidget);
   });
 

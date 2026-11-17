@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/kk_section.dart';
 import 'package:keykey/app/ui/kk_switch.dart';
+import 'package:keykey/core/platform/web_links.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/features/autofill/application/autofill_setup.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
@@ -59,6 +61,45 @@ void main() {
 
   // Ayarlarda birden çok anahtar var, parmak izi anahtarı adıyla bulunur.
   final biometricSwitch = find.widgetWithText(KkSwitchTile, 'Parmak iziyle aç');
+
+  group('ana parola değiştirme beklemesi', () {
+    testWidgets('yanlış paroladan sonra bekleme dakika:saniye sayılıyor', (
+      tester,
+    ) async {
+      service.waitAfterReject = const Duration(minutes: 15);
+      await openChangePassword(tester);
+      await submitChange(tester, current: 'yanlis-parola-1');
+
+      expect(
+        find.text('Çok fazla hatalı deneme. 15:00 sonra yeniden dene.'),
+        findsOneWidget,
+      );
+      await tester.pump(const Duration(seconds: 1));
+      expect(
+        find.text('Çok fazla hatalı deneme. 14:59 sonra yeniden dene.'),
+        findsOneWidget,
+      );
+      final save = tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, 'Parolayı değiştir'),
+      );
+      expect(save.onPressed, isNull);
+
+      await tester.pump(const Duration(minutes: 15));
+      expect(find.textContaining('Çok fazla hatalı deneme'), findsNothing);
+    });
+
+    testWidgets('bekleme sürerken açılan ekran da sayıyor', (tester) async {
+      service.currentWait = const Duration(seconds: 90);
+      await openChangePassword(tester);
+      await submitChange(tester, current: FakeVaultService.correctPassword);
+
+      expect(
+        find.text('Çok fazla hatalı deneme. 1:30 sonra yeniden dene.'),
+        findsOneWidget,
+      );
+      expect(service.changedPassword, isNull);
+    });
+  });
 
   group('düzen', () {
     // Telefon denemesi 5: başlık üst çubukta sabit, kaydırınca değişmez.
@@ -118,6 +159,60 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text(hint), findsOneWidget);
       expect(find.byType(BottomSheet), findsOneWidget);
+    });
+
+    for (final (title, url) in [
+      ('Kaynak kod', 'https://github.com/aaudraa/KeyKey'),
+      ('Sorun bildir', 'https://github.com/aaudraa/KeyKey/issues'),
+      (
+        'Gizlilik bildirimi',
+        'https://github.com/aaudraa/KeyKey/blob/main/resources/docs/gizlilik.md',
+      ),
+    ]) {
+      testWidgets('"$title" tarayıcıda açılıyor', (tester) async {
+        final links = RecordingWebLinks();
+        await pumpKeyKey(
+          tester,
+          status: VaultOpen(service.newSession()),
+          service: service,
+          extraOverrides: [webLinksProvider.overrideWithValue(links)],
+        );
+        await tester.tap(find.byIcon(Icons.settings_outlined));
+        await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(find.text(title), 200);
+        await tester.ensureVisible(find.text(title));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(title));
+        await tester.pumpAndSettle();
+
+        expect(links.opened, [Uri.parse(url)]);
+      });
+    }
+
+    testWidgets('İngilizce arayüzde gizlilik bildirimi İngilizce', (
+      tester,
+    ) async {
+      final links = RecordingWebLinks();
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        locale: const Locale('en'),
+        extraOverrides: [webLinksProvider.overrideWithValue(links)],
+      );
+      await tester.tap(find.byIcon(Icons.settings_outlined));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text('Privacy policy'), 200);
+      await tester.ensureVisible(find.text('Privacy policy'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Privacy policy'));
+      await tester.pumpAndSettle();
+
+      expect(links.opened, [
+        Uri.parse(
+          'https://github.com/aaudraa/KeyKey/blob/main/resources/docs/privacy.md',
+        ),
+      ]);
     });
 
     testWidgets("sürüm satırı sahte API'nin döndürdüğü sürümü gösterir", (
@@ -322,7 +417,59 @@ void main() {
 
     expect(service.changedPassword, newPassword);
     expect(find.text('Ana parola değiştirildi.'), findsOneWidget);
+    // Eski yedekler eski parolayla açılır; kullanıcıya söylenir.
+    expect(find.textContaining('eski parolayla açılmaya devam eder'), findsOne);
+    // Not açıkken parola artık değişti; düğme ikinci kez gönderemez.
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.widgetWithText(FilledButton, 'Parolayı değiştir'),
+          )
+          .onPressed,
+      isNull,
+    );
+    await tester.tap(find.text('Sonra'));
+    await tester.pumpAndSettle();
     // Ayarlar ekranına dönüldü.
+    expect(find.text('Ana parolayı değiştir'), findsOneWidget);
+  });
+
+  testWidgets('not açıkken kasa kilitlenirse kilit ekranı gelir', (
+    tester,
+  ) async {
+    await openChangePassword(tester);
+    await submitChange(tester, current: FakeVaultService.correctPassword);
+    expect(find.text('Sonra'), findsOneWidget);
+
+    ProviderScope.containerOf(tester.element(find.text('Sonra')))
+        .read(vaultControllerProvider.notifier)
+        .lock();
+    await tester.pumpAndSettle();
+
+    expect(find.text('KeyKey kilitli'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('parola değişince oradan yeni yedek alınabiliyor', (
+    tester,
+  ) async {
+    final documents = FakeDocumentFiles();
+    await pumpKeyKey(
+      tester,
+      status: VaultOpen(service.newSession()),
+      service: service,
+      documents: documents,
+      backups: FakeBackupService(),
+    );
+    await tester.tap(find.byIcon(Icons.settings_outlined));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ana parolayı değiştir'));
+    await tester.pumpAndSettle();
+    await submitChange(tester, current: FakeVaultService.correctPassword);
+
+    await tester.tap(find.text('Yeni yedek al'));
+    await tester.pumpAndSettle();
+    expect(documents.saves, 1);
     expect(find.text('Ana parolayı değiştir'), findsOneWidget);
   });
 

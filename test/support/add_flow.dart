@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keykey/app/ui/add_panel.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 
 /// Menüdeki "+" ile yeni parola formunu açar.
@@ -25,6 +26,9 @@ Future<void> openAddOtp(
   await wait();
   await tester.tap(find.text('2FA kodu'));
   await wait();
-  await tester.tap(find.text(way));
+  // Boş 2FA ekranında aynı adlı kısayol da var; paneldekine dokunulur.
+  await tester.tap(
+    find.descendant(of: find.byType(AddPanel), matching: find.text(way)),
+  );
   await wait();
 }

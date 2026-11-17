@@ -18,6 +18,7 @@ import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/platform/export_file_picker.dart';
 import 'package:keykey/core/platform/qr_image_reader.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
+import 'package:keykey/core/platform/web_links.dart';
 import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/core/vault/vault_service.dart';
@@ -150,6 +151,7 @@ class FakeVaultService implements VaultService {
     required String currentPassword,
     required String newPassword,
   }) async {
+    if (currentWait > Duration.zero) return PasswordMustWait(currentWait);
     if (currentPassword != correctPassword) {
       return PasswordRejected(waitAfterReject);
     }
@@ -227,6 +229,18 @@ final Uint8List fakeIconPng = Uint8List.fromList(const [
   0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49,
   0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
 ]);
+
+/// Açılan sayfaları kaydeder; [result] `false` ise tarayıcı yok gibi davranır.
+class RecordingWebLinks implements WebLinks {
+  final opened = <Uri>[];
+  bool result = true;
+
+  @override
+  Future<bool> open(Uri page) async {
+    opened.add(page);
+    return result;
+  }
+}
 
 /// Verilen paketlerin simgesini döndürür, diğerlerinde `null`.
 class FakeAppPackages implements AppPackages {

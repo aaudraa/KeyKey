@@ -187,7 +187,7 @@ void main() {
       tester,
     ) async {
       await openFromSettings(tester);
-      await tester.tap(find.text('Kasamı yedekle değiştir'));
+      await tester.tap(find.text('Kasanın yerine yedeği koy'));
       await tester.pumpAndSettle();
       expect(find.text('Kasan değiştirilsin mi?'), findsOneWidget);
       expect(find.byType(BottomSheet), findsOneWidget);
@@ -203,7 +203,7 @@ void main() {
     ) async {
       service.biometricEnabled = true;
       await openFromSettings(tester);
-      await tester.tap(find.text('Kasamı yedekle değiştir'));
+      await tester.tap(find.text('Kasanın yerine yedeği koy'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Değiştir'));
       await tester.pumpAndSettle();

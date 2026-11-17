@@ -60,8 +60,13 @@ abstract final class AppRoutes {
 
 /// Kasa durumuna göre gidilmesi gereken yer. `null` ise olduğu yerde kalır.
 ///
-/// Kasa açık değilken kasa ekranlarına hiçbir yoldan ulaşılamaz.
-String? vaultRedirect(VaultStatus status, String location) {
+/// Kasa açık değilken kasa ekranlarına hiçbir yoldan ulaşılamaz. Kasa
+/// açılınca [resume]'a, yani kilitlenmeden önce kalınan yere gidilir.
+String? vaultRedirect(
+  VaultStatus status,
+  String location, {
+  String resume = AppRoutes.vault,
+}) {
   return switch (status) {
     // Önce tanıtım; yeni telefonda kasa yedekten de kurulabilir.
     VaultNotSetUp() =>
@@ -78,9 +83,23 @@ String? vaultRedirect(VaultStatus status, String location) {
       location == AppRoutes.newPassword ? null : AppRoutes.newPassword,
     VaultUnavailable() =>
       location == AppRoutes.unavailable ? null : AppRoutes.unavailable,
-    VaultOpen() => _gateRoutes.contains(location) ? AppRoutes.vault : null,
+    VaultOpen() => _gateRoutes.contains(location) ? resume : null,
   };
 }
+
+/// Kilit açılınca [path]'in yerine dönülecek yer: bir kasa kaydının
+/// ayrıntısı ya da sekmenin kökü. Formlar ve tek seferlik ekranlar
+/// (tarayıcı, içe aktarma) geri açılmaz; yarım kalan girdi kilitle zaten
+/// silinir.
+String resumeLocationFor(String path) {
+  if (_vaultItem.hasMatch(path)) return path;
+  bool under(String root) => path == root || path.startsWith('$root/');
+  if (under(AppRoutes.authenticator)) return AppRoutes.authenticator;
+  if (under(AppRoutes.settings)) return AppRoutes.settings;
+  return AppRoutes.vault;
+}
+
+final _vaultItem = RegExp(r'^/kasa/kayit/[^/]+$');
 
 const Set<String> _gateRoutes = {
   AppRoutes.setup,
@@ -96,14 +115,21 @@ final routerProvider = Provider<GoRouter>((ref) {
     ..listen(vaultControllerProvider, (_, _) => statusChanges.value++)
     ..onDispose(statusChanges.dispose);
 
+  // Kilitlenmeden önce kalınan yer; yalnızca bellekte tutulur.
+  var resume = AppRoutes.vault;
+
   // Form ekranları kök gezginde açılır; alt menünün üstünü örterler.
   final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'kök');
   final router = GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: AppRoutes.vault,
     refreshListenable: statusChanges,
-    redirect: (context, state) =>
-        vaultRedirect(ref.read(vaultControllerProvider), state.matchedLocation),
+    redirect: (context, state) {
+      final status = ref.read(vaultControllerProvider);
+      // Yeni ya da yedekten kurulan kasa kasa sekmesinde açılır.
+      if (status is VaultNotSetUp) resume = AppRoutes.vault;
+      return vaultRedirect(status, state.matchedLocation, resume: resume);
+    },
     routes: [
       kkRoute(
         path: AppRoutes.intro,
@@ -259,7 +285,22 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
-  ref.onDispose(router.dispose);
+  // Geri dönüşler yönlendirmeden geçmez; kalınan yer gezginin kendisinden
+  // okunur. Kilitliyken değişmez, böylece kilit ekranı kayda geçmez.
+  // `currentConfiguration.uri` push ile açılan kaydı göstermez (temel yer
+  // /kasa kalır); en üstteki eşleşmenin durumu kaydın kendi adresini verir.
+  void remember() {
+    if (ref.read(vaultControllerProvider) is! VaultOpen) return;
+    if (router.routerDelegate.currentConfiguration.isEmpty) return;
+    final path = router.state.uri.path;
+    if (!_gateRoutes.contains(path)) resume = resumeLocationFor(path);
+  }
+
+  router.routerDelegate.addListener(remember);
+  ref.onDispose(() {
+    router.routerDelegate.removeListener(remember);
+    router.dispose();
+  });
   return router;
 });
 

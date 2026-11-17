@@ -166,6 +166,15 @@ abstract class AppPackagesApi {
   String versionName();
 }
 
+/// Web sayfasını sistemin tarayıcısında açar. KeyKey internete çıkmaz;
+/// adres yalnızca kullanıcı dokununca tarayıcıya devredilir.
+@HostApi()
+abstract class WebLinkApi {
+  /// Yalnızca http ve https adresleri açılır. Açacak uygulama yoksa ya da
+  /// adres web sayfası değilse `false`.
+  bool openWebPage(String url);
+}
+
 /// Ana uygulamanın otomatik doldurma kurulumu durumu.
 class AutofillSetupStatus {
   AutofillSetupStatus({

@@ -7,6 +7,7 @@ import 'package:keykey/features/authenticator/data/import/google_migration.dart'
 import 'package:keykey/features/authenticator/data/import/import_result.dart';
 import 'package:keykey/features/authenticator/data/import/twofas_import.dart';
 import 'package:keykey/features/authenticator/data/otp_content.dart';
+import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 
 /// Seçilen dosya tanınan bir dışa aktarma biçiminde değil.
@@ -74,12 +75,16 @@ final class EncryptedImport extends ImportSource {
 
 /// [account]'un gizli anahtarı zaten kayıtlıysa, çöp kutusunda bile olsa,
 /// tekrar eklenmez.
-bool isAlreadyAdded(ImportedAccount account, Iterable<OtpItem> existing) {
-  final secret = account.parameters.secret;
+bool isAlreadyAdded(ImportedAccount account, Iterable<OtpItem> existing) =>
+    hasSameSecret(account.parameters, existing);
+
+/// [existing] içinde, çöp kutusundakiler dahil, aynı türde ve aynı gizli
+/// anahtarlı bir hesap var mı.
+bool hasSameSecret(OtpParameters parameters, Iterable<OtpItem> existing) {
   for (final item in existing) {
-    final parameters = item.content.parameters;
-    if (parameters.kind == account.parameters.kind &&
-        listEquals(parameters.secret, secret)) {
+    final other = item.content.parameters;
+    if (other.kind == parameters.kind &&
+        listEquals(other.secret, parameters.secret)) {
       return true;
     }
   }

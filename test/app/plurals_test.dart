@@ -22,19 +22,4 @@ void main() {
       '7 Kas tarihli yedek: 1 parola ve 2 2FA hesabı.',
     );
   });
-
-  test('parola değiştirmede bekleme', () {
-    expect(
-      en.changePasswordWait(1),
-      'Too many wrong attempts. Try again in 1 second.',
-    );
-    expect(
-      en.changePasswordWait(15),
-      'Too many wrong attempts. Try again in 15 seconds.',
-    );
-    expect(
-      tr.changePasswordWait(1),
-      'Çok fazla hatalı deneme. 1 saniye sonra yeniden dene.',
-    );
-  });
 }

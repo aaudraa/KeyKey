@@ -1064,6 +1064,48 @@ interface AppPackagesApi {
   }
 }
 /**
+ * Web sayfasını sistemin tarayıcısında açar. KeyKey internete çıkmaz;
+ * adres yalnızca kullanıcı dokununca tarayıcıya devredilir.
+ *
+ * Generated interface from Pigeon that represents a handler of messages from Flutter.
+ */
+interface WebLinkApi {
+  /**
+   * Yalnızca http ve https adresleri açılır. Açacak uygulama yoksa ya da
+   * adres web sayfası değilse `false`.
+   */
+  fun openWebPage(url: String): Boolean
+
+  companion object {
+    /** The codec used by WebLinkApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      PlatformApiPigeonCodec()
+    }
+    /** Sets up an instance of `WebLinkApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: WebLinkApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.WebLinkApi.openWebPage$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val urlArg = args[0] as String
+            val wrapped: List<Any?> = try {
+              listOf(api.openWebPage(urlArg))
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}
+/**
  * Kurulum ekranının Kotlin tarafı: durum ve ayarlara doğrudan geçiş.
  *
  * Generated interface from Pigeon that represents a handler of messages from Flutter.

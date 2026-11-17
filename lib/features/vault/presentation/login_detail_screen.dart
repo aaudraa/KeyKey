@@ -13,6 +13,8 @@ import 'package:keykey/app/ui/kk_menu.dart';
 import 'package:keykey/app/ui/kk_secret_text.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/app/ui/record_avatar.dart';
+import 'package:keykey/app/web_page.dart';
+import 'package:keykey/core/platform/web_links.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/presentation/linked_otp_tile.dart';
 import 'package:keykey/features/authenticator/presentation/otp_display.dart';
@@ -62,7 +64,8 @@ class LoginDetailScreen extends ConsumerWidget {
         ),
       for (final otp in linkedOtps)
         LinkedOtpTile(key: ValueKey(otpIdHex(otp)), item: otp),
-      for (final url in content.urls) _Field(label: l10n.loginUrl, value: url),
+      for (final url in content.urls)
+        _Field(label: l10n.loginUrl, value: url, page: webPageUri(url)),
       for (final app in content.apps)
         ListTile(
           leading: Icon(
@@ -217,11 +220,19 @@ class LoginDetailScreen extends ConsumerWidget {
 ///
 /// Kilitlenince ekran kapandığı için açılan değer de yeniden gizlenir.
 class _Field extends ConsumerStatefulWidget {
-  const new({required this.label, required this.value, this.hidden = false});
+  const new({
+    required this.label,
+    required this.value,
+    this.hidden = false,
+    this.page,
+  });
 
   final String label;
   final String value;
   final bool hidden;
+
+  /// Değer bir web sayfasıysa tarayıcıda açma düğmesi çıkar.
+  final Uri? page;
 
   @override
   ConsumerState<_Field> createState() => _FieldState();
@@ -263,8 +274,14 @@ class _FieldState extends ConsumerState<_Field> {
               ),
               onPressed: () => setState(() => _revealed = !_revealed),
             ),
+          if (widget.page case final page?)
+            IconButton(
+              tooltip: l10n.loginOpenSite,
+              icon: Icon(Icons.open_in_new_rounded, color: accent),
+              onPressed: () => unawaited(openWebPage(context, ref, page)),
+            ),
           KkCopyIcon(
-            tooltip: l10n.copy,
+            tooltip: l10n.copyField(widget.label),
             color: accent,
             onCopy: () => copySensitive(context, ref, widget.value),
           ),

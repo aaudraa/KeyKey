@@ -384,6 +384,64 @@ void main() {
       expect(find.widgetWithText(TextField, 'Ara'), findsNothing);
     });
 
+    testWidgets('kayda bağlı 2FA kodunun kopyala düğmesi alanı söylüyor', (
+      tester,
+    ) async {
+      final login = FakeLoginRepository.item(
+        const LoginContent(name: 'GitHub'),
+        id: 7,
+      );
+      otps.items[0] = FakeOtpRepository.item(
+        totp('GitHub', account: 'ali@example.com').copyWith(loginId: login.id),
+        id: 1,
+      );
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        otps: otps,
+        logins: FakeLoginRepository(items: [login]),
+        clock: () => now,
+        clipboard: clipboard,
+      );
+      await tester.tap(find.text('GitHub'));
+      await settle(tester);
+
+      expect(find.byTooltip('Kopyala: 2FA kodu'), findsOneWidget);
+      expect(find.byTooltip('Kopyala'), findsNothing);
+    });
+
+    testWidgets('hesap yoksa başka uygulamadan aktarma kısayolu', (
+      tester,
+    ) async {
+      otps.items.clear();
+      final files = FakeExportFilePicker();
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        otps: otps,
+        clock: () => now,
+        files: files,
+      );
+      await tester.tap(find.byIcon(Icons.shield_outlined));
+      await settle(tester);
+
+      await tester.tap(
+        find.widgetWithText(TextButton, 'Başka uygulamadan aktar'),
+      );
+      await settle(tester);
+      expect(files.calls, 1);
+    });
+
+    testWidgets('hesap varken aktarma kısayolu yok', (tester) async {
+      await openAuthenticator(tester);
+      expect(
+        find.widgetWithText(TextButton, 'Başka uygulamadan aktar'),
+        findsNothing,
+      );
+    });
+
     testWidgets('okunamayan kayıt sayısı bildiriliyor', (tester) async {
       otps = FakeOtpRepository(items: otps.items, unreadableCount: 2);
       await openAuthenticator(tester);
@@ -530,6 +588,34 @@ void main() {
       expect(find.text('Yeni'), findsOneWidget);
     });
 
+    testWidgets('aynı anahtar zaten varsa uyarıyor, onaylanırsa ekliyor', (
+      tester,
+    ) async {
+      await openForm(tester);
+      final before = otps.items.length;
+      await tester.enterText(find.widgetWithText(TextField, 'Servis'), 'Yine');
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Gizli anahtar'),
+        Base32.encode(rfcSecret),
+      );
+      await tester.tap(find.text('Kaydet'));
+      await settle(tester);
+
+      expect(find.text('Bu hesap zaten ekli'), findsOneWidget);
+      await tester.tap(find.text('Vazgeç'));
+      await settle(tester);
+      expect(otps.items, hasLength(before));
+      expect(find.widgetWithText(TextField, 'Servis'), findsOneWidget);
+
+      await tester.tap(find.text('Kaydet'));
+      await settle(tester);
+      await tester.tap(find.text('Yine de ekle'));
+      await settle(tester);
+      await settle(tester);
+      expect(otps.items, hasLength(before + 1));
+      expect(otps.items.last.content.issuer, 'Yine');
+    });
+
     testWidgets('kaydedince onay işareti, çift basış tek hesap, kart '
         'listede bir kez parlar', (tester) async {
       await openForm(tester);
@@ -582,7 +668,7 @@ void main() {
 
       await tester.binding.handlePopRoute();
       await settle(tester);
-      await tester.tap(find.text('Sil'));
+      await tester.tap(find.text('Değişiklikleri at'));
       await settle(tester);
       expect(find.text('Yeni 2FA hesabı'), findsNothing);
       expect(otps.items, hasLength(3));
@@ -914,10 +1000,26 @@ void main() {
     testWidgets('geri alma', (tester) async {
       await openTrash(tester);
 
-      await tester.tap(find.byTooltip('Geri al'));
+      await tester.tap(find.byTooltip('Geri yükle'));
       await settle(tester);
 
       expect(otps.items[1].content.isTrashed, isFalse);
+      expect(find.text('Çöp kutusu boş.'), findsOneWidget);
+    });
+
+    testWidgets('boşaltma 2FA uyarısıyla soruluyor', (tester) async {
+      await openTrash(tester);
+      await tester.tap(find.byTooltip('Diğer işlemler'));
+      await settle(tester);
+      await tester.tap(find.text('Çöpü boşalt'));
+      await settle(tester);
+      expect(
+        find.textContaining('o servislere giriş yapamayabilirsin'),
+        findsOneWidget,
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Boşalt'));
+      await settle(tester);
+      expect(otps.items.where((i) => i.content.isTrashed), isEmpty);
       expect(find.text('Çöp kutusu boş.'), findsOneWidget);
     });
 

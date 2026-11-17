@@ -14,11 +14,12 @@ class BackupService {
   new({required SodiumSumo sodium, required this._store})
     : _codec = BackupCodec(sodium);
 
-  /// Önerilen dosya adı: `keykey-yedek-2026-11-07.keykey`.
-  static String fileNameFor(DateTime time) {
+  /// Önerilen dosya adı: `keykey-yedek-2026-11-07.keykey`. [prefix]
+  /// arayüz dilinden gelir (`keykey-backup`).
+  static String fileNameFor(DateTime time, {String prefix = 'keykey-yedek'}) {
     String two(int value) => value.toString().padLeft(2, '0');
     final local = time.toLocal();
-    return 'keykey-yedek-${local.year}-${two(local.month)}-'
+    return '$prefix-${local.year}-${two(local.month)}-'
         '${two(local.day)}.keykey';
   }
 

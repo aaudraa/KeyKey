@@ -1,6 +1,6 @@
 # Gizlilik bildirimi
 
-**Geçerlilik:** KeyKey 1.0 ve sonrası · **Son güncelleme:** 2026-11-15 · English: [privacy.md](privacy.md)
+**Geçerlilik:** KeyKey 1.0 ve sonrası · **Son güncelleme:** 2026-11-17 · English: [privacy.md](privacy.md)
 
 KeyKey hiçbir veri toplamaz ve hiçbir yere göndermez. Uygulamanın internet izni yoktur, bu yüzden istese de cihazdan veri çıkaramaz. Bunu kurulu uygulamanın izinlerinden ya da kaynak koddan herkes doğrulayabilir.
 
@@ -39,6 +39,10 @@ Kopyaladığın parola ve 2FA kodları panoda "hassas" olarak işaretlenir (Andr
 ## Dosyalar
 
 Yedek, dışa ve içe aktarma dosyaları yalnızca Android'in dosya seçicisiyle senin seçtiğin yere yazılır ya da oradan okunur. Drive gibi bir konum seçersen dosyayı oraya Android'in kendisi taşır; KeyKey internete çıkmaz. Şifresiz dışa aktarma çift onay ister ve dosyanın şifresiz olduğu açıkça söylenir.
+
+## Bağlantılar
+
+Bir kayıtta **Siteyi aç**'a ya da Ayarlar'ın Hakkında bölümündeki bir bağlantıya dokunursan KeyKey yalnızca o adresi tarayıcına verir, sayfayı tarayıcı yükler. Başka hiçbir şey aktarılmaz; KeyKey'in kendisi yine internete çıkmaz.
 
 ## Değişiklikler
 

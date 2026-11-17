@@ -112,7 +112,7 @@ class _LinkedOtpTileState extends ConsumerState<LinkedOtpTile> {
                   onPressed: _generate,
                 ),
               KkCopyIcon(
-                tooltip: l10n.copy,
+                tooltip: l10n.copyField(l10n.loginOtpCode),
                 onCopy: code == null ? null : () => _copy(code),
               ),
             ],
