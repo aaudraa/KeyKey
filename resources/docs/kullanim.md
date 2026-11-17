@@ -41,7 +41,7 @@ Uygulamayı ilk açtığında kısa, hareketli bir tanıtım gelir: KeyKey'in ne
 <img src="../design/kilavuz/01-kasa-olustur.webp" width="240" alt="Kasa oluşturma ekranı"> <img src="../design/kilavuz/02-kurtarma-anahtari.webp" width="240" alt="Kurtarma anahtarı ekranı">
 
 1. **Ana parolanı seç.** Kasanı bu parola korur. En az 10 karakter olmalı; birbiriyle ilgisiz birkaç kelimeden oluşan bir cümle hem güçlü hem akılda kalıcıdır. Güç göstergesi parolanın ne kadar tahmin edilebilir olduğunu söyler.
-2. **Kurtarma anahtarını kağıda yaz.** Kasa oluşunca uzun bir kurtarma anahtarı gösterilir. Ana parolanı unutursan kasanı yalnızca bu açar. Yalnızca bu bir kez gösterilir, KeyKey onu saklamaz. Ekran görüntüsü alınamaz; kağıda yaz ve güvenli bir yerde sakla.
+2. **Kurtarma anahtarını kaydet.** Kasa oluşunca uzun bir kurtarma anahtarı gösterilir. Ana parolanı unutursan kasanı yalnızca bu açar. Yalnızca bu bir kez gösterilir, KeyKey onu saklamaz. Ekran görüntüsü alınamaz; kağıda yazabilir, **Kopyala** ile başka bir parola yöneticisine yapıştırabilir ya da **Dosyaya kaydet** ile metin dosyası olarak kaydedebilirsin. Dosyayı telefonda bırakma: anahtarı bulan kasanı açabilir. Sonraki adımda anahtarı yazar, yapıştırır ya da **Dosyadan oku** ile kaydettiğin dosyadan alırsın.
 3. **Anahtarı doğrula.** Yazdığını göstermek için anahtarı bir kez yazarsın, kasa açılır.
 
 > [!IMPORTANT]

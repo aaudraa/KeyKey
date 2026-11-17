@@ -56,3 +56,13 @@ description = "SQLite'ın değiştirilmemiş kaynak dosyası"
 paths = [
   '''^android/third_party/sqlite/sqlite3\.c$''',
 ]
+
+# KeyKey yayın sertifikasının SHA-256 özeti. Gizli değil: README'de ve yayın
+# notlarında herkese açık; F-Droid tarifinde AllowedAPKSigningKeys olarak
+# geçince genel anahtar kuralına takılıyor. Yalnızca bu değere tam eşleşmeyle
+# izin verilir.
+[[allowlists]]
+description = "Yayın sertifikasının herkese açık SHA-256 özeti"
+regexes = [
+  '''^66ff7b5c0c009a8530d0a55dd1d80a3af35de48bd0667c456a0cf86a6d1129a0$''',
+]

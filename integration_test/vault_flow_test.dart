@@ -183,7 +183,7 @@ void main() {
       reason: 'Kurtarma anahtarı doğrulanmadan kasa diske yazılmamalı',
     );
 
-    await tapButton(tester, 'Yazdım');
+    await tapButton(tester, 'Kaydettim');
     await pumpUntilFound(tester, find.text('Doğrula ve kasayı aç'));
     await tester.enterText(find.byType(TextField).last, recoveryKey);
     await tester.pump();
