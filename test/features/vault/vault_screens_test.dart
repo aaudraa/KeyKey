@@ -11,6 +11,7 @@ import 'package:keykey/app/ui/kk_form.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_secret_text.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
+import 'package:keykey/core/platform/web_links.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/application/login_search.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
@@ -493,6 +494,69 @@ void main() {
           .go(AppRoutes.vaultItem(idHex));
       await tester.pumpAndSettle();
       expect(find.text('KeyKey kilitli'), findsOneWidget);
+    });
+
+    testWidgets('web adresi tarayıcıda açılıyor', (tester) async {
+      final links = RecordingWebLinks();
+      logins = FakeLoginRepository(
+        items: [
+          FakeLoginRepository.item(
+            const LoginContent(
+              name: 'Banka',
+              password: 'p',
+              urls: ['banka.example/giris', 'androidapp://com.banka'],
+            ),
+            id: 1,
+          ),
+        ],
+      );
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        logins: logins,
+        extraOverrides: [webLinksProvider.overrideWithValue(links)],
+      );
+      await tester.tap(find.text('Banka'));
+      await tester.pumpAndSettle();
+
+      // Uygulama bağlantısı web sayfası değil; onun için düğme yok.
+      expect(find.byTooltip('Siteyi aç'), findsOneWidget);
+      await tester.tap(find.byTooltip('Siteyi aç'));
+      await tester.pumpAndSettle();
+      expect(links.opened, [Uri.parse('https://banka.example/giris')]);
+    });
+
+    testWidgets('tarayıcı yoksa söyleniyor', (tester) async {
+      final links = RecordingWebLinks()..result = false;
+      logins = FakeLoginRepository(
+        items: [
+          FakeLoginRepository.item(
+            const LoginContent(
+              name: 'Banka',
+              password: 'p',
+              urls: ['https://banka.example'],
+            ),
+            id: 1,
+          ),
+        ],
+      );
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        logins: logins,
+        extraOverrides: [webLinksProvider.overrideWithValue(links)],
+      );
+      await tester.tap(find.text('Banka'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Siteyi aç'));
+      await tester.pump();
+
+      expect(
+        find.text('Bu adresi açacak bir tarayıcı bulunamadı.'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('gizli değer kopyalanabiliyor, süre bildiriliyor', (

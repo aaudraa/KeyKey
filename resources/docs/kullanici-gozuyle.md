@@ -30,7 +30,7 @@ Durum sütunu: ✓ yapıldı, → proje sahibine bırakıldı.
 | 14 | Metinler: kaydı bırakmak "Sil", çöpten çıkarmak "Geri al" diyor; "1 2FA accounts" gibi tekil/çoğul hataları; ayrıntı ekranındaki bütün kopyala düğmeleri ekran okuyucuya yalnızca "Kopyala" diyor | Metin düzeltmeleri; kopyala düğmeleri hangi alanı kopyaladığını söyler. İngilizce sayılı metinlerin hepsi zaten tekil/çoğul ayırıyordu; Türkçede gerek yok. | ✓ |
 | 15 | Kılavuz, "sık kullanılan" düğmesinin yerini yanlış gösteriyor | Kılavuz düzeltmesi. | ✓ |
 
-Zaman kalırsa sırayla: kayıttaki siteyi tarayıcıda açma ve Hakkında'ya kaynak kod, sorun bildirme, gizlilik ve kılavuz bağlantıları (tarayıcıya devretmek `INTERNET` izni gerektirmez); parmak iziyle açan kullanıcıya ara sıra ana parolayı sorma (Aegis'teki parola hatırlatıcısı); 2FA hesabını başka uygulamaya taşımak için QR olarak gösterme ve düz `otpauth://` listesini içe aktarma.
+Zaman kalırsa sırayla (ilki yapıldı: "Siteyi aç" ve Hakkında bağlantıları, [güvenlik tasarımı](guvenlik-tasarimi.md#tarayıcıda-açma)): kayıttaki siteyi tarayıcıda açma ve Hakkında'ya kaynak kod, sorun bildirme, gizlilik ve kılavuz bağlantıları (tarayıcıya devretmek `INTERNET` izni gerektirmez); parmak iziyle açan kullanıcıya ara sıra ana parolayı sorma (Aegis'teki parola hatırlatıcısı); 2FA hesabını başka uygulamaya taşımak için QR olarak gösterme ve düz `otpauth://` listesini içe aktarma.
 
 ## Proje sahibinin kararına bırakılanlar
 

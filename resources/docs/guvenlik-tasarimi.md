@@ -372,6 +372,14 @@ Ana uygulama ve doldurma ekranı aynı korumayı kullanır (`WindowProtection`).
 2. Alarm tam zamanında çalışmayabilir. Android, kesin alarm izni olmadan onu geciktirebilir. Cihaz testi, süreç ayaktayken arka planda temizlendiğini doğruluyor; sürecin kapatıldığı durum yalnızca alarma dayanıyor ve otomatik test edilmedi. Bu izni almıyoruz, çünkü parolanın panoda birkaç dakika daha kalması, izin listesini büyütmeye değmez.
 3. O sürede panoyu okuyan etkin klavye veya kötü amaçlı uygulama parolayı görebilir. Bu, [tehdit modelinde](#tehdit-modeli) "kısmen" olarak yazıyor.
 
+## Tarayıcıda açma
+
+Kayıt ayrıntısındaki **Siteyi aç** ve Hakkında'daki bağlantılar adresi `ACTION_VIEW` ve `CATEGORY_BROWSABLE` ile sistemin tarayıcısına devreder; KeyKey'in `INTERNET` izni yine yok.
+
+- **Yalnızca web sayfası:** Adres hem Dart'ta hem Kotlin'de denetlenir; http ve https dışındaki şemalar (`intent:`, `javascript:`, `file:`, `content:`, `androidapp://`) açılmaz. Böylece içe aktarılmış ya da yazılmış bir adres başka bir uygulamanın bileşenini başlatamaz. Şeması olmayan adrese `https://` eklenir.
+- **Yalnızca dokununca:** Adres kendiliğinden hiçbir yere gönderilmez; tarayıcıya yalnızca o adres gider.
+- **Kilit:** Tarayıcı açılınca KeyKey arka plana geçer ve her zamanki gibi kilitlenir; kilit açılınca aynı kayda dönülür.
+
 ## Parola üretici ve güç tahmini
 
 - Bütün rastgelelik `randombytes_uniform` ile üretilir, modülo eğilimi yoktur.

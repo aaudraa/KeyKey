@@ -8,6 +8,7 @@ import 'package:keykey/core/platform/export_file_picker.dart';
 import 'package:keykey/core/platform/pigeon_biometric_bridge.dart';
 import 'package:keykey/core/platform/qr_image_reader.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
+import 'package:keykey/core/platform/web_links.dart';
 import 'package:keykey/core/storage/storage_exceptions.dart';
 import 'package:keykey/core/storage/vault_database.dart';
 import 'package:keykey/core/storage/vault_store.dart';
@@ -67,6 +68,7 @@ Future<List<Override>> bootstrap() async {
     exportFilePickerProvider.overrideWithValue(FileSelectorExportPicker()),
     documentFilesProvider.overrideWithValue(PigeonDocumentFiles()),
     appPackagesProvider.overrideWithValue(PigeonAppPackages()),
+    webLinksProvider.overrideWithValue(PigeonWebLinks()),
     backupServiceProvider.overrideWithValue(
       BackupService(sodium: sodium, store: store),
     ),

@@ -65,7 +65,7 @@ Eski telefonundan bir KeyKey yedeğin varsa kasa oluşturmak yerine **Yedekten g
 
 **Kasa** sekmesi bütün kayıtlarını gösterir. Üstteki kutuyla arayabilir, **Favoriler** ve klasör düğmeleriyle süzebilirsin. Sağ üstteki **⋮** menüsünden ada ya da son değişene göre sıralarsın; seçimin kilitten sonra da kalır. Kartın sağındaki simge parolayı doğrudan kopyalar. Kasa boşken başka bir uygulamadan **Parolaları içe aktar** ya da **Yedekten geri yükle** kısayollarını da görürsün.
 
-Bir kayda dokununca ayrıntıları açılır: kullanıcı adı, parola, bağlı 2FA kodu, web adresi ve klasör. Her satırın yanında kopyalama düğmesi var. Parola **Göster**'e dokunana kadar gizli kalır. Düzenlemek için üstteki kalem simgesine dokun. Kaydı favorilere eklemek ya da çöpe taşımak için ayrıntı ekranının sağ üstündeki **⋮** menüsünü kullan.
+Bir kayda dokununca ayrıntıları açılır: kullanıcı adı, parola, bağlı 2FA kodu, web adresi ve klasör. Her satırın yanında kopyalama düğmesi var. Parola **Göster**'e dokunana kadar gizli kalır. Web adresinin yanındaki **Siteyi aç** sayfayı tarayıcında açar. Düzenlemek için üstteki kalem simgesine dokun. Kaydı favorilere eklemek ya da çöpe taşımak için ayrıntı ekranının sağ üstündeki **⋮** menüsünü kullan.
 
 **Kopyalanan parola 30 saniye sonra panodan kendiliğinden silinir.** Android 13 ve üstünde pano önizlemesinde de görünmez.
 

@@ -18,6 +18,7 @@ import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/platform/export_file_picker.dart';
 import 'package:keykey/core/platform/qr_image_reader.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
+import 'package:keykey/core/platform/web_links.dart';
 import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/core/vault/vault_service.dart';
@@ -230,6 +231,18 @@ final Uint8List fakeIconPng = Uint8List.fromList(const [
 ]);
 
 /// Verilen paketlerin simgesini döndürür, diğerlerinde `null`.
+/// Açılan sayfaları kaydeder; [result] `false` ise tarayıcı yok gibi davranır.
+class RecordingWebLinks implements WebLinks {
+  final opened = <Uri>[];
+  bool result = true;
+
+  @override
+  Future<bool> open(Uri page) async {
+    opened.add(page);
+    return result;
+  }
+}
+
 class FakeAppPackages implements AppPackages {
   new({Set<String> installed = const {}, this.version = '1.0.0'})
     : installed = {...installed};

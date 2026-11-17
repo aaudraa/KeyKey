@@ -14,6 +14,7 @@ import 'package:keykey/app/ui/kk_section.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/app/ui/kk_switch.dart';
+import 'package:keykey/app/web_page.dart';
 import 'package:keykey/core/platform/app_packages.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
@@ -312,6 +313,34 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     onTap: () => context.push(AppRoutes.intro),
                   ),
                   ListTile(
+                    leading: const KkIconBox(icon: Icons.code_rounded),
+                    title: Text(l10n.aboutSource),
+                    trailing: const Icon(Icons.open_in_new_rounded),
+                    onTap: () => unawaited(
+                      openWebPage(context, ref, Uri.parse(keyKeyRepository)),
+                    ),
+                  ),
+                  ListTile(
+                    leading: const KkIconBox(icon: Icons.bug_report_rounded),
+                    title: Text(l10n.aboutIssues),
+                    trailing: const Icon(Icons.open_in_new_rounded),
+                    onTap: () => unawaited(
+                      openWebPage(
+                        context,
+                        ref,
+                        Uri.parse('$keyKeyRepository/issues'),
+                      ),
+                    ),
+                  ),
+                  ListTile(
+                    leading: const KkIconBox(icon: Icons.privacy_tip_rounded),
+                    title: Text(l10n.aboutPrivacy),
+                    trailing: const Icon(Icons.open_in_new_rounded),
+                    onTap: () => unawaited(
+                      openWebPage(context, ref, _privacyPage(context)),
+                    ),
+                  ),
+                  ListTile(
                     leading: const KkIconBox(icon: Icons.description_rounded),
                     title: Text(l10n.settingsLicenses),
                     trailing: const Icon(Icons.chevron_right_rounded),
@@ -326,4 +355,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
     );
   }
+}
+
+/// Gizlilik bildirimi arayüz dilinde; Türkçe dışında İngilizcesi.
+Uri _privacyPage(BuildContext context) {
+  final file = Localizations.localeOf(context).languageCode == 'tr'
+      ? 'gizlilik.md'
+      : 'privacy.md';
+  return Uri.parse('$keyKeyRepository/blob/main/resources/docs/$file');
 }

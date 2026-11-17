@@ -953,6 +953,48 @@ class AppPackagesApi {
   }
 }
 
+/// Web sayfasını sistemin tarayıcısında açar. KeyKey internete çıkmaz;
+/// adres yalnızca kullanıcı dokununca tarayıcıya devredilir.
+class WebLinkApi {
+  /// Constructor for [WebLinkApi]. The [binaryMessenger] named argument is
+  /// available for dependency injection. If it is left null, the default
+  /// BinaryMessenger will be used which routes to the host platform.
+  WebLinkApi({
+    BinaryMessenger? binaryMessenger,
+    String messageChannelSuffix = '',
+  }) : pigeonVar_binaryMessenger = binaryMessenger,
+       pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty
+           ? '.$messageChannelSuffix'
+           : '';
+
+  final BinaryMessenger? pigeonVar_binaryMessenger;
+  static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
+
+  final String pigeonVar_messageChannelSuffix;
+
+  /// Yalnızca http ve https adresleri açılır. Açacak uygulama yoksa ya da
+  /// adres web sayfası değilse `false`.
+  Future<bool> openWebPage(String url) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.WebLinkApi.openWebPage$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[url],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as bool;
+  }
+}
+
 /// Kurulum ekranının Kotlin tarafı: durum ve ayarlara doğrudan geçiş.
 class AutofillSetupApi {
   /// Constructor for [AutofillSetupApi]. The [binaryMessenger] named argument is

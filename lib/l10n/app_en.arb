@@ -636,6 +636,18 @@
   "@settingsLicenses": {
     "description": "Settings entry that opens the license page."
   },
+  "aboutSource": "Source code",
+  "@aboutSource": {
+    "description": "About row that opens the source code on GitHub."
+  },
+  "aboutIssues": "Report a problem",
+  "@aboutIssues": {
+    "description": "About row that opens the GitHub issue list."
+  },
+  "aboutPrivacy": "Privacy policy",
+  "@aboutPrivacy": {
+    "description": "About row that opens the privacy policy."
+  },
   "introSkip": "Skip",
   "@introSkip": {
     "description": "Intro: skip to vault setup."
@@ -792,6 +804,14 @@
         "type": "String"
       }
     }
+  },
+  "loginOpenSite": "Open website",
+  "@loginOpenSite": {
+    "description": "Tooltip of the button that opens an entry's web address in the browser."
+  },
+  "webPageNoBrowser": "No browser was found to open this address.",
+  "@webPageNoBrowser": {
+    "description": "Shown when no app can open a web page."
   },
   "copiedWillClear": "Copied. The clipboard will be cleared in {seconds} seconds.",
   "@copiedWillClear": {

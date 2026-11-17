@@ -16,6 +16,7 @@ Faz 11 ([tasarım](docs/kullanici-gozuyle.md)).
 - Boş kasada "Parolaları içe aktar" ve "Yedekten geri yükle" kısayolları.
 - Ana parola değişince eski yedeklerin eski parolayla açılmaya devam ettiğini söyleyen not ve oradan yeni yedek.
 - Android 13 ve üstünde uygulamanın dili sistem ayarlarından ayrıca seçilebiliyor.
+- Kayıttaki web adresi "Siteyi aç" ile tarayıcıda açılıyor; Hakkında'da kaynak kod, sorun bildirme ve gizlilik bildirimi bağlantıları. Yalnızca http ve https adresleri tarayıcıya devrediliyor; KeyKey'e internet izni eklenmedi.
 
 ### Düzeltilenler
 

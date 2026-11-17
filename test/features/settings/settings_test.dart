@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/kk_section.dart';
 import 'package:keykey/app/ui/kk_switch.dart';
+import 'package:keykey/core/platform/web_links.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/features/autofill/application/autofill_setup.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
@@ -158,6 +159,60 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text(hint), findsOneWidget);
       expect(find.byType(BottomSheet), findsOneWidget);
+    });
+
+    for (final (title, url) in [
+      ('Kaynak kod', 'https://github.com/aaudraa/KeyKey'),
+      ('Sorun bildir', 'https://github.com/aaudraa/KeyKey/issues'),
+      (
+        'Gizlilik bildirimi',
+        'https://github.com/aaudraa/KeyKey/blob/main/resources/docs/gizlilik.md',
+      ),
+    ]) {
+      testWidgets('"$title" tarayıcıda açılıyor', (tester) async {
+        final links = RecordingWebLinks();
+        await pumpKeyKey(
+          tester,
+          status: VaultOpen(service.newSession()),
+          service: service,
+          extraOverrides: [webLinksProvider.overrideWithValue(links)],
+        );
+        await tester.tap(find.byIcon(Icons.settings_outlined));
+        await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(find.text(title), 200);
+        await tester.ensureVisible(find.text(title));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(title));
+        await tester.pumpAndSettle();
+
+        expect(links.opened, [Uri.parse(url)]);
+      });
+    }
+
+    testWidgets('İngilizce arayüzde gizlilik bildirimi İngilizce', (
+      tester,
+    ) async {
+      final links = RecordingWebLinks();
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        locale: const Locale('en'),
+        extraOverrides: [webLinksProvider.overrideWithValue(links)],
+      );
+      await tester.tap(find.byIcon(Icons.settings_outlined));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text('Privacy policy'), 200);
+      await tester.ensureVisible(find.text('Privacy policy'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Privacy policy'));
+      await tester.pumpAndSettle();
+
+      expect(links.opened, [
+        Uri.parse(
+          'https://github.com/aaudraa/KeyKey/blob/main/resources/docs/privacy.md',
+        ),
+      ]);
     });
 
     testWidgets("sürüm satırı sahte API'nin döndürdüğü sürümü gösterir", (

@@ -30,5 +30,6 @@ class MainActivity : FlutterFragmentActivity() {
         AutofillSetupApi.setUp(messenger, AutofillSetup(this))
         DocumentApi.setUp(messenger, DocumentFiles(this))
         AppPackagesApi.setUp(messenger, AppPackages(this))
+        WebLinkApi.setUp(messenger, WebLinks(this))
     }
 }
