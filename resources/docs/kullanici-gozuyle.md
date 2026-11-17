@@ -99,7 +99,7 @@ Proje sahibinin notları ve kararlar:
 
 Proje sahibi koşulları kabul etti ve yeni Lisanslar ekranını beğendi ("lisanslar ekranı güzel olmuş"). Tek not:
 
-1. **"Navbardaki beyaz çizgiyi iki tema için de kaldır, beyaz temada da olmasın."** Alt menünün tepesindeki 1 piksellik parlak şerit açık temada da kaldırıldı; artık hiçbir cam yüzeyde yok. Camı cam gibi gösteren üstten sönen yumuşak parıltı, ince kenar ve gölge kalıyor. Sekmeler ile "+" arasındaki dikey ayraç soluk gri, beyaz değil; dokunulmadı.
+1. **"Navbardaki beyaz çizgiyi iki tema için de kaldır, beyaz temada da olmasın."** Alt menünün tepesindeki 1 piksellik parlak şerit açık temada da kaldırıldı; artık hiçbir cam yüzeyde yok. Camı cam gibi gösteren üstten sönen yumuşak parıltı, ince kenar ve gölge kalıyor. Sekmeler ile "+" arasındaki dikey ayraç soluk gri, beyaz değil; dokunulmadı. Güncel APK telefonda denendi; proje sahibi doğruladı: "çizgi gitmiş, iki temada da düzgün."
 
 ## Proje sahibinin kararına bırakılanlar
 

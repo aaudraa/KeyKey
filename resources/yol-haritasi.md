@@ -508,7 +508,7 @@ Proje sahibinin isteği (2026-11-17, gece): uygulamaya bir kullanıcının göz�
 
 **Telefon denemesi 17 (2026-11-17, öğleden sonra):** koyu temada alt menüdeki beyaz çizgi kaldırıldı; lisanslar yeniden denetlendi ve Lisanslar ekranı sadeleşti; ilk açılışa kullanım koşulları ve onay eklendi. Kararlar [belgede](docs/kullanici-gozuyle.md#telefon-denemesi-17-2026-11-17-öğleden-sonra). Üçüncü PR #126 birleşti, `keykey-deneme-18` telefonda.
 
-**Telefon denemesi 18 (2026-11-17, akşamüstü):** koşullar kabul edildi, Lisanslar ekranı beğenildi; alt menüdeki beyaz çizgi açık temada da kaldırıldı ([belge](docs/kullanici-gozuyle.md#telefon-denemesi-18-2026-11-17-akşamüstü)).
+**Telefon denemesi 18 (2026-11-17, akşamüstü):** koşullar kabul edildi, Lisanslar ekranı beğenildi; alt menüdeki beyaz çizgi açık temada da kaldırıldı, telefonda iki temada da doğrulandı (PR #127) ([belge](docs/kullanici-gozuyle.md#telefon-denemesi-18-2026-11-17-akşamüstü)).
 
 **Bitti sayılması için:** belgedeki "Bu fazda" maddeleri `main`'de, telefon denemesi için APK proje sahibinde.
 
