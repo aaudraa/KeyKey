@@ -21,7 +21,7 @@ final class KkSnackAction {
 OverlayEntry? _entry;
 OverlayState? _overlay;
 
-/// Üstten inen cam bildirim. Kök gezginin katmanına eklenir; gösteren ekran
+/// Üstten inen dolu bildirim. Kök gezginin katmanına eklenir; gösteren ekran
 /// kapansa da kalır, alttan açılan pencerelerin de üstünde durur. Öncekini
 /// kapatıp yerine geçer.
 void showKkSnack(
@@ -80,7 +80,7 @@ void _removeNow() {
   }
 }
 
-/// Durum çubuğunun altında ortada duran cam hap.
+/// Durum çubuğunun altında ortada duran dolu hap.
 class KkSnack extends StatefulWidget {
   const new({
     required this.message,

@@ -4,11 +4,11 @@ import 'package:keykey/app/theme.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_menu.dart';
 
-Future<List<String>> _pump(WidgetTester tester) async {
+Future<List<String>> _pump(WidgetTester tester, {ThemeData? theme}) async {
   final selected = <String>[];
   await tester.pumpWidget(
     MaterialApp(
-      theme: AppTheme.light,
+      theme: theme ?? AppTheme.light,
       home: Scaffold(
         appBar: AppBar(
           actions: [
@@ -67,6 +67,19 @@ void main() {
       ),
     );
     expect(surface.fill?.a, 1.0);
+  });
+
+  testWidgets('koyu temada menü kartlardan bir ton açık', (tester) async {
+    await _pump(tester, theme: AppTheme.dark);
+    await tester.tap(find.byTooltip('Diğer işlemler'));
+    await tester.pumpAndSettle();
+    final surface = tester.widget<GlassSurface>(
+      find.ancestor(
+        of: find.text('Ada göre sırala'),
+        matching: find.byType(GlassSurface),
+      ),
+    );
+    expect(surface.fill, AppTheme.dark.extension<KkGlass>()!.raised);
   });
 
   testWidgets('öğeye dokununca seçilir ve menü kapanır', (tester) async {

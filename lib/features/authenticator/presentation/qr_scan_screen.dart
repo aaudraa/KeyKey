@@ -291,7 +291,8 @@ class _QrScanScreenState extends ConsumerState<QrScanScreen> {
                     ),
                   ),
                 ),
-                // Açıklama kamera görüntüsünün üstünde, güçlü camda.
+                // Açıklama kamera görüntüsünün üstünde, dolu yüzeyde: saydam
+                // dolgu parlak görüntüde okunmayabilir.
                 Positioned(
                   left: 16,
                   right: 16,
@@ -299,7 +300,7 @@ class _QrScanScreenState extends ConsumerState<QrScanScreen> {
                   child: SafeArea(
                     top: false,
                     child: GlassSurface(
-                      strong: true,
+                      fill: KkGlass.of(context).raised,
                       padding: const EdgeInsets.all(16),
                       child: Text(
                         l10n.otpScanHint,

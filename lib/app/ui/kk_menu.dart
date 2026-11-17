@@ -20,7 +20,7 @@ class KkMenuItem<T> {
   final bool enabled;
 }
 
-/// Sağ üstteki cam daire düğme ve açılan cam menü. Menü kendi yolu olarak
+/// Sağ üstteki cam daire düğme ve açılan dolu menü. Menü kendi yolu olarak
 /// açılır; geri tuşu ve dışına dokunmak kapatır.
 class KkMenuButton<T> extends StatelessWidget {
   const new({
@@ -56,7 +56,7 @@ class KkMenuButton<T> extends StatelessWidget {
   }
 }
 
-/// Bütün öğeleri tek cam gövdede çizen menü girdisi.
+/// Bütün öğeleri tek dolu gövdede çizen menü girdisi.
 class _GlassMenuEntry<T> extends PopupMenuEntry<T> {
   const new(this.items);
 

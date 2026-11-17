@@ -6,9 +6,9 @@ import 'package:keykey/app/ui/kk_motion.dart';
 /// Pencerenin üst köşeleri.
 const _sheetRadius = BorderRadius.vertical(top: Radius.circular(24));
 
-/// Alttan açılan cam pencere. Yaylanarak açılır, aşağı çekince parmağı
-/// izler. [expandable] ise kullanıcı yukarı çekerek büyütebilir (uzun
-/// listeler ve arama için).
+/// Alttan açılan dolu pencere (cam yalnızca alt menüde). Yaylanarak
+/// açılır, aşağı çekince parmağı izler. [expandable] ise kullanıcı
+/// yukarı çekerek büyütebilir (uzun listeler ve arama için).
 Future<T?> showKkSheet<T>(
   BuildContext context, {
   required WidgetBuilder builder,
@@ -56,7 +56,7 @@ Future<T?> showKkSheet<T>(
   );
 }
 
-/// Pencerenin cam gövdesi ve tutamağı. Cam, yay açılışında pencere yerini
+/// Pencerenin gövdesi ve tutamağı. Gövde, yay açılışında pencere yerini
 /// biraz aşınca altta boşluk görünmesin diye ekranın altına doğru uzar.
 class _SheetFrame extends StatelessWidget {
   const new({required this.child});

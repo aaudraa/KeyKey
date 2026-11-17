@@ -623,6 +623,47 @@ void main() {
       );
     });
 
+    testWidgets('alan silinince açılmış değer sonraki gizli alana geçmiyor', (
+      tester,
+    ) async {
+      const content = LoginContent(
+        name: 'Kart',
+        customFields: [
+          LoginCustomField(name: 'PIN', value: '1234', hidden: true),
+          LoginCustomField(name: 'CVV', value: '987', hidden: true),
+        ],
+      );
+      final item = FakeLoginRepository.item(content, id: 1);
+      logins = FakeLoginRepository(items: [item]);
+      await pumpVault(tester);
+      await tester.tap(find.text('Kart'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Göster').first);
+      await tester.pumpAndSettle();
+      expect(find.text('1234'), findsOneWidget);
+
+      // Düzenleme ekranında PIN silinip kaydedilmiş gibi.
+      final container = ProviderScope.containerOf(
+        tester.element(find.text('CVV')),
+      );
+      await container
+          .read(loginsControllerProvider.notifier)
+          .update(
+            item,
+            const LoginContent(
+              name: 'Kart',
+              customFields: [
+                LoginCustomField(name: 'CVV', value: '987', hidden: true),
+              ],
+            ),
+          );
+      await tester.pumpAndSettle();
+
+      expect(find.text('PIN'), findsNothing);
+      expect(find.text('987'), findsNothing);
+      expect(find.byTooltip('Göster'), findsOneWidget);
+    });
+
     testWidgets('gizli değer kopyalanabiliyor, süre bildiriliyor', (
       tester,
     ) async {

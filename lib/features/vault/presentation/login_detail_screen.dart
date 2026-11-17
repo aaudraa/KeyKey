@@ -90,7 +90,7 @@ class LoginDetailScreen extends ConsumerWidget {
     final history = <Widget>[
       if (content.passwordHistory.isNotEmpty)
         Theme(
-          // Açılır kartın kendi çizgileri cam kartta görünmesin.
+          // Açılır kartın kendi çizgileri kartta görünmesin.
           data: theme.copyWith(dividerColor: Colors.transparent),
           child: ExpansionTile(
             leading: const Icon(Icons.history_rounded),
@@ -272,6 +272,16 @@ class _Field extends ConsumerStatefulWidget {
 
 class _FieldState extends ConsumerState<_Field> {
   bool _revealed = false;
+
+  @override
+  void didUpdateWidget(_Field oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Kayıt düzenlenince satırlar kayabilir; açılmış değer başka bir alana
+    // ya da yeni değere geçmesin.
+    if (oldWidget.label != widget.label || oldWidget.value != widget.value) {
+      _revealed = false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

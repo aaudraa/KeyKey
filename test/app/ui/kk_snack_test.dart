@@ -30,6 +30,7 @@ Future<(BuildContext, WidgetRef)> _pump(
   _Clipboard clipboard, {
   bool accessibleNavigation = false,
   bool disableAnimations = false,
+  ThemeData? theme,
 }) async {
   tester.view
     ..physicalSize = const Size(400, 800)
@@ -41,7 +42,7 @@ Future<(BuildContext, WidgetRef)> _pump(
     ProviderScope(
       overrides: [sensitiveClipboardProvider.overrideWithValue(clipboard)],
       child: MaterialApp(
-        theme: AppTheme.light,
+        theme: theme ?? AppTheme.light,
         locale: const Locale('tr'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -98,6 +99,19 @@ void main() {
       ),
     );
     expect(surface.fill?.a, 1.0);
+  });
+
+  testWidgets('koyu temada bildirim kartlardan bir ton açık', (tester) async {
+    final (ctx, _) = await _pump(tester, _Clipboard(), theme: AppTheme.dark);
+    showKkSnack(ctx, 'bir');
+    await tester.pumpAndSettle();
+    final surface = tester.widget<GlassSurface>(
+      find.descendant(
+        of: find.byType(KkSnack),
+        matching: find.byType(GlassSurface),
+      ),
+    );
+    expect(surface.fill, AppTheme.dark.extension<KkGlass>()!.raised);
   });
 
   testWidgets('bildirim üstte ve ortada', (tester) async {

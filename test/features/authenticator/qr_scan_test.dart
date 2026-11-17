@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/platform/qr_image_reader.dart';
@@ -186,6 +187,20 @@ void main() {
       expect(frame.center.dy, moreOrLessEquals(cameraRect.center.dy));
       final shade = tester.getRect(find.byKey(QrScanScreen.shadeKey));
       expect(shade, cameraRect);
+    });
+
+    testWidgets('kameranın üstündeki açıklama dolu yüzeyde okunur', (
+      tester,
+    ) async {
+      await openCamera(tester, ambient: false);
+      final hint = find.text('Kamerayı servisin gösterdiği QR koduna tut.');
+      final surface = tester.widget<GlassSurface>(
+        find.ancestor(of: hint, matching: find.byType(GlassSurface)),
+      );
+      // Cam yalnızca alt menüde; canlı görüntünün üstünde saydam dolgu
+      // açıklamayı okunmaz yapabilir.
+      expect(surface.fill, KkGlass.of(tester.element(hint)).raised);
+      expect(surface.fill?.a, 1.0);
     });
 
     testWidgets('fener destekleniyorsa üst çubuktan açılıp kapanıyor', (

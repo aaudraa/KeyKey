@@ -143,6 +143,10 @@ void main() {
 
       test('açılan yüzeyler dolu, cam yalnızca alt menüde', () {
         expect(glass.raised.a, 1.0);
+        if (theme.brightness == Brightness.dark) {
+          // Koyu temada kartların üstünde açılan yüzey ayrı seçilsin.
+          expect(glass.raised, isNot(glass.fill));
+        }
       });
 
       test('en kötü zemin noktası en az dört renk', () {
