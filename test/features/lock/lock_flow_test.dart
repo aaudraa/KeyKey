@@ -23,6 +23,8 @@ void main() {
   const lockedTitle = 'KeyKey kilitli';
   const vaultText =
       'Henüz parola yok. İlkini kaydetmek için alttaki + düğmesine dokun.';
+  const otpEmptyText =
+      'Henüz 2FA hesabı yok. İlkini kurmak için alttaki + düğmesine dokun.';
 
   setUpAll(() async {
     sodium = await SodiumSumoInit.init();
@@ -72,6 +74,33 @@ void main() {
       final status = VaultRecovering(session);
       expect(vaultRedirect(status, AppRoutes.vault), AppRoutes.newPassword);
       expect(vaultRedirect(status, AppRoutes.newPassword), isNull);
+    });
+
+    test('kilit açılınca kaldığı yere dönülüyor', () {
+      final session = FakeVaultService(sodium).newSession();
+      addTearDown(session.dispose);
+      final status = VaultOpen(session);
+      expect(
+        vaultRedirect(status, AppRoutes.lock, resume: AppRoutes.authenticator),
+        AppRoutes.authenticator,
+      );
+      expect(resumeLocationFor(AppRoutes.vault), AppRoutes.vault);
+      expect(resumeLocationFor('/kasa/kayit/0a1b'), '/kasa/kayit/0a1b');
+      // Formlar ve tek seferlik ekranlar geri açılmaz, sekmenin köküne dönülür.
+      expect(resumeLocationFor('/kasa/kayit/0a1b/duzenle'), AppRoutes.vault);
+      expect(resumeLocationFor(AppRoutes.vaultNew), AppRoutes.vault);
+      expect(resumeLocationFor(AppRoutes.vaultTrash), AppRoutes.vault);
+      expect(
+        resumeLocationFor(AppRoutes.authenticator),
+        AppRoutes.authenticator,
+      );
+      expect(
+        resumeLocationFor(AppRoutes.authenticatorScan),
+        AppRoutes.authenticator,
+      );
+      expect(resumeLocationFor(AppRoutes.settings), AppRoutes.settings);
+      expect(resumeLocationFor(AppRoutes.changePassword), AppRoutes.settings);
+      expect(resumeLocationFor(AppRoutes.lock), AppRoutes.vault);
     });
 
     test('kasa açıkken kilit ekranları kasaya dönüyor', () {
@@ -524,6 +553,24 @@ void main() {
       await tester.pumpAndSettle();
       await enterPassword(tester, FakeVaultService.correctPassword);
       expect(find.text(vaultText), findsOneWidget);
+    });
+
+    testWidgets('kilit açılınca kilitlenmeden önceki sekmeye dönülüyor', (
+      tester,
+    ) async {
+      await pumpOpen(tester);
+      await tester.tap(find.byIcon(Icons.shield_outlined));
+      await tester.pumpAndSettle();
+      expect(find.text(otpEmptyText), findsOneWidget);
+
+      setLifecycle(tester, AppLifecycleState.hidden);
+      setLifecycle(tester, AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(find.text(lockedTitle), findsOneWidget);
+
+      await enterPassword(tester, FakeVaultService.correctPassword);
+      expect(find.text(otpEmptyText), findsOneWidget);
+      expect(find.text(vaultText), findsNothing);
     });
 
     group("KeyKey'in açtığı dosya seçicisi", () {

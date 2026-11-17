@@ -305,6 +305,7 @@ Kasa üç durumdan birindedir: **kurulmamış**, **kilitli** veya **açık**. Ka
 - **İstisna:** KeyKey'in kendi açtığı belge seçici, belge oluşturma ekranı ve fotoğraf seçici ayrı birer etkinliktir ve uygulamayı arka plana alır. Bunlar açıkken arka plan kilidi en fazla 3 dakika ertelenir; yoksa kullanıcı dosyayı seçip döndüğünde kasa kilitli olur ve işlem sonuçsuz kalır. Süre dolunca kasa, seçici hâlâ açık olsa bile kilitlenir. Dokunmama kilidi bu sırada da çalışır. Bedeli: seçici açıkken kullanıcı telefonu bırakırsa kasa en fazla 3 dakika açık kalır. Sistem ayarlarına giden bağlantılar bu istisnaya girmez.
 - Ekrana 5 dakika dokunulmazsa kilitlenir.
 - Kilitlenince kasa ve alt anahtarlar `dispose` edilir, çözülmüş veri tutan durumlar sıfırlanır, yönlendirme kilit ekranına gider ve önceki ekranlar yığından çıkarılır.
+- Kilit açılınca kilitlenmeden önceki sekmeye ya da açık olan kasa kaydının ayrıntısına dönülür. Yalnızca bu yol bellekte tutulur; ekranlar yeniden kurulur, gösterilen parolalar gizli açılır, formlar ve tek seferlik ekranlar geri gelmez.
 
 ## Biyometri
 

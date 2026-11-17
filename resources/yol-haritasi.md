@@ -24,6 +24,7 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 | 8 | Güvenlik sertleştirme ve denetim | L | 6, 7 | `faz/8-guvenlik-denetimi` | Tamamlandı |
 | 9 | 1.0 yayını | M | 8 | `faz/9-yayin` | Tamamlandı |
 | 10 | F-Droid ve Obtainium | M | 9 | `faz/10-f-droid` | Sürüyor |
+| 11 | Kullanıcı gözüyle iyileştirmeler | M | 10 | `faz/11-kullanici-gozuyle` | Sürüyor |
 
 Büyüklük göreli iş miktarını gösterir, takvim sözü değildir. Faz 4 ve 5 aynı anda ilerleyebilir. İlerlemeyi [milestone'lardan](https://github.com/aaudraa/KeyKey/milestones) da izleyebilirsin.
 
@@ -495,6 +496,12 @@ Güvenlik ya da veri kaybı sorunu çıkmadı. Ayrıntılar [denetim belgesinde]
 
 **Bitti sayılması için:** `v1.0.1` yayınlandı ve yayın iş akışındaki F-Droid karşılaştırması yeşil; fdroiddata'ya birleştirme isteği açıldı; README'deki Obtainium bağlantısı telefonda çalışıyor.
 
+### Faz 11 — Kullanıcı gözüyle iyileştirmeler
+
+Proje sahibinin isteği (2026-11-17, gece): uygulamaya bir kullanıcının gözüyle bakmak, eksik ya da takılan yerleri gidermek, tasarımı iyileştirmek. Seçimler ve gerekçeleri: [kullanıcı gözüyle iyileştirmeler](docs/kullanici-gozuyle.md). Hedef sürüm `1.1.0`; yeni özellikler yayından önce telefonda denenir.
+
+**Bitti sayılması için:** belgedeki "Bu fazda" maddeleri `main`'de, telefon denemesi için APK proje sahibinde.
+
 ## 1.0 sonrası
 
 Bu fikirlerin hiçbiri henüz planlanmış değil. Sırası kullanıma göre belirlenecek.
@@ -512,6 +519,10 @@ Bu fikirlerin hiçbiri henüz planlanmış değil. Sırası kullanıma göre bel
 | Google'ın geliştirici doğrulaması | 30 Eylül 2026'da dört ülkede başladı, 2027'den sonra yayılacak; Türkiye henüz kapsamda değil. Kapsama girince kayıtsız geliştiricinin uygulaması Play dışında yalnızca "gelişmiş kurulum" adımlarıyla kurulabilecek. O zaman yeniden değerlendirilecek. |
 | KeyKey klavyesi | Giriş kutularını doldurma sistemine bildirmeyen uygulamalarda da doldurmak için kendi klavyesi (KeePassDX'teki gibi). Erişilebilirlik servisi kullanmadan her uygulamada çalışır, ama büyük bir iş ve klavyenin kendisi de güvenlik incelemesi ister. Çıkış noktası: [#94](https://github.com/aaudraa/KeyKey/issues/94), [doldurma sistemine katılmayan ekranlar](docs/guvenlik-tasarimi.md#doldurma-sistemine-katılmayan-ekranlar). |
 | Windows, iOS, tarayıcı eklentisi | Windows derlemesi için araçlar hazır, iOS için Mac gerekir. |
+| Arka plan kilidinde bekleme süresi | Kullanıcının seçtiği kısa süre (30 sn, 1 dk), varsayılan "hemen". Telefon başkasının eline geçtiğinde kasa açık kalabilir; proje sahibinin kararı. Faz 11'de kilit açılınca kalınan yere dönülmesi sürtünmenin çoğunu giderdi. |
+| Seçilen klasöre otomatik şifreli yedek | Drive ya da Syncthing klasörüne kendiliğinden yedek. Yedeğin anahtarı ve zamanı güvenlik tasarımında ayrı karar. |
+| Yeni kurtarma anahtarı üretme | Kâğıt kaybolursa ya da kaydedilen dosya sızarsa. Kripto çekirdeğinde yeni işlem; eski yedekler eski anahtarla açılmaya devam eder. |
+| KeePass (`.kdbx`) içe aktarma, toplu seçim | KDBX çoğunlukla Argon2d kullanır, libsodium'da yok. Toplu seçim: çoklu silme ve klasöre taşıma. |
 
 ## Riskler
 
