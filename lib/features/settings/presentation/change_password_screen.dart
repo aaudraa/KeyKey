@@ -67,6 +67,8 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       _busy = true;
       _error = null;
     });
+    // Ekrandan çıkılsa da kullanılabilsin diye önceden alınır.
+    final autoBackup = ref.read(autoBackupControllerProvider.notifier);
     try {
       final attempt = await ref
           .read(vaultControllerProvider.notifier)
@@ -74,14 +76,12 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
             currentPassword: _current.text,
             newPassword: _password.text,
           );
+      // En yeni otomatik yedek yeni parolayla açılsın; kapalıysa bir şey
+      // yapmaz. Kullanıcı bu sırada ekrandan çıkmış olabilir.
+      if (attempt is PasswordAccepted) unawaited(autoBackup.backUpNow());
       if (!mounted) return;
       switch (attempt) {
         case PasswordAccepted():
-          // En yeni otomatik yedek yeni parolayla açılsın; kapalıysa bir şey
-          // yapmaz.
-          unawaited(
-            ref.read(autoBackupControllerProvider.notifier).backUpNow(),
-          );
           // Parola değişti; not açıkken düğme dönmesin.
           setState(() {
             _busy = false;

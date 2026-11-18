@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/core/platform/backup_folders.dart';
+import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/backup/application/auto_backup_controller.dart';
 import 'package:keykey/features/backup/application/auto_backup_files.dart';
@@ -17,6 +19,13 @@ import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../../support/fake_vault_service.dart';
+
+/// Yedek üretirken beklenmeyen bir hata atan servis.
+class _BrokenBackups extends FakeBackupService {
+  @override
+  Future<Uint8List> create(VaultSession session, DateTime now) async =>
+      throw const FileSystemException('disk dolu');
+}
 
 /// Yazmayı testin istediği an bitiren klasör.
 class _SlowFolders extends FakeBackupFolders {
@@ -41,7 +50,10 @@ void main() {
     name: 'KeyKey',
   );
   final now = DateTime(2026, 11, 18, 15, 30, 12);
-  final nowName = AutoBackupFiles.nameFor(now, prefix: 'keykey-otomatik');
+  const device = 'a1b2c3';
+  String autoName(DateTime time) =>
+      AutoBackupFiles.nameFor(time, prefix: 'keykey-otomatik', device: device);
+  final nowName = autoName(now);
 
   late FakeBackupFolders folders;
   late FakeBackupService backups;
@@ -75,6 +87,7 @@ void main() {
         backupServiceProvider.overrideWithValue(backups),
         backupClockProvider.overrideWithValue(() => now),
         autoBackupPrefixProvider.overrideWithValue('keykey-otomatik'),
+        autoBackupDeviceProvider.overrideWithValue(device),
       ],
     );
     addTearDown(container.dispose);
@@ -183,10 +196,7 @@ void main() {
 
   test('yazılamazsa writeFailed; eski yedekler kalır, son yedek ilerlemez', () {
     fakeAsync((async) {
-      final old = AutoBackupFiles.nameFor(
-        now.subtract(const Duration(hours: 3)),
-        prefix: 'keykey-otomatik',
-      );
+      final old = autoName(now.subtract(const Duration(hours: 3)));
       folders.files[folder.uri] = {
         old: Uint8List.fromList([9]),
       };
@@ -207,10 +217,7 @@ void main() {
     'başarılı yazmadan sonra aynı günün eskisi silinir, elle yedek kalır',
     () {
       fakeAsync((async) {
-        final old = AutoBackupFiles.nameFor(
-          now.subtract(const Duration(hours: 3)),
-          prefix: 'keykey-otomatik',
-        );
+        final old = autoName(now.subtract(const Duration(hours: 3)));
         const manual = 'keykey-yedek-2026-11-18.keykey';
         folders.files[folder.uri] = {
           old: Uint8List.fromList([9]),
@@ -310,10 +317,7 @@ void main() {
 
   test('disable izni bırakır, ayarı temizler, dosyalara dokunmaz', () {
     fakeAsync((async) {
-      final old = AutoBackupFiles.nameFor(
-        now.subtract(const Duration(days: 1)),
-        prefix: 'keykey-otomatik',
-      );
+      final old = autoName(now.subtract(const Duration(days: 1)));
       folders.files[folder.uri] = {
         old: Uint8List.fromList([9]),
       };
@@ -331,6 +335,121 @@ void main() {
         container.read(settingsControllerProvider)?.autoBackupFolder,
         isNull,
       );
+    });
+  });
+
+  test('aynı saniyedeki iki yedek ayrı adla yazılır, eskisi budanır', () {
+    fakeAsync((async) {
+      settings.settings = settings.settings.copyWith(lastBackupAt: now);
+      final container = open();
+      async.flushMicrotasks();
+      final controller = container.read(autoBackupControllerProvider.notifier);
+      final results = <bool>[];
+      unawaited(controller.backUpNow().then(results.add));
+      unawaited(controller.backUpNow().then(results.add));
+      async.flushMicrotasks();
+      expect(results, [true, true]);
+      expect(folders.writes, 2);
+      expect(files().keys, [autoName(now.add(const Duration(seconds: 1)))]);
+    });
+  });
+
+  test('beklenmeyen hata durum olarak görünür, iş çökmez', () {
+    fakeAsync((async) {
+      backups = _BrokenBackups()
+        ..latest = now.subtract(const Duration(hours: 1));
+      final container = open();
+      async.elapse(const Duration(seconds: 6));
+      expect(
+        container.read(autoBackupControllerProvider).problem,
+        AutoBackupProblem.writeFailed,
+      );
+      bool? result;
+      unawaited(
+        container
+            .read(autoBackupControllerProvider.notifier)
+            .backUpNow()
+            .then((value) => result = value),
+      );
+      async.flushMicrotasks();
+      expect(result, isFalse);
+    });
+  });
+
+  test('kasa açılınca klasöre erişim yoksa değişiklik beklemeden söylenir', () {
+    fakeAsync((async) {
+      folders.granted.clear();
+      settings.settings = settings.settings.copyWith(lastBackupAt: now);
+      backups.latest = now.subtract(const Duration(hours: 1));
+      final container = open();
+      async.flushMicrotasks();
+      expect(
+        container.read(autoBackupControllerProvider).problem,
+        AutoBackupProblem.noAccess,
+      );
+      expect(backups.creates, 0);
+    });
+  });
+
+  test('klasör ayara yazılamazsa yeni klasörün izni bırakılır', () {
+    fakeAsync((async) {
+      final container = open();
+      async.flushMicrotasks();
+      const next = FolderPicked(uri: 'content://x/tree/Yeni', name: 'Yeni');
+      folders.granted.add(next.uri);
+      container.read(vaultControllerProvider.notifier).lock();
+      Object? error;
+      unawaited(
+        container
+            .read(autoBackupControllerProvider.notifier)
+            .useFolder(next)
+            .then((_) {}, onError: (Object e) => error = e),
+      );
+      async.flushMicrotasks();
+      expect(error, isA<VaultLockedException>());
+      expect(folders.released, [next.uri]);
+    });
+  });
+
+  test(
+    'kilit ve yeniden açılıştan sonra eski iş son yedek zamanını yazmaz',
+    () {
+      fakeAsync((async) {
+        final slow = _SlowFolders()
+          ..granted.add(folder.uri)
+          ..gate = Completer<void>();
+        folders = slow;
+        backups.latest = now.subtract(const Duration(hours: 1));
+        final container = open();
+        async.elapse(const Duration(seconds: 6));
+        final vault = container.read(vaultControllerProvider.notifier)..lock();
+        unawaited(vault.unlockWithPassword(FakeVaultService.correctPassword));
+        async.flushMicrotasks();
+        expect(container.read(vaultControllerProvider), isA<VaultOpen>());
+        slow.gate!.complete();
+        async.flushMicrotasks();
+        expect(settings.settings.lastBackupAt, isNull);
+      });
+    },
+  );
+
+  test('kurtarma anahtarıyla yeni parola belirlenince hemen yazılır', () {
+    fakeAsync((async) {
+      settings.settings = settings.settings.copyWith(lastBackupAt: now);
+      backups.latest = now.subtract(const Duration(hours: 1));
+      final container = open();
+      async.elapse(const Duration(seconds: 10));
+      expect(folders.writes, 0);
+
+      final vault = container.read(vaultControllerProvider.notifier)
+        ..lock()
+        ..unlockWithRecoveryKey(FakeVaultService.recoveryKey);
+      unawaited(vault.setNewPassword('yeni-Ana-Parola-58'));
+      // Değişiklik zamanlayıcısından (5 sn) önce.
+      async.elapse(const Duration(seconds: 1));
+
+      expect(container.read(vaultControllerProvider), isA<VaultOpen>());
+      expect(folders.writes, 1);
     });
   });
 }

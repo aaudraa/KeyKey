@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -475,6 +477,45 @@ void main() {
 
     expect(folders.files[folder.uri], hasLength(1));
   });
+
+  testWidgets(
+    'parola değişirken ekrandan çıkılsa da otomatik yedek yazılıyor',
+    (tester) async {
+      const folder = AutoBackupFolder(uri: 'content://x/tree/K', name: 'K');
+      final folders = FakeBackupFolders()..granted.add(folder.uri);
+      final gate = service.changeGate = Completer<void>();
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        folders: folders,
+        settings: FakeSettingsRepository(
+          AppSettings.defaults.withAutoBackupFolder(folder),
+        ),
+      );
+      await tester.tap(find.byIcon(Icons.settings_outlined));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text('Ana parolayı değiştir'), 100);
+      await tester.tap(find.text('Ana parolayı değiştir'));
+      await tester.pumpAndSettle();
+      final fields = find.byType(TextField);
+      await tester.enterText(fields.at(0), FakeVaultService.correctPassword);
+      await tester.enterText(fields.at(1), newPassword);
+      await tester.enterText(fields.at(2), newPassword);
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Parolayı değiştir'));
+      await tester.pump();
+      await tester.tap(find.byTooltip('Geri'));
+      await tester.pumpAndSettle();
+      expect(find.text('Ana parolayı değiştir'), findsOneWidget);
+
+      gate.complete();
+      await tester.pumpAndSettle();
+
+      expect(service.changedPassword, newPassword);
+      expect(folders.files[folder.uri], hasLength(1));
+    },
+  );
 
   testWidgets('mevcut parola yanlışsa değişmiyor', (tester) async {
     await openChangePassword(tester);

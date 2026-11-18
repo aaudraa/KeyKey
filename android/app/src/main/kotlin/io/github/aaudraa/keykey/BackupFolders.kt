@@ -59,6 +59,12 @@ class BackupFolders(private val activity: ComponentActivity) : BackupFolderApi {
                 val document = create(Uri.parse(folderUri), mimeType, name)
                 when {
                     document == null -> false
+                    // Aynı adlı dosya varsa sağlayıcı yeni belgeyi "… (1)" diye
+                    // adlandırır; o kopya budanamaz, bu yüzden yazma geri alınır.
+                    renamed(document, name) -> {
+                        deleteDocument(document)
+                        false
+                    }
                     writeAll(document, bytes) && matches(document, bytes) -> true
                     else -> {
                         deleteDocument(document)
@@ -149,6 +155,19 @@ class BackupFolders(private val activity: ComponentActivity) : BackupFolderApi {
         } catch (_: RuntimeException) {
             null
         }
+
+    /** Sağlayıcı belgeye istenenden başka bir ad verdiyse `true`; ad okunamazsa `false`. */
+    private fun renamed(document: Uri, name: String): Boolean {
+        val actual =
+            try {
+                resolver
+                    .query(document, arrayOf(Document.COLUMN_DISPLAY_NAME), null, null, null)
+                    ?.use { cursor -> if (cursor.moveToFirst()) cursor.getString(0) else null }
+            } catch (_: RuntimeException) {
+                null
+            }
+        return actual != null && actual != name
+    }
 
     private fun writeAll(document: Uri, bytes: ByteArray): Boolean =
         try {

@@ -58,13 +58,18 @@ void main() {
       expect(await folders.hasAccess(picked.uri), isTrue);
 
       // Aynı günden iki yedek: budama eskisini siler.
+      const device = 'a1b2c3';
       final morning = DateTime(2026, 11, 18, 9);
       final evening = DateTime(2026, 11, 18, 21, 15, 30);
       final names = <String>[];
       for (final time in [morning, evening]) {
         final bytes = await backups.create(session, time);
         final copy = Uint8List.fromList(bytes);
-        final name = AutoBackupFiles.nameFor(time, prefix: 'keykey-otomatik');
+        final name = AutoBackupFiles.nameFor(
+          time,
+          prefix: 'keykey-otomatik',
+          device: device,
+        );
         expect(await folders.write(picked.uri, name, bytes), isTrue);
         expect(bytes, everyElement(0));
         names.add(name);
@@ -75,9 +80,20 @@ void main() {
           password,
         )).dispose();
       }
+      // Aynı adla ikinci yazma: sağlayıcı "… (1)" diye adlandırır; köprü
+      // bunu geri alır ve başarısız sayar, budanamayan kopya kalmaz.
+      expect(
+        await folders.write(
+          picked.uri,
+          names.last,
+          await backups.create(session, evening),
+        ),
+        isFalse,
+      );
       final listed = await folders.list(picked.uri);
       expect(listed, containsAll(names));
-      final old = AutoBackupFiles.toDelete(listed!);
+      expect(listed!.where((name) => name.contains('(')), isEmpty);
+      final old = AutoBackupFiles.toDelete(listed, device: device);
       expect(old, [names.first]);
       expect(await folders.delete(picked.uri, old), 1);
       expect(await folders.list(picked.uri), isNot(contains(names.first)));

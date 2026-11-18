@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -31,6 +32,7 @@ import 'package:keykey/features/authenticator/data/otp_content.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/authenticator/presentation/qr_scan_screen.dart';
 import 'package:keykey/features/autofill/application/autofill_setup.dart';
+import 'package:keykey/features/backup/application/auto_backup_controller.dart';
 import 'package:keykey/features/backup/application/backup_service.dart';
 import 'package:keykey/features/backup/application/restore_service.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
@@ -73,6 +75,9 @@ class FakeVaultService implements VaultService {
 
   int prepareCount = 0;
   String? changedPassword;
+
+  /// Verilirse parola değişimi bu tamamlanana kadar sürer.
+  Completer<void>? changeGate;
 
   VaultSession newSession() {
     final key = sodium.secureRandom(32);
@@ -156,6 +161,7 @@ class FakeVaultService implements VaultService {
     if (currentPassword != correctPassword) {
       return PasswordRejected(waitAfterReject);
     }
+    await changeGate?.future;
     changedPassword = newPassword;
     return const PasswordAccepted();
   }
@@ -471,7 +477,10 @@ class FakeBackupFolders implements BackupFolders {
     writes++;
     try {
       if (failWrites || !granted.contains(uri)) return false;
-      (files[uri] ??= {})[name] = Uint8List.fromList(bytes);
+      final folder = files[uri] ??= {};
+      // Kotlin tarafı, sağlayıcı adı değiştirirse ("… (1)") yazmayı geri alır.
+      if (folder.containsKey(name)) return false;
+      folder[name] = Uint8List.fromList(bytes);
       return true;
     } finally {
       bytes.fillRange(0, bytes.length, 0);
@@ -568,8 +577,17 @@ class FakeRestoreService implements RestoreService {
     );
   }
 
+  /// Son değiştirmede verilen, bu cihazın otomatik yedek klasörü.
+  AutoBackupFolder? replacedFolder;
+
   @override
-  Future<void> replace(OpenedBackup backup) async => replaces++;
+  Future<void> replace(
+    OpenedBackup backup, {
+    AutoBackupFolder? autoBackupFolder,
+  }) async {
+    replaces++;
+    replacedFolder = autoBackupFolder;
+  }
 
   @override
   Future<MergeCounts> merge(OpenedBackup backup, VaultSession session) async {
@@ -747,6 +765,7 @@ Future<void> pumpKeyKey(
           documents ?? FakeDocumentFiles(),
         ),
         backupFoldersProvider.overrideWithValue(folders ?? FakeBackupFolders()),
+        autoBackupDeviceProvider.overrideWithValue('a1b2c3'),
         backupServiceProvider.overrideWithValue(backups ?? FakeBackupService()),
         restoreServiceProvider.overrideWithValue(
           restores ?? FakeRestoreService(service.sodium),

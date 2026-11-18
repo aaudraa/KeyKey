@@ -52,20 +52,23 @@ Tetikler:
 
 - **Kayıtlar değişince:** değişiklikten 5 saniye sonra. Peş peşe gelen değişiklikler, örneğin bir içe aktarma, tek yedekte toplanır.
 - **Kasa açılınca:** otomatik doldurmanın kaydettiği değişiklikler ana uygulamanın listelerinden geçmez. Önceki oturumda kilitlenmeden önce yetişmeyen yedek de burada yazılır.
-- **Ana parola değişince:** hemen. Böylece en yeni yedek yeni parolayla açılır.
+- **Ana parola değişince:** hemen. Böylece en yeni yedek yeni parolayla açılır. Kurtarma anahtarıyla yeni parola belirlenince de aynı.
+- **Kasama birleştirerek geri yükleyince:** hemen. Birleştirilen kayıtlar yedeğin zamanlarını taşır; değişiklik ölçütü onları yeni saymayabilir.
 
 Aynı anda tek yedek yazılır. Yazarken yeni bir değişiklik gelirse iş bitince bir kez daha yazılır. Kasa kilitlenirse bekleyen yedek iptal olur, bir sonraki açılışta yazılır.
 
 ### Nasıl yazılır
 
 1. Yedek, elle yedekteki gibi kasa açıkken bellekte üretilir (`BackupService.create`).
-2. Klasörde yeni bir dosya açılır: `keykey-otomatik-2026-11-18-153012.keykey`. Arayüz İngilizceyse önek `keykey-auto`.
-3. Baytlar yazılır, geri okunur ve karşılaştırılır. Tutmazsa yeni dosya silinmeye çalışılır, eski yedeklere dokunulmaz. Baytlar her durumda bellekte sıfırlanır.
+2. Klasörde yeni bir dosya açılır: `keykey-otomatik-2026-11-18-153012-a1b2c3.keykey`. Arayüz İngilizceyse önek `keykey-auto`. Sondaki altı karakter bu kurulumun **cihaz kimliğidir** (aşağıda). Zaman saniyeye kadar yazılır; aynı saniyeye iki yedek düşerse ikincisi bir saniye sonrasının adını alır.
+3. Sağlayıcı aynı adlı bir dosya bulup yeni dosyaya başka bir ad verdiyse ("… (1).keykey") yeni dosya silinir ve yazma başarısız sayılır; budanamayacak bir kopya kalmaz. Baytlar yazılır, geri okunur ve karşılaştırılır. Tutmazsa yeni dosya silinmeye çalışılır, eski yedeklere dokunulmaz. Baytlar her durumda bellekte sıfırlanır.
 4. Başarılıysa son yedek zamanı ayar kaydına yazılır. Kart ve hatırlatıcı bunu kullanır. Ardından eski otomatik yedekler budanır.
 
 ### Budama
 
-- Yalnızca adı otomatik yedek kalıbına tam uyan dosyalar dikkate alınır: `keykey-otomatik-` ya da `keykey-auto-` öneki, `YYYY-AA-GG-SSddss` zamanı ve `.keykey` uzantısı. Elle alınan yedekler (`keykey-yedek-…`) ve başka her dosya dokunulmaz kalır.
+- Yalnızca adı otomatik yedek kalıbına tam uyan dosyalar dikkate alınır: `keykey-otomatik-` ya da `keykey-auto-` öneki, `YYYY-AA-GG-SSddss` zamanı, altı küçük onaltılık karakterlik cihaz kimliği ve `.keykey` uzantısı. Elle alınan yedekler (`keykey-yedek-…`) ve başka her dosya dokunulmaz kalır.
+- Yalnızca **bu kurulumun** cihaz kimliğini taşıyan dosyalar budanır ve sayılır. Aynı eşitleme klasörünü kullanan iki telefon, ya da eski ve yeni telefon, birbirinin yedeğini silmez.
+- **Cihaz kimliği** kasanın dışında, uygulamanın kendi klasöründeki `auto_backup_device` dosyasında durur. İlk açılışta rastgele üretilir. Gizli değildir, yedekle taşınmaz. Uygulama silinip yeniden kurulunca yenisi üretilir; eski kimliğin dosyaları budanmaz, kullanıcı elle siler.
 - Her günün en yeni dosyası kalır, aynı günün eskileri silinir.
 - En yeni 14 gün kalır, daha eskileri silinir. Kayıt değişmeyen günlerde yedek yazılmadığı için bu, takvimde 14 günden uzun bir geçmiş demek.
 - Budama ancak yeni yedek doğrulandıktan sonra çalışır. Silme başarısız olursa yedek yine başarılı sayılır, bir sonraki yedekte yeniden denenir.
@@ -75,7 +78,8 @@ Aynı anda tek yedek yazılır. Yazarken yeni bir değişiklik gelirse iş bitin
 - Klasör Android'in klasör seçicisiyle (`ACTION_OPEN_DOCUMENT_TREE`) seçilir. KeyKey kalıcı okuma ve yazma izni alır (`takePersistableUriPermission`). Depolama izni gerekmez.
 - Klasörün adresi ve görünen adı ayar kaydında, yani kasanın içinde şifreli tutulur (ayar kaydı sürüm 5). Kasa kilitliyken yedek zaten yazılamadığı için bu yeterli.
 - Otomatik yedek kapatılınca ya da klasör değiştirilince eski klasörün kalıcı izni bırakılır. Klasördeki yedekler silinmez.
-- Yedekten geri yüklenen bir kasa eski telefonun klasör adresini getirebilir. Bu telefonda o adres için izin yoktur. İlk denemede "klasöre erişilemiyor" durumu gösterilir, kullanıcı klasörü yeniden seçer.
+- Yedekten geri yüklenen bir kasa eski telefonun klasör adresini getirebilir. Bu telefonda o adres için izin yoktur. Kasa açılır açılmaz "klasöre erişilemiyor" durumu gösterilir, kullanıcı klasörü yeniden seçer.
+- Klasörün izni, parmak izi yuvası gibi cihaza bağlıdır. Açık kasanın yerine yedek konunca, bu telefonda seçili bir klasör varsa geri yüklenen ayarlara o yazılır. Seçili klasör yoksa yedekteki değer kalır.
 
 ### Hata
 

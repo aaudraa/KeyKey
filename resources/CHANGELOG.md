@@ -10,11 +10,13 @@ Faz 12 ([tasarım](docs/otomatik-yedek.md)).
 
 - Otomatik yedek: Ayarlar → Yedek ve aktarım'dan bir klasör seçilince, kasa açıkken kayıtlar değiştikçe o klasöre şifreli bir yedek yazılıyor. Elle yedekle aynı biçim ve anahtar; her günün son yedeği en yeni 14 gün için tutuluyor, elle alınan yedeklere dokunulmuyor. İnternet ve depolama izni eklenmedi; KeyKey yalnızca seçilen klasör için izin alıyor.
 - Klasöre erişilemezse ayarlarda ve yedek kartında uyarı; "Klasörü değiştir" ve "Şimdi yedekle".
-- Ana parola değişince otomatik yedek hemen yeni parolayla yazılıyor.
+- Ana parola değişince (kurtarma anahtarıyla da) ve kasaya birleştirerek geri yükleyince otomatik yedek hemen yazılıyor.
+- Aynı klasörü kullanan iki telefon birbirinin otomatik yedeklerini silmiyor: dosya adında cihaza ait kısa bir kimlik var.
 
 ### Değişenler
 
 - Ayar kaydı sürüm 5 (otomatik yedeğin klasörü); sürüm 1-4 kayıtları okunmaya devam ediyor.
+- Ayarlardaki değişiklikler sırayla yazılıyor; arka planda yazılan son yedek zamanı aynı anda yapılan bir ayar değişikliğini ezmiyor.
 - `pigeon` 30.0.4.
 
 ## 1.1.0 (2026-11-17): Kullanıcı gözüyle iyileştirmeler

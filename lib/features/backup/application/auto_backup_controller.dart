@@ -45,6 +45,12 @@ final autoBackupPrefixProvider = Provider<String>((ref) {
   return lookupAppLocalizations(locale).autoBackupFilePrefix;
 });
 
+/// Bu kurulumun cihaz kimliği (`auto_backup_device` dosyası); `main`
+/// doldurur, testler kendi değerini verir.
+final autoBackupDeviceProvider = Provider<String>(
+  (ref) => throw UnimplementedError('Cihaz kimliği sağlanmadı.'),
+);
+
 final autoBackupControllerProvider =
     NotifierProvider<AutoBackupController, AutoBackupStatus>(
       AutoBackupController.new,
@@ -63,6 +69,15 @@ class AutoBackupController extends Notifier<AutoBackupStatus> {
   /// durumu değiştirmez.
   int _generation = 0;
 
+  /// Son yazılan dosyanın adındaki zaman. Sonraki ad en az bir saniye
+  /// sonrası olur; sağlayıcı aynı adı "… (1)" diye değiştirip budanamayan bir
+  /// kopya bırakmasın.
+  DateTime? _lastStamp;
+
+  /// Kurtarma anahtarıyla yeni parola belirlendi; ayarlar yüklenince değişiklik
+  /// ölçütüne bakmadan yazılır, en yeni yedek yeni parolayla açılsın.
+  bool _passwordReset = false;
+
   @override
   AutoBackupStatus build() {
     final vault = ref.read(vaultControllerProvider.notifier)
@@ -75,8 +90,21 @@ class AutoBackupController extends Notifier<AutoBackupStatus> {
       })
       // Ayarlar kasa açılınca yüklenir: önceki oturumdan kalan ve otomatik
       // doldurmanın kaydettiği değişiklikler burada yakalanır.
+      ..listen(vaultControllerProvider, (previous, next) {
+        if (previous is VaultRecovering && next is VaultOpen) {
+          _passwordReset = true;
+        }
+      })
       ..listen(settingsControllerProvider, (previous, next) {
-        if (previous == null && next != null) _schedule();
+        if (previous == null && next != null) {
+          unawaited(_checkAccess(next.autoBackupFolder));
+          if (_passwordReset) {
+            _passwordReset = false;
+            unawaited(backUpNow());
+          } else {
+            _schedule();
+          }
+        }
       })
       ..listen(loginsControllerProvider, (_, _) => _schedule())
       ..listen(otpsControllerProvider, (_, _) => _schedule());
@@ -91,11 +119,19 @@ class AutoBackupController extends Notifier<AutoBackupStatus> {
   /// Kasa kilitliyse `VaultLockedException`.
   Future<bool> useFolder(FolderPicked picked) async {
     final previous = ref.read(settingsControllerProvider)?.autoBackupFolder;
-    await ref
-        .read(settingsControllerProvider.notifier)
-        .setAutoBackupFolder(
-          AutoBackupFolder(uri: picked.uri, name: picked.name),
-        );
+    try {
+      await ref
+          .read(settingsControllerProvider.notifier)
+          .setAutoBackupFolder(
+            AutoBackupFolder(uri: picked.uri, name: picked.name),
+          );
+    } on Exception {
+      // Klasör kaydedilemedi; seçicinin verdiği izin boşta kalmasın.
+      if (previous?.uri != picked.uri) {
+        await ref.read(backupFoldersProvider).release(picked.uri);
+      }
+      rethrow;
+    }
     if (previous != null && previous.uri != picked.uri) {
       await ref.read(backupFoldersProvider).release(previous.uri);
     }
@@ -119,9 +155,20 @@ class AutoBackupController extends Notifier<AutoBackupStatus> {
 
   void _onLock() {
     _generation++;
+    _passwordReset = false;
     _timer?.cancel();
     _timer = null;
     state = const AutoBackupStatus();
+  }
+
+  /// Kasa açılınca klasöre bu cihazda erişilebiliyor mu bakar; başka
+  /// telefondan gelen bir klasör ilk değişikliği beklemeden bildirilir.
+  Future<void> _checkAccess(AutoBackupFolder? folder) async {
+    if (folder == null) return;
+    final generation = _generation;
+    if (!await ref.read(backupFoldersProvider).hasAccess(folder.uri)) {
+      _report(generation, AutoBackupProblem.noAccess);
+    }
   }
 
   void _schedule() {
@@ -149,46 +196,85 @@ class AutoBackupController extends Notifier<AutoBackupStatus> {
     if (status is! VaultOpen || settings == null || folder == null) {
       return false;
     }
-    final backups = ref.read(backupServiceProvider);
-    if (!force) {
-      final latest = await backups.latestChange();
-      final last = settings.lastBackupAt;
-      if (latest == null || (last != null && !latest.isAfter(last))) {
+    final folders = ref.read(backupFoldersProvider);
+    final String name;
+    final DateTime now;
+    try {
+      final backups = ref.read(backupServiceProvider);
+      if (!force) {
+        final latest = await backups.latestChange();
+        final last = settings.lastBackupAt;
+        if (latest == null || (last != null && !latest.isAfter(last))) {
+          return false;
+        }
+      }
+      if (!await folders.hasAccess(folder.uri)) {
+        _report(generation, AutoBackupProblem.noAccess);
         return false;
       }
-    }
-    final folders = ref.read(backupFoldersProvider);
-    if (!await folders.hasAccess(folder.uri)) {
-      _report(generation, AutoBackupProblem.noAccess);
-      return false;
-    }
-    final now = ref.read(backupClockProvider)();
-    final Uint8List bytes;
-    try {
-      bytes = await backups.create(status.session, now);
-    } on VaultLockedException {
-      return false;
-    }
-    final name = AutoBackupFiles.nameFor(
-      now,
-      prefix: ref.read(autoBackupPrefixProvider),
-    );
-    if (!await folders.write(folder.uri, name, bytes)) {
+      now = ref.read(backupClockProvider)();
+      final Uint8List bytes;
+      try {
+        bytes = await backups.create(status.session, now);
+      } on VaultLockedException {
+        return false;
+      }
+      name = AutoBackupFiles.nameFor(
+        _nextStamp(now),
+        prefix: ref.read(autoBackupPrefixProvider),
+        device: ref.read(autoBackupDeviceProvider),
+      );
+      if (!await folders.write(folder.uri, name, bytes)) {
+        _report(generation, AutoBackupProblem.writeFailed);
+        return false;
+      }
+    } on Exception {
+      // Veritabanı, kodlayıcı ya da köprü hatası: sessiz kalmasın.
       _report(generation, AutoBackupProblem.writeFailed);
       return false;
     }
-    try {
-      await ref.read(settingsControllerProvider.notifier).recordBackup(now);
-    } on VaultLockedException {
-      // Dosya yazıldı; kasa kilitlendiği için zaman yazılamadı.
+    // Kasa bu arada kilitlenip yeniden açıldıysa ya da değiştirildiyse bu
+    // yedeğin zamanı yeni oturumun ayarlarına yazılmaz.
+    if (generation == _generation) {
+      try {
+        await ref.read(settingsControllerProvider.notifier).recordBackup(now);
+      } on VaultLockedException {
+        // Dosya yazıldı; kasa kilitlendiği için zaman yazılamadı.
+      }
     }
     _report(generation, null);
-    final names = await folders.list(folder.uri);
-    if (names != null) {
-      final old = AutoBackupFiles.toDelete(names)..remove(name);
-      if (old.isNotEmpty) await folders.delete(folder.uri, old);
+    try {
+      final names = await folders.list(folder.uri);
+      if (names != null) {
+        final old = AutoBackupFiles.toDelete(
+          names,
+          device: ref.read(autoBackupDeviceProvider),
+        )..remove(name);
+        if (old.isNotEmpty) await folders.delete(folder.uri, old);
+      }
+    } on Exception {
+      // Budama bir sonraki yedekte yeniden denenir.
     }
     return true;
+  }
+
+  /// [now]'ın saniyeye yuvarlanmış hali; son yazılandan ileride değilse
+  /// ondan bir saniye sonrası.
+  DateTime _nextStamp(DateTime now) {
+    final local = now.toLocal();
+    var stamp = DateTime(
+      local.year,
+      local.month,
+      local.day,
+      local.hour,
+      local.minute,
+      local.second,
+    );
+    final last = _lastStamp;
+    if (last != null && !stamp.isAfter(last)) {
+      stamp = last.add(const Duration(seconds: 1));
+    }
+    return _lastStamp = stamp;
   }
 
   void _report(int generation, AutoBackupProblem? problem) {

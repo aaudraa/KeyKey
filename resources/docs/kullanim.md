@@ -146,6 +146,7 @@ KeyKey verilerini hiçbir yere göndermediği için **telefon kaybolursa ya da b
 
 - Yedekler elle aldığın yedekle aynıdır ve aynı yolla geri yüklenir.
 - Her günün son yedeği en yeni 14 gün için tutulur, daha eskileri silinir. Elle aldığın yedeklere dokunulmaz.
+- Aynı klasörü iki telefonda kullanabilirsin; dosya adının sonundaki altı karakter telefonu ayırır ve her telefon yalnızca kendi yedeklerini siler. KeyKey'i silip yeniden kurarsan eski kurulumun otomatik yedekleri silinmez; artık gerekmiyorlarsa elle silebilirsin.
 - Telefon kaybolduğunda yedeklerin de gitmemesi için Syncthing ya da Nextcloud gibi bir eşitleme uygulamasının klasörünü seç. Google Drive klasör listesinde çıkmayabilir; Drive'a elle yedek almaya devam edebilirsin.
 - Android 11 ve üstünde depolamanın kökü ve İndirilenler'in kendisi seçilemez; içinde bir klasör aç (seçicideki **Yeni klasör**) ve onu seç.
 - Klasöre erişilemezse (klasör silindiyse ya da yedeği başka telefona taşıdıysan) Ayarlar'da ve yedek kartında uyarı çıkar; **Klasörü değiştir** ile yeniden seç.

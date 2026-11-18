@@ -1,5 +1,9 @@
 /// Otomatik yedek dosyalarının adı ve budama kuralı. Tasarım:
 /// `resources/docs/otomatik-yedek.md`, "Budama".
+///
+/// Ad: `keykey-otomatik-2026-11-18-153012-a1b2c3.keykey`. Sondaki altı
+/// karakter bu kurulumun cihaz kimliğidir; aynı klasörü kullanan iki kurulum
+/// (iki telefon, ya da eski ve yeni telefon) birbirinin yedeğini budamaz.
 abstract final class AutoBackupFiles {
   /// Arayüz diline göre önekler. Dil değişse de eski dosyalar tanınır.
   static const prefixes = {'keykey-otomatik', 'keykey-auto'};
@@ -10,19 +14,31 @@ abstract final class AutoBackupFiles {
   static const extension = '.keykey';
 
   static final _pattern = RegExp(
-    r'^(keykey-otomatik|keykey-auto)-(\d{4})-(\d{2})-(\d{2})-(\d{2})(\d{2})(\d{2})\.keykey$',
+    r'^(keykey-otomatik|keykey-auto)-(\d{4})-(\d{2})-(\d{2})-'
+    r'(\d{2})(\d{2})(\d{2})-([0-9a-f]{6})\.keykey$',
   );
 
-  /// `keykey-otomatik-2026-11-18-153012.keykey`; yerel saatle.
-  static String nameFor(DateTime time, {required String prefix}) {
+  static final _device = RegExp(r'^[0-9a-f]{6}$');
+
+  /// Cihaz kimliği altı küçük onaltılık karakterdir.
+  static bool isDevice(String value) => _device.hasMatch(value);
+
+  /// Yerel saatle ad; [device] [isDevice]'a uymalı.
+  static String nameFor(
+    DateTime time, {
+    required String prefix,
+    required String device,
+  }) {
+    assert(isDevice(device), 'geçersiz cihaz kimliği: $device');
     String two(int value) => value.toString().padLeft(2, '0');
     final t = time.toLocal();
     return '$prefix-${t.year}-${two(t.month)}-${two(t.day)}-'
-        '${two(t.hour)}${two(t.minute)}${two(t.second)}$extension';
+        '${two(t.hour)}${two(t.minute)}${two(t.second)}-$device$extension';
   }
 
-  /// Adı kalıba tam uyan dosyanın zamanı (yerel); uymuyorsa `null`.
-  static DateTime? parse(String name) {
+  /// Adı kalıba tam uyan dosyanın zamanı (yerel) ve cihazı; uymuyorsa
+  /// `null`.
+  static ({DateTime time, String device})? parse(String name) {
     final match = _pattern.firstMatch(name);
     if (match == null) return null;
     final [year, month, day, hour, minute, second] = [
@@ -38,16 +54,21 @@ abstract final class AutoBackupFiles {
         time.hour == hour &&
         time.minute == minute &&
         time.second == second;
-    return valid ? time : null;
+    return valid ? (time: time, device: match.group(8)!) : null;
   }
 
-  /// Silinecek otomatik yedekler: her günün en yenisi ve en yeni [keepDays]
-  /// gün kalır. Kalıba uymayan adlar hiçbir zaman listeye girmez.
-  static List<String> toDelete(Iterable<String> names) {
+  /// Silinecek otomatik yedekler: yalnızca [device]'ın dosyaları sayılır;
+  /// her günün en yenisi ve en yeni [keepDays] gün kalır. Kalıba uymayan
+  /// adlar ve başka cihazların dosyaları hiçbir zaman listeye girmez.
+  static List<String> toDelete(
+    Iterable<String> names, {
+    required String device,
+  }) {
     final dated =
         [
           for (final name in names)
-            if (parse(name) case final time?) (name: name, time: time),
+            if (parse(name) case final parsed? when parsed.device == device)
+              (name: name, time: parsed.time),
         ]..sort((a, b) {
           final byTime = b.time.compareTo(a.time);
           return byTime != 0 ? byTime : b.name.compareTo(a.name);

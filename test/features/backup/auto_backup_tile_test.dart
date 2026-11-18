@@ -80,7 +80,7 @@ void main() {
     expect(folders.gateWasActive, isTrue);
     expect(settings.settings.autoBackupFolder?.uri, folder.uri);
     expect(files(folder.uri).keys, [
-      AutoBackupFiles.nameFor(now, prefix: 'keykey-otomatik'),
+      AutoBackupFiles.nameFor(now, prefix: 'keykey-otomatik', device: 'a1b2c3'),
     ]);
     expect(find.text('Otomatik yedek açıldı'), findsOneWidget);
     expect(find.text('KeyKey klasörüne yazıyor'), findsOneWidget);

@@ -17,8 +17,10 @@ import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/data/import/platform_aes_gcm.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
+import 'package:keykey/features/backup/application/auto_backup_controller.dart';
 import 'package:keykey/features/backup/application/backup_service.dart';
 import 'package:keykey/features/backup/application/restore_service.dart';
+import 'package:keykey/features/backup/data/auto_backup_device.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/onboarding/application/terms_controller.dart';
@@ -68,6 +70,13 @@ Future<List<Override>> bootstrap() async {
     ];
   }
 
+  // Otomatik yedek dosyalarının adındaki cihaz kimliği: kasanın dışında,
+  // yedekle taşınmaz; aynı klasörü kullanan iki kurulumu ayırır.
+  final autoBackupDevice = await readOrCreateAutoBackupDevice(
+    File('${directory.path}/auto_backup_device'),
+    random: sodium.randombytes.buf,
+  );
+
   final store = VaultStore(database);
   final service = VaultService(
     sodium: sodium,
@@ -83,6 +92,7 @@ Future<List<Override>> bootstrap() async {
     exportFilePickerProvider.overrideWithValue(FileSelectorExportPicker()),
     documentFilesProvider.overrideWithValue(PigeonDocumentFiles()),
     backupFoldersProvider.overrideWithValue(PigeonBackupFolders()),
+    autoBackupDeviceProvider.overrideWithValue(autoBackupDevice),
     appPackagesProvider.overrideWithValue(PigeonAppPackages()),
     webLinksProvider.overrideWithValue(PigeonWebLinks()),
     backupServiceProvider.overrideWithValue(
