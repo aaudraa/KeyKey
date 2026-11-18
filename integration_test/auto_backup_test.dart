@@ -21,6 +21,9 @@ import 'package:sodium/sodium_sumo.dart';
 /// dokunur. Tek başına `flutter test integration_test` ile çalışırsa seçici
 /// açılır ve test zaman aşımına uğrar, bu yüzden betik ortam değişkeni
 /// vermedikçe test atlanır.
+/// Betiğin alt klasörü koyduktan sonra bıraktığı dosya.
+const _marker = 'kk-hazir.txt';
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   const enabled = bool.fromEnvironment('KEYKEY_SAF_TEST');
@@ -56,9 +59,25 @@ void main() {
       picked as FolderPicked;
       debugPrint('KKSONUC klasor ${picked.name}');
       expect(await folders.hasAccess(picked.uri), isTrue);
-
-      // Aynı günden iki yedek: budama eskisini siler.
       const device = 'a1b2c3';
+
+      // Betik klasöre otomatik yedek adını taşıyan bir alt klasör ve bir
+      // işaret dosyası koyar. Köprü klasörleri dosya saymaz, silmez.
+      final subfolder = AutoBackupFiles.nameFor(
+        DateTime(2026, 11, 2),
+        prefix: 'keykey-otomatik',
+        device: device,
+      );
+      debugPrint('KKADIM alt-klasor $subfolder');
+      final ready = DateTime.now().add(const Duration(minutes: 1));
+      while (!((await folders.list(picked.uri))?.contains(_marker) ?? false)) {
+        if (DateTime.now().isAfter(ready)) fail('Betik alt klasörü koymadı.');
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+      }
+      expect(await folders.list(picked.uri), isNot(contains(subfolder)));
+      expect(await folders.delete(picked.uri, [subfolder]), 0);
+
+      // Aynı günden iki yedek.
       final morning = DateTime(2026, 11, 18, 9);
       final evening = DateTime(2026, 11, 18, 21, 15, 30);
       final names = <String>[];
@@ -93,9 +112,14 @@ void main() {
       final listed = await folders.list(picked.uri);
       expect(listed, containsAll(names));
       expect(listed!.where((name) => name.contains('(')), isEmpty);
-      final old = AutoBackupFiles.toDelete(listed, device: device);
-      expect(old, [names.first]);
-      expect(await folders.delete(picked.uri, old), 1);
+      // Ara dosyalar doğrulanınca son ada çevrildi; geride kalmadı.
+      expect(
+        listed.where((name) => name.endsWith(AutoBackupFiles.partSuffix)),
+        isEmpty,
+      );
+      // İki dosya en yeni beşin içinde: budanacak bir şey yok.
+      expect(AutoBackupFiles.toDelete(listed, device: device), isEmpty);
+      expect(await folders.delete(picked.uri, [names.first]), 1);
       expect(await folders.list(picked.uri), isNot(contains(names.first)));
       debugPrint(
         'KKSONUC dosyalar ${(await folders.list(picked.uri))!.join(',')}',

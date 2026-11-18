@@ -82,12 +82,22 @@ void main() {
       device: device,
     );
 
-    test('aynı günün en yenisi kalır', () {
-      final names = [auto(18, 9), auto(18, 15), auto(18, 12)];
+    test('en yeni 5 dosya gün ne olursa olsun kalır', () {
+      final names = [for (var hour = 9; hour <= 15; hour++) auto(18, hour)];
       expect(
         AutoBackupFiles.toDelete(names, device: me),
-        unorderedEquals([auto(18, 9), auto(18, 12)]),
+        unorderedEquals([auto(18, 9), auto(18, 10)]),
       );
+    });
+
+    test('en yeni 5 dosyanın dışında her günün en yenisi kalır', () {
+      final names = [
+        for (var hour = 10; hour <= 14; hour++) auto(18, hour),
+        auto(17, 9),
+        auto(17, 20),
+        auto(16, 8),
+      ];
+      expect(AutoBackupFiles.toDelete(names, device: me), [auto(17, 9)]);
     });
 
     test('en yeni 14 gün kalır', () {
@@ -105,13 +115,9 @@ void main() {
         for (var day = 1; day <= 14; day++)
           auto(day, 10, prefix: 'keykey-auto'),
       ];
-      expect(
-        AutoBackupFiles.toDelete(names, device: me),
-        unorderedEquals([
-          auto(18, 9, prefix: 'keykey-auto'),
-          auto(1, 10, prefix: 'keykey-auto'),
-        ]),
-      );
+      expect(AutoBackupFiles.toDelete(names, device: me), [
+        auto(1, 10, prefix: 'keykey-auto'),
+      ]);
     });
 
     test('başka cihazın yedeklerine hiç dokunulmaz ve sayılmaz', () {
@@ -119,12 +125,12 @@ void main() {
         for (var day = 1; day <= 16; day++) auto(day, 23, device: other),
         auto(18, 8, device: other),
       ];
-      final mine = [auto(18, 9), auto(18, 15)];
+      final mine = [for (var hour = 9; hour <= 15; hour++) auto(18, hour)];
       final deleted = AutoBackupFiles.toDelete([
         ...theirs,
         ...mine,
       ], device: me);
-      expect(deleted, [auto(18, 9)]);
+      expect(deleted, unorderedEquals([auto(18, 9), auto(18, 10)]));
     });
 
     test('kalıba uymayan dosyalara hiç dokunulmaz', () {
@@ -144,6 +150,31 @@ void main() {
         expect(deleted, isNot(contains(name)));
       }
       expect(deleted, unorderedEquals([auto(1, 10), auto(2, 10), auto(3, 10)]));
+    });
+
+    test('bu cihazın yarım kalmış ara dosyaları silinir', () {
+      final part = '${auto(17, 9)}.part';
+      final theirs = '${auto(17, 9, device: other)}.part';
+      final deleted = AutoBackupFiles.toDelete([
+        auto(18, 9),
+        part,
+        theirs,
+        'notlar.part',
+        '${auto(17, 9)}.part.bak',
+      ], device: me);
+      expect(deleted, [part]);
+    });
+
+    test('ara dosya adı son adın sonuna .part eklenmiş hali', () {
+      expect(
+        AutoBackupFiles.partName(auto(18, 9)),
+        '${auto(18, 9)}${AutoBackupFiles.partSuffix}',
+      );
+      expect(AutoBackupFiles.partSuffix, '.part');
+      expect(
+        AutoBackupFiles.parse(AutoBackupFiles.partName(auto(18, 9))),
+        isNull,
+      );
     });
 
     test('boş klasörde silinecek bir şey yok', () {

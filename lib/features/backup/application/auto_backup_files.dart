@@ -11,7 +11,19 @@ abstract final class AutoBackupFiles {
   /// Bu kadar günün en yeni dosyası kalır.
   static const keepDays = 14;
 
+  /// Günü ne olursa olsun en yeni bu kadar dosya kalır: aynı gün içinde
+  /// yanlışlıkla yapılan bir düzenlemeden önceki hal hemen budanmasın.
+  static const keepRecent = 5;
+
   static const extension = '.keykey';
+
+  /// Yazılırken kullanılan ara dosyanın eki; Kotlin'deki `PART_SUFFIX` ile
+  /// aynı olmalı. Dosya doğrulanınca son ada çevrilir. Süreç yazarken ölürse
+  /// yarım dosya bu adla kalır, kalıba uymadığı için yedek sayılmaz ve bir
+  /// sonraki budamada silinir.
+  static const partSuffix = '.part';
+
+  static String partName(String name) => '$name$partSuffix';
 
   static final _pattern = RegExp(
     r'^(keykey-otomatik|keykey-auto)-(\d{4})-(\d{2})-(\d{2})-'
@@ -57,29 +69,42 @@ abstract final class AutoBackupFiles {
     return valid ? (time: time, device: match.group(8)!) : null;
   }
 
-  /// Silinecek otomatik yedekler: yalnızca [device]'ın dosyaları sayılır;
-  /// her günün en yenisi ve en yeni [keepDays] gün kalır. Kalıba uymayan
-  /// adlar ve başka cihazların dosyaları hiçbir zaman listeye girmez.
+  /// Silinecek dosyalar. Yalnızca [device]'ın dosyaları sayılır: en yeni
+  /// [keepRecent] dosya ve en yeni [keepDays] günün her birinin en yenisi
+  /// kalır, gerisi silinir. Bu cihazın yarım kalmış ara dosyaları da silinir;
+  /// yazmalar sırayla yapıldığı için budama sırasında var olan ara dosya
+  /// eskidir. Kalıba uymayan adlar ve başka cihazların dosyaları hiçbir zaman
+  /// listeye girmez.
   static List<String> toDelete(
     Iterable<String> names, {
     required String device,
   }) {
-    final dated =
-        [
-          for (final name in names)
-            if (parse(name) case final parsed? when parsed.device == device)
-              (name: name, time: parsed.time),
-        ]..sort((a, b) {
-          final byTime = b.time.compareTo(a.time);
-          return byTime != 0 ? byTime : b.name.compareTo(a.name);
-        });
+    final parts = <String>[];
+    final dated = <({String name, DateTime time})>[];
+    for (final name in names) {
+      final isPart = name.endsWith(partSuffix);
+      final parsed = parse(
+        isPart ? name.substring(0, name.length - partSuffix.length) : name,
+      );
+      if (parsed == null || parsed.device != device) continue;
+      if (isPart) {
+        parts.add(name);
+      } else {
+        dated.add((name: name, time: parsed.time));
+      }
+    }
+    dated.sort((a, b) {
+      final byTime = b.time.compareTo(a.time);
+      return byTime != 0 ? byTime : b.name.compareTo(a.name);
+    });
     final keptDays = <DateTime>{};
     final deleted = <String>[];
-    for (final file in dated) {
+    for (final (index, file) in dated.indexed) {
       final day = DateTime(file.time.year, file.time.month, file.time.day);
-      if (keptDays.length < keepDays && keptDays.add(day)) continue;
+      final newestOfDay = keptDays.length < keepDays && keptDays.add(day);
+      if (index < keepRecent || newestOfDay) continue;
       deleted.add(file.name);
     }
-    return deleted;
+    return [...deleted, ...parts];
   }
 }

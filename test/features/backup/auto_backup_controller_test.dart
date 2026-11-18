@@ -214,19 +214,29 @@ void main() {
   });
 
   test(
-    'başarılı yazmadan sonra aynı günün eskisi silinir, elle yedek kalır',
+    'yazmadan sonra fazlası ve yarım ara dosya silinir, elle yedek kalır',
     () {
       fakeAsync((async) {
-        final old = autoName(now.subtract(const Duration(hours: 3)));
+        final olds = [
+          for (var hours = 1; hours <= 5; hours++)
+            autoName(now.subtract(Duration(minutes: hours * 10))),
+        ];
+        final part = AutoBackupFiles.partName(
+          autoName(now.subtract(const Duration(minutes: 5))),
+        );
         const manual = 'keykey-yedek-2026-11-18.keykey';
         folders.files[folder.uri] = {
-          old: Uint8List.fromList([9]),
+          for (final name in olds) name: Uint8List.fromList([9]),
+          part: Uint8List.fromList([7]),
           manual: Uint8List.fromList([8]),
         };
         backups.latest = now.subtract(const Duration(hours: 1));
         open();
         async.elapse(const Duration(seconds: 6));
-        expect(files().keys, unorderedEquals([manual, nowName]));
+        expect(
+          files().keys,
+          unorderedEquals([manual, nowName, ...olds.take(4)]),
+        );
       });
     },
   );
@@ -338,7 +348,7 @@ void main() {
     });
   });
 
-  test('aynı saniyedeki iki yedek ayrı adla yazılır, eskisi budanır', () {
+  test('aynı saniyedeki iki yedek ayrı adla yazılır', () {
     fakeAsync((async) {
       settings.settings = settings.settings.copyWith(lastBackupAt: now);
       final container = open();
@@ -350,7 +360,13 @@ void main() {
       async.flushMicrotasks();
       expect(results, [true, true]);
       expect(folders.writes, 2);
-      expect(files().keys, [autoName(now.add(const Duration(seconds: 1)))]);
+      expect(
+        files().keys,
+        unorderedEquals([
+          nowName,
+          autoName(now.add(const Duration(seconds: 1))),
+        ]),
+      );
     });
   });
 

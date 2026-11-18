@@ -56,20 +56,28 @@ class BackupFolders(private val activity: ComponentActivity) : BackupFolderApi {
     ): Boolean {
         try {
             return withContext(Dispatchers.IO) {
-                val document = create(Uri.parse(folderUri), mimeType, name)
-                when {
-                    document == null -> false
-                    // Aynı adlı dosya varsa sağlayıcı yeni belgeyi "… (1)" diye
-                    // adlandırır; o kopya budanamaz, bu yüzden yazma geri alınır.
-                    renamed(document, name) -> {
+                val tree = Uri.parse(folderUri)
+                // Önce ara adla yazılır ve doğrulanır, sonra son ada çevrilir: süreç
+                // yazarken ölürse yarım dosya yedek adıyla kalmaz. Önceki bir ölümden
+                // kalan aynı adlı ara dosya silinir; yoksa sağlayıcı yeniye başka ad verir.
+                val part = name + PART_SUFFIX
+                deleteNamed(tree, setOf(part))
+                val document =
+                    createVerified(tree, mimeType, part, bytes) ?: return@withContext false
+                when (val final = rename(document, name)) {
+                    // Sağlayıcı yeniden adlandırmayı desteklemiyor: son adla doğrudan yazılır.
+                    null -> {
                         deleteDocument(document)
-                        false
+                        createVerified(tree, mimeType, name, bytes) != null
                     }
-                    writeAll(document, bytes) && matches(document, bytes) -> true
-                    else -> {
-                        deleteDocument(document)
-                        false
-                    }
+                    // Aynı adlı dosya varsa sağlayıcı "… (1)" der; o kopya budanamaz.
+                    else ->
+                        if (renamed(final, name)) {
+                            deleteDocument(final)
+                            false
+                        } else {
+                            true
+                        }
                 }
             }
         } finally {
@@ -78,14 +86,7 @@ class BackupFolders(private val activity: ComponentActivity) : BackupFolderApi {
     }
 
     override suspend fun delete(folderUri: String, names: List<String>): Long =
-        withContext(Dispatchers.IO) {
-            val tree = Uri.parse(folderUri)
-            val wanted = names.toSet()
-            val matching = children(tree)?.filter { it.name in wanted } ?: emptyList()
-            matching
-                .count { deleteDocument(DocumentsContract.buildDocumentUriUsingTree(tree, it.id)) }
-                .toLong()
-        }
+        withContext(Dispatchers.IO) { deleteNamed(Uri.parse(folderUri), names.toSet()).toLong() }
 
     override fun release(folderUri: String) {
         try {
@@ -116,7 +117,7 @@ class BackupFolders(private val activity: ComponentActivity) : BackupFolderApi {
         }
     }
 
-    /** Klasördeki belgeler; klasöre erişilemiyorsa `null`. */
+    /** Klasördeki dosyalar, alt klasörler hariç; klasöre erişilemiyorsa `null`. */
     private fun children(tree: Uri): List<Child>? =
         try {
             val uri =
@@ -127,7 +128,11 @@ class BackupFolders(private val activity: ComponentActivity) : BackupFolderApi {
             resolver
                 .query(
                     uri,
-                    arrayOf(Document.COLUMN_DOCUMENT_ID, Document.COLUMN_DISPLAY_NAME),
+                    arrayOf(
+                        Document.COLUMN_DOCUMENT_ID,
+                        Document.COLUMN_DISPLAY_NAME,
+                        Document.COLUMN_MIME_TYPE,
+                    ),
                     null,
                     null,
                     null,
@@ -137,6 +142,8 @@ class BackupFolders(private val activity: ComponentActivity) : BackupFolderApi {
                         while (cursor.moveToNext()) {
                             val id = cursor.getString(0) ?: continue
                             val name = cursor.getString(1) ?: continue
+                            // Adı yedeğe benzese de klasör silinmez ve sayılmaz.
+                            if (cursor.getString(2) == Document.MIME_TYPE_DIR) continue
                             add(Child(id, name))
                         }
                     }
@@ -144,6 +151,33 @@ class BackupFolders(private val activity: ComponentActivity) : BackupFolderApi {
         } catch (_: RuntimeException) {
             // SecurityException (izin kalkmış), IllegalArgumentException (klasör yok)
             // ve sağlayıcıların attığı diğer çalışma zamanı hataları.
+            null
+        }
+
+    /** Klasörde adı [names]'te olan dosyaları siler; silinenlerin sayısı. */
+    private fun deleteNamed(tree: Uri, names: Set<String>): Int =
+        (children(tree) ?: emptyList())
+            .filter { it.name in names }
+            .count { deleteDocument(DocumentsContract.buildDocumentUriUsingTree(tree, it.id)) }
+
+    /** [name] adıyla belge açar, yazar, geri okuyup karşılaştırır; tutmazsa siler, `null`. */
+    private fun createVerified(tree: Uri, mimeType: String, name: String, bytes: ByteArray): Uri? {
+        val document = create(tree, mimeType, name) ?: return null
+        // Aynı adlı dosya varsa sağlayıcı yeni belgeye "… (1)" der; o da geri alınır.
+        if (!renamed(document, name) && writeAll(document, bytes) && matches(document, bytes)) {
+            return document
+        }
+        deleteDocument(document)
+        return null
+    }
+
+    /** Belgeyi yeniden adlandırır; sağlayıcı desteklemiyorsa ya da olmazsa `null`. */
+    private fun rename(document: Uri, name: String): Uri? =
+        try {
+            DocumentsContract.renameDocument(resolver, document, name)
+        } catch (_: FileNotFoundException) {
+            null
+        } catch (_: RuntimeException) {
             null
         }
 
@@ -207,6 +241,9 @@ class BackupFolders(private val activity: ComponentActivity) : BackupFolderApi {
         }
 
     private companion object {
+        /** Ara dosyanın eki; Dart'taki `AutoBackupFiles.partSuffix` ile aynı olmalı. */
+        const val PART_SUFFIX = ".part"
+
         const val ACCESS =
             Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
     }

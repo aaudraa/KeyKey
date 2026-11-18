@@ -8,8 +8,10 @@
 # Klasör seçicide araç çubuğundaki "Yeni klasör" ile bir test klasörü açılır,
 # seçilir ve izin verilir; belge seçicide "Kaydet"e basılır. Klasör öğelerine
 # dokunulmaz, çünkü Android 11'in belge ekranı onlara gelen adb dokunuşlarını
-# yok sayıyor. Test bitince klasör ve elle yedek denemesi silinir. Seçici dili
-# İngilizce ya da Türkçe olabilir.
+# yok sayıyor. Test klasörü seçince betik içine otomatik yedek adını taşıyan
+# bir alt klasör koyar; test bittiğinde o alt klasör yerinde olmalıdır. Test
+# bitince klasör ve elle yedek denemesi silinir. Seçici dili İngilizce ya da
+# Türkçe olabilir.
 set -u
 export MSYS_NO_PATHCONV=1
 
@@ -68,7 +70,18 @@ flutter test integration_test/auto_backup_test.dart -d "$serial" \
   --dart-define=KEYKEY_SAF_TEST=true --reporter expanded >"$log" 2>&1 &
 test_pid=$!
 started=$SECONDS
+subfolder=
+folder=
 while kill -0 "$test_pid" 2>/dev/null; do
+  # Test klasörü seçtiyse içine adı otomatik yedeğe benzeyen bir alt klasör
+  # ve hazır olduğunu söyleyen işaret dosyası konur.
+  if [[ -z "$subfolder" ]] && line=$(grep -m1 'KKADIM alt-klasor ' "$log"); then
+    folder=$(device shell "find /sdcard/ -maxdepth 3 -type d -name '$name' 2>/dev/null" | tr -d '\r' | head -1)
+    if [[ -n "$folder" ]]; then
+      subfolder=$(echo "$line" | sed -E 's/.*KKADIM alt-klasor ([^ ]+).*/\1/' | tr -d '\r')
+      device shell "mkdir -p '$folder/$subfolder' && touch '$folder/kk-hazir.txt'"
+    fi
+  fi
   if (( SECONDS - started >= limit )); then
     echo "ZAMAN AŞIMI: test $limit saniyede bitmedi." >&2
     kill "$test_pid" 2>/dev/null
@@ -88,6 +101,14 @@ wait "$test_pid"
 status=$?
 
 grep -E 'KKADIM|KKSONUC|Some tests failed|All tests passed|Expected|Actual' "$log" | tail -20
+if [[ -n "$subfolder" ]]; then
+  if device shell "[ -d '$folder/$subfolder' ]"; then
+    echo "Alt klasör yerinde."
+  else
+    echo "HATA: alt klasör silinmiş: $subfolder" >&2
+    status=1
+  fi
+fi
 folder=$(device shell "find /sdcard/ -maxdepth 3 -type d -name '$name*' 2>/dev/null" | tr -d '\r' | head -1)
 echo "Klasör: ${folder:-yok}; içinde: $( [[ -n "$folder" ]] && device shell ls "$folder" | tr -d '\r' | tr '\n' ' ')"
 cleanup
