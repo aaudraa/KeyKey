@@ -77,6 +77,14 @@ final class VaultHeader {
   final WrappedKey passwordSlot;
   final WrappedKey recoverySlot;
 
+  /// Kurtarma yuvası değiştirilmiş kopya; diğer alanlar aynı kalır.
+  VaultHeader withRecoverySlot(WrappedKey slot) => VaultHeader(
+    vaultId: vaultId,
+    kdf: kdf,
+    passwordSlot: passwordSlot,
+    recoverySlot: slot,
+  );
+
   String toJsonString() => jsonEncode({
     'version': currentVersion,
     'vaultId': base64.encode(vaultId),
