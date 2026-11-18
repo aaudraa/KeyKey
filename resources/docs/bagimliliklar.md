@@ -239,6 +239,8 @@ Bu denetimde güncellenenler: `flutter_riverpod` 3.4.3 → 3.5.0, `sqlite3` 3.9.
 
 1.0'dan sonraki bakımda (2026-11-16) güncellenenler: `drift` 2.35.3 → 2.35.4, `go_router` 18.1.3 → 18.1.4, `flutter_zxing` 3.1.0 → 3.1.1, `pigeon` 29.1.1 → 29.2.0 (üretilen Kotlin köprüsünde enum değeri artık sıra numarasıyla bulunuyor; KeyKey'in üç enum'unda değerler sıra numarasıyla aynı) ve bunlarla gelen dolaylı paketler; Gradle 9.8.2 → 9.9.0, Android eklentisi 9.5.0 → 9.5.1, `actions/setup-java` 6.1.0 → 6.2.0.
 
+2026-11-18'deki bakımda `pigeon` 29.2.0 → 30.0.4 güncellendi. Büyük sürümün kıran değişikliği yalnızca "Native Interop" kaydını etkiliyor; KeyKey'in köprüsü klasik kanallarla çalıştığı için etkilenmiyor. Yeniden üretilen köprüde yalnızca sürüm satırı değişti. Fark: `pigeon` 30 ürettiği Dart dosyasını artık kendisi biçimlendirmiyor, bu yüzden köprü `dart run pigeon --input pigeons/platform_api.dart` ve ardından `dart format lib/core/platform/platform_api.g.dart` ile üretilir; yoksa CI'daki biçim kontrolü takılır.
+
 Bekleyenler:
 
 | Paket | Kullanılan | Son | Neden bekliyor |
@@ -247,7 +249,6 @@ Bekleyenler:
 | `cross_file` | 0.3.5+5 | 0.4.0 | `file_selector` ve `image_picker` henüz 0.4'e izin vermiyor |
 | `material_color_utilities`, `test_api` | 0.13.0, 0.7.12 | 0.13.1, 0.7.15 | Flutter SDK'sı bu sürümlere sabitliyor; Flutter güncellenince gelir |
 | `built_collection` | 5.1.2 | 6.0.0 | Yalnızca kod üretim araçlarında; uygulamaya girmez |
-| `pigeon` | 29.2.0 | 30.0.3 | Büyük sürüm; köprü kodu yeniden üretilip ayrıca denenmeli. Yalnızca kod üretiminde, uygulamaya üretilen kod girer |
 
 ## Bilinen açıklar
 
