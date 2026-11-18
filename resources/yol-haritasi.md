@@ -2,7 +2,7 @@
 
 KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-18 · **Şu anki faz:** 12, otomatik yedek; Faz 10 bitti, [1.1.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.1.0) yayında; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
+**Son güncelleme:** 2026-11-18 · **Şu anki faz:** yok, Faz 12 bitti; [1.2.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.2.0) otomatik yedekle yayında; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
 
 > [!IMPORTANT]
 > **KeyKey 1.0 yayında.** Projenin kendi güvenlik denetimi tamamlandı, ama bağımsız bir denetim yapılmadı. Şifreli yedeğini düzenli al ve telefonun dışında da sakla.
@@ -25,7 +25,7 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 | 9 | 1.0 yayını | M | 8 | `faz/9-yayin` | Tamamlandı |
 | 10 | F-Droid ve Obtainium | M | 9 | `faz/10-f-droid` | Tamamlandı |
 | 11 | Kullanıcı gözüyle iyileştirmeler | M | 10 | `faz/11-kullanici-gozuyle` | Tamamlandı |
-| 12 | Otomatik yedek | M | 11 | `faz/12-otomatik-yedek` | Kodda bitti; telefon denemesi bekliyor |
+| 12 | Otomatik yedek | M | 11 | `faz/12-otomatik-yedek` | Tamamlandı (1.2.0) |
 
 Büyüklük göreli iş miktarını gösterir, takvim sözü değildir. Faz 4 ve 5 aynı anda ilerleyebilir. İlerlemeyi [milestone'lardan](https://github.com/aaudraa/KeyKey/milestones) da izleyebilirsin.
 
@@ -548,7 +548,7 @@ Proje sahibi 2026-11-18'de sıradaki işi bana bıraktı; "1.0 sonrası" listesi
 
 Testler: 1439 birim ve arayüz testi. Gerçek Storage Access Framework testi ([`auto-backup-device-test.sh`](scripts/auto-backup-device-test.sh)) Android 17 ve 11 emülatörlerinde geçti, iki emülatörde de bütün entegrasyon testleri yeşil (2026-11-18 gecesi, son düzeltmelerden sonra). Sürüm `1.2.0+6` oldu.
 
-Telefon denemesi ve yayın proje sahibini bekliyor. Telefondaki KeyKey artık yayın anahtarıyla imzalı, bu yüzden deneme APK'sı onun üstüne kurulamaz. Deneme ya yayından sonra Obtainium güncellemesiyle yapılır ya da ayrı paket adlı bir deneme derlemesiyle.
+1.2.0 olarak yayımlandı (2026-11-18). Telefondaki KeyKey yayın anahtarıyla imzalı ve Obtainium'la kurulu; telefon denemesi Obtainium güncellemesinden sonra yapılır.
 
 **Bitti sayılması için:** kayıt değişince seçilen klasörde doğrulanmış bir yedek oluşuyor ve geri yükleme ekranıyla açılıyor; budama yalnızca otomatik yedeklere dokunuyor; izin kalkınca hata ayarlarda görünüyor.
 

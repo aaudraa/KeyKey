@@ -2,7 +2,7 @@
 
 KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesinde](docs/yayin.md#sürüm-numarası). `v1.0.0`'dan önceki sürümler fazların sonunu işaretler ve hata ayıklama anahtarıyla imzalıdır; kalıcı bir kurulum için kullanılmamalıdır.
 
-## 1.2.0 (yayımlanmadı): Otomatik yedek
+## 1.2.0 (2026-11-18): Otomatik yedek
 
 Faz 12 ([tasarım](docs/otomatik-yedek.md)).
 
