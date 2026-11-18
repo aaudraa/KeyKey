@@ -24,7 +24,7 @@ KeyKey Android 11 ve üstünde çalışır. Şimdilik yalnızca GitHub'dan dağ�
 1. [Sürümler sayfasından](https://github.com/aaudraa/KeyKey/releases) son sürümün `keykey-<sürüm>.apk` dosyasını indir.
 2. Dosyayı aç. Telefon, tarayıcının ya da dosya uygulamasının uygulama yüklemesine izin vermeni isteyebilir; izin verip kur.
 
-**Güncellemeler için:** [Obtainium](https://github.com/ImranR98/Obtainium) uygulamasına bu deponun adresini (`https://github.com/aaudraa/KeyKey`) eklersen yeni sürüm çıktığında haber verir ve kurar. Telefonda Obtainium kuruluysa [bu bağlantıyla](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22io.github.aaudraa.keykey%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Faaudraa%2FKeyKey%22%2C%22author%22%3A%22aaudraa%22%2C%22name%22%3A%22KeyKey%22%7D) KeyKey'i tek dokunuşla ekleyebilirsin.
+**Güncellemeler için:** [Obtainium](https://github.com/ImranR98/Obtainium) uygulamasına bu deponun adresini (`https://github.com/aaudraa/KeyKey`) eklersen yeni sürüm çıktığında haber verir ve kurar. Telefonda Obtainium kuruluysa [bu bağlantıyla](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22io.github.aaudraa.keykey%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Faaudraa%2FKeyKey%22%2C%22author%22%3A%22aaudraa%22%2C%22name%22%3A%22KeyKey%22%7D) KeyKey'i tek dokunuşla ekleyebilirsin. Obtainium içe aktarmayı onaylamanı ister; eklendikten sonra en son sürüm "Bilinmeyen" görünürse listeyi aşağı çekip yenile.
 
 **İndirdiğin uygulamanın gerçekten KeyKey olduğunu denetlemek için:** [AppVerifier](https://github.com/soupslurpr/AppVerifier) gibi bir uygulamayla KeyKey'in imza özetine bak. Şu değer olmalı:
 

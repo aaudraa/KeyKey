@@ -1,44 +1,37 @@
 # F-Droid başvurusu
 
-KeyKey'i F-Droid ana deposuna eklemek için `fdroid/fdroiddata` deposuna açılacak birleştirme isteği (merge request). Tasarım: [f-droid.md](../docs/f-droid.md). Takip: #119.
+KeyKey'i F-Droid ana deposuna eklemek için `fdroid/fdroiddata` deposuna açılan birleştirme isteği (merge request). Tasarım: [f-droid.md](../docs/f-droid.md).
 
-## Proje sahibinin adımları
+**Durum:** istek açık: [fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995), başlık `New app: KeyKey`, 2026-11-18. Tarif `v1.1.0` (`382671772ea1cf352a4683880bd573bd33319159`). İnceleme ve kabul #130'da izleniyor; başvurunun kendisi #119'du.
 
-1. [GitLab](https://gitlab.com/users/sign_up)'da hesap aç (yoksa).
-2. [`fdroid/fdroiddata`](https://gitlab.com/fdroid/fdroiddata)'yı çatalla (Fork).
-3. Çatalda `io.github.aaudraa.keykey` adında bir dal aç.
-4. Dala `metadata/io.github.aaudraa.keykey.yml` dosyasını ekle: içeriği [`io.github.aaudraa.keykey.yml`](io.github.aaudraa.keykey.yml)'nin aynısı, yalnızca en üstteki Türkçe yorum satırları silinir (fdroiddata'daki dosyalarda yorum olmaz). `commit:` satırı `v1.1.0` etiketinin tam özetini taşımalı; `git rev-parse v1.1.0^{commit}` ile alınır. (`v1.0.1` etiketi var ama o sürüm yayımlanmadı; F-Droid'e giren ilk sürüm 1.1.0.)
-5. Commit mesajı: `New App: io.github.aaudraa.keykey`
-6. Birleştirme isteğini aç: hedef `fdroid/fdroiddata` → `master`, başlık `New App: io.github.aaudraa.keykey`, açıklama aşağıdaki İngilizce metin. "New App" etiketini seç.
-7. Açılan isteğin bağlantısını #119'a yaz. İncelemede gelen soruları birlikte yanıtlarız.
+## Nasıl açıldı
 
-İsteği açınca fdroiddata'nın kendi CI'ı uygulamayı derler ve `fdroid lint` çalıştırır. Bizim yayın iş akışındaki "F-Droid karşılaştırması" aynı derlemeyi önceden yaptığı için bunun geçmesi beklenir.
+1. Proje sahibi GitLab'da hesap açtı (`audrq`) ve [`fdroid/fdroiddata`](https://gitlab.com/fdroid/fdroiddata)'yı kendi ad alanına çatalladı. Çatal herkese açık, yalnızca `master` dalıyla.
+2. GitLab profilinde **commit e-postası** gizli adrese (`…@users.noreply.gitlab.com`) alındı. Yoksa web arayüzünden ya da API'den yapılan commit'ler hesabın e-postasını fdroiddata'nın herkese açık geçmişine yazar. Yazar adı olarak profildeki görünen ad çıkar; proje sahibi bunu istiyor.
+3. Gerisi `glab` (GitLab'ın komut satırı aracı, `winget install GLab.GLab`) ile yapıldı. Proje sahibi `glab auth login --hostname gitlab.com --web` ile tarayıcıdan bir kez yetki verdi; anahtar Windows'un kimlik deposunda.
+4. Çatalda `io.github.aaudraa.keykey` dalı ve `metadata/io.github.aaudraa.keykey.yml` dosyası tek API çağrısıyla açıldı (`POST projects/:id/repository/commits`, `start_branch: master`). Dosya [`io.github.aaudraa.keykey.yml`](io.github.aaudraa.keykey.yml)'nin aynısı, yalnızca en üstteki Türkçe yorum satırları silindi (fdroiddata'daki dosyalarda yorum olmaz). Satır sonu LF. Commit mesajı: `New app: io.github.aaudraa.keykey`.
+5. İstek `fdroid/fdroiddata` → `master` hedefine açıldı. Başlık şablonun istediği biçimde: `New app: KeyKey`. Metin fdroiddata'nın [istek şablonuyla](https://gitlab.com/fdroid/fdroiddata/-/blob/master/.gitlab/merge_request_templates/Default.md) dolduruldu. "Maintainer'ların commit atmasına izin ver" ve "squash" açık.
 
-## Birleştirme isteğinin metni
+## Metnin içeriği
 
-```markdown
-## New App: KeyKey (io.github.aaudraa.keykey)
+İngilizce metnin tamamı istekte. Bölümleri:
 
-KeyKey is an offline password manager and 2FA (TOTP/HOTP) authenticator for Android 11+.
+- Uygulamanın özeti ve Fastlane klasöründen dört ekran görüntüsü.
+- Neden yazıldığı: parolalar, 2FA kodları ve otomatik doldurma tek çevrimdışı kasada, internet izni yok, yaygın uygulamalardan içe aktarma, birebir aynı ve geliştirici imzalı derleme. Başka uygulamalarla kıyas yok.
+- **3 ay kuralı:** uygulamanın yaşı açıkça yazıldı ve istisna istendi (aşağıda).
+- **APK boyutu:** neden 80,8 MB olduğu; isterlerse mimariye göre bölünmüş APK'ya geçileceği.
+- Şablonun kontrol listesi: doğru olan maddeler işaretli. İşaretsizler: 3 ay kuralı, ABI ayrımı ve henüz çalışmamış CI maddeleri; her biri için gerekçe yazılı.
+- İnceleyenlere notlar: birebir aynı derleme ve imza (`Binaries`, `AllowedAPKSigningKeys`, yayın iş akışındaki `apksigcopier compare`), bağımlılıklar, `scanignore` ve `sudo` gerekçeleri.
+- **Yapay zekâ açıklaması:** kodun büyük kısmı bir yapay zekâ asistanıyla (Claude) yazıldı; işi proje sahibi yönetti ve gerçek telefonda denedi; projenin kendi OWASP MASVS denetimi var, bağımsız denetim yok.
 
-* Source: https://github.com/aaudraa/KeyKey (GPL-3.0-only)
-* No INTERNET permission, no trackers, no ads, no proprietary dependencies (no Google Play Services, no ML Kit, no Firebase). QR codes are read with zxing-cpp (flutter_zxing).
-* Native code is built from source during the build: libsodium (from the source archive inside the `sodium` Dart package, via its build hook) and SQLite (from the amalgamation in the repo). Apart from pub.dev packages (pinned by `pubspec.lock` hashes), Gradle dependencies from Google Maven / Maven Central and the Flutter engine artifacts, nothing is downloaded at build time.
-* Fastlane metadata (en-US, tr-TR) is in the repo.
+## Bilinen engeller
 
-### Reproducible build, developer signature
+- **3 ay kuralı.** F-Droid'in [kabul politikası](https://f-droid.org/docs/Inclusion_Policy) uygulamanın en az 3 aydır geliştiriliyor olmasını istiyor (Quality Control, 6. madde; şablon özellikle bu maddeye dikkat çekiyor). İstisnalar: kanıtlanmış bir kullanıcı kitlesi, geliştiricinin F-Droid'de başka uygulaması olması, yalnızca bir etkinlik için yapılmış olması. KeyKey'in ilk commit'i 2026-11-04 ve istisnalara uymuyor. Proje sahibi buna rağmen şimdi başvurmayı ve istisna istemeyi seçti. Kabul edilmezse istek **2027-02-04**'e kadar bekler.
+- **APK boyutu.** Evrensel APK 80,8 MB: arm64-v8a, armeabi-v7a ve x86_64 için ayrı ayrı yaklaşık 26 MB yerel kütüphane, sıkıştırılmamış. Şablon büyük APK'lar için mimariye göre bölünmüş APK istiyor. Bölmek yayın iş akışını, tarifi (`VercodeOperation`, mimari başına `Builds` bloğu) ve Obtainium ayarını değiştirir; istenirse ayrı faz olur.
+- **CI.** fdroiddata'nın iş akışı, isteği açanın çatalında çalışır. GitLab hesap doğrulaması istediği için çalışmadı ("The pipeline failed due to the user not being verified"). Şablon telefon numarası ya da kart verilmemesini, isteğe not düşülmesini söylüyor; not metinde var. Aynı tarif kendi CI'ımızda `fdroid build` ve `fdroid lint`'ten geçiyor.
 
-The recipe uses `Binaries:` and `AllowedAPKSigningKeys:` so F-Droid can publish the upstream-signed APK.
+## İstek açıkken
 
-* Upstream release builds are made in `registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie`, in `/home/vagrant/build/io.github.aaudraa.keykey`, with the same prebuild/build steps as this recipe, then signed with `apksigner` (v2+v3, alignment preserved).
-* Our release workflow also runs `fdroid build` on the same commit and checks the result with `apksigcopier compare` before the release is published: https://github.com/aaudraa/KeyKey/blob/main/.github/workflows/yayin.yml
-* Signing certificate SHA-256: `66ff7b5c0c009a8530d0a55dd1d80a3af35de48bd0667c456a0cf86a6d1129a0`
-
-### Notes for reviewers
-
-* `scanignore`: the libsodium source tarball shipped inside the `sodium` package (`.pub-cache/hosted/pub.dev/sodium-*/3rdparty/libsodium-*-stable.tar.gz`). The package's build hook compiles libsodium from it with the NDK; it is source, not a binary.
-* `sudo: apt-get install -y make` is needed by libsodium's configure/make.
-* **AI disclosure:** much of KeyKey's code was written with an AI coding assistant (Claude); the project owner directed the work and tested it on a real phone. The project ran its own OWASP MASVS-based security review (documented in the repo) but has not been independently audited. We say this openly in the README and the app description.
-
-Thanks for reviewing!
-```
+- **Yeni sürüm çıkarsa:** istek birleşmeden önce tarifte yalnızca son sürüm durmalı. `Builds` altındaki blok yeni sürümün `versionName`, `versionCode` ve tam commit özetiyle (`git rev-parse vX.Y.Z^{commit}`) **değiştirilir**, yenisi eklenmez; `CurrentVersion` ve `CurrentVersionCode` de güncellenir. Aynı değişiklik repodaki [`io.github.aaudraa.keykey.yml`](io.github.aaudraa.keykey.yml)'ye de yapılır. Çataldaki dala yeni commit atılır (`glab api --method POST projects/audrq%2Ffdroiddata/repository/commits`, `action: update`); dal yeniden yazılmaz, çakışma yoksa rebase yapılmaz.
+- **İnceleme soruları:** istekteki yorumlar birlikte yanıtlanır. Yanıtlar İngilizce.
+- **Kabulden sonra:** README'ye F-Droid bağlantısı eklenir (#130).
