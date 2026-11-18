@@ -696,6 +696,14 @@ void main() {
 
     Finder themeRow() => find.widgetWithText(ListTile, 'Tema');
 
+    /// Satırı listenin ortasına getirir; altta yüzen menünün arkasında
+    /// kalmasın.
+    Future<void> showThemeRow(WidgetTester tester) async {
+      await tester.scrollUntilVisible(themeRow(), 200);
+      Scrollable.ensureVisible(tester.element(themeRow()), alignment: 0.5);
+      await tester.pumpAndSettle();
+    }
+
     Finder option(String name) => find.descendant(
       of: find.byType(BottomSheet),
       matching: find.widgetWithText(ListTile, name),
@@ -708,7 +716,7 @@ void main() {
       tester,
     ) async {
       await pumpWithTheme(tester);
-      await tester.scrollUntilVisible(themeRow(), 200);
+      await showThemeRow(tester);
       expect(find.widgetWithText(KkSection, 'Görünüm'), findsOneWidget);
       expect(
         find.descendant(of: themeRow(), matching: find.text('Sistem')),
@@ -720,7 +728,7 @@ void main() {
       tester,
     ) async {
       await pumpWithTheme(tester);
-      await tester.scrollUntilVisible(themeRow(), 200);
+      await showThemeRow(tester);
       await tester.tap(themeRow());
       await tester.pumpAndSettle();
       for (final name in ['Sistem', 'Açık', 'Koyu']) {
@@ -747,7 +755,7 @@ void main() {
 
     testWidgets('pencere seçmeden kapatılırsa tema değişmez', (tester) async {
       await pumpWithTheme(tester);
-      await tester.scrollUntilVisible(themeRow(), 200);
+      await showThemeRow(tester);
       await tester.tap(themeRow());
       await tester.pumpAndSettle();
       expect(find.byType(BottomSheet), findsOneWidget);

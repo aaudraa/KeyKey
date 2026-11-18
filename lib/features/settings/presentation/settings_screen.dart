@@ -197,6 +197,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     trailing: const Icon(Icons.chevron_right_rounded),
                     onTap: () => context.push(AppRoutes.changePassword),
                   ),
+                  ListTile(
+                    leading: const KkIconBox(icon: Icons.key_rounded),
+                    title: Text(l10n.newRecoveryTitle),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () => context.push(AppRoutes.newRecoveryKey),
+                  ),
                   if (_support == BiometricSupport.available)
                     KkSwitchTile(
                       infoTitle: l10n.settingsBiometric,
