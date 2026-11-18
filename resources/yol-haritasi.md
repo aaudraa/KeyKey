@@ -2,7 +2,7 @@
 
 KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-18 · **Şu anki faz:** yok, Faz 13 bitti; 1.2.0 (otomatik yedek) ve 1.3.0 (yeni kurtarma anahtarı) etiketlendi, GitHub'da yayımlanmaları proje sahibinin onayını bekliyor; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
+**Son güncelleme:** 2026-11-19 · **Şu anki faz:** yok, Faz 13 bitti; [1.2.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.2.0) (otomatik yedek) ve [1.3.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.3.0) (yeni kurtarma anahtarı) yayında; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
 
 > [!IMPORTANT]
 > **KeyKey 1.0 yayında.** Projenin kendi güvenlik denetimi tamamlandı, ama bağımsız bir denetim yapılmadı. Şifreli yedeğini düzenli al ve telefonun dışında da sakla.
@@ -549,7 +549,7 @@ Proje sahibi 2026-11-18'de sıradaki işi bana bıraktı; "1.0 sonrası" listesi
 
 Testler: 1439 birim ve arayüz testi. Gerçek Storage Access Framework testi ([`auto-backup-device-test.sh`](scripts/auto-backup-device-test.sh)) Android 17 ve 11 emülatörlerinde geçti, iki emülatörde de bütün entegrasyon testleri yeşil (2026-11-18 gecesi, son düzeltmelerden sonra). Sürüm `1.2.0+6` oldu.
 
-1.2.0 olarak etiketlendi (2026-11-18); yayımlanması proje sahibinin onayını bekliyor (GitHub Actions → yayın işi → "Review deployments"). Telefondaki KeyKey yayın anahtarıyla imzalı ve Obtainium'la kurulu; telefon denemesi Obtainium güncellemesinden sonra yapılır.
+1.2.0 olarak yayımlandı (2026-11-18). Telefondaki KeyKey yayın anahtarıyla imzalı ve Obtainium'la kurulu; telefon denemesi Obtainium güncellemesinden sonra yapılır.
 
 **Bitti sayılması için:** kayıt değişince seçilen klasörde doğrulanmış bir yedek oluşuyor ve geri yükleme ekranıyla açılıyor; budama yalnızca otomatik yedeklere dokunuyor; izin kalkınca hata ayarlarda görünüyor.
 
@@ -565,7 +565,7 @@ Proje sahibi 2026-11-18 gecesi kalan işleri soru sormadan yapmamı istedi. "1.0
 - [x] Son gözden geçirme
 - [ ] Telefonda deneme (proje sahibiyle): yenileme, eski anahtarla kilit ekranında deneme
 
-**Durum (2026-11-18, gece):** Kodda bitti, 1.3.0 olarak etiketlendi. Uygulama sırasında verilen kararlar:
+**Durum (2026-11-19):** 1.3.0 olarak yayımlandı; telefon denemesi Obtainium güncellemesinden sonra yapılır. Uygulama sırasında verilen kararlar:
 
 - Yeni anahtar ekranında "Kopyala" yok. Kasa açıkken başka uygulamaya geçmek kasayı hemen kilitler; kopyalayıp not uygulamasına yapıştıran kullanıcı, yenileme sessizce iptal olduğu halde geçersiz bir anahtarı saklamış olurdu. Son gözden geçirme bunu buldu.
 - Anahtar doğrulanmadan kasa kilitlenirse kilit açılınca ayarlarda "kaydedilmedi, eski anahtar geçerli" uyarısı çıkar; uyarıdan yenileme yeniden başlatılabilir. İşaret yalnızca bellekte tutulur: uygulama kapanırsa uyarı çıkmaz, ama diske de bir şey yazılmamıştır.
