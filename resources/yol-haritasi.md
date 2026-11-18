@@ -531,7 +531,7 @@ Proje sahibi 2026-11-18'de sıradaki işi bana bıraktı; "1.0 sonrası" listesi
 
 - [x] Klasör seçme ve kalıcı izin (`ACTION_OPEN_DOCUMENT_TREE`), klasöre yazma, listeleme ve silme köprüsü
 - [x] Ayar kaydı sürüm 5: klasörün adresi ve adı
-- [x] Dosya adı ve budama kuralı: her günün en yenisi, en yeni 14 gün; elle alınan yedeklere dokunulmaz
+- [x] Dosya adı ve budama kuralı: en yeni 5 dosya ve en yeni 14 günün her birinin en yenisi; adda cihaz kimliği; elle alınan yedeklere ve başka cihazların yedeklerine dokunulmaz
 - [x] Otomatik yedek denetleyicisi: kayıt değişince 5 sn sonra, kasa açılınca, ana parola değişince; tek iş; hata durumu
 - [x] Ayarlarda "Otomatik yedek" satırı, açıklama penceresi, klasör değiştirme ve kapatma; yedek kartında durum
 - [x] Güvenlik tasarımı, kılavuz ve değişiklik günlüğü
@@ -542,8 +542,11 @@ Proje sahibi 2026-11-18'de sıradaki işi bana bıraktı; "1.0 sonrası" listesi
 
 - Ayarlardaki satır diğer anahtarlar gibi davranıyor: dokununca açılıp kapanıyor. Klasörü değiştirme ve hemen yedekleme ayrı satırlarda.
 - Android, seçiciden gelen geçici izni etkinlik kapanana kadar tutuyor; denetleyici bu yüzden yazmadan önce kalıcı izne bakıyor.
+- Son gözden geçirmeden sonra (taze bir gözden geçirici, kritik bulgu yok) dosya adına cihaz kimliği eklendi: aynı klasörü kullanan iki telefon birbirinin yedeğini budamaz. Kimlik kasanın dışında, rastgele; yeniden kurulumda eski kimliğin dosyaları elle silinir.
+- Aynı saniyedeki iki yedek ayrı ad alıyor, sağlayıcının "… (1)" kopyası geri alınıyor; yedek önce `.part` ara adıyla yazılıyor; en yeni 5 yedek hep kalıyor; alt klasörlere dokunulmuyor.
+- Ayar değişiklikleri sırayla yazılıyor; kasanın yerine yedek konunca bu cihazın klasörü korunuyor; kurtarma anahtarıyla yeni parola ve birleştirerek geri yükleme de hemen yedekliyor.
 
-Testler: 1418 birim ve arayüz testi. Gerçek Storage Access Framework testi ([`auto-backup-device-test.sh`](scripts/auto-backup-device-test.sh)) Android 17 ve 11 emülatörlerinde geçti, iki emülatörde de bütün entegrasyon testleri yeşil. Sürüm `1.2.0+6` oldu.
+Testler: 1439 birim ve arayüz testi. Gerçek Storage Access Framework testi ([`auto-backup-device-test.sh`](scripts/auto-backup-device-test.sh)) Android 17 ve 11 emülatörlerinde geçti, iki emülatörde de bütün entegrasyon testleri yeşil (2026-11-18 gecesi, son düzeltmelerden sonra). Sürüm `1.2.0+6` oldu.
 
 Telefon denemesi ve yayın proje sahibini bekliyor. Telefondaki KeyKey artık yayın anahtarıyla imzalı, bu yüzden deneme APK'sı onun üstüne kurulamaz. Deneme ya yayından sonra Obtainium güncellemesiyle yapılır ya da ayrı paket adlı bir deneme derlemesiyle.
 

@@ -61,15 +61,19 @@ Aynı anda tek yedek yazılır. Yazarken yeni bir değişiklik gelirse iş bitin
 
 1. Yedek, elle yedekteki gibi kasa açıkken bellekte üretilir (`BackupService.create`).
 2. Klasörde yeni bir dosya açılır: `keykey-otomatik-2026-11-18-153012-a1b2c3.keykey`. Arayüz İngilizceyse önek `keykey-auto`. Sondaki altı karakter bu kurulumun **cihaz kimliğidir** (aşağıda). Zaman saniyeye kadar yazılır; aynı saniyeye iki yedek düşerse ikincisi bir saniye sonrasının adını alır.
-3. Sağlayıcı aynı adlı bir dosya bulup yeni dosyaya başka bir ad verdiyse ("… (1).keykey") yeni dosya silinir ve yazma başarısız sayılır; budanamayacak bir kopya kalmaz. Baytlar yazılır, geri okunur ve karşılaştırılır. Tutmazsa yeni dosya silinmeye çalışılır, eski yedeklere dokunulmaz. Baytlar her durumda bellekte sıfırlanır.
-4. Başarılıysa son yedek zamanı ayar kaydına yazılır. Kart ve hatırlatıcı bunu kullanır. Ardından eski otomatik yedekler budanır.
+3. Önce ara adla yazılır: son adın sonuna `.part` eklenir. Süreç yazarken ölürse yarım dosya yedek adıyla kalmaz, kalıba uymadığı için yedek sayılmaz ve bir sonraki budamada silinir. Ara dosya doğrulanınca son adına çevrilir. Sağlayıcı yeniden adlandırmayı desteklemiyorsa ara dosya silinir ve son adla doğrudan yazılır.
+4. Sağlayıcı aynı adlı bir dosya bulup yeni dosyaya başka bir ad verdiyse ("… (1).keykey") yeni dosya silinir ve yazma başarısız sayılır; budanamayacak bir kopya kalmaz. Baytlar yazılır, geri okunur ve karşılaştırılır. Tutmazsa yeni dosya silinmeye çalışılır, eski yedeklere dokunulmaz. Baytlar her durumda bellekte sıfırlanır.
+5. Başarılıysa son yedek zamanı ayar kaydına yazılır. Kart ve hatırlatıcı bunu kullanır. Ardından eski otomatik yedekler budanır.
 
 ### Budama
 
 - Yalnızca adı otomatik yedek kalıbına tam uyan dosyalar dikkate alınır: `keykey-otomatik-` ya da `keykey-auto-` öneki, `YYYY-AA-GG-SSddss` zamanı, altı küçük onaltılık karakterlik cihaz kimliği ve `.keykey` uzantısı. Elle alınan yedekler (`keykey-yedek-…`) ve başka her dosya dokunulmaz kalır.
 - Yalnızca **bu kurulumun** cihaz kimliğini taşıyan dosyalar budanır ve sayılır. Aynı eşitleme klasörünü kullanan iki telefon, ya da eski ve yeni telefon, birbirinin yedeğini silmez.
 - **Cihaz kimliği** kasanın dışında, uygulamanın kendi klasöründeki `auto_backup_device` dosyasında durur. İlk açılışta rastgele üretilir. Gizli değildir, yedekle taşınmaz. Uygulama silinip yeniden kurulunca yenisi üretilir; eski kimliğin dosyaları budanmaz, kullanıcı elle siler.
-- Her günün en yeni dosyası kalır, aynı günün eskileri silinir.
+- En yeni 5 dosya, günü ne olursa olsun kalır. Aynı gün içinde yanlışlıkla yapılan bir düzenlemeden önceki hal böylece hemen budanmaz.
+- Bunların dışında her günün en yeni dosyası kalır, aynı günün eskileri silinir.
+- Bu cihazın yarım kalmış ara dosyaları (`….keykey.part`) da silinir. Yazmalar sırayla yapıldığı için budama sırasında var olan ara dosya eskidir.
+- Klasörün alt klasörlerine, adları yedeğe benzese de dokunulmaz.
 - En yeni 14 gün kalır, daha eskileri silinir. Kayıt değişmeyen günlerde yedek yazılmadığı için bu, takvimde 14 günden uzun bir geçmiş demek.
 - Budama ancak yeni yedek doğrulandıktan sonra çalışır. Silme başarısız olursa yedek yine başarılı sayılır, bir sonraki yedekte yeniden denenir.
 
@@ -108,7 +112,7 @@ Ayarlar → Yedek ve aktarım grubunun başında bir **Otomatik yedek** satırı
 - Biçim, anahtar ve şifreleme elle yedekle aynı. Kripto çekirdeğinde değişiklik yok.
 - Yedek yalnızca kasa açıkken üretilir. Arka planda çalışan bir iş ve kasa dışında saklanan bir anahtar yok.
 - Seçilen klasör başka uygulamalarca okunabilir; eşitleme uygulaması da dosyayı başka cihazlara taşır. Elle alınıp Drive'a konan yedek için de durum aynı. Dosyayı ele geçiren biri ana parolayı çevrimdışı deneyebilir; Argon2id bunu yavaşlatır. Fark şu: otomatik yedekle böyle kopyaların sayısı artar. Kullanıcıya açıklama penceresinde söylenir.
-- **Eski parola:** her yedek alındığı andaki parolayla açılır. Parola değişince yeni yedekler yeni parolayla yazılır. Klasördeki eski yedekler budanana kadar, yani 14 değişiklik günü boyunca, eski parolayla açılmaya devam eder. Parola sızdığı için değiştirildiyse klasördeki eski yedekler elle silinmeli. Parola değiştirme ekranı bunu söyler.
+- **Eski parola:** her yedek alındığı andaki parolayla açılır. Parola değişince yeni yedekler yeni parolayla yazılır. Klasördeki eski yedekler budanana kadar, yani en az 14 değişiklik günü boyunca, eski parolayla açılmaya devam eder. Parola sızdığı için değiştirildiyse klasördeki eski yedekler elle silinmeli. Parola değiştirme ekranı bunu söyler.
 - Kalıcı izin yalnızca seçilen klasör için alınır, kapatınca bırakılır.
 
 ## Denemeler
@@ -122,7 +126,7 @@ Ayarlar → Yedek ve aktarım grubunun başında bir **Otomatik yedek** satırı
 
 1. Klasör seçicide yeni bir klasör açılıp seçilir ve izin verilir.
 2. Gerçek kasanın yedeği klasöre yazılır, geri okunarak doğrulanır, geri yükleme ekranının yoluyla parolayla açılır.
-3. Aynı günün eski dosyası budanır.
+3. Ara dosya kalmaz; aynı adla ikinci yazmada sağlayıcının "… (1)" kopyası geri alınır; adı yedeğe benzeyen bir alt klasör listelenmez ve silinmez; budama kuralı gerçek dosya adlarıyla denenir ve bir dosya silinir.
 4. Elle yedek, ortak dosyaya taşınan seçici yardımcısıyla kaydedilir.
 5. Kalıcı izin bırakılınca `hasAccess` `false` döner.
 

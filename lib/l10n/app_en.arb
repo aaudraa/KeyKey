@@ -1686,7 +1686,7 @@
       }
     }
   },
-  "autoBackupIntro": "While your vault is open, KeyKey writes an encrypted backup to the folder you choose whenever an entry changes. It is the same as a backup you make yourself: it opens with the master password or recovery key you had when it was made. The last backup of each day is kept for the newest 14 days; older ones are deleted. Backups you make yourself are never touched.\n\nSo that your backups don't disappear with your phone, choose a folder that a sync app such as Syncthing or Nextcloud copies elsewhere. Google Drive may not appear in the folder list. KeyKey itself never goes online.\n\nEvery backup in the folder is another copy on which someone who gets the file could try to guess your master password; use a strong one.",
+  "autoBackupIntro": "While your vault is open, KeyKey writes an encrypted backup to the folder you choose whenever an entry changes. It is the same as a backup you make yourself: it opens with the master password or recovery key you had when it was made. The newest 5 backups and the last backup of each of the newest 14 days are kept; older ones are deleted. Backups you make yourself are never touched.\n\nSo that your backups don't disappear with your phone, choose a folder that a sync app such as Syncthing or Nextcloud copies elsewhere. Google Drive may not appear in the folder list. KeyKey itself never goes online.\n\nEvery backup in the folder is another copy on which someone who gets the file could try to guess your master password; use a strong one.",
   "@autoBackupIntro": {
     "description": "Explanation shown before choosing the automatic backup folder, and behind the (i) button."
   },

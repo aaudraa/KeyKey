@@ -357,7 +357,7 @@
   "autoBackupTitle": "Otomatik yedek",
   "autoBackupOff": "Kapalı. Kasa değişince seçtiğin klasöre şifreli yedek yazar.",
   "autoBackupOn": "{folder} klasörüne yazıyor",
-  "autoBackupIntro": "Kasa açıkken bir kayıt değiştiğinde KeyKey, seçtiğin klasöre şifreli bir yedek yazar. Bu yedek elle aldığın yedekle aynıdır: alındığı andaki ana parolanla ya da kurtarma anahtarınla açılır. Her günün son yedeği en yeni 14 gün için tutulur, daha eskileri silinir. Elle aldığın yedeklere dokunulmaz.\n\nTelefon kaybolursa yedeğin de gitmemesi için Syncthing ya da Nextcloud gibi bir eşitleme uygulamasının klasörünü seç. Google Drive klasör listesinde çıkmayabilir. KeyKey'in kendisi internete çıkmaz.\n\nKlasördeki her yedek, dosyayı ele geçiren birinin ana parolanı deneyebileceği bir kopya demektir; güçlü bir ana parola kullan.",
+  "autoBackupIntro": "Kasa açıkken bir kayıt değiştiğinde KeyKey, seçtiğin klasöre şifreli bir yedek yazar. Bu yedek elle aldığın yedekle aynıdır: alındığı andaki ana parolanla ya da kurtarma anahtarınla açılır. En yeni 5 yedek ve son 14 günün her birinin son yedeği tutulur, daha eskileri silinir. Elle aldığın yedeklere dokunulmaz.\n\nTelefon kaybolursa yedeğin de gitmemesi için Syncthing ya da Nextcloud gibi bir eşitleme uygulamasının klasörünü seç. Google Drive klasör listesinde çıkmayabilir. KeyKey'in kendisi internete çıkmaz.\n\nKlasördeki her yedek, dosyayı ele geçiren birinin ana parolanı deneyebileceği bir kopya demektir; güçlü bir ana parola kullan.",
   "autoBackupChooseFolder": "Klasör seç",
   "autoBackupCancel": "Vazgeç",
   "autoBackupChangeFolder": "Klasörü değiştir",

@@ -145,7 +145,7 @@ KeyKey verilerini hiçbir yere göndermediği için **telefon kaybolursa ya da b
 **Otomatik yedek:** Ayarlar → Yedek ve aktarım → **Otomatik yedek**'i aç ve bir klasör seç. Kasa açıkken bir kayıt değişince KeyKey o klasöre kendiliğinden şifreli bir yedek yazar.
 
 - Yedekler elle aldığın yedekle aynıdır ve aynı yolla geri yüklenir.
-- Her günün son yedeği en yeni 14 gün için tutulur, daha eskileri silinir. Elle aldığın yedeklere dokunulmaz.
+- En yeni 5 yedek ve son 14 günün her birinin son yedeği tutulur, daha eskileri silinir. Elle aldığın yedeklere dokunulmaz.
 - Aynı klasörü iki telefonda kullanabilirsin; dosya adının sonundaki altı karakter telefonu ayırır ve her telefon yalnızca kendi yedeklerini siler. KeyKey'i silip yeniden kurarsan eski kurulumun otomatik yedekleri silinmez; artık gerekmiyorlarsa elle silebilirsin.
 - Telefon kaybolduğunda yedeklerin de gitmemesi için Syncthing ya da Nextcloud gibi bir eşitleme uygulamasının klasörünü seç. Google Drive klasör listesinde çıkmayabilir; Drive'a elle yedek almaya devam edebilirsin.
 - Android 11 ve üstünde depolamanın kökü ve İndirilenler'in kendisi seçilemez; içinde bir klasör aç (seçicideki **Yeni klasör**) ve onu seç.
