@@ -14,8 +14,8 @@ Bu dosya yalnızca kuralları içerir. Durum, plan ve kararların tek kaynağı 
 ## Birleştirme
 
 - `main`'e PR ancak faz tamamen çalışınca açılır.
-- Her PR yalnızca kullanıcı o PR için açıkça onay verince birleştirilir.
-- Birleştirmeden önce kullanıcıya GitHub'daki "Keep my email addresses private" ayarının açık olduğunu sor.
+- Kullanıcı PR'ları önceden onayladı: CI ve kontroller yeşilse PR ayrıca sorulmadan birleştirilir. Kullanıcıya verilen raporda hangi PR'ların birleştiği yazılır.
+- GitHub'daki "Keep my email addresses private" ayarı proje boyunca açık; birleştirmeden önce yeniden sorma.
 - Yalnızca şu komutla birleştir, başarısız olursa düz birleştirmeye dönme: `gh pr merge --merge --author-email 184309740+aaudraa@users.noreply.github.com`
 
 ## Depo düzeni
