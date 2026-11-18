@@ -32,7 +32,7 @@ KeyKey Android 11 ve üstünde çalışır.
   ```
 
 - **Obtainium:** [Obtainium'a ekle](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22io.github.aaudraa.keykey%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Faaudraa%2FKeyKey%22%2C%22author%22%3A%22aaudraa%22%2C%22name%22%3A%22KeyKey%22%7D); yeni sürümler GitHub'dan kendiliğinden gelir.
-- **F-Droid:** Başvuru yapıldı, F-Droid ekibinin incelemesinde ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)). Kabul edilirse F-Droid KeyKey'i kaynaktan derleyip bizim imzamızla dağıtacak; üç yoldan kurulan uygulama birbirinin üstüne güncellenir.
+- **F-Droid:** Şimdilik yok. İlk başvuru 2026-11-18'de kabul edilmedi ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)): F-Droid en az 3 aylık geliştirme istiyor ve KeyKey'i benzerlerinden yeterince farklı bulmadı. Derleme F-Droid'in aracıyla birebir aynı çıkmaya devam ediyor; yeniden başvurmak proje sahibinin kararı.
 
 Eski bir `v0.x` deneme sürümü kullanıyorsan önce [geçiş adımlarını](resources/docs/yayin.md#eski-sürümlerden-geçiş) oku. İlk kasa, otomatik doldurma, 2FA, yedekleme ve bilinen sınırlar ekran görüntüleriyle [kullanım kılavuzunda](resources/docs/kullanim.md).
 
