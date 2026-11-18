@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +11,7 @@ import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/vault/vault_service.dart';
+import 'package:keykey/features/backup/application/auto_backup_controller.dart';
 import 'package:keykey/features/backup/presentation/backup_section.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/new_password_fields.dart';
@@ -74,6 +77,11 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       if (!mounted) return;
       switch (attempt) {
         case PasswordAccepted():
+          // En yeni otomatik yedek yeni parolayla açılsın; kapalıysa bir şey
+          // yapmaz.
+          unawaited(
+            ref.read(autoBackupControllerProvider.notifier).backUpNow(),
+          );
           // Parola değişti; not açıkken düğme dönmesin.
           setState(() {
             _busy = false;

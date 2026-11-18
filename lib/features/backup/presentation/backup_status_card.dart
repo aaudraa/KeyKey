@@ -8,6 +8,7 @@ import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/app/ui/kk_section.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
+import 'package:keykey/features/backup/application/auto_backup_controller.dart';
 import 'package:keykey/features/backup/application/backup_reminder.dart';
 import 'package:keykey/features/backup/application/backup_service.dart';
 import 'package:keykey/features/backup/presentation/backup_section.dart';
@@ -139,6 +140,22 @@ class _BackupStatusCardState extends ConsumerState<BackupStatusCard>
       final days = _daysSince(last, ref.watch(backupClockProvider)());
       status = days == 0 ? l10n.backupStatusToday : l10n.backupStatusDays(days);
     }
+    final folder = ref.watch(settingsControllerProvider)?.autoBackupFolder;
+    final autoFailed = ref.watch(autoBackupControllerProvider).problem != null;
+    final Widget? autoLine = folder == null
+        ? null
+        : Text(
+            autoFailed
+                ? l10n.backupCardAutoFailed
+                : l10n.backupCardAuto(folder.name),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: autoFailed
+                  ? theme.colorScheme.error
+                  : theme.colorScheme.onSurfaceVariant,
+            ),
+          );
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       child: KeyedSubtree(
@@ -160,11 +177,18 @@ class _BackupStatusCardState extends ConsumerState<BackupStatusCard>
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    status,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        status,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      ?autoLine,
+                    ],
                   ),
                 ),
                 IconButton(
