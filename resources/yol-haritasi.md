@@ -58,7 +58,7 @@ Sürümler ve lisanslar 2026-11-05 tarihinde pub.dev'den kontrol edildi. Faz ba�
 | QR okuma | `flutter_zxing` | 3.1.0 | MIT; içindeki zxing-cpp Apache-2.0, zint BSD-3 | Açık kaynak, tamamen cihazda çalışıyor. Gömülü C++ kitaplıklarının lisansları uygulamanın lisans sayfasına elle eklenir. |
 | Kamera | `camera` | 0.12.2 | BSD-3 | Flutter ekibinin paketi, `flutter_zxing` tarama için kullanıyor. Eklediği mikrofon ve depolama izinleri manifestte kaldırılır. |
 | Görsel ve dosya seçme | `image_picker`, `file_selector` | 1.2.4 / 1.1.0 | BSD-3 | Flutter ekibinin paketleri. Android'in seçicilerini açar, depolama izni gerekmez. |
-| Dart-Kotlin köprüsü | `pigeon` | 29.1.0 | BSD-3 | Elle yazılan kanallara göre tür güvenli. |
+| Dart-Kotlin köprüsü | `pigeon` | 30.0.4 | BSD-3 | Elle yazılan kanallara göre tür güvenli. Üretilen Dart dosyası ayrıca `dart format`'tan geçirilir. |
 | Parmak izi | `androidx.biometric` | 1.1.0 | Apache-2.0 | Google'ın kitaplığı. Son kararlı sürüm, daha yenileri beta. |
 | Köprü çalışma zamanı | `kotlinx-coroutines-android` | 1.11.0 | Apache-2.0 | `pigeon`'un ürettiği Kotlin kodu bunu gerektiriyor. |
 | Sözcük listeleri | EFF büyük liste, SecLists 10k | — | CC BY 3.0, MIT | Veri olarak; kaynak ve özet değerleri `resources/assets/wordlists/KAYNAKLAR.md` içinde. |
