@@ -10,7 +10,7 @@ Kurtarma anahtarı kasa kurulurken bir kez gösterilir ve bir daha değiştirile
 
 - Kasa açıkken, ana parolayı doğrulayarak yeni bir kurtarma anahtarı üretmek.
 - Eski anahtarın bu kasayı artık açmaması.
-- Yeni anahtarın kurulumdaki gibi gösterilmesi, kopyalanabilmesi, dosyaya kaydedilebilmesi ve geri yazılarak doğrulanması.
+- Yeni anahtarın kurulumdaki gibi gösterilmesi, dosyaya kaydedilebilmesi ve geri yazılarak doğrulanması. Kopyalama yok; nedeni Akış bölümünde.
 - Yarıda bırakılan işlemin hiçbir şeyi değiştirmemesi.
 
 ## Hedef olmayanlar
