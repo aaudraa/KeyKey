@@ -2,7 +2,7 @@
 
 KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-16 · **Şu anki faz:** yok; Faz 9 bitti, [1.0.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.0.0) yayınlandı
+**Son güncelleme:** 2026-11-18 · **Şu anki faz:** Faz 10; [1.1.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.1.0) yayında, F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) açık
 
 > [!IMPORTANT]
 > **KeyKey 1.0 yayında.** Projenin kendi güvenlik denetimi tamamlandı, ama bağımsız bir denetim yapılmadı. Şifreli yedeğini düzenli al ve telefonun dışında da sakla.
@@ -488,7 +488,7 @@ Güvenlik ya da veri kaybı sorunu çıkmadı. Ayrıntılar [denetim belgesinde]
 - [x] F-Droid tarifi ve birebir aynı derleme denetimi (#116)
 - [x] Yayın iş akışı F-Droid yolunda ve F-Droid karşılaştırması (#117; gerçek sınama `v1.1.0` etiketinde)
 - [x] F-Droid düzeniyle ilk yayın (#118; 1.0.1 yayımlanmadı, ilk yayın 1.1.0)
-- [ ] F-Droid başvurusu (#119)
+- [x] F-Droid başvurusu (#119; [fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995), inceleme ve kabul #130)
 
 **Durum (2026-11-17):** Faz başladı. IzzyOnDroid'e başvurulmuyor: [kabul kuralları](https://izzyondroid.org/docs/general/AppInclusionPolicy/) yapay zekâyla yazılmış kodu kabul etmiyor, ayrıca APK başına 30 MB sınırı var (APK'mız 77 MB). F-Droid'in kurallarında yapay zekâ maddesi yok. Proje sahibi tek evrensel APK'yı seçti; işlemci türüne göre bölme sonraya kaldı. Faz başvurunun gönderilmesiyle biter; F-Droid'in kabulü ve README'ye F-Droid bağlantısı ayrı iş.
 
@@ -499,6 +499,8 @@ Güvenlik ya da veri kaybı sorunu çıkmadı. Ayrıntılar [denetim belgesinde]
 **Durum (2026-11-17, akşam):** Proje sahibi önce `v1.1.0`'ın dağıtımını onayladı. İmzalı yayın işi, APK doğru anahtarla imzalandığı halde "İmza denetimi" adımında durdu: GitHub'ın imajındaki `apksigner` 37 sertifikayı yeni bir biçimde yazıyor, denetim satırı yalnızca eskisini okuyordu ve bu adım PR provasında yoktu ([ayrıntı](docs/yayin.md#imza-denetimi)). Denetim [`imza-ozeti.sh`](scripts/imza-ozeti.sh) betiğine taşındı, iki biçimi de okuyor, testi var ve provada tek kullanımlık anahtarla da çalışıyor. Proje sahibi gitmeden önce bütün adımları bana bıraktı ("hepsini yap, taslağı da yayımla"). `v1.0.1`'in bekleyen çalışması aynı satırı taşıdığı için iptal edildi; 1.0.1 yayımlanmadı, F-Droid'e giren ilk sürüm 1.1.0. `v1.1.0` etiketi düzeltmenin commit'ine taşındı, F-Droid tarifi ve başvuru metni 1.1.0'a göre güncellendi.
 
 **Durum (2026-11-17, yayın):** [#129](https://github.com/aaudraa/KeyKey/pull/129) birleşti, provada yeni imza denetimi `apksigner` 37 ile yeşil. Taşınan `v1.1.0` etiketinde zincirin tamamı yeşil: imzasız derleme, F-Droid derlemesi, imza ve imza denetimi, F-Droid karşılaştırması. İndirilen APK'nın özeti `SHA256SUMS` ile tutuyor, sertifikası `66ff7b5c…`, versionCode 5. Proje sahibinin yetkisiyle [KeyKey 1.1.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.1.0)'ı yayımladım; #118 kapandı. Kalan, hepsi proje sahibinde: GitLab'da birleştirme isteği ([adımlar](f-droid/basvuru.md), #119), Obtainium bağlantısını telefonda denemek (#114).
+
+**Durum (2026-11-18):** F-Droid başvurusu açıldı: [fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995) (`New app: KeyKey`, tarif `v1.1.0`). Proje sahibi GitLab hesabını açıp çatalı oluşturdu ve commit e-postasını gizli adrese aldı; dalı, commit'i ve isteği onun onayıyla `glab` üzerinden ben açtım ([adımlar](f-droid/basvuru.md)). Açmadan önce iki engel çıktı ve ikisi de istekte açıkça yazıldı. Birincisi, F-Droid'in kabul politikası en az 3 ay geliştirme istiyor; KeyKey 2026-11-04'te başladı. Proje sahibi yine de başvurup istisna istemeyi seçti, olmazsa istek 2027-02-04'e kadar bekler. İkincisi, şablon büyük APK'lar için mimariye göre bölünmüş APK istiyor; 80,8 MB'lık APK için isterlerse bölmeyi teklif ettik. Çataldaki CI hesap doğrulaması istediği için çalışmadı; şablonun dediği gibi telefon ya da kart verilmedi, F-Droid'den başlatması rica edildi. #119 kapandı, inceleme ve kabul #130'da. Fazda kalan: Obtainium bağlantısını telefonda denemek (#114).
 
 **Bitti sayılması için:** ilk F-Droid sürümü (`v1.1.0`) yayınlandı ve yayın iş akışındaki F-Droid karşılaştırması yeşil; fdroiddata'ya birleştirme isteği açıldı; README'deki Obtainium bağlantısı telefonda çalışıyor.
 
