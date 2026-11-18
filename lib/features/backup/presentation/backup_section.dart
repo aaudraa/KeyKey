@@ -9,6 +9,7 @@ import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/presentation/scanned_code_handler.dart';
 import 'package:keykey/features/backup/application/backup_service.dart';
+import 'package:keykey/features/backup/presentation/auto_backup_tile.dart';
 import 'package:keykey/features/backup/presentation/login_import_screen.dart';
 import 'package:keykey/features/backup/presentation/plaintext_export.dart';
 import 'package:keykey/features/backup/presentation/restore_screen.dart';
@@ -65,8 +66,8 @@ Future<bool> backUpVault(BuildContext context, WidgetRef ref) async {
   }
 }
 
-/// Ayarlardaki "Yedek ve aktarım" grubu: geri yükleme, içe ve dışa
-/// aktarma. Yedek alma ayarların en üstündeki `BackupStatusCard`'da.
+/// Ayarlardaki "Yedek ve aktarım" grubu: otomatik yedek, geri yükleme, içe
+/// ve dışa aktarma. Yedek alma ayarların en üstündeki `BackupStatusCard`'da.
 class BackupSection extends ConsumerWidget {
   const new({super.key});
 
@@ -74,9 +75,16 @@ class BackupSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     const chevron = Icon(Icons.chevron_right_rounded);
+    final autoBackupOn =
+        ref.watch(settingsControllerProvider)?.autoBackupFolder != null;
     return KkSection(
       title: l10n.settingsGroupBackup,
       children: [
+        const AutoBackupSwitchTile(),
+        if (autoBackupOn) ...const [
+          AutoBackupChangeFolderTile(),
+          AutoBackupNowTile(),
+        ],
         ListTile(
           leading: const KkIconBox(icon: Icons.settings_backup_restore_rounded),
           title: Text(l10n.restoreTitle),

@@ -1,0 +1,1 @@
+Otomatik yedek: bir klasör seç, kasa değiştikçe KeyKey oraya şifreli yedek yazsın. En yeni 5 yedek ve son 14 günün her birinin son yedeği tutulur, elle aldığın yedeklere dokunulmaz. Klasörü bir eşitleme uygulamasıyla telefonun dışına çıkarabilirsin; KeyKey yine internete çıkmaz.

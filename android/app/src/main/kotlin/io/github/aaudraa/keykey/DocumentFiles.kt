@@ -1,20 +1,13 @@
 package io.github.aaudraa.keykey
 
-import android.content.ActivityNotFoundException
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import androidx.activity.ComponentActivity
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
-import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
-import java.util.concurrent.atomic.AtomicInteger
-import kotlin.coroutines.resume
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 
 /**
@@ -33,7 +26,10 @@ class DocumentFiles(private val activity: ComponentActivity) : DocumentApi {
     ): DocumentResult {
         try {
             val uri =
-                pick(ActivityResultContracts.CreateDocument(mimeType), suggestedName)
+                activity.awaitActivityResult(
+                    ActivityResultContracts.CreateDocument(mimeType),
+                    suggestedName,
+                )
                     ?: return DocumentResult(DocumentStatus.CANCELLED)
             return withContext(Dispatchers.IO) {
                 if (write(uri, bytes) && matches(uri, bytes)) {
@@ -50,34 +46,13 @@ class DocumentFiles(private val activity: ComponentActivity) : DocumentApi {
 
     override suspend fun open(mimeTypes: List<String>, maxBytes: Long): DocumentResult {
         val uri =
-            pick(ActivityResultContracts.OpenDocument(), mimeTypes.toTypedArray())
+            activity.awaitActivityResult(
+                ActivityResultContracts.OpenDocument(),
+                mimeTypes.toTypedArray(),
+            )
                 ?: return DocumentResult(DocumentStatus.CANCELLED)
         return withContext(Dispatchers.IO) { read(uri, maxBytes) }
     }
-
-    /**
-     * Seçiciyi açar ve sonucunu bekler. Kayıt her çağrıda ayrı anahtarla yapılır ve
-     * sonuç gelince kaldırılır.
-     */
-    private suspend fun <I, O> pick(contract: ActivityResultContract<I, O>, input: I): O? =
-        suspendCancellableCoroutine { continuation ->
-            lateinit var launcher: ActivityResultLauncher<I>
-            launcher =
-                activity.activityResultRegistry.register(
-                    "keykey-document-${requests.incrementAndGet()}",
-                    contract,
-                ) { result ->
-                    launcher.unregister()
-                    if (continuation.isActive) continuation.resume(result)
-                }
-            continuation.invokeOnCancellation { launcher.unregister() }
-            try {
-                launcher.launch(input)
-            } catch (_: ActivityNotFoundException) {
-                launcher.unregister()
-                continuation.resume(null)
-            }
-        }
 
     private fun write(uri: Uri, bytes: ByteArray): Boolean =
         try {
@@ -151,35 +126,11 @@ class DocumentFiles(private val activity: ComponentActivity) : DocumentApi {
             null
         }
 
-    /** En fazla [limit] bayt okur; dosya daha uzunsa [limit] bayt döner. */
-    private fun readAtMost(stream: InputStream, limit: Long): ByteArray {
-        val out = ByteArrayOutputStream()
-        val buffer = ByteArray(BUFFER_SIZE)
-        var total = 0L
-        try {
-            while (total < limit) {
-                val wanted = minOf(buffer.size.toLong(), limit - total).toInt()
-                val count = stream.read(buffer, 0, wanted)
-                if (count < 0) break
-                out.write(buffer, 0, count)
-                total += count
-            }
-            return out.toByteArray()
-        } finally {
-            buffer.fill(0)
-        }
-    }
-
     private fun delete(uri: Uri) {
         try {
             DocumentsContract.deleteDocument(activity.contentResolver, uri)
         } catch (_: Exception) {
             // Silinemezse kullanıcıya hata zaten gösteriliyor; yarım dosya kalabilir.
         }
-    }
-
-    private companion object {
-        const val BUFFER_SIZE = 64 * 1024
-        val requests = AtomicInteger()
     }
 }

@@ -1,0 +1,1 @@
+Automatic backup: choose a folder and KeyKey writes an encrypted backup there whenever your vault changes. The newest 5 backups and the last backup of each of the newest 14 days are kept; backups you make yourself are never touched. A sync app can copy the folder off your phone; KeyKey itself still never goes online.

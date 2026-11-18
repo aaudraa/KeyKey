@@ -2,6 +2,23 @@
 
 KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesinde](docs/yayin.md#sürüm-numarası). `v1.0.0`'dan önceki sürümler fazların sonunu işaretler ve hata ayıklama anahtarıyla imzalıdır; kalıcı bir kurulum için kullanılmamalıdır.
 
+## 1.2.0 (yayımlanmadı): Otomatik yedek
+
+Faz 12 ([tasarım](docs/otomatik-yedek.md)).
+
+### Eklenenler
+
+- Otomatik yedek: Ayarlar → Yedek ve aktarım'dan bir klasör seçilince, kasa açıkken kayıtlar değiştikçe o klasöre şifreli bir yedek yazılıyor. Elle yedekle aynı biçim ve anahtar; en yeni 5 yedek ve son 14 günün her birinin son yedeği tutuluyor, elle alınan yedeklere dokunulmuyor. Yedek önce ara adla yazılıp doğrulanıyor; yarım kalan dosya yedek sayılmıyor. İnternet ve depolama izni eklenmedi; KeyKey yalnızca seçilen klasör için izin alıyor.
+- Klasöre erişilemezse ayarlarda ve yedek kartında uyarı; "Klasörü değiştir" ve "Şimdi yedekle".
+- Ana parola değişince (kurtarma anahtarıyla da) ve kasaya birleştirerek geri yükleyince otomatik yedek hemen yazılıyor.
+- Aynı klasörü kullanan iki telefon birbirinin otomatik yedeklerini silmiyor: dosya adında cihaza ait kısa bir kimlik var.
+
+### Değişenler
+
+- Ayar kaydı sürüm 5 (otomatik yedeğin klasörü); sürüm 1-4 kayıtları okunmaya devam ediyor.
+- Ayarlardaki değişiklikler sırayla yazılıyor; arka planda yazılan son yedek zamanı aynı anda yapılan bir ayar değişikliğini ezmiyor.
+- `pigeon` 30.0.4.
+
 ## 1.1.0 (2026-11-17): Kullanıcı gözüyle iyileştirmeler
 
 Faz 11 ([tasarım](docs/kullanici-gozuyle.md)).

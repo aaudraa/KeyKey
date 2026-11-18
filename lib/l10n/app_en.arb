@@ -263,7 +263,7 @@
   "@changePasswordDone": {
     "description": "Message after the password was changed."
   },
-  "changePasswordBackupNote": "Backups you made before still open with the old password. Anyone who knows the old password can open them; make a new backup and delete the old ones.",
+  "changePasswordBackupNote": "Backups made before, including those in the automatic backup folder, still open with the old password. Anyone who knows the old password can open them; make a new backup and delete the old ones.",
   "@changePasswordBackupNote": {
     "description": "Shown after changing the master password."
   },
@@ -1664,6 +1664,88 @@
   "backupFilePrefix": "keykey-backup",
   "@backupFilePrefix": {
     "description": "Start of the suggested backup file name, before the date. Lowercase, no spaces."
+  },
+  "autoBackupFilePrefix": "keykey-auto",
+  "@autoBackupFilePrefix": {
+    "description": "Start of automatic backup file names, before the date and time. Lowercase, no spaces. Changing it later is safe: both the Turkish and English prefixes are recognised when old backups are pruned."
+  },
+  "autoBackupTitle": "Automatic backup",
+  "@autoBackupTitle": {
+    "description": "Settings switch that writes backups to a chosen folder by itself."
+  },
+  "autoBackupOff": "Off. Writes an encrypted backup to a folder you choose whenever your vault changes.",
+  "@autoBackupOff": {
+    "description": "Subtitle of the automatic backup switch while it is off."
+  },
+  "autoBackupOn": "Writing to {folder}",
+  "@autoBackupOn": {
+    "description": "Subtitle of the automatic backup switch while it is on. {folder} is the folder's name.",
+    "placeholders": {
+      "folder": {
+        "type": "String"
+      }
+    }
+  },
+  "autoBackupIntro": "While your vault is open, KeyKey writes an encrypted backup to the folder you choose whenever an entry changes. It is the same as a backup you make yourself: it opens with the master password or recovery key you had when it was made. The newest 5 backups and the last backup of each of the newest 14 days are kept; older ones are deleted. Backups you make yourself are never touched.\n\nSo that your backups don't disappear with your phone, choose a folder that a sync app such as Syncthing or Nextcloud copies elsewhere. Google Drive may not appear in the folder list. KeyKey itself never goes online.\n\nEvery backup in the folder is another copy on which someone who gets the file could try to guess your master password; use a strong one.",
+  "@autoBackupIntro": {
+    "description": "Explanation shown before choosing the automatic backup folder, and behind the (i) button."
+  },
+  "autoBackupChooseFolder": "Choose folder",
+  "@autoBackupChooseFolder": {
+    "description": "Button that opens Android's folder picker."
+  },
+  "autoBackupCancel": "Cancel",
+  "@autoBackupCancel": {
+    "description": "Closes the automatic backup explanation without choosing a folder."
+  },
+  "autoBackupChangeFolder": "Change folder",
+  "@autoBackupChangeFolder": {
+    "description": "Settings row that picks another folder for automatic backups."
+  },
+  "autoBackupNow": "Back up now",
+  "@autoBackupNow": {
+    "description": "Settings row that writes an automatic backup to the folder right away."
+  },
+  "autoBackupNoAccess": "Can't reach the folder. Choose it again.",
+  "@autoBackupNoAccess": {
+    "description": "Shown when KeyKey has no permission for the automatic backup folder on this phone."
+  },
+  "autoBackupWriteFailed": "The last backup couldn't be written. Choose the folder again or back up manually.",
+  "@autoBackupWriteFailed": {
+    "description": "Shown when writing an automatic backup failed."
+  },
+  "autoBackupEnabled": "Automatic backup is on",
+  "@autoBackupEnabled": {
+    "description": "Snackbar after automatic backup was turned on."
+  },
+  "autoBackupDisabled": "Automatic backup is off. Backups in the folder are kept.",
+  "@autoBackupDisabled": {
+    "description": "Snackbar after automatic backup was turned off."
+  },
+  "autoBackupPickFailed": "That folder can't be used.",
+  "@autoBackupPickFailed": {
+    "description": "Snackbar when the folder picker failed or the permission couldn't be kept."
+  },
+  "autoBackupSaved": "Backup written to the folder",
+  "@autoBackupSaved": {
+    "description": "Snackbar after a backup was written to the automatic backup folder."
+  },
+  "autoBackupFailed": "Couldn't write the backup to the folder",
+  "@autoBackupFailed": {
+    "description": "Snackbar when writing to the automatic backup folder failed."
+  },
+  "backupCardAuto": "Automatic: {folder}",
+  "@backupCardAuto": {
+    "description": "Line on the backup card while automatic backup is on. {folder} is the folder's name.",
+    "placeholders": {
+      "folder": {
+        "type": "String"
+      }
+    }
+  },
+  "backupCardAutoFailed": "Automatic backup failed",
+  "@backupCardAutoFailed": {
+    "description": "Line on the backup card when the last automatic backup couldn't be written."
   },
   "exportFilePrefix": "keykey-export",
   "@exportFilePrefix": {

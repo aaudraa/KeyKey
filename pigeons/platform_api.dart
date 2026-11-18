@@ -244,3 +244,56 @@ abstract class DocumentApi {
   @async
   DocumentResult open(List<String> mimeTypes, int maxBytes);
 }
+
+/// Klasör seçmenin sonucu.
+enum FolderPickStatus {
+  /// Klasör seçildi ve kalıcı izin alındı.
+  done,
+
+  /// Kullanıcı seçiciden vazgeçti.
+  cancelled,
+
+  /// Seçici açılamadı veya kalıcı izin alınamadı.
+  failed,
+}
+
+/// Klasör seçicinin sonucu. [uri] ve [name] yalnızca [status] `done` ise
+/// doludur.
+class FolderPickResult {
+  FolderPickResult({required this.status, this.uri, this.name});
+
+  FolderPickStatus status;
+  String? uri;
+  String? name;
+}
+
+/// Otomatik yedeğin klasörü (Storage Access Framework, klasör ağacı).
+///
+/// Depolama izni gerekmez. Klasöre yalnızca kullanıcının seçtiği ağaç için
+/// alınan kalıcı izinle yazılır.
+@HostApi()
+abstract class BackupFolderApi {
+  /// Klasör seçiciyi açar ve seçilen klasör için kalıcı okuma ve yazma izni
+  /// alır.
+  @async
+  FolderPickResult pick();
+
+  /// Bu cihazda [folderUri] için kalıcı okuma ve yazma izni var mı.
+  bool hasAccess(String folderUri);
+
+  /// Klasördeki dosyaların adları; klasöre erişilemiyorsa `null`.
+  @async
+  List<String>? list(String folderUri);
+
+  /// Klasörde [name] adıyla yeni bir dosya açar, [bytes]'ı yazar, geri okuyup
+  /// karşılaştırır. Tutmazsa yeni dosyayı silmeyi dener ve `false` döner.
+  @async
+  bool write(String folderUri, String name, String mimeType, Uint8List bytes);
+
+  /// Klasörde adı [names] içinde olan dosyaları siler; silineni sayar.
+  @async
+  int delete(String folderUri, List<String> names);
+
+  /// [folderUri] için alınan kalıcı izni bırakır.
+  void release(String folderUri);
+}

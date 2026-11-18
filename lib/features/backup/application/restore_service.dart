@@ -108,7 +108,14 @@ class RestoreService {
   /// kaydındaki zaman en az yedeğin alındığı an yapılır; yoksa hatırlatıcı
   /// "hiç yedek yok" derdi. Ayarları hiç değiştirilmemiş bir kasanın ayar
   /// kaydı yoktur; o zaman varsayılan ayarlarla yeni bir kayıt eklenir.
-  Future<void> replace(OpenedBackup backup) async {
+  ///
+  /// [autoBackupFolder] bu cihazda seçili otomatik yedek klasörüdür. Klasörün
+  /// izni cihaza bağlı olduğu için, verilirse yedekteki klasörün yerine geçer;
+  /// `null` ise yedekteki değer kalır.
+  Future<void> replace(
+    OpenedBackup backup, {
+    AutoBackupFolder? autoBackupFolder,
+  }) async {
     final cipher = _cipherFor(backup);
     final List<StoredRecord> records;
     try {
@@ -116,13 +123,20 @@ class RestoreService {
       records = [
         for (final record in backup.records)
           if (record.type == SettingsRepository.recordType)
-            _withBackupTime(record, cipher, backup.createdAt)
+            _withDeviceSettings(
+              record,
+              cipher,
+              backup.createdAt,
+              autoBackupFolder,
+            )
           else
             record,
         if (!backup.records.any((record) => listEquals(record.id, settingsId)))
           _settingsRecord(
             cipher,
-            AppSettings.defaults.copyWith(lastBackupAt: backup.createdAt),
+            AppSettings.defaults
+                .copyWith(lastBackupAt: backup.createdAt)
+                .withAutoBackupFolder(autoBackupFolder),
             id: settingsId,
             createdAt: backup.createdAt,
             updatedAt: backup.createdAt,
@@ -134,10 +148,11 @@ class RestoreService {
     await _store.replaceVault(backup.header, records);
   }
 
-  StoredRecord _withBackupTime(
+  StoredRecord _withDeviceSettings(
     StoredRecord record,
     RecordCipher cipher,
     DateTime createdAt,
+    AutoBackupFolder? autoBackupFolder,
   ) {
     final plain = cipher.decrypt(
       recordId: record.id,
@@ -153,10 +168,18 @@ class RestoreService {
     // Ayar kaydı açılırken doğrulandı; yine de okunamazsa olduğu gibi kalır.
     if (settings == null) return record;
     final last = settings.lastBackupAt;
-    if (last != null && !last.isBefore(createdAt)) return record;
+    final keepTime = last != null && !last.isBefore(createdAt);
+    final keepFolder =
+        autoBackupFolder == null ||
+        autoBackupFolder.uri == settings.autoBackupFolder?.uri;
+    if (keepTime && keepFolder) return record;
+    var patched = keepTime
+        ? settings
+        : settings.copyWith(lastBackupAt: createdAt);
+    if (!keepFolder) patched = patched.withAutoBackupFolder(autoBackupFolder);
     return _settingsRecord(
       cipher,
-      settings.copyWith(lastBackupAt: createdAt),
+      patched,
       id: record.id,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,

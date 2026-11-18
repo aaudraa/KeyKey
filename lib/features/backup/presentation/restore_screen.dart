@@ -17,10 +17,12 @@ import 'package:keykey/core/crypto/recovery_key.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
+import 'package:keykey/features/backup/application/auto_backup_controller.dart';
 import 'package:keykey/features/backup/application/restore_service.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/recovery_key_formatter.dart';
+import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
@@ -156,6 +158,9 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
       ref
         ..invalidate(loginsControllerProvider)
         ..invalidate(otpsControllerProvider);
+      // Birleştirilen kayıtlar yedeğin zamanlarını taşır; değişiklik ölçütü
+      // onları yeni saymayabilir. Otomatik yedek kapalıysa bir şey yapmaz.
+      unawaited(ref.read(autoBackupControllerProvider.notifier).backUpNow());
       if (mounted) context.pop();
       snack(l10n.restoreMerged(counts.added, counts.updated));
     } on VaultLockedException {
@@ -179,11 +184,15 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
     );
     if (!confirmed || !mounted) return;
     final controller = ref.read(vaultControllerProvider.notifier);
+    // Klasörün izni bu cihazda alındı; parmak izi yuvası gibi cihaza bağlı.
+    final folder = ref.read(settingsControllerProvider)?.autoBackupFolder;
     setState(() => _busy = true);
     try {
       // Önce parmak izi kapanır: yeni kasanın anahtarı eski yuvayla açılmaz.
       await ref.read(vaultServiceProvider).disableBiometric();
-      await ref.read(restoreServiceProvider).replace(backup);
+      await ref
+          .read(restoreServiceProvider)
+          .replace(backup, autoBackupFolder: folder);
       // Kilit ekranına gidilir; kasa artık yedeğin ana parolasıyla açılır.
       controller.lockReplaced(backup.header);
     } on Exception {

@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../../support/fake_vault_service.dart';
@@ -29,13 +30,20 @@ void main() {
     documents.nextOpen = DocumentOpened(Uint8List.fromList(backup));
   });
 
-  Future<void> pump(WidgetTester tester, VaultStatus status) async {
+  Future<void> pump(
+    WidgetTester tester,
+    VaultStatus status, {
+    FakeSettingsRepository? settings,
+    FakeBackupFolders? folders,
+  }) async {
     await pumpKeyKey(
       tester,
       status: status,
       service: service,
       documents: documents,
       restores: restores,
+      settings: settings,
+      folders: folders,
     );
     if (status is VaultNotSetUp) await skipIntro(tester);
   }
@@ -148,10 +156,26 @@ void main() {
   });
 
   group('açık kasada', () {
-    Future<void> openFromSettings(WidgetTester tester) async {
-      await pump(tester, VaultOpen(service.newSession()));
+    const folder = AutoBackupFolder(uri: 'content://x/tree/K', name: 'K');
+
+    Future<void> openFromSettings(
+      WidgetTester tester, {
+      FakeSettingsRepository? settings,
+      FakeBackupFolders? folders,
+    }) async {
+      await pump(
+        tester,
+        VaultOpen(service.newSession()),
+        settings: settings,
+        folders: folders,
+      );
       await tester.tap(find.byIcon(Icons.settings_outlined));
       await tester.pumpAndSettle();
+      // Otomatik yedek açıkken satır aşağıda kalır.
+      if (settings != null) {
+        await tester.ensureVisible(find.text('Yedekten geri yükle'));
+        await tester.pumpAndSettle();
+      }
       final container = ProviderScope.containerOf(
         tester.element(find.text('Yedekten geri yükle')),
       );
@@ -211,6 +235,41 @@ void main() {
       expect(restores.replaces, 1);
       expect(service.biometricEnabled, isFalse);
       expect(find.text('KeyKey kilitli'), findsOneWidget);
+    });
+
+    testWidgets('birleştirince otomatik yedek hemen yazılıyor', (tester) async {
+      final folders = FakeBackupFolders()..granted.add(folder.uri);
+      await openFromSettings(
+        tester,
+        folders: folders,
+        settings: FakeSettingsRepository(
+          AppSettings.defaults.withAutoBackupFolder(folder),
+        ),
+      );
+      expect(folders.writes, 0);
+
+      await tester.tap(find.text('Kasamla birleştir'));
+      await tester.pumpAndSettle();
+
+      expect(restores.merges, 1);
+      expect(folders.files[folder.uri], hasLength(1));
+    });
+
+    testWidgets('değiştirirken bu cihazın klasörü korunuyor', (tester) async {
+      await openFromSettings(
+        tester,
+        folders: FakeBackupFolders()..granted.add(folder.uri),
+        settings: FakeSettingsRepository(
+          AppSettings.defaults.withAutoBackupFolder(folder),
+        ),
+      );
+      await tester.tap(find.text('Kasanın yerine yedeği koy'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Değiştir'));
+      await tester.pumpAndSettle();
+
+      expect(restores.replaces, 1);
+      expect(restores.replacedFolder?.uri, folder.uri);
     });
   });
 }

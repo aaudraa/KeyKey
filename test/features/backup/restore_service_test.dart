@@ -333,6 +333,76 @@ void main() {
       expect(settings.lastBackupAt, later);
     });
 
+    group('otomatik yedek klasörü cihaza bağlı', () {
+      const here = AutoBackupFolder(
+        uri: 'content://x/tree/primary%3ABuTelefon',
+        name: 'BuTelefon',
+      );
+      const there = AutoBackupFolder(
+        uri: 'content://x/tree/primary%3AEskiTelefon',
+        name: 'EskiTelefon',
+      );
+
+      Future<AppSettings> replaceWith({
+        AppSettings? saved,
+        AutoBackupFolder? keep,
+      }) async {
+        if (saved != null) {
+          await SettingsRepository(
+            store: a.store,
+            session: a.session,
+          ).save(saved);
+        } else {
+          await put(a, 1);
+        }
+        final opened = await openA();
+        await RestoreService(
+          sodium: sodium,
+          store: b.store,
+        ).replace(opened, autoBackupFolder: keep);
+        opened.dispose();
+        return await SettingsRepository(
+          store: b.store,
+          session: a.session,
+        ).load();
+      }
+
+      test('bu cihazın klasörü yedektekinin yerine geçiyor', () async {
+        final settings = await replaceWith(
+          saved: AppSettings.requireAuth.withAutoBackupFolder(there),
+          keep: here,
+        );
+        expect(settings.autoBackupFolder?.uri, here.uri);
+        expect(settings.otpRequireAuth, isTrue);
+      });
+
+      test('klasörsüz eski yedekte de bu cihazın klasörü kalıyor', () async {
+        final later = DateTime.utc(2026, 12);
+        final settings = await replaceWith(
+          saved: AppSettings.defaults.copyWith(lastBackupAt: later),
+          keep: here,
+        );
+        expect(settings.autoBackupFolder?.uri, here.uri);
+        expect(settings.lastBackupAt, later);
+      });
+
+      test(
+        'ayar kaydı olmayan yedekte de bu cihazın klasörü kalıyor',
+        () async {
+          final settings = await replaceWith(keep: here);
+          expect(settings.autoBackupFolder?.uri, here.uri);
+          expect(settings.lastBackupAt, DateTime.utc(2026, 11, 7));
+        },
+      );
+
+      test('bu cihazda klasör yoksa yedekteki kalıyor', () async {
+        final settings = await replaceWith(
+          saved: AppSettings.defaults.withAutoBackupFolder(there),
+        );
+        expect(settings.autoBackupFolder?.uri, there.uri);
+      });
+    });
+
     test('birleştirme kayıtları açık kasanın anahtarıyla yazıyor', () async {
       await put(a, 1);
       await put(a, 2, type: 'otp');

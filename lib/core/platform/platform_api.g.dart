@@ -118,6 +118,18 @@ enum DocumentStatus {
   failed,
 }
 
+/// Klasör seçmenin sonucu.
+enum FolderPickStatus {
+  /// Klasör seçildi ve kalıcı izin alındı.
+  done,
+
+  /// Kullanıcı seçiciden vazgeçti.
+  cancelled,
+
+  /// Seçici açılamadı veya kalıcı izin alınamadı.
+  failed,
+}
+
 class BiometricPromptTexts {
   BiometricPromptTexts({required this.title, required this.negativeButton});
 
@@ -524,6 +536,58 @@ class DocumentResult {
   }
 }
 
+/// Klasör seçicinin sonucu. [uri] ve [name] yalnızca [status] `done` ise
+/// doludur.
+class FolderPickResult {
+  FolderPickResult({required this.status, this.uri, this.name});
+
+  FolderPickStatus status;
+
+  String? uri;
+
+  String? name;
+
+  List<Object?> _toList() {
+    return <Object?>[status, uri, name];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static FolderPickResult decode(Object result) {
+    result as List<Object?>;
+    return FolderPickResult(
+      status: result[0]! as FolderPickStatus,
+      uri: result[1] as String?,
+      name: result[2] as String?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! FolderPickResult || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(status, other.status) &&
+        _deepEquals(uri, other.uri) &&
+        _deepEquals(name, other.name);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'FolderPickResult(status: $status, uri: $uri, name: $name)';
+  }
+}
+
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -540,26 +604,32 @@ class _PigeonCodec extends StandardMessageCodec {
     } else if (value is DocumentStatus) {
       buffer.putUint8(131);
       writeValue(buffer, value.index);
-    } else if (value is BiometricPromptTexts) {
+    } else if (value is FolderPickStatus) {
       buffer.putUint8(132);
-      writeValue(buffer, value.encode());
-    } else if (value is BiometricWrapResult) {
+      writeValue(buffer, value.index);
+    } else if (value is BiometricPromptTexts) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    } else if (value is BiometricUnwrapResult) {
+    } else if (value is BiometricWrapResult) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
-    } else if (value is AutofillRequestInfo) {
+    } else if (value is BiometricUnwrapResult) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
-    } else if (value is AutofillSaveValues) {
+    } else if (value is AutofillRequestInfo) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
-    } else if (value is AutofillSetupStatus) {
+    } else if (value is AutofillSaveValues) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    } else if (value is DocumentResult) {
+    } else if (value is AutofillSetupStatus) {
       buffer.putUint8(138);
+      writeValue(buffer, value.encode());
+    } else if (value is DocumentResult) {
+      buffer.putUint8(139);
+      writeValue(buffer, value.encode());
+    } else if (value is FolderPickResult) {
+      buffer.putUint8(140);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -579,19 +649,24 @@ class _PigeonCodec extends StandardMessageCodec {
         final value = readValue(buffer) as int?;
         return value == null ? null : DocumentStatus.values[value];
       case 132:
-        return BiometricPromptTexts.decode(readValue(buffer)!);
+        final value = readValue(buffer) as int?;
+        return value == null ? null : FolderPickStatus.values[value];
       case 133:
-        return BiometricWrapResult.decode(readValue(buffer)!);
+        return BiometricPromptTexts.decode(readValue(buffer)!);
       case 134:
-        return BiometricUnwrapResult.decode(readValue(buffer)!);
+        return BiometricWrapResult.decode(readValue(buffer)!);
       case 135:
-        return AutofillRequestInfo.decode(readValue(buffer)!);
+        return BiometricUnwrapResult.decode(readValue(buffer)!);
       case 136:
-        return AutofillSaveValues.decode(readValue(buffer)!);
+        return AutofillRequestInfo.decode(readValue(buffer)!);
       case 137:
-        return AutofillSetupStatus.decode(readValue(buffer)!);
+        return AutofillSaveValues.decode(readValue(buffer)!);
       case 138:
+        return AutofillSetupStatus.decode(readValue(buffer)!);
+      case 139:
         return DocumentResult.decode(readValue(buffer)!);
+      case 140:
+        return FolderPickResult.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -1136,5 +1211,157 @@ class DocumentApi {
       isNullValid: false,
     );
     return pigeonVar_replyValue! as DocumentResult;
+  }
+}
+
+/// Otomatik yedeğin klasörü (Storage Access Framework, klasör ağacı).
+///
+/// Depolama izni gerekmez. Klasöre yalnızca kullanıcının seçtiği ağaç için
+/// alınan kalıcı izinle yazılır.
+class BackupFolderApi {
+  /// Constructor for [BackupFolderApi]. The [binaryMessenger] named argument is
+  /// available for dependency injection. If it is left null, the default
+  /// BinaryMessenger will be used which routes to the host platform.
+  BackupFolderApi({
+    BinaryMessenger? binaryMessenger,
+    String messageChannelSuffix = '',
+  }) : pigeonVar_binaryMessenger = binaryMessenger,
+       pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty
+           ? '.$messageChannelSuffix'
+           : '';
+
+  final BinaryMessenger? pigeonVar_binaryMessenger;
+  static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
+
+  final String pigeonVar_messageChannelSuffix;
+
+  /// Klasör seçiciyi açar ve seçilen klasör için kalıcı okuma ve yazma izni
+  /// alır.
+  Future<FolderPickResult> pick() async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.BackupFolderApi.pick$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as FolderPickResult;
+  }
+
+  /// Bu cihazda [folderUri] için kalıcı okuma ve yazma izni var mı.
+  Future<bool> hasAccess(String folderUri) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.BackupFolderApi.hasAccess$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[folderUri],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as bool;
+  }
+
+  /// Klasördeki dosyaların adları; klasöre erişilemiyorsa `null`.
+  Future<List<String>?> list(String folderUri) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.BackupFolderApi.list$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[folderUri],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
+    return (pigeonVar_replyValue as List<Object?>?)?.cast<String>();
+  }
+
+  /// Klasörde [name] adıyla yeni bir dosya açar, [bytes]'ı yazar, geri okuyup
+  /// karşılaştırır. Tutmazsa yeni dosyayı silmeyi dener ve `false` döner.
+  Future<bool> write(
+    String folderUri,
+    String name,
+    String mimeType,
+    Uint8List bytes,
+  ) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.BackupFolderApi.write$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[folderUri, name, mimeType, bytes],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as bool;
+  }
+
+  /// Klasörde adı [names] içinde olan dosyaları siler; silineni sayar.
+  Future<int> delete(String folderUri, List<String> names) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.BackupFolderApi.delete$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[folderUri, names],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as int;
+  }
+
+  /// [folderUri] için alınan kalıcı izni bırakır.
+  Future<void> release(String folderUri) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.BackupFolderApi.release$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[folderUri],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
   }
 }

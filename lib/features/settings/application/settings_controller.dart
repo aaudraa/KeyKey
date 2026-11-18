@@ -20,6 +20,7 @@ final settingsControllerProvider =
 class SettingsController extends Notifier<AppSettings?> {
   SettingsRepository? _repository;
   int _generation = 0;
+  Future<void> _queue = Future.value();
 
   @override
   AppSettings? build() {
@@ -84,14 +85,28 @@ class SettingsController extends Notifier<AppSettings?> {
   Future<void> setGenerator(GeneratorPreferences generator) =>
       _update((current) => current.copyWith(generator: generator));
 
-  Future<void> _update(AppSettings Function(AppSettings) change) async {
+  /// Otomatik yedeğin klasörü; `null` kapatır.
+  Future<void> setAutoBackupFolder(AutoBackupFolder? folder) =>
+      _update((current) => current.withAutoBackupFolder(folder));
+
+  /// Değişiklikler sırayla yazılır ve her biri sırası geldiğindeki güncel
+  /// ayarlara uygulanır; arka planda yazılan son yedek zamanı, kullanıcının
+  /// o sırada yaptığı bir değişikliği ezmez.
+  Future<void> _update(AppSettings Function(AppSettings) change) {
     final repository = _repository;
-    final current = state;
-    if (repository == null || current == null) {
-      throw const VaultLockedException();
+    if (repository == null || state == null) {
+      return Future.error(const VaultLockedException());
     }
-    final updated = change(current);
-    await repository.save(updated);
-    if (identical(_repository, repository)) state = updated;
+    final run = _queue.then((_) async {
+      final current = state;
+      if (!identical(_repository, repository) || current == null) {
+        throw const VaultLockedException();
+      }
+      final updated = change(current);
+      await repository.save(updated);
+      if (identical(_repository, repository)) state = updated;
+    });
+    _queue = run.then<void>((_) {}, onError: (Object _) {});
+    return run;
   }
 }

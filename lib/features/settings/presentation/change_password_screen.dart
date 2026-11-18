@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +11,7 @@ import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/vault/vault_service.dart';
+import 'package:keykey/features/backup/application/auto_backup_controller.dart';
 import 'package:keykey/features/backup/presentation/backup_section.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/new_password_fields.dart';
@@ -64,6 +67,8 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       _busy = true;
       _error = null;
     });
+    // Ekrandan çıkılsa da kullanılabilsin diye önceden alınır.
+    final autoBackup = ref.read(autoBackupControllerProvider.notifier);
     try {
       final attempt = await ref
           .read(vaultControllerProvider.notifier)
@@ -71,6 +76,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
             currentPassword: _current.text,
             newPassword: _password.text,
           );
+      // En yeni otomatik yedek yeni parolayla açılsın; kapalıysa bir şey
+      // yapmaz. Kullanıcı bu sırada ekrandan çıkmış olabilir.
+      if (attempt is PasswordAccepted) unawaited(autoBackup.backUpNow());
       if (!mounted) return;
       switch (attempt) {
         case PasswordAccepted():

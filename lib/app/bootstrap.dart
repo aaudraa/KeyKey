@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/platform/app_packages.dart';
+import 'package:keykey/core/platform/backup_folders.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/platform/export_file_picker.dart';
 import 'package:keykey/core/platform/pigeon_biometric_bridge.dart';
@@ -16,8 +17,10 @@ import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/data/import/platform_aes_gcm.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
+import 'package:keykey/features/backup/application/auto_backup_controller.dart';
 import 'package:keykey/features/backup/application/backup_service.dart';
 import 'package:keykey/features/backup/application/restore_service.dart';
+import 'package:keykey/features/backup/data/auto_backup_device.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/onboarding/application/terms_controller.dart';
@@ -67,6 +70,13 @@ Future<List<Override>> bootstrap() async {
     ];
   }
 
+  // Otomatik yedek dosyalarının adındaki cihaz kimliği: kasanın dışında,
+  // yedekle taşınmaz; aynı klasörü kullanan iki kurulumu ayırır.
+  final autoBackupDevice = await readOrCreateAutoBackupDevice(
+    File('${directory.path}/auto_backup_device'),
+    random: sodium.randombytes.buf,
+  );
+
   final store = VaultStore(database);
   final service = VaultService(
     sodium: sodium,
@@ -81,6 +91,8 @@ Future<List<Override>> bootstrap() async {
     qrImageReaderProvider.overrideWithValue(ZxingQrImageReader()),
     exportFilePickerProvider.overrideWithValue(FileSelectorExportPicker()),
     documentFilesProvider.overrideWithValue(PigeonDocumentFiles()),
+    backupFoldersProvider.overrideWithValue(PigeonBackupFolders()),
+    autoBackupDeviceProvider.overrideWithValue(autoBackupDevice),
     appPackagesProvider.overrideWithValue(PigeonAppPackages()),
     webLinksProvider.overrideWithValue(PigeonWebLinks()),
     backupServiceProvider.overrideWithValue(
