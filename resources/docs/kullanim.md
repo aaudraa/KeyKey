@@ -60,6 +60,7 @@ Eski telefonundan bir KeyKey yedeğin varsa kasa oluşturmak yerine **Yedekten g
 - **Parmak izi:** Ayarlar → Güvenlik → **Parmak iziyle aç**. Telefonunda parmak izi kayıtlı olmalı. Ana parola her zaman geçerlidir. Telefona yeni bir parmak izi eklersen ya da ekran kilidini kaldırırsan güvenlik gereği parmak iziyle açma kapanır; ana parolayla açıp yeniden açabilirsin.
 - **Yanlış parola:** Birkaç hatalı denemeden sonra yeni deneme için kısa bir süre beklemen gerekir; süre denemeler arttıkça uzar.
 - **Parolamı unuttum:** Kilit ekranındaki bu bağlantıyla kurtarma anahtarını girip kasayı açarsın, ardından yeni bir ana parola belirlersin.
+- **Kurtarma anahtarını kaybettiysen:** Ayarlar → Güvenlik → **Yeni kurtarma anahtarı**. Ana parolanı girersin, yeni anahtar bir kez gösterilir; kâğıda yaz ya da **Dosyaya kaydet** ile kaydet, sonra geri yazınca kaydedilir. Bu sırada başka bir uygulamaya geçersen kasa kilitlenir ve yenileme iptal olur; eski anahtar geçerli kalır ve KeyKey bunu kilidi açınca söyler. Eski anahtar artık bu kasayı açmaz, ama daha önce aldığın yedekleri açmaya devam eder; yeni bir yedek alıp eskilerini sil.
 - **Ana parolayı değiştirmek için:** Ayarlar → Güvenlik → **Ana parolayı değiştir**. Daha önce aldığın yedekler, otomatik yedek klasöründekiler de, eski parolayla açılmaya devam eder; değişiklikten sonra çıkan nottan yeni bir yedek alıp eskilerini silebilirsin. Otomatik yedek açıksa yeni parolalı yedek hemen klasöre yazılır.
 
 ## Parolalar

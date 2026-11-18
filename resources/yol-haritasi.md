@@ -2,7 +2,7 @@
 
 KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-18 · **Şu anki faz:** yok, Faz 12 bitti; [1.2.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.2.0) otomatik yedekle yayında; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
+**Son güncelleme:** 2026-11-18 · **Şu anki faz:** yok, Faz 13 bitti; 1.2.0 (otomatik yedek) ve 1.3.0 (yeni kurtarma anahtarı) etiketlendi, GitHub'da yayımlanmaları proje sahibinin onayını bekliyor; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
 
 > [!IMPORTANT]
 > **KeyKey 1.0 yayında.** Projenin kendi güvenlik denetimi tamamlandı, ama bağımsız bir denetim yapılmadı. Şifreli yedeğini düzenli al ve telefonun dışında da sakla.
@@ -26,6 +26,7 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 | 10 | F-Droid ve Obtainium | M | 9 | `faz/10-f-droid` | Tamamlandı |
 | 11 | Kullanıcı gözüyle iyileştirmeler | M | 10 | `faz/11-kullanici-gozuyle` | Tamamlandı |
 | 12 | Otomatik yedek | M | 11 | `faz/12-otomatik-yedek` | Tamamlandı (1.2.0) |
+| 13 | Yeni kurtarma anahtarı | S | 12 | `faz/13-kurtarma-anahtari` | Tamamlandı (1.3.0) |
 
 Büyüklük göreli iş miktarını gösterir, takvim sözü değildir. Faz 4 ve 5 aynı anda ilerleyebilir. İlerlemeyi [milestone'lardan](https://github.com/aaudraa/KeyKey/milestones) da izleyebilirsin.
 
@@ -548,9 +549,32 @@ Proje sahibi 2026-11-18'de sıradaki işi bana bıraktı; "1.0 sonrası" listesi
 
 Testler: 1439 birim ve arayüz testi. Gerçek Storage Access Framework testi ([`auto-backup-device-test.sh`](scripts/auto-backup-device-test.sh)) Android 17 ve 11 emülatörlerinde geçti, iki emülatörde de bütün entegrasyon testleri yeşil (2026-11-18 gecesi, son düzeltmelerden sonra). Sürüm `1.2.0+6` oldu.
 
-1.2.0 olarak yayımlandı (2026-11-18). Telefondaki KeyKey yayın anahtarıyla imzalı ve Obtainium'la kurulu; telefon denemesi Obtainium güncellemesinden sonra yapılır.
+1.2.0 olarak etiketlendi (2026-11-18); yayımlanması proje sahibinin onayını bekliyor (GitHub Actions → yayın işi → "Review deployments"). Telefondaki KeyKey yayın anahtarıyla imzalı ve Obtainium'la kurulu; telefon denemesi Obtainium güncellemesinden sonra yapılır.
 
 **Bitti sayılması için:** kayıt değişince seçilen klasörde doğrulanmış bir yedek oluşuyor ve geri yükleme ekranıyla açılıyor; budama yalnızca otomatik yedeklere dokunuyor; izin kalkınca hata ayarlarda görünüyor.
+
+### Faz 13 — Yeni kurtarma anahtarı
+
+Proje sahibi 2026-11-18 gecesi kalan işleri soru sormadan yapmamı istedi. "1.0 sonrası" listesinden bunu seçtim: kâğıt kaybolursa ya da anahtarın kaydedildiği dosya sızarsa bugün kurtarma anahtarını değiştirmenin yolu yok, ana parola ise değiştirilebiliyor. İnternet izni ya da proje sahibinin kararını gerektiren fikirlere dokunulmadı. Tasarım: [`kurtarma-anahtari-yenileme.md`](docs/kurtarma-anahtari-yenileme.md), plan: [`kurtarma-anahtari-yenileme-plani.md`](docs/kurtarma-anahtari-yenileme-plani.md).
+
+- [x] Kripto: yalnızca kurtarma yuvasını yeni rastgele anahtarla yeniden saran işlem; üst bilgi biçimi aynı
+- [x] Servis ve denetleyici: ana parola kilit ekranının yolundan, yeni yuva bellekte, geri yazılan anahtarla doğrulanınca tek yazma; kilit ve yarıda kalma
+- [x] Ayarlar → Güvenlik → "Yeni kurtarma anahtarı" ekranı; kurulumdaki anahtar adımları ortak bileşende
+- [x] Güvenlik tasarımı, kılavuz, değişiklik günlüğü, sürüm `1.3.0+7`
+- [x] Android 17 ve 11 emülatörlerinde bütün cihaz testleri
+- [x] Son gözden geçirme
+- [ ] Telefonda deneme (proje sahibiyle): yenileme, eski anahtarla kilit ekranında deneme
+
+**Durum (2026-11-18, gece):** Kodda bitti, 1.3.0 olarak etiketlendi. Uygulama sırasında verilen kararlar:
+
+- Yeni anahtar ekranında "Kopyala" yok. Kasa açıkken başka uygulamaya geçmek kasayı hemen kilitler; kopyalayıp not uygulamasına yapıştıran kullanıcı, yenileme sessizce iptal olduğu halde geçersiz bir anahtarı saklamış olurdu. Son gözden geçirme bunu buldu.
+- Anahtar doğrulanmadan kasa kilitlenirse kilit açılınca ayarlarda "kaydedilmedi, eski anahtar geçerli" uyarısı çıkar; uyarıdan yenileme yeniden başlatılabilir. İşaret yalnızca bellekte tutulur: uygulama kapanırsa uyarı çıkmaz, ama diske de bir şey yazılmamıştır.
+- Parola ya da kurtarma anahtarı değiştiği anda kasa kilitlenirse otomatik yedek kasa açılınca yazılır.
+- Ortak bileşenler `RecoveryWarningCard`, `RecoveryKeyCard`, `RecoveryKeyEntry`; dosya seçicinin kapıdan geçmesi `gated` ile seçilir (kurulumda kapalı).
+
+Testler: 1467 birim ve arayüz testi; cihaz testleri (yenilemenin gerçek libsodium'la denendiği test dahil) Android 17 ve 11'de geçti. Gözden geçirme düzeltmelerinden sonra Android 11'de bütünü yeniden çalıştı; Android 17'deki koşu düzeltmelerden önceydi (düzeltmeler yalnızca arayüz ve birim testleriyle kapsanıyor).
+
+**Bitti sayılması için:** yeni anahtar kasayı açıyor, eskisi açmıyor; yanlış parola ya da yarıda bırakma hiçbir şeyi değiştirmiyor; kurulum eskisi gibi çalışıyor.
 
 ## 1.0 sonrası
 
@@ -571,7 +595,6 @@ Bu fikirlerin hiçbiri henüz planlanmış değil. Sırası kullanıma göre bel
 | KeyKey klavyesi | Giriş kutularını doldurma sistemine bildirmeyen uygulamalarda da doldurmak için kendi klavyesi (KeePassDX'teki gibi). Erişilebilirlik servisi kullanmadan her uygulamada çalışır, ama büyük bir iş ve klavyenin kendisi de güvenlik incelemesi ister. Çıkış noktası: [#94](https://github.com/aaudraa/KeyKey/issues/94), [doldurma sistemine katılmayan ekranlar](docs/guvenlik-tasarimi.md#doldurma-sistemine-katılmayan-ekranlar). |
 | Windows, iOS, tarayıcı eklentisi | Windows derlemesi için araçlar hazır, iOS için Mac gerekir. |
 | Arka plan kilidinde bekleme süresi | Kullanıcının seçtiği kısa süre (30 sn, 1 dk), varsayılan "hemen". Telefon başkasının eline geçtiğinde kasa açık kalabilir; proje sahibinin kararı. Faz 11'de kilit açılınca kalınan yere dönülmesi sürtünmenin çoğunu giderdi. |
-| Yeni kurtarma anahtarı üretme | Kâğıt kaybolursa ya da kaydedilen dosya sızarsa. Kripto çekirdeğinde yeni işlem; eski yedekler eski anahtarla açılmaya devam eder. |
 | Gizli olmayan alanlarda normal klavye | Ad, site, klasör ve aramada büyük harf ve adres klavyesi. Bugün bütün kutular bilerek `visiblePassword` açıyor, çünkü klavyelerin çoğu öğrenme kapatma isteğini ancak böyle uyguluyor; normal klavyede kayıt adları ve siteler klavyenin sözlüğüne girebilir. Proje sahibinin kararı ([ayrıntı](docs/kullanici-gozuyle.md#proje-sahibinin-kararına-bırakılanlar)). |
 | KeePass (`.kdbx`) içe aktarma, toplu seçim | KDBX çoğunlukla Argon2d kullanır, libsodium'da yok. Toplu seçim: çoklu silme ve klasöre taşıma. |
 

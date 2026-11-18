@@ -165,6 +165,64 @@ class VaultService {
     }
   }
 
+  /// Ana parolayı kilit ekranının yolundan doğrular (sayaç ve bekleme dahil)
+  /// ve yeni bir kurtarma anahtarı hazırlar. Diske bir şey yazmaz; yazmayı
+  /// [confirmNewRecoveryKey] yapar. Sonuç [PasswordAccepted] değilse bekleyen
+  /// anahtar `null`'dır.
+  Future<(PasswordAttempt, PendingRecoveryKey?)> prepareNewRecoveryKey(
+    VaultSession session,
+    String currentPassword,
+  ) async {
+    // Argon2id sürerken kasa kilitlenebilir; işlem kendi kopyasıyla çalışır.
+    final vaultKey = session.vaultKey.copy();
+    try {
+      final (attempt, key) = await _checkPassword(
+        session.header,
+        currentPassword,
+      );
+      key?.dispose();
+      if (attempt is! PasswordAccepted) return (attempt, null);
+      final pending = PendingRecoveryKey(
+        vaultId: Uint8List.fromList(session.header.vaultId),
+        renewed: _crypto.newRecoveryKey(session.header, vaultKey),
+      );
+      return (attempt, pending);
+    } finally {
+      vaultKey.dispose();
+    }
+  }
+
+  /// Yazılan anahtar bekleyen yuvayı açıyorsa üst bilgiyi yazar ve oturumu
+  /// günceller. Üst bilgi oturumdaki güncel üst bilgiden kurulur, yalnızca
+  /// kurtarma yuvası değişir; arada parola değiştiyse yeni parola yuvası
+  /// korunur.
+  ///
+  /// Metin geçersizse [InvalidRecoveryKeyException], başka anahtarsa
+  /// [WrongSecretException] fırlatır; bu durumda diske bir şey yazılmaz.
+  /// Bekleyen anahtar başka bir kasanınsa [StateError].
+  Future<void> confirmNewRecoveryKey(
+    VaultSession session,
+    PendingRecoveryKey pending,
+    String typedRecoveryKey,
+  ) async {
+    final current = session.header;
+    if (!_sameBytes(current.vaultId, pending.vaultId)) {
+      throw StateError('Bekleyen kurtarma anahtarı başka bir kasanın.');
+    }
+    final header = current.withRecoverySlot(pending.renewed.recoverySlot);
+    _crypto.unlockWithRecoveryKey(header, typedRecoveryKey).dispose();
+    await _store.updateHeader(header);
+    session.header = header;
+  }
+
+  static bool _sameBytes(Uint8List a, Uint8List b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
   /// Kurtarma anahtarıyla girildikten sonra yeni parolayı yazar.
   Future<void> setNewPassword(VaultSession session, String newPassword) async {
     _requireAcceptable(newPassword);

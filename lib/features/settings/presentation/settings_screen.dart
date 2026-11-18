@@ -23,6 +23,7 @@ import 'package:keykey/features/autofill/presentation/autofill_setup_section.dar
 import 'package:keykey/features/backup/presentation/backup_section.dart';
 import 'package:keykey/features/backup/presentation/backup_status_card.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/settings/application/recovery_renewal_notice.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/settings/application/theme_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
@@ -43,6 +44,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void initState() {
     super.initState();
     unawaited(_loadBiometric());
+    _scheduleRenewalNotice();
+  }
+
+  /// Yeni kurtarma anahtarı doğrulanmadan kasa kilitlendiyse, kilit
+  /// açılınca bir kez söylenir: not alınan anahtar geçersiz, eskisi geçerli.
+  void _scheduleRenewalNotice() {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted || ref.read(vaultControllerProvider) is! VaultOpen) return;
+      if (!ref.read(recoveryRenewalInterruptedProvider.notifier).take()) {
+        return;
+      }
+      final l10n = AppLocalizations.of(context);
+      final retry = await showKkConfirm(
+        context,
+        title: l10n.newRecoveryInterruptedTitle,
+        message: l10n.newRecoveryInterruptedBody,
+        confirmLabel: l10n.newRecoveryRetry,
+        cancelLabel: l10n.newRecoveryInterruptedClose,
+      );
+      if (retry && mounted) unawaited(context.push(AppRoutes.newRecoveryKey));
+    });
   }
 
   Future<void> _loadBiometric() async {
@@ -176,6 +198,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    // Ekran kilit boyunca açık kaldıysa uyarı kasa açılınca çıkar.
+    ref.listen(vaultControllerProvider, (previous, next) {
+      if (previous is! VaultOpen && next is VaultOpen) _scheduleRenewalNotice();
+    });
     final settings = ref.watch(settingsControllerProvider);
     final version = ref.watch(appVersionProvider).value;
     final themeMode = ref.watch(themeModeProvider);
@@ -196,6 +222,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     title: Text(l10n.changePasswordTitle),
                     trailing: const Icon(Icons.chevron_right_rounded),
                     onTap: () => context.push(AppRoutes.changePassword),
+                  ),
+                  ListTile(
+                    leading: const KkIconBox(icon: Icons.key_rounded),
+                    title: Text(l10n.newRecoveryTitle),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () => context.push(AppRoutes.newRecoveryKey),
                   ),
                   if (_support == BiometricSupport.available)
                     KkSwitchTile(

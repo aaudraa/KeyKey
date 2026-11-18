@@ -1,0 +1,1 @@
+New recovery key: if you lost your paper or someone else saw your key, create a new one in Settings → Security. You confirm with your master password; once you write the new key back, the old one no longer opens this vault.

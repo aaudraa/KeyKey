@@ -171,6 +171,54 @@ class FakeVaultService implements VaultService {
     changedPassword = newPassword;
   }
 
+  /// Yeni kurtarma anahtarı olarak gösterilen metin (55 karakter).
+  static const newRecoveryKey =
+      'NNNNN-PPPPP-QQQQQ-RRRRR-SSSSS-TTTTT-VVVVV-WWWWW-XXXXX-YYYYY-ZZZZZ';
+
+  /// Doğrulanıp yazılan yeni kurtarma anahtarı.
+  String? confirmedRecoveryKey;
+
+  @override
+  Future<(PasswordAttempt, PendingRecoveryKey?)> prepareNewRecoveryKey(
+    VaultSession session,
+    String currentPassword,
+  ) async {
+    if (currentWait > Duration.zero) {
+      return (PasswordMustWait(currentWait), null);
+    }
+    if (currentPassword != correctPassword) {
+      return (PasswordRejected(waitAfterReject), null);
+    }
+    await changeGate?.future;
+    return (
+      const PasswordAccepted(),
+      PendingRecoveryKey(
+        vaultId: header.vaultId,
+        renewed: NewRecoveryKey(
+          recoverySlot: header.recoverySlot,
+          recoveryKeyText: newRecoveryKey,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Future<void> confirmNewRecoveryKey(
+    VaultSession session,
+    PendingRecoveryKey pending,
+    String typedRecoveryKey,
+  ) async {
+    await changeGate?.future;
+    final symbols = RecoveryKeyCodec.symbolsOf(typedRecoveryKey);
+    if (symbols.length != RecoveryKeyCodec.textLength) {
+      throw const InvalidRecoveryKeyException('Geçersiz.');
+    }
+    if (symbols != RecoveryKeyCodec.symbolsOf(pending.recoveryKeyText)) {
+      throw const WrongSecretException();
+    }
+    confirmedRecoveryKey = pending.recoveryKeyText;
+  }
+
   BiometricSupport biometricSupportValue = BiometricSupport.unavailable;
   bool biometricEnabled = false;
 

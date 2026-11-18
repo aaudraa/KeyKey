@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:keykey/core/crypto/record_cipher.dart';
 import 'package:keykey/core/crypto/vault_crypto.dart';
 import 'package:keykey/core/crypto/vault_header.dart';
@@ -63,4 +65,19 @@ final class PendingVault {
   String get recoveryKeyText => created.recoveryKeyText;
 
   void dispose() => created.vaultKey.dispose();
+}
+
+/// Hazırlanmış ama henüz diske yazılmamış yeni kurtarma anahtarı.
+///
+/// Kullanıcı anahtarı geri yazıp doğrulayana kadar yalnızca bellekte durur;
+/// vazgeçilirse bırakılır ve kasa eski anahtarla kalır. Metin kullanıcıya bir
+/// kez gösterilir.
+final class PendingRecoveryKey {
+  const new({required this.vaultId, required this.renewed});
+
+  /// Hazırlandığı kasanın kimliği; başka kasaya yazılmasın diye.
+  final Uint8List vaultId;
+  final NewRecoveryKey renewed;
+
+  String get recoveryKeyText => renewed.recoveryKeyText;
 }

@@ -1,6 +1,7 @@
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/storage/vault_database.dart';
 import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/vault_service.dart';
@@ -214,6 +215,81 @@ void main() {
         expect(attempt, isA<PasswordAccepted>());
       },
     );
+  });
+
+  group('yeni kurtarma anahtarı', () {
+    Future<(String, PendingRecoveryKey)> openAndPrepare() async {
+      final text = await controller().prepareVault(password);
+      await controller().confirmSetup(text);
+      final (attempt, pending) = await controller().prepareNewRecoveryKey(
+        password,
+      );
+      expect(attempt, isA<PasswordAccepted>());
+      return (text, pending!);
+    }
+
+    test('doğrulanınca kilit yeni anahtarı kullanıyor', () async {
+      final (oldText, pending) = await openAndPrepare();
+
+      await controller().confirmNewRecoveryKey(
+        pending,
+        pending.recoveryKeyText,
+      );
+      controller().lock();
+
+      expect(
+        () => controller().unlockWithRecoveryKey(oldText),
+        throwsA(isA<WrongSecretException>()),
+      );
+      controller().unlockWithRecoveryKey(pending.recoveryKeyText);
+      expect(status(), isA<VaultRecovering>());
+    });
+
+    test('hazırlarken kilitlenirse yarıda kalıyor', () async {
+      final text = await controller().prepareVault(password);
+      await controller().confirmSetup(text);
+      final before = (await service.readHeader())!.toJsonString();
+
+      final running = controller().prepareNewRecoveryKey(password);
+      controller().lock();
+      final (attempt, pending) = await running;
+
+      expect(attempt, isA<PasswordInterrupted>());
+      expect(pending, isNull);
+      expect((await service.readHeader())!.toJsonString(), before);
+    });
+
+    test(
+      'doğrularken kilitlenirse kilit diskteki üst bilgiyi kullanıyor',
+      () async {
+        final (_, pending) = await openAndPrepare();
+
+        final running = controller().confirmNewRecoveryKey(
+          pending,
+          pending.recoveryKeyText,
+        );
+        controller().lock();
+        await running;
+
+        final locked = status() as VaultLocked;
+        expect(
+          locked.header.toJsonString(),
+          (await service.readHeader())!.toJsonString(),
+        );
+        controller().unlockWithRecoveryKey(pending.recoveryKeyText);
+        expect(status(), isA<VaultRecovering>());
+      },
+    );
+
+    test('kilitliyken doğrulama yapılamıyor', () async {
+      final (_, pending) = await openAndPrepare();
+      controller().lock();
+
+      await expectLater(
+        controller().confirmNewRecoveryKey(pending, pending.recoveryKeyText),
+        throwsA(isA<VaultLockedException>()),
+      );
+    });
   });
 
   group('kurtarma', () {

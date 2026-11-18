@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/core/crypto/associated_data.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/crypto/kdf_params.dart';
+import 'package:keykey/core/crypto/recovery_key.dart';
 import 'package:keykey/core/crypto/vault_crypto.dart';
 import 'package:keykey/core/crypto/vault_header.dart';
 import 'package:sodium/sodium_sumo.dart';
@@ -202,6 +203,63 @@ void main() {
       );
 
       expect(raised.kdf.opsLimit, 5);
+    });
+  });
+
+  group('kurtarma anahtarını yenileme', () {
+    late NewRecoveryKey renewed;
+    late VaultHeader header;
+
+    setUpAll(() {
+      renewed = crypto.newRecoveryKey(vault.header, vault.vaultKey);
+      header = vault.header.withRecoverySlot(renewed.recoverySlot);
+    });
+
+    test('yeni anahtar aynı kasa anahtarını veriyor', () {
+      expect(
+        bytesOf(crypto.unlockWithRecoveryKey(header, renewed.recoveryKeyText)),
+        vaultKeyBytes,
+      );
+    });
+
+    test('eski anahtar artık çalışmıyor', () {
+      expect(
+        () => crypto.unlockWithRecoveryKey(header, vault.recoveryKeyText),
+        throwsWrongSecret(),
+      );
+    });
+
+    test('ana parola çalışmaya devam ediyor', () async {
+      expect(
+        bytesOf(await crypto.unlockWithPassword(header, password)),
+        vaultKeyBytes,
+      );
+    });
+
+    test('yalnızca kurtarma yuvası değişiyor', () {
+      expect(header.vaultId, vault.header.vaultId);
+      expect(header.kdf.salt, vault.header.kdf.salt);
+      expect(header.kdf.opsLimit, vault.header.kdf.opsLimit);
+      expect(header.passwordSlot.nonce, vault.header.passwordSlot.nonce);
+      expect(
+        header.passwordSlot.cipherText,
+        vault.header.passwordSlot.cipherText,
+      );
+      expect(header.recoverySlot.nonce, isNot(vault.header.recoverySlot.nonce));
+    });
+
+    test('her yenileme farklı bir anahtar veriyor', () {
+      final again = crypto.newRecoveryKey(vault.header, vault.vaultKey);
+      expect(again.recoveryKeyText, isNot(renewed.recoveryKeyText));
+      expect(again.recoveryKeyText, isNot(vault.recoveryKeyText));
+    });
+
+    test('metin kurulumdaki biçimde', () {
+      expect(renewed.recoveryKeyText.length, vault.recoveryKeyText.length);
+      expect(
+        RecoveryKeyCodec.symbolsOf(renewed.recoveryKeyText),
+        hasLength(RecoveryKeyCodec.textLength),
+      );
     });
   });
 

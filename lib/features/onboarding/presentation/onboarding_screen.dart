@@ -1,21 +1,15 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/app/ui/keykey_logo.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
-import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
-import 'package:keykey/core/crypto/recovery_key.dart';
-import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/features/backup/presentation/restore_screen.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/new_password_fields.dart';
-import 'package:keykey/features/lock/presentation/recovery_key_formatter.dart';
+import 'package:keykey/features/lock/presentation/recovery_key_steps.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 enum _Step { password, showKey, verifyKey }
@@ -107,27 +101,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
-  /// Yazılan anahtarın neresinin yanlış olduğunu söyler: eksik veya fazla
-  /// karakter, yoksa farklı olan ilk grup. Anahtar zaten ekranda gösterildi;
-  /// karşılaştırma yalnızca yol gösterir, asıl doğrulama kurtarma yuvası
-  /// açılarak yapılır.
-  String _mismatchHint(AppLocalizations l10n, String fallback) {
-    final shown = _recoveryKeyText;
-    if (shown == null) return fallback;
-    final typed = RecoveryKeyCodec.symbolsOf(_typedKey.text);
-    final expected = RecoveryKeyCodec.symbolsOf(shown);
-    if (typed.length != expected.length) {
-      return l10n.recoveryKeyLength(typed.length, expected.length);
-    }
-    const size = RecoveryKeyCodec.groupLength;
-    for (var start = 0; start < expected.length; start += size) {
-      final end = (start + size).clamp(0, expected.length);
-      if (typed.substring(start, end) != expected.substring(start, end)) {
-        return l10n.recoveryKeyGroupWrong(start ~/ size + 1);
-      }
-    }
-    return fallback;
-  }
+  String _mismatchHint(AppLocalizations l10n, String fallback) =>
+      recoveryKeyMismatchHint(
+        l10n,
+        shown: _recoveryKeyText,
+        typed: _typedKey.text,
+        fallback: fallback,
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -217,7 +197,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       const SizedBox(height: 16),
       Text(l10n.setupIntro),
       const SizedBox(height: 12),
-      _WarningCard(text: l10n.setupPasswordWarning),
+      RecoveryWarningCard(text: l10n.setupPasswordWarning),
       const SizedBox(height: 16),
       GlassSurface(
         padding: const EdgeInsets.all(12),
@@ -246,105 +226,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     ];
   }
 
-  /// Anahtarı güvenli panoya kopyalar; pano 30 saniye sonra temizlenir.
-  Future<void> _copyKey() async {
-    final text = _recoveryKeyText;
-    if (text == null) return;
-    await copySensitive(context, ref, text);
-  }
-
-  /// Anahtarı kullanıcının seçtiği yere metin dosyası olarak kaydeder.
-  /// Kurulum sırasında arka plan kilidi çalışmadığı için seçici kapıdan
-  /// geçmez (guvenlik-tasarimi.md, Kasa oluşturma).
-  Future<void> _saveKeyFile() async {
-    final text = _recoveryKeyText;
-    if (text == null) return;
-    final l10n = AppLocalizations.of(context);
-    final snack = kkSnackFor(context);
-    final result = await ref
-        .read(documentFilesProvider)
-        .save(
-          suggestedName: l10n.recoveryFileName,
-          mimeType: 'text/plain',
-          bytes: utf8.encode('${l10n.recoveryFileHeader}\n$text\n'),
-        );
-    switch (result) {
-      case DocumentSaveResult.saved:
-        snack(l10n.recoveryFileSaved);
-      case DocumentSaveResult.failed:
-        snack(l10n.recoveryFileFailed);
-      case DocumentSaveResult.cancelled:
-        break;
-    }
-  }
-
-  /// Kaydedilmiş dosyadan anahtarı okuyup kutuya yazar. Anahtar,
-  /// karakterleri tam bir anahtar uzunluğunda olan ilk satırdır.
-  Future<void> _readKeyFile() async {
-    final l10n = AppLocalizations.of(context);
-    final snack = kkSnackFor(context);
-    final result = await ref
-        .read(documentFilesProvider)
-        .open(mimeTypes: const ['text/plain'], maxBytes: 4096);
-    if (result is DocumentOpenCancelled) return;
-    String? line;
-    if (result is DocumentOpened) {
-      final text = utf8.decode(result.bytes, allowMalformed: true);
-      result.bytes.fillRange(0, result.bytes.length, 0);
-      for (final candidate in const LineSplitter().convert(text)) {
-        if (RecoveryKeyCodec.symbolsOf(candidate).length ==
-            RecoveryKeyCodec.textLength) {
-          line = candidate;
-          break;
-        }
-      }
-    }
-    if (!mounted) return;
-    if (line == null) {
-      snack(l10n.recoveryFileNoKey);
-      return;
-    }
-    _typedKey.value = RecoveryKeyFormatter().formatEditUpdate(
-      TextEditingValue.empty,
-      TextEditingValue(text: line.trim()),
-    );
-    setState(() => _error = null);
-  }
-
   List<Widget> _showKeyStep(AppLocalizations l10n) {
     return [
       Text(l10n.recoveryShowIntro),
       const SizedBox(height: 12),
-      _WarningCard(text: l10n.recoveryShowWarning),
+      RecoveryWarningCard(text: l10n.recoveryShowWarning),
       const SizedBox(height: 16),
-      GlassSurface(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Text(
-            _recoveryKeyText ?? '',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleMedium
-                ?.copyWith(fontFamily: 'monospace', height: 1.6),
-          ),
-        ),
-      ),
-      const SizedBox(height: 8),
-      Wrap(
-        alignment: WrapAlignment.center,
-        spacing: 8,
-        children: [
-          TextButton.icon(
-            onPressed: _copyKey,
-            icon: const Icon(Icons.copy_rounded),
-            label: Text(l10n.recoveryCopy),
-          ),
-          TextButton.icon(
-            onPressed: _saveKeyFile,
-            icon: const Icon(Icons.save_alt_rounded),
-            label: Text(l10n.recoverySaveFile),
-          ),
-        ],
-      ),
+      RecoveryKeyCard(text: _recoveryKeyText ?? '', gated: false),
       const SizedBox(height: 8),
       FilledButton(
         onPressed: () => setState(() {
@@ -360,35 +248,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return [
       Text(l10n.recoveryVerifyIntro),
       const SizedBox(height: 16),
-      GlassSurface(
-        padding: const EdgeInsets.all(4),
-        child: SecretField(
-          controller: _typedKey,
-          label: l10n.recoveryKeyLabel,
-          obscure: false,
-          autofocus: true,
-          enabled: !_busy,
-          errorText: _error,
-          helperText: l10n.recoveryKeyProgress(
-            RecoveryKeyCodec.symbolsOf(_typedKey.text).length,
-            RecoveryKeyCodec.textLength,
-          ),
-          // Tireler kendiliğinden gelir; uzun anahtar satıra sığmazsa alta
-          // geçer.
-          inputFormatters: [RecoveryKeyFormatter()],
-          style: const TextStyle(fontFamily: 'monospace'),
-          maxLines: 3,
-          onChanged: (_) => setState(() {}),
-          onSubmitted: (_) => _verify(),
-        ),
-      ),
-      Align(
-        alignment: AlignmentDirectional.centerEnd,
-        child: TextButton.icon(
-          onPressed: _busy ? null : _readKeyFile,
-          icon: const Icon(Icons.file_open_outlined),
-          label: Text(l10n.recoveryReadFile),
-        ),
+      RecoveryKeyEntry(
+        controller: _typedKey,
+        enabled: !_busy,
+        gated: false,
+        errorText: _error,
+        onChanged: () => setState(() {}),
+        onRead: () => setState(() => _error = null),
+        onSubmitted: _verify,
       ),
       const SizedBox(height: 8),
       FilledButton(
@@ -406,28 +273,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         child: Text(l10n.recoveryVerifyBack),
       ),
     ];
-  }
-}
-
-class _WarningCard extends StatelessWidget {
-  const new({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    // Opak: uyarının okunurluğu zemine bağlı kalmasın.
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.errorContainer,
-        borderRadius: const BorderRadius.all(Radius.circular(22)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Text(text, style: TextStyle(color: colors.onErrorContainer)),
-      ),
-    );
   }
 }
 

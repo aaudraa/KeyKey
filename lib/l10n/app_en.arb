@@ -275,6 +275,58 @@
   "@changePasswordBackupLater": {
     "description": "Closes the note without a backup."
   },
+  "newRecoveryTitle": "New recovery key",
+  "@newRecoveryTitle": {
+    "description": "Settings row and screen title for replacing the recovery key."
+  },
+  "newRecoveryIntro": "If you lost your recovery key or think someone else has seen it, create a new one. Enter your master password first.",
+  "@newRecoveryIntro": {
+    "description": "First step of the new recovery key screen."
+  },
+  "newRecoveryWarning": "Once you save the new key, your old recovery key no longer opens this vault. Backups you made earlier still open with the old key.",
+  "@newRecoveryWarning": {
+    "description": "Warning card on the first step."
+  },
+  "newRecoveryContinue": "Continue",
+  "@newRecoveryContinue": {
+    "description": "Checks the master password and shows the new key."
+  },
+  "newRecoveryChecking": "Checking…",
+  "@newRecoveryChecking": {
+    "description": "Button label while the master password is checked."
+  },
+  "newRecoverySave": "Verify and save",
+  "@newRecoverySave": {
+    "description": "Verifies the typed key and saves it as the new recovery key."
+  },
+  "newRecoveryDone": "New recovery key saved",
+  "@newRecoveryDone": {
+    "description": "Title of the note and snack after the new key is saved."
+  },
+  "newRecoveryShowWarning": "Write it on paper or use \"Save to file\". If you switch to another app or leave the screen idle for long, the vault locks and the renewal is cancelled; your old key stays valid. The new key only takes effect after you verify it.",
+  "@newRecoveryShowWarning": {
+    "description": "Warning on the step that shows the new recovery key."
+  },
+  "newRecoveryInterruptedTitle": "New recovery key not saved",
+  "@newRecoveryInterruptedTitle": {
+    "description": "Shown after unlocking when the vault locked before the new key was verified."
+  },
+  "newRecoveryInterruptedBody": "The vault locked before the new key was verified. Your old recovery key is still valid; the new key you noted does not open this vault, so delete it. You can start the renewal again.",
+  "@newRecoveryInterruptedBody": {
+    "description": "Body of the not-saved note."
+  },
+  "newRecoveryRetry": "Try again",
+  "@newRecoveryRetry": {
+    "description": "Opens the new recovery key screen again."
+  },
+  "newRecoveryInterruptedClose": "OK",
+  "@newRecoveryInterruptedClose": {
+    "description": "Closes the not-saved note."
+  },
+  "newRecoveryBackupNote": "Your old recovery key no longer opens this vault, but it still opens backups you made earlier, including those in the automatic backup folder. Make a new backup and delete the old ones.",
+  "@newRecoveryBackupNote": {
+    "description": "Note after saving the new key."
+  },
   "settingsLockNow": "Lock now",
   "@settingsLockNow": {
     "description": "Settings entry: lock the vault immediately."

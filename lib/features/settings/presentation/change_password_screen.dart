@@ -78,7 +78,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
           );
       // En yeni otomatik yedek yeni parolayla açılsın; kapalıysa bir şey
       // yapmaz. Kullanıcı bu sırada ekrandan çıkmış olabilir.
-      if (attempt is PasswordAccepted) unawaited(autoBackup.backUpNow());
+      if (attempt is PasswordAccepted) {
+        unawaited(autoBackup.backUpNowOrOnOpen());
+      }
       if (!mounted) return;
       switch (attempt) {
         case PasswordAccepted():

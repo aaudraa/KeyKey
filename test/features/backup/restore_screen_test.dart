@@ -171,11 +171,13 @@ void main() {
       );
       await tester.tap(find.byIcon(Icons.settings_outlined));
       await tester.pumpAndSettle();
-      // Otomatik yedek açıkken satır aşağıda kalır.
-      if (settings != null) {
-        await tester.ensureVisible(find.text('Yedekten geri yükle'));
-        await tester.pumpAndSettle();
-      }
+      // Satır listenin aşağısında; altta yüzen menünün arkasında kalmasın.
+      await tester.scrollUntilVisible(find.text('Yedekten geri yükle'), 100);
+      Scrollable.ensureVisible(
+        tester.element(find.text('Yedekten geri yükle')),
+        alignment: 0.5,
+      );
+      await tester.pumpAndSettle();
       final container = ProviderScope.containerOf(
         tester.element(find.text('Yedekten geri yükle')),
       );
@@ -204,7 +206,8 @@ void main() {
         find.text('2 kayıt eklendi, 1 kayıt güncellendi.'),
         findsOneWidget,
       );
-      expect(find.text('Yedekle'), findsOneWidget);
+      // Ayarlara dönüldü.
+      expect(find.text('Yedekten geri yükle'), findsOneWidget);
     });
 
     testWidgets('değiştirme onay istiyor, vazgeçilirse bir şey olmuyor', (

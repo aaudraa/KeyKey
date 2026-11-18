@@ -24,6 +24,15 @@ final class CreatedVault {
   final String recoveryKeyText;
 }
 
+/// Yeniden üretilmiş bir kurtarma anahtarı: yeni yuva ve kullanıcıya bir kez
+/// gösterilecek metin. Metin saklanmaz.
+final class NewRecoveryKey {
+  const new({required this.recoverySlot, required this.recoveryKeyText});
+
+  final WrappedKey recoverySlot;
+  final String recoveryKeyText;
+}
+
 /// Kasa anahtarını üretir, sarar ve açar.
 final class VaultCrypto {
   new(this._sodium)
@@ -109,6 +118,26 @@ final class VaultCrypto {
       return _unwrap(kek, header.recoverySlot, _recoveryAd(header.vaultId));
     } finally {
       kek.dispose();
+      recoveryKey.fillRange(0, recoveryKey.length, 0);
+    }
+  }
+
+  /// Yeni bir rastgele kurtarma anahtarı üretir ve kasa anahtarını onunla
+  /// sarar. Kasa anahtarı, parola yuvası ve KDF parametreleri aynı kalır;
+  /// yuva [VaultHeader.withRecoverySlot] ile üst bilgiye konur. Eski anahtar
+  /// yeni üst bilgiyi açmaz.
+  NewRecoveryKey newRecoveryKey(VaultHeader header, SecureKey vaultKey) {
+    final recoveryKey = _sodium.randombytes.buf(RecoveryKeyCodec.keyLength);
+    try {
+      return NewRecoveryKey(
+        recoverySlot: _wrapWithRecoveryKey(
+          vaultKey,
+          recoveryKey,
+          header.vaultId,
+        ),
+        recoveryKeyText: _recoveryCodec.encode(recoveryKey),
+      );
+    } finally {
       recoveryKey.fillRange(0, recoveryKey.length, 0);
     }
   }
