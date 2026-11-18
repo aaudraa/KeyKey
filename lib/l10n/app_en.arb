@@ -1665,6 +1665,10 @@
   "@backupFilePrefix": {
     "description": "Start of the suggested backup file name, before the date. Lowercase, no spaces."
   },
+  "autoBackupFilePrefix": "keykey-auto",
+  "@autoBackupFilePrefix": {
+    "description": "Start of automatic backup file names, before the date and time. Lowercase, no spaces. Changing it later is safe: both the Turkish and English prefixes are recognised when old backups are pruned."
+  },
   "exportFilePrefix": "keykey-export",
   "@exportFilePrefix": {
     "description": "Start of the suggested plaintext export file name, before the date. Lowercase, no spaces."

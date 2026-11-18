@@ -353,6 +353,7 @@
   "autofillWarnWebViewUnknown": "Bu uygulama içinde bir web sayfası gösteriyor. KeyKey sayfanın kime ait olduğunu doğrulayamaz; doldurulan parolayı uygulama okuyabilir.",
   "backupCreate": "Yedek al",
   "backupFilePrefix": "keykey-yedek",
+  "autoBackupFilePrefix": "keykey-otomatik",
   "exportFilePrefix": "keykey-disa-aktarma",
   "backupHelp": "Yedek dosyası şifrelidir; şu anki ana parolanla veya kurtarma anahtarınla açılır. Bu telefon kaybolursa verini geri almanın tek yolu budur.",
   "backupSaved": "Yedek kaydedildi.",
