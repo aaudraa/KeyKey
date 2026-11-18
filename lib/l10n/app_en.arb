@@ -303,6 +303,26 @@
   "@newRecoveryDone": {
     "description": "Title of the note and snack after the new key is saved."
   },
+  "newRecoveryShowWarning": "Write it on paper or use \"Save to file\". If you switch to another app or leave the screen idle for long, the vault locks and the renewal is cancelled; your old key stays valid. The new key only takes effect after you verify it.",
+  "@newRecoveryShowWarning": {
+    "description": "Warning on the step that shows the new recovery key."
+  },
+  "newRecoveryInterruptedTitle": "New recovery key not saved",
+  "@newRecoveryInterruptedTitle": {
+    "description": "Shown after unlocking when the vault locked before the new key was verified."
+  },
+  "newRecoveryInterruptedBody": "The vault locked before the new key was verified. Your old recovery key is still valid; the new key you noted does not open this vault, so delete it. You can start the renewal again.",
+  "@newRecoveryInterruptedBody": {
+    "description": "Body of the not-saved note."
+  },
+  "newRecoveryRetry": "Try again",
+  "@newRecoveryRetry": {
+    "description": "Opens the new recovery key screen again."
+  },
+  "newRecoveryInterruptedClose": "OK",
+  "@newRecoveryInterruptedClose": {
+    "description": "Closes the not-saved note."
+  },
   "newRecoveryBackupNote": "Your old recovery key no longer opens this vault, but it still opens backups you made earlier, including those in the automatic backup folder. Make a new backup and delete the old ones.",
   "@newRecoveryBackupNote": {
     "description": "Note after saving the new key."

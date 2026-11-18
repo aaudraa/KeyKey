@@ -74,9 +74,10 @@ class AutoBackupController extends Notifier<AutoBackupStatus> {
   /// kopya bırakmasın.
   DateTime? _lastStamp;
 
-  /// Kurtarma anahtarıyla yeni parola belirlendi; ayarlar yüklenince değişiklik
-  /// ölçütüne bakmadan yazılır, en yeni yedek yeni parolayla açılsın.
-  bool _passwordReset = false;
+  /// Üst bilgi değişti (kurtarma anahtarıyla yeni parola ya da kasa kilitliyken
+  /// istenen yedek); ayarlar yüklenince değişiklik ölçütüne bakmadan yazılır,
+  /// en yeni yedek yeni üst bilgiyle açılsın.
+  bool _forceOnOpen = false;
 
   @override
   AutoBackupStatus build() {
@@ -92,14 +93,14 @@ class AutoBackupController extends Notifier<AutoBackupStatus> {
       // doldurmanın kaydettiği değişiklikler burada yakalanır.
       ..listen(vaultControllerProvider, (previous, next) {
         if (previous is VaultRecovering && next is VaultOpen) {
-          _passwordReset = true;
+          _forceOnOpen = true;
         }
       })
       ..listen(settingsControllerProvider, (previous, next) {
         if (previous == null && next != null) {
           unawaited(_checkAccess(next.autoBackupFolder));
-          if (_passwordReset) {
-            _passwordReset = false;
+          if (_forceOnOpen) {
+            _forceOnOpen = false;
             unawaited(backUpNow());
           } else {
             _schedule();
@@ -114,6 +115,16 @@ class AutoBackupController extends Notifier<AutoBackupStatus> {
   /// Değişiklik ölçütüne bakmadan şimdi yazar. Otomatik yedek kapalıysa veya
   /// yazılamazsa `false`.
   Future<bool> backUpNow() => _enqueue(force: true);
+
+  /// Ana parola ya da kurtarma anahtarı değişince: kasa açıksa hemen yazar;
+  /// bu sırada kilitlendiyse kasa yeniden açılınca yazar.
+  Future<bool> backUpNowOrOnOpen() async {
+    if (ref.read(vaultControllerProvider) is VaultOpen) {
+      return await backUpNow();
+    }
+    _forceOnOpen = true;
+    return false;
+  }
 
   /// Yeni klasörü kaydeder, öncekinin iznini bırakır ve hemen yedekler.
   /// Kasa kilitliyse `VaultLockedException`.
@@ -155,7 +166,7 @@ class AutoBackupController extends Notifier<AutoBackupStatus> {
 
   void _onLock() {
     _generation++;
-    _passwordReset = false;
+    _forceOnOpen = false;
     _timer?.cancel();
     _timer = null;
     state = const AutoBackupStatus();

@@ -208,6 +208,7 @@ class FakeVaultService implements VaultService {
     PendingRecoveryKey pending,
     String typedRecoveryKey,
   ) async {
+    await changeGate?.future;
     final symbols = RecoveryKeyCodec.symbolsOf(typedRecoveryKey);
     if (symbols.length != RecoveryKeyCodec.textLength) {
       throw const InvalidRecoveryKeyException('Geçersiz.');

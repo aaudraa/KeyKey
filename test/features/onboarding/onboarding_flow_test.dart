@@ -3,8 +3,10 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/core/platform/document_files.dart';
+import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:sodium/sodium_sumo.dart';
@@ -330,8 +332,14 @@ void main() {
 
     testWidgets('anahtar metin dosyası olarak kaydediliyor', (tester) async {
       await goToShowKey(tester);
+      final container = ProviderScope.containerOf(
+        tester.element(find.text('Dosyaya kaydet')),
+      );
+      documents.readGate = () => container.read(externalActivityGateProvider);
       await tester.tap(find.text('Dosyaya kaydet'));
       await tester.pump();
+      // Kurulumda kasa yok; seçici dış etkinlik kapısından geçmez.
+      expect(documents.gateWasActive, isFalse);
       expect(documents.savedName, 'keykey-kurtarma-anahtari.txt');
       expect(
         utf8.decode(documents.savedBytes!),

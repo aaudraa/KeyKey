@@ -17,6 +17,7 @@ import 'package:keykey/features/backup/presentation/backup_section.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/recovery_key_steps.dart';
 import 'package:keykey/features/lock/presentation/wait_countdown.dart';
+import 'package:keykey/features/settings/application/recovery_renewal_notice.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Yeni kurtarma anahtarı: ana parola, yeni anahtarı gösterme, geri yazarak
@@ -43,12 +44,41 @@ class _NewRecoveryKeyScreenState extends ConsumerState<NewRecoveryKeyScreen> {
   bool _busy = false;
   String? _error;
 
+  /// Doğrulama sürüyor: kilit bu sırada gelirse sonuç yazmanın bitip
+  /// bitmediğine bağlı, işareti doğrulamanın sonucu koyar.
+  bool _confirming = false;
+  bool _lockedWhileConfirming = false;
+  late final VaultController _vault;
+  late final RecoveryRenewalInterrupted _interrupted;
+
+  @override
+  void initState() {
+    super.initState();
+    _vault = ref.read(vaultControllerProvider.notifier)
+      ..addLockListener(_onLock);
+    _interrupted = ref.read(recoveryRenewalInterruptedProvider.notifier);
+  }
+
+  /// Kilitte yeni anahtar bellekten bırakılır. Anahtar gösterilmiş ama
+  /// doğrulanmamışsa kilit açılınca kullanıcıya söylenir: not aldığı anahtar
+  /// geçersiz, eskisi geçerli.
+  void _onLock() {
+    if (_confirming) {
+      _lockedWhileConfirming = true;
+    } else if (_pending != null) {
+      _interrupted.mark();
+    }
+    _pending = null;
+    _typedKey.clear();
+  }
+
   /// Yanlış parolalardan sonra kalan bekleme; kilit ekranındaki sayaçla aynı.
   Duration _wait = Duration.zero;
   late final _countdown = WaitCountdown((left) => setState(() => _wait = left));
 
   @override
   void dispose() {
+    _vault.removeLockListener(_onLock);
     _countdown.dispose();
     _password.dispose();
     _typedKey.dispose();
@@ -104,13 +134,14 @@ class _NewRecoveryKeyScreenState extends ConsumerState<NewRecoveryKeyScreen> {
       _busy = true;
       _error = null;
     });
+    _confirming = true;
+    _lockedWhileConfirming = false;
     try {
-      await ref
-          .read(vaultControllerProvider.notifier)
-          .confirmNewRecoveryKey(pending, _typedKey.text);
-      // En yeni otomatik yedek yeni anahtarla açılsın; kapalıysa bir şey
-      // yapmaz.
-      unawaited(autoBackup.backUpNow());
+      await _vault.confirmNewRecoveryKey(pending, _typedKey.text);
+      _confirming = false;
+      // En yeni otomatik yedek yeni anahtarla açılsın; bu sırada kilitlendiyse
+      // kasa açılınca yazılır. Kapalıysa bir şey yapmaz.
+      unawaited(autoBackup.backUpNowOrOnOpen());
       if (!mounted) return;
       setState(() => _busy = false);
       final backUp = await showKkConfirm(
@@ -133,10 +164,15 @@ class _NewRecoveryKeyScreenState extends ConsumerState<NewRecoveryKeyScreen> {
     } on WrongSecretException {
       _showMismatch(l10n, l10n.recoveryKeyWrong);
     } on VaultLockedException {
-      // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.
+      // Kasa yazmadan önce kilitlendi; yeni anahtar kaydedilmedi.
+      _interrupted.mark();
     } on Exception {
       if (mounted) setState(() => _error = l10n.setupFailed);
     } finally {
+      // Yazmadan önce bir hata olduysa ve bu arada kilitlendiyse anahtar
+      // kaydedilmedi.
+      if (_confirming && _lockedWhileConfirming) _interrupted.mark();
+      _confirming = false;
       if (mounted && _busy) setState(() => _busy = false);
     }
   }
@@ -156,6 +192,11 @@ class _NewRecoveryKeyScreenState extends ConsumerState<NewRecoveryKeyScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    // Doğrulama sürerken çıkılmaz: yazma bitince sonuç ekranda söylenir.
+    return PopScope(canPop: !_busy, child: _scaffold(l10n));
+  }
+
+  Widget _scaffold(AppLocalizations l10n) {
     return KkScaffold(
       appBar: kkAppBar(context, title: l10n.newRecoveryTitle),
       body: SingleChildScrollView(
@@ -201,9 +242,15 @@ class _NewRecoveryKeyScreenState extends ConsumerState<NewRecoveryKeyScreen> {
   List<Widget> _showKeyStep(AppLocalizations l10n) => [
     Text(l10n.recoveryShowIntro),
     const SizedBox(height: 12),
-    RecoveryWarningCard(text: l10n.recoveryShowWarning),
+    RecoveryWarningCard(text: l10n.newRecoveryShowWarning),
     const SizedBox(height: 16),
-    RecoveryKeyCard(text: _pending?.recoveryKeyText ?? '', gated: true),
+    // Kopyalayıp başka uygulamaya geçmek kasayı kilitler ve yenilemeyi iptal
+    // eder; kâğıt ya da kapıdan geçen dosya kaydı kalır.
+    RecoveryKeyCard(
+      text: _pending?.recoveryKeyText ?? '',
+      gated: true,
+      allowCopy: false,
+    ),
     const SizedBox(height: 8),
     FilledButton(
       onPressed: () => setState(() {

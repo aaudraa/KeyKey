@@ -42,10 +42,19 @@ class RecoveryWarningCard extends StatelessWidget {
 
 /// Anahtarın kendisi, altında "Kopyala" ve "Dosyaya kaydet".
 class RecoveryKeyCard extends ConsumerWidget {
-  const new({required this.text, required this.gated, super.key});
+  const new({
+    required this.text,
+    required this.gated,
+    this.allowCopy = true,
+    super.key,
+  });
 
   final String text;
   final bool gated;
+
+  /// Kasa açıkken kapalı: kopyalayıp başka uygulamaya geçmek kasayı
+  /// kilitler.
+  final bool allowCopy;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -69,12 +78,13 @@ class RecoveryKeyCard extends ConsumerWidget {
           alignment: WrapAlignment.center,
           spacing: 8,
           children: [
-            TextButton.icon(
-              // Güvenli pano: 30 saniye sonra temizlenir.
-              onPressed: () => copySensitive(context, ref, text),
-              icon: const Icon(Icons.copy_rounded),
-              label: Text(l10n.recoveryCopy),
-            ),
+            if (allowCopy)
+              TextButton.icon(
+                // Güvenli pano: 30 saniye sonra temizlenir.
+                onPressed: () => copySensitive(context, ref, text),
+                icon: const Icon(Icons.copy_rounded),
+                label: Text(l10n.recoveryCopy),
+              ),
             TextButton.icon(
               onPressed: () =>
                   saveRecoveryKeyFile(context, ref, text, gated: gated),

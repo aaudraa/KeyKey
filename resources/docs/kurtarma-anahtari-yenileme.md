@@ -38,7 +38,7 @@ Kurtarma anahtarı kasa kurulurken bir kez gösterilir ve bir daha değiştirile
 Ayarlar → Güvenlik → **Yeni kurtarma anahtarı**. Üç adım:
 
 1. **Açıklama ve ana parola.** Eski anahtarın bu kasayı artık açmayacağı ve eski yedeklerin eski anahtarla açılmaya devam edeceği söylenir. Kullanıcı ana parolasını girer.
-2. **Yeni anahtar.** Kurulumdaki ekranla aynı: uyarı, anahtar, "Kopyala" (güvenli pano, 30 sn) ve "Dosyaya kaydet".
+2. **Yeni anahtar.** Kurulumdaki ekrana benzer: uyarı, anahtar ve "Dosyaya kaydet". "Kopyala" yok: kasa açıkken başka bir uygulamaya geçmek kasayı hemen kilitler ve yenilemeyi iptal eder. Uyarı bunu söyler; anahtar kâğıda yazılır ya da dış etkinlik kapısından geçen dosya seçiciyle kaydedilir.
 3. **Doğrulama.** Kullanıcı anahtarı yazar ya da kaydettiği dosyadan okutur. Yuva açılırsa üst bilgi yazılır. Ardından eski yedeklerin eski anahtarla açıldığını söyleyen not çıkar ve oradan yeni bir yedek alınabilir; otomatik yedek açıksa yeni üst bilgiyle hemen yazılır.
 
 ### Ana parola neden isteniyor
@@ -56,6 +56,9 @@ Yeni anahtar, kasayı ana parolasız açan kalıcı bir sırdır. Kilidi açık 
 ### Yarıda kalma
 
 - Adım 1 ya da 2'de vazgeçilirse ya da kasa kilitlenirse hiçbir şey yazılmaz.
+- Anahtar gösterilmiş ama doğrulanmamışken kasa kilitlenirse (başka uygulamaya geçiş, 5 dakika boşta kalma), kilit açılınca ayarlarda "yeni kurtarma anahtarı kaydedilmedi" uyarısı çıkar: not alınan anahtar geçersizdir, eskisi geçerlidir. Uyarıdan yenileme yeniden başlatılabilir.
+- Doğrulama sürerken ekrandan çıkılmaz; sonuç ekranda söylenir.
+- Ekran kilitte anahtarın kendi kopyalarını bırakır.
 - Doğrulama sürerken kasa kilitlenirse yazma tamamlanır ya da hiç başlamaz; kilit ekranı diskteki üst bilgiyle açılır.
 - Anahtar metni Dart dizesidir, silinemez ([bilinen sınır 7](guvenlik-tasarimi.md#bilinen-sınırlar)); ekrandan çıkınca bırakılır.
 

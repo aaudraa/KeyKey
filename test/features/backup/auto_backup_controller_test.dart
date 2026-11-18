@@ -468,4 +468,23 @@ void main() {
       expect(folders.writes, 1);
     });
   });
+
+  test('kasa kilitliyken istenen yedek kasa açılınca yazılır', () {
+    fakeAsync((async) {
+      settings.settings = settings.settings.copyWith(lastBackupAt: now);
+      backups.latest = now.subtract(const Duration(hours: 1));
+      final container = open();
+      async.elapse(const Duration(seconds: 10));
+      final vault = container.read(vaultControllerProvider.notifier)..lock();
+      final controller = container.read(autoBackupControllerProvider.notifier);
+
+      unawaited(controller.backUpNowOrOnOpen());
+      async.flushMicrotasks();
+      expect(folders.writes, 0);
+
+      unawaited(vault.unlockWithPassword(FakeVaultService.correctPassword));
+      async.elapse(const Duration(seconds: 1));
+      expect(folders.writes, 1);
+    });
+  });
 }
