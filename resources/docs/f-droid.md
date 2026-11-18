@@ -156,6 +156,7 @@ F-Droid'in kabulü haftalar sürebilir ve bizim elimizde değil. Bu yüzden Faz 
 
 - Faz için: `v1.1.0` için yayın iş akışındaki F-Droid karşılaştırması yeşil (1.0.1 yayımlanmadı); fdroiddata'ya birleştirme isteği açıldı; README'deki Obtainium bağlantısı telefonda Obtainium'un ekleme ekranını açıyor.
 - Sonrası için: birleştirme isteği birleşti, KeyKey f-droid.org'da, indirilen APK'nın sertifikası `66ff7b5c…`.
+- **Sonuç (2026-11-18):** istek ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi: 3 ay kuralı ve "benzersiz özellik yok". Ayrıntı ve yeniden başvuru koşulları: [başvuru belgesi](../f-droid/basvuru.md#sonuç).
 
 ## Riskler
 

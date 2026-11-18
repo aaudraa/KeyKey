@@ -56,7 +56,7 @@ Sorular için GitHub'da issue aç: https://github.com/aaudraa/KeyKey/issues. Bir
 
 ## Mağaza formları
 
-Dağıtım kararı (#100, 2026-11-09): 1.0 GitHub Releases'ta, sonra F-Droid. IzzyOnDroid'e başvurulmuyor (2026-11-17): yapay zekâyla yazılmış kodu kabul etmiyor ([F-Droid tasarımı](f-droid.md#izzyondroid-neden-yok)). Play Store şimdilik yok; Play yanıtı ileride gerekirse diye duruyor.
+Dağıtım kararı (#100, 2026-11-09): 1.0 GitHub Releases'ta, sonra F-Droid. F-Droid başvurusu 2026-11-18'de kabul edilmedi ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995); 3 ay kuralı ve benzersiz özellik); aşağıdaki F-Droid yanıtı yeniden başvuru için duruyor. IzzyOnDroid'e başvurulmuyor (2026-11-17): yapay zekâyla yazılmış kodu kabul etmiyor ([F-Droid tasarımı](f-droid.md#izzyondroid-neden-yok)). Play Store şimdilik yok; Play yanıtı ileride gerekirse diye duruyor.
 
 - **GitHub Releases ve Obtainium:** Gizlilik formu istemiyor; bu bildirim yeterli.
 
