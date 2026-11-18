@@ -114,6 +114,21 @@ Ayarlar → Yedek ve aktarım grubunun başında bir **Otomatik yedek** satırı
 - **Emülatör:** Android 17 ve 11 üzerinde klasör seçme, yazma, budama ve izin kalkınca hata. Android 11'de kök klasör ve İndirilenler kökü seçilemiyor.
 - **Telefon (proje sahibiyle):** Samsung'un "Dosyalarım" klasörü, Drive'ın seçicide çıkıp çıkmadığı ve otomatik yedeğin geri yüklenmesi.
 
+**Emülatör sonuçları (2026-11-18):** [`auto-backup-device-test.sh`](../scripts/auto-backup-device-test.sh) Android 17 (`Medium_Phone_API_37.0`) ve Android 11 (`KeyKey_API_30`) üzerinde geçti. Betik `integration_test/auto_backup_test.dart`'ı çalıştırır ve seçicilere bir kullanıcı gibi dokunur. Sınanan yol:
+
+1. Klasör seçicide yeni bir klasör açılıp seçilir ve izin verilir.
+2. Gerçek kasanın yedeği klasöre yazılır, geri okunarak doğrulanır, geri yükleme ekranının yoluyla parolayla açılır.
+3. Aynı günün eski dosyası budanır.
+4. Elle yedek, ortak dosyaya taşınan seçici yardımcısıyla kaydedilir.
+5. Kalıcı izin bırakılınca `hasAccess` `false` döner.
+
+İki gözlem:
+
+- **Geçici izin:** Android seçiciden gelen geçici izni etkinlik kapanana kadar tutuyor. Kalıcı izin bırakıldıktan sonra aynı oturumda yazma yine geçebiliyor. Denetleyici bu yüzden yazmadan önce kalıcı izne bakıyor.
+- **Android 11'in belge ekranı:** klasör öğelerine gelen adb dokunuşlarını yok sayıyor, bu yüzden betik öğelere dokunmuyor, klasörü seçicinin "Yeni klasör" düğmesiyle açıyor. Bu bir test sınırı; parmakla dokunma etkilenmiyor.
+
+İki emülatörde de bütün entegrasyon testleri yeşil.
+
 ## Uygulayana kalanlar
 
 - Bekleme süresi (5 sn) ve kaç günün tutulacağı (14) kodda sabit. Ayar olarak açılmaz.
