@@ -203,6 +203,50 @@ class VaultController extends Notifier<VaultStatus> {
     }
   }
 
+  /// Ana parolayı doğrulayıp yeni bir kurtarma anahtarı hazırlar; diske bir
+  /// şey yazmaz. Bu sırada kasa kilitlenirse [PasswordInterrupted] döner.
+  Future<(PasswordAttempt, PendingRecoveryKey?)> prepareNewRecoveryKey(
+    String currentPassword,
+  ) async {
+    final status = state;
+    if (status is! VaultOpen) throw StateError('Kasa açık değil.');
+    final generation = _lockGeneration;
+    try {
+      final result = await _service.prepareNewRecoveryKey(
+        status.session,
+        currentPassword,
+      );
+      if (generation != _lockGeneration) {
+        return (const PasswordInterrupted(), null);
+      }
+      return result;
+    } on Object {
+      if (generation == _lockGeneration) rethrow;
+      return (const PasswordInterrupted(), null);
+    }
+  }
+
+  /// Yazılan anahtar doğruysa yeni kurtarma anahtarını yazar. Kasa
+  /// kilitliyse [VaultLockedException]. Yazarken kilitlenirse kilit ekranı
+  /// diskteki yeni üst bilgiyle açılır.
+  Future<void> confirmNewRecoveryKey(
+    PendingRecoveryKey pending,
+    String typedRecoveryKey,
+  ) async {
+    final status = state;
+    if (status is! VaultOpen) throw const VaultLockedException();
+    final generation = _lockGeneration;
+    try {
+      await _service.confirmNewRecoveryKey(
+        status.session,
+        pending,
+        typedRecoveryKey,
+      );
+    } finally {
+      if (generation != _lockGeneration) _syncLockedHeader(status.session);
+    }
+  }
+
   Future<BiometricSupport> biometricSupport() => _service.biometricSupport();
 
   Future<bool> isBiometricEnabled() => _service.isBiometricEnabled();

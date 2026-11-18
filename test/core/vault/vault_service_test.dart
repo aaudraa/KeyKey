@@ -327,6 +327,163 @@ void main() {
     });
   });
 
+  group('yeni kurtarma anahtarı', () {
+    Future<PendingRecoveryKey> prepare(VaultSession session) async {
+      final (attempt, pending) = await service.prepareNewRecoveryKey(
+        session,
+        password,
+      );
+      expect(attempt, isA<PasswordAccepted>());
+      return pending!;
+    }
+
+    test('doğrulanınca yazılıyor, eski anahtar artık açmıyor', () async {
+      final (session, oldText) = await createVault();
+      final recordId = sodium.randombytes.buf(16);
+      final plain = Uint8List.fromList(utf8.encode('gizli içerik'));
+      final blob = session.records.encrypt(
+        recordId: recordId,
+        type: 'login',
+        plainText: plain,
+      );
+      final pending = await prepare(session);
+      expect(pending.recoveryKeyText, isNot(oldText));
+      // Hazırlık diske bir şey yazmaz.
+      expect(
+        (await service.readHeader())!.toJsonString(),
+        session.header.toJsonString(),
+      );
+
+      await service.confirmNewRecoveryKey(
+        session,
+        pending,
+        pending.recoveryKeyText,
+      );
+
+      final stored = (await service.readHeader())!;
+      expect(stored.toJsonString(), session.header.toJsonString());
+      expect(
+        () => service.unlockWithRecoveryKey(stored, oldText),
+        throwsA(isA<WrongSecretException>()),
+      );
+      final recovered = service.unlockWithRecoveryKey(
+        stored,
+        pending.recoveryKeyText,
+      );
+      addTearDown(recovered.dispose);
+      expect(
+        recovered.records.decrypt(
+          recordId: recordId,
+          type: 'login',
+          blob: blob,
+        ),
+        plain,
+      );
+      final opened = await service.unlockWithPassword(stored, password);
+      addTearDown(opened.session!.dispose);
+      expect(opened.attempt, isA<PasswordAccepted>());
+    });
+
+    test('yanlış parola hiçbir şey hazırlamıyor ve sayacı artırıyor', () async {
+      final (session, _) = await createVault();
+      final before = session.header.toJsonString();
+
+      final (attempt, pending) = await service.prepareNewRecoveryKey(
+        session,
+        'yanlis-parola-99',
+      );
+
+      expect(attempt, isA<PasswordRejected>());
+      expect(pending, isNull);
+      expect(session.header.toJsonString(), before);
+      expect((await store.readUnlockAttempts()).failedAttempts, 1);
+    });
+
+    test('bekleme sürerken parola denenmiyor', () async {
+      final (session, _) = await createVault();
+      for (var i = 0; i < 4; i++) {
+        await store.registerFailedAttempt(now);
+      }
+
+      final (attempt, pending) = await service.prepareNewRecoveryKey(
+        session,
+        password,
+      );
+
+      expect(attempt, isA<PasswordMustWait>());
+      expect(pending, isNull);
+      expect((await store.readUnlockAttempts()).failedAttempts, 4);
+    });
+
+    test('yanlış yazılan anahtar diske yazdırmıyor', () async {
+      final (session, oldText) = await createVault();
+      final before = session.header.toJsonString();
+      final pending = await prepare(session);
+
+      await expectLater(
+        service.confirmNewRecoveryKey(session, pending, 'ABCDE'),
+        throwsA(isA<InvalidRecoveryKeyException>()),
+      );
+      await expectLater(
+        service.confirmNewRecoveryKey(session, pending, oldText),
+        throwsA(isA<WrongSecretException>()),
+      );
+
+      expect(session.header.toJsonString(), before);
+      expect((await service.readHeader())!.toJsonString(), before);
+    });
+
+    test('arada parola değişirse yeni parola yuvası korunuyor', () async {
+      final (session, _) = await createVault();
+      final pending = await prepare(session);
+      final changed = await service.changePassword(
+        session,
+        currentPassword: password,
+        newPassword: newPassword,
+      );
+      expect(changed, isA<PasswordAccepted>());
+
+      await service.confirmNewRecoveryKey(
+        session,
+        pending,
+        pending.recoveryKeyText,
+      );
+
+      final stored = (await service.readHeader())!;
+      final opened = await service.unlockWithPassword(stored, newPassword);
+      addTearDown(opened.session!.dispose);
+      expect(opened.attempt, isA<PasswordAccepted>());
+      service.unlockWithRecoveryKey(stored, pending.recoveryKeyText).dispose();
+    });
+
+    test('başka kasanın bekleyen anahtarı kabul edilmiyor', () async {
+      final (session, _) = await createVault();
+      final pending = await prepare(session);
+      final otherDatabase = VaultDatabase(NativeDatabase.memory());
+      addTearDown(otherDatabase.close);
+      final other = VaultService(
+        sodium: sodium,
+        store: VaultStore(otherDatabase),
+        clock: () => now,
+      );
+      final otherPending = await other.prepareVault(password);
+      final otherSession = await other.confirmRecoveryKey(
+        otherPending,
+        otherPending.recoveryKeyText,
+      );
+      addTearDown(otherSession.dispose);
+
+      await expectLater(
+        service.confirmNewRecoveryKey(
+          otherSession,
+          pending,
+          pending.recoveryKeyText,
+        ),
+        throwsStateError,
+      );
+    });
+  });
+
   group('kurtarma anahtarıyla erişim', () {
     test('doğru anahtar açıyor, yeni parola belirlenebiliyor', () async {
       final (session, text) = await createVault();
