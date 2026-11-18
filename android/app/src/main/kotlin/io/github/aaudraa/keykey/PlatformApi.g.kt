@@ -251,6 +251,24 @@ enum class DocumentStatus(val raw: Int) {
   }
 }
 
+/** Klasör seçmenin sonucu. */
+enum class FolderPickStatus(val raw: Int) {
+  /** Klasör seçildi ve kalıcı izin alındı. */
+  DONE(0),
+  /** Kullanıcı seçiciden vazgeçti. */
+  CANCELLED(1),
+  /** Seçici açılamadı veya kalıcı izin alınamadı. */
+  FAILED(2);
+
+  companion object {
+    private val pigeonValues = values()
+
+    fun ofRaw(raw: Int): FolderPickStatus? {
+      return pigeonValues.getOrNull(raw)
+    }
+  }
+}
+
 /** Generated class from Pigeon that represents data sent in messages. */
 data class BiometricPromptTexts (
   val title: String,
@@ -614,6 +632,56 @@ data class DocumentResult (
     return "DocumentResult(status=$status, bytes=${bytes?.contentToString()})"
   }
 }
+
+/**
+ * Klasör seçicinin sonucu. [uri] ve [name] yalnızca [status] `done` ise
+ * doludur.
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class FolderPickResult (
+  val status: FolderPickStatus,
+  val uri: String? = null,
+  val name: String? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): FolderPickResult {
+      val status = pigeonVar_list[0] as FolderPickStatus
+      val uri = pigeonVar_list[1] as String?
+      val name = pigeonVar_list[2] as String?
+      return FolderPickResult(status, uri, name)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      status,
+      uri,
+      name,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as FolderPickResult
+    return PlatformApiPigeonUtils.deepEquals(this.status, other.status) && PlatformApiPigeonUtils.deepEquals(this.uri, other.uri) && PlatformApiPigeonUtils.deepEquals(this.name, other.name)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.status)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.uri)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.name)
+    return result
+  }
+  override fun toString(): String {
+    return "FolderPickResult(status=$status, uri=$uri, name=$name)"
+  }
+}
 private open class PlatformApiPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -633,38 +701,48 @@ private open class PlatformApiPigeonCodec : StandardMessageCodec() {
         }
       }
       132.toByte() -> {
-        (readValue(buffer) as? List<Any?>)?.let {
-          BiometricPromptTexts.fromList(it)
+        (readValue(buffer) as Long?)?.let {
+          FolderPickStatus.ofRaw(it.toInt())
         }
       }
       133.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          BiometricWrapResult.fromList(it)
+          BiometricPromptTexts.fromList(it)
         }
       }
       134.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          BiometricUnwrapResult.fromList(it)
+          BiometricWrapResult.fromList(it)
         }
       }
       135.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          AutofillRequestInfo.fromList(it)
+          BiometricUnwrapResult.fromList(it)
         }
       }
       136.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          AutofillSaveValues.fromList(it)
+          AutofillRequestInfo.fromList(it)
         }
       }
       137.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          AutofillSetupStatus.fromList(it)
+          AutofillSaveValues.fromList(it)
         }
       }
       138.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
+          AutofillSetupStatus.fromList(it)
+        }
+      }
+      139.toByte() -> {
+        (readValue(buffer) as? List<Any?>)?.let {
           DocumentResult.fromList(it)
+        }
+      }
+      140.toByte() -> {
+        (readValue(buffer) as? List<Any?>)?.let {
+          FolderPickResult.fromList(it)
         }
       }
       else -> super.readValueOfType(type, buffer)
@@ -684,32 +762,40 @@ private open class PlatformApiPigeonCodec : StandardMessageCodec() {
         stream.write(131)
         writeValue(stream, value.raw.toLong())
       }
-      is BiometricPromptTexts -> {
+      is FolderPickStatus -> {
         stream.write(132)
-        writeValue(stream, value.toList())
+        writeValue(stream, value.raw.toLong())
       }
-      is BiometricWrapResult -> {
+      is BiometricPromptTexts -> {
         stream.write(133)
         writeValue(stream, value.toList())
       }
-      is BiometricUnwrapResult -> {
+      is BiometricWrapResult -> {
         stream.write(134)
         writeValue(stream, value.toList())
       }
-      is AutofillRequestInfo -> {
+      is BiometricUnwrapResult -> {
         stream.write(135)
         writeValue(stream, value.toList())
       }
-      is AutofillSaveValues -> {
+      is AutofillRequestInfo -> {
         stream.write(136)
         writeValue(stream, value.toList())
       }
-      is AutofillSetupStatus -> {
+      is AutofillSaveValues -> {
         stream.write(137)
         writeValue(stream, value.toList())
       }
-      is DocumentResult -> {
+      is AutofillSetupStatus -> {
         stream.write(138)
+        writeValue(stream, value.toList())
+      }
+      is DocumentResult -> {
+        stream.write(139)
+        writeValue(stream, value.toList())
+      }
+      is FolderPickResult -> {
+        stream.write(140)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -1238,6 +1324,159 @@ interface DocumentApi {
               }
               reply.reply(wrapped)
             }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}
+/**
+ * Otomatik yedeğin klasörü (Storage Access Framework, klasör ağacı).
+ *
+ * Depolama izni gerekmez. Klasöre yalnızca kullanıcının seçtiği ağaç için
+ * alınan kalıcı izinle yazılır.
+ *
+ * Generated interface from Pigeon that represents a handler of messages from Flutter.
+ */
+interface BackupFolderApi {
+  /**
+   * Klasör seçiciyi açar ve seçilen klasör için kalıcı okuma ve yazma izni
+   * alır.
+   */
+  suspend fun pick(): FolderPickResult
+  /** Bu cihazda [folderUri] için kalıcı okuma ve yazma izni var mı. */
+  fun hasAccess(folderUri: String): Boolean
+  /** Klasördeki dosyaların adları; klasöre erişilemiyorsa `null`. */
+  suspend fun list(folderUri: String): List<String>?
+  /**
+   * Klasörde [name] adıyla yeni bir dosya açar, [bytes]'ı yazar, geri okuyup
+   * karşılaştırır. Tutmazsa yeni dosyayı silmeyi dener ve `false` döner.
+   */
+  suspend fun write(folderUri: String, name: String, mimeType: String, bytes: ByteArray): Boolean
+  /** Klasörde adı [names] içinde olan dosyaları siler; silineni sayar. */
+  suspend fun delete(folderUri: String, names: List<String>): Long
+  /** [folderUri] için alınan kalıcı izni bırakır. */
+  fun release(folderUri: String)
+
+  companion object {
+    /** The codec used by BackupFolderApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      PlatformApiPigeonCodec()
+    }
+    /** Sets up an instance of `BackupFolderApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: BackupFolderApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.BackupFolderApi.pick$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            CoroutineScope(Dispatchers.Main).launch {
+              val wrapped: List<Any?> = try {
+                listOf(api.pick())
+              } catch (exception: Throwable) {
+                PlatformApiPigeonUtils.wrapError(exception)
+              }
+              reply.reply(wrapped)
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.BackupFolderApi.hasAccess$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val folderUriArg = args[0] as String
+            val wrapped: List<Any?> = try {
+              listOf(api.hasAccess(folderUriArg))
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.BackupFolderApi.list$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val folderUriArg = args[0] as String
+            CoroutineScope(Dispatchers.Main).launch {
+              val wrapped: List<Any?> = try {
+                listOf(api.list(folderUriArg))
+              } catch (exception: Throwable) {
+                PlatformApiPigeonUtils.wrapError(exception)
+              }
+              reply.reply(wrapped)
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.BackupFolderApi.write$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val folderUriArg = args[0] as String
+            val nameArg = args[1] as String
+            val mimeTypeArg = args[2] as String
+            val bytesArg = args[3] as ByteArray
+            CoroutineScope(Dispatchers.Main).launch {
+              val wrapped: List<Any?> = try {
+                listOf(api.write(folderUriArg, nameArg, mimeTypeArg, bytesArg))
+              } catch (exception: Throwable) {
+                PlatformApiPigeonUtils.wrapError(exception)
+              }
+              reply.reply(wrapped)
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.BackupFolderApi.delete$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val folderUriArg = args[0] as String
+            val namesArg = args[1] as List<String>
+            CoroutineScope(Dispatchers.Main).launch {
+              val wrapped: List<Any?> = try {
+                listOf(api.delete(folderUriArg, namesArg))
+              } catch (exception: Throwable) {
+                PlatformApiPigeonUtils.wrapError(exception)
+              }
+              reply.reply(wrapped)
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.BackupFolderApi.release$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val folderUriArg = args[0] as String
+            val wrapped: List<Any?> = try {
+              api.release(folderUriArg)
+              listOf(null)
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)

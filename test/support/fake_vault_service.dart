@@ -14,6 +14,7 @@ import 'package:keykey/core/crypto/recovery_key.dart';
 import 'package:keykey/core/crypto/vault_crypto.dart';
 import 'package:keykey/core/crypto/vault_header.dart';
 import 'package:keykey/core/platform/app_packages.dart';
+import 'package:keykey/core/platform/backup_folders.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/platform/export_file_picker.dart';
 import 'package:keykey/core/platform/qr_image_reader.dart';
@@ -426,6 +427,71 @@ class FakeDocumentFiles implements DocumentFiles {
   }
 }
 
+/// Otomatik yedek klasörünün yerine: klasörleri bellekte tutar.
+class FakeBackupFolders implements BackupFolders {
+  /// Klasör adresi → dosya adı → içerik.
+  final Map<String, Map<String, Uint8List>> files = {};
+
+  /// Kalıcı izni olan klasörler.
+  final Set<String> granted = {};
+
+  /// Seçicinin bir sonraki sonucu. Seçilen klasöre izin verilir.
+  FolderPick nextPick = const FolderPickCancelled();
+
+  bool failWrites = false;
+  int picks = 0;
+  int writes = 0;
+  final List<String> released = [];
+
+  /// Seçici açıkken arka plan kilidi ertelendi mi.
+  bool? gateWasActive;
+  bool Function()? readGate;
+
+  @override
+  Future<FolderPick> pick() async {
+    picks++;
+    gateWasActive = readGate?.call();
+    final pick = nextPick;
+    if (pick is FolderPicked) {
+      granted.add(pick.uri);
+      files.putIfAbsent(pick.uri, () => {});
+    }
+    return pick;
+  }
+
+  @override
+  Future<bool> hasAccess(String uri) async => granted.contains(uri);
+
+  @override
+  Future<List<String>?> list(String uri) async =>
+      granted.contains(uri) ? files[uri]?.keys.toList() : null;
+
+  @override
+  Future<bool> write(String uri, String name, Uint8List bytes) async {
+    writes++;
+    try {
+      if (failWrites || !granted.contains(uri)) return false;
+      (files[uri] ??= {})[name] = Uint8List.fromList(bytes);
+      return true;
+    } finally {
+      bytes.fillRange(0, bytes.length, 0);
+    }
+  }
+
+  @override
+  Future<int> delete(String uri, List<String> names) async {
+    final folder = files[uri];
+    if (folder == null || !granted.contains(uri)) return 0;
+    return names.where((name) => folder.remove(name) != null).length;
+  }
+
+  @override
+  Future<void> release(String uri) async {
+    released.add(uri);
+    granted.remove(uri);
+  }
+}
+
 /// Yedek servisinin yerine: kasa yerine sabit baytlar üretir.
 class FakeBackupService implements BackupService {
   Uint8List bytes = Uint8List.fromList([1, 2, 3]);
@@ -651,6 +717,7 @@ Future<void> pumpKeyKey(
   RecordingClipboard? clipboard,
   FakeAutofillSetup? autofillSetup,
   FakeDocumentFiles? documents,
+  FakeBackupFolders? folders,
   FakeBackupService? backups,
   FakeRestoreService? restores,
   AppPackages? packages,
@@ -679,6 +746,7 @@ Future<void> pumpKeyKey(
         documentFilesProvider.overrideWithValue(
           documents ?? FakeDocumentFiles(),
         ),
+        backupFoldersProvider.overrideWithValue(folders ?? FakeBackupFolders()),
         backupServiceProvider.overrideWithValue(backups ?? FakeBackupService()),
         restoreServiceProvider.overrideWithValue(
           restores ?? FakeRestoreService(service.sodium),
