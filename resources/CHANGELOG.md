@@ -2,6 +2,18 @@
 
 KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesinde](docs/yayin.md#sürüm-numarası). `v1.0.0`'dan önceki sürümler fazların sonunu işaretler ve hata ayıklama anahtarıyla imzalıdır; kalıcı bir kurulum için kullanılmamalıdır.
 
+## 1.3.0 (yayımlanmadı): Yeni kurtarma anahtarı
+
+Faz 13 ([tasarım](docs/kurtarma-anahtari-yenileme.md)).
+
+### Eklenenler
+
+- Ayarlar → Güvenlik → Yeni kurtarma anahtarı: ana parola doğrulanınca yeni bir anahtar gösterilir; geri yazılarak doğrulanınca kaydedilir ve eski anahtar bu kasayı artık açmaz. Eski yedekler eski anahtarla açılmaya devam eder; ekran bunu söyler ve yeni yedek önerir, otomatik yedek açıksa hemen yazılır.
+
+### Değişenler
+
+- Kurtarma anahtarını gösterme ve doğrulama adımları kurulumla ortak.
+
 ## 1.2.0 (2026-11-18): Otomatik yedek
 
 Faz 12 ([tasarım](docs/otomatik-yedek.md)).

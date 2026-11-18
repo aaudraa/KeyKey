@@ -117,6 +117,33 @@ void main() {
     );
   });
 
+  test('kurtarma anahtarı yenileniyor, eskisi açmıyor', () async {
+    const password = 'cihaz-parolası-ığüşöç';
+    final vault = await crypto.createVault(password);
+    addTearDown(vault.vaultKey.dispose);
+    final original = vault.vaultKey.extractBytes();
+
+    final renewed = crypto.newRecoveryKey(vault.header, vault.vaultKey);
+    // Diske yazılıp okunmuş gibi: JSON'dan geri.
+    final header = VaultHeader.fromJsonString(
+      vault.header.withRecoverySlot(renewed.recoverySlot).toJsonString(),
+    );
+
+    expect(
+      () => crypto.unlockWithRecoveryKey(header, vault.recoveryKeyText),
+      throwsA(isA<WrongSecretException>()),
+    );
+    final byRecovery = crypto.unlockWithRecoveryKey(
+      header,
+      renewed.recoveryKeyText,
+    );
+    addTearDown(byRecovery.dispose);
+    expect(byRecovery.extractBytes(), original);
+    final byPassword = await crypto.unlockWithPassword(header, password);
+    addTearDown(byPassword.dispose);
+    expect(byPassword.extractBytes(), original);
+  });
+
   test('Argon2id süre ölçümü', () async {
     final kdf = PasswordKdf(sodium);
     final samples = <int>[];

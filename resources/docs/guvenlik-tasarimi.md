@@ -125,6 +125,13 @@ Rastgele 32 bayt. Kasa oluşturulurken bir kez gösterilir, uygulama saklamaz.
 - **Okuma kolaylığı:** Boşluk ve tire yok sayılır, büyük küçük harf ayrımı yapılmaz. `O` → `0`, `I`/`L` → `1` kabul edilir. Türkçe klavye için `ı` ve `İ` de `1` sayılır.
 - **KEK:** `HKDF-Expand(anahtar, "keykey/v1/kek/recovery", 32)`.
 
+**Yenileme:** Kasa açıkken Ayarlar → Güvenlik → **Yeni kurtarma anahtarı** ile yenisi üretilir. Tasarım ve gerekçeler: [yeni kurtarma anahtarı](kurtarma-anahtari-yenileme.md).
+
+1. Ana parola kilit ekranının yolundan doğrulanır: hatalı deneme sayacı ve bekleme burada da işler. Kilidi açık telefonu eline alan biri, ana parolayı bilmeden kasayı açan kalıcı bir sır alamamalı.
+2. Rastgele 32 baytlık yeni anahtar üretilir ve kasa anahtarı onunla, yeni nonce'la, aynı AD ile sarılır. Yeni yuva yalnızca bellekte durur, anahtar bir kez gösterilir.
+3. Kullanıcı anahtarı geri yazar; yuva gerçekten açılarak doğrulanır. Ancak o zaman üst bilgi tek bir yazmayla güncellenir. Yazılan üst bilgi oturumdaki güncel üst bilgiden kurulur, yalnızca `slots.recovery` değişir.
+4. Vazgeçilirse ya da kasa kilitlenirse hiçbir şey yazılmaz. Kasa anahtarı, parola yuvası ve parmak izi yuvası değişmez; üst bilgi biçimi aynıdır.
+
 ## Ek doğrulama verisi (AD)
 
 Şifreli veri, ait olduğu bağlama AEAD'in ek doğrulama verisiyle bağlanır. AD alanları belirsizlik kalmasın diye uzunluk önekiyle birleştirilir:
@@ -735,7 +742,7 @@ Kasa açıkken arama yapılabilsin diye kayıtların tamamı çözülüp bellekt
 2. **Kayıt silme fark edilmez.** Bir kayıt satırı silinirse uygulama bunu şifreleme düzeyinde anlayamaz. Bu saldırı veri okutmaz, yalnızca veri kaybettirir.
 3. **Üst veri sızıntısı.** Kayıt sayısı, türleri, zaman damgaları ve 256 baytlık dolgu blok sayısı görünür.
 4. **Parola gücü esastır.** Argon2id denemeyi yavaşlatır, ama zayıf bir parolayı güçlendiremez. Yedek dosyası da aynı sınıra tabidir.
-5. **Sarmalama anahtarı dönmez.** Parola değişse de kasa anahtarı aynı kalır. Eski parolayı ve o zamanki üst bilgiyi birlikte ele geçiren biri kasa anahtarına ulaşabilir, eski yedekler de eski parolayla açılmaya devam eder. Otomatik yedekler de buna dahildir: parola değişince yeni yedek hemen yeni parolayla yazılır, ama klasördeki eskiler budanana kadar eski parolayla açılır.
+5. **Sarmalama anahtarı dönmez.** Parola değişse de kasa anahtarı aynı kalır. Eski parolayı ve o zamanki üst bilgiyi birlikte ele geçiren biri kasa anahtarına ulaşabilir, eski yedekler de eski parolayla açılmaya devam eder. Otomatik yedekler de buna dahildir: parola değişince yeni yedek hemen yeni parolayla yazılır, ama klasördeki eskiler budanana kadar eski parolayla açılır. Kurtarma anahtarı yenilenince de aynı: eski anahtar bu cihazdaki kasayı açmaz, ama eski yedekleri ve kasa dosyasının eski kopyalarını açar.
 6. **Hatalı deneme beklemesi yalnızca uygulamanın kuralıdır.** Sayaç şifresizdir ve kopyalanmış bir kasa dosyası üzerindeki denemeleri sınırlamaz. Ayrıntılar [Kilit](#kilit) bölümünde.
 7. **Kilitten sonra bellekte kalan dizeler.** Yazılan ana parola ve ekranda gösterilmiş değerler (parola, kullanıcı adı) kilitten sonra da Dart'ın henüz toplanmamış dizelerinde kalabilir; denetimde kilitten 2,5 dakika sonra bile bulundular ([ölçüm](guvenlik-denetimi.md#bellek)). Anahtarlar, kurtarma anahtarı ve 2FA anahtarları bulunmadı. Bu belleği okumak root ya da süreçte kod çalıştırmayı gerektirir; böyle bir saldırgan ana parolayı yazılırken de görebileceği için risk kabul edildi. Ayrıntılar [Bellek](#bellek) bölümünde.
 8. **Doldurma bildirimi güvenli pencerenin dışında.** Doldurmadan sonraki bildirim kaydın adını taşır ve KeyKey'in `FLAG_SECURE` penceresinin dışında görünür: ekran kaydına girer, erişilebilirlik servislerine bildirilir. Bildirimden önce kayıt adı KeyKey dışında hiç görünmüyordu. Kayıt adı genelde zaten ekranda olan uygulamanın ya da sitenin adı olduğu ve kullanıcı adı ile parola bildirime girmediği için bu kabul edildi.
