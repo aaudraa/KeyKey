@@ -60,7 +60,7 @@ Eski telefonundan bir KeyKey yedeğin varsa kasa oluşturmak yerine **Yedekten g
 - **Parmak izi:** Ayarlar → Güvenlik → **Parmak iziyle aç**. Telefonunda parmak izi kayıtlı olmalı. Ana parola her zaman geçerlidir. Telefona yeni bir parmak izi eklersen ya da ekran kilidini kaldırırsan güvenlik gereği parmak iziyle açma kapanır; ana parolayla açıp yeniden açabilirsin.
 - **Yanlış parola:** Birkaç hatalı denemeden sonra yeni deneme için kısa bir süre beklemen gerekir; süre denemeler arttıkça uzar.
 - **Parolamı unuttum:** Kilit ekranındaki bu bağlantıyla kurtarma anahtarını girip kasayı açarsın, ardından yeni bir ana parola belirlersin.
-- **Ana parolayı değiştirmek için:** Ayarlar → Güvenlik → **Ana parolayı değiştir**. Daha önce aldığın yedekler eski parolayla açılmaya devam eder; değişiklikten sonra çıkan nottan yeni bir yedek alıp eskilerini silebilirsin.
+- **Ana parolayı değiştirmek için:** Ayarlar → Güvenlik → **Ana parolayı değiştir**. Daha önce aldığın yedekler, otomatik yedek klasöründekiler de, eski parolayla açılmaya devam eder; değişiklikten sonra çıkan nottan yeni bir yedek alıp eskilerini silebilirsin. Otomatik yedek açıksa yeni parolalı yedek hemen klasöre yazılır.
 
 ## Parolalar
 
@@ -141,6 +141,14 @@ KeyKey verilerini hiçbir yere göndermediği için **telefon kaybolursa ya da b
 
 - Yedek dosyası (`.keykey`) şifrelidir. Yedeği aldığın andaki ana parolanla ya da kurtarma anahtarınla açılır.
 - Son yedekten sonra bir şey değiştiyse ve yedek 14 günden eskiyse kasa ekranında hatırlatma çıkar. **Sonra** dersen 7 gün susar.
+
+**Otomatik yedek:** Ayarlar → Yedek ve aktarım → **Otomatik yedek**'i aç ve bir klasör seç. Kasa açıkken bir kayıt değişince KeyKey o klasöre kendiliğinden şifreli bir yedek yazar.
+
+- Yedekler elle aldığın yedekle aynıdır ve aynı yolla geri yüklenir.
+- Her günün son yedeği en yeni 14 gün için tutulur, daha eskileri silinir. Elle aldığın yedeklere dokunulmaz.
+- Telefon kaybolduğunda yedeklerin de gitmemesi için Syncthing ya da Nextcloud gibi bir eşitleme uygulamasının klasörünü seç. Google Drive klasör listesinde çıkmayabilir; Drive'a elle yedek almaya devam edebilirsin.
+- Android 11 ve üstünde depolamanın kökü ve İndirilenler'in kendisi seçilemez; içinde bir klasör aç (seçicideki **Yeni klasör**) ve onu seç.
+- Klasöre erişilemezse (klasör silindiyse ya da yedeği başka telefona taşıdıysan) Ayarlar'da ve yedek kartında uyarı çıkar; **Klasörü değiştir** ile yeniden seç.
 
 **Yeni telefonda:** KeyKey'i kur, ilk ekranda **Yedekten geri yükle**'ye dokun, yedek dosyasını seç ve yedeği aldığın andaki ana parolayı ya da kurtarma anahtarını gir. Kasan olduğu gibi gelir. Parmak izini yeni telefonda yeniden açman gerekir.
 

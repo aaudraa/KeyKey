@@ -25,7 +25,7 @@ KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 
 | 9 | 1.0 yayını | M | 8 | `faz/9-yayin` | Tamamlandı |
 | 10 | F-Droid ve Obtainium | M | 9 | `faz/10-f-droid` | Tamamlandı |
 | 11 | Kullanıcı gözüyle iyileştirmeler | M | 10 | `faz/11-kullanici-gozuyle` | Tamamlandı |
-| 12 | Otomatik yedek | M | 11 | `faz/12-otomatik-yedek` | Sürüyor |
+| 12 | Otomatik yedek | M | 11 | `faz/12-otomatik-yedek` | Kodda bitti; telefon denemesi bekliyor |
 
 Büyüklük göreli iş miktarını gösterir, takvim sözü değildir. Faz 4 ve 5 aynı anda ilerleyebilir. İlerlemeyi [milestone'lardan](https://github.com/aaudraa/KeyKey/milestones) da izleyebilirsin.
 
@@ -529,14 +529,23 @@ Proje sahibinin isteği (2026-11-17, gece): uygulamaya bir kullanıcının göz�
 
 Proje sahibi 2026-11-18'de sıradaki işi bana bıraktı; "1.0 sonrası" listesinden bunu seçtim, çünkü bir parola yöneticisinde en büyük risk veri kaybı ve bugün yedek elle alınıyor. Tasarım, seçilmeyen yaklaşımlar ve gerekçeler: [otomatik yedek](docs/otomatik-yedek.md). Hedef sürüm `1.2.0`.
 
-- [ ] Klasör seçme ve kalıcı izin (`ACTION_OPEN_DOCUMENT_TREE`), klasöre yazma, listeleme ve silme köprüsü
-- [ ] Ayar kaydı sürüm 5: klasörün adresi ve adı
-- [ ] Dosya adı ve budama kuralı: her günün en yenisi, en yeni 14 gün; elle alınan yedeklere dokunulmaz
-- [ ] Otomatik yedek denetleyicisi: kayıt değişince 5 sn sonra, kasa açılınca, ana parola değişince; tek iş; hata durumu
-- [ ] Ayarlarda "Otomatik yedek" satırı, açıklama penceresi, klasör değiştirme ve kapatma; yedek kartında durum
-- [ ] Güvenlik tasarımı, kılavuz ve değişiklik günlüğü
-- [ ] Android 17 ve 11 emülatörlerinde deneme
+- [x] Klasör seçme ve kalıcı izin (`ACTION_OPEN_DOCUMENT_TREE`), klasöre yazma, listeleme ve silme köprüsü
+- [x] Ayar kaydı sürüm 5: klasörün adresi ve adı
+- [x] Dosya adı ve budama kuralı: her günün en yenisi, en yeni 14 gün; elle alınan yedeklere dokunulmaz
+- [x] Otomatik yedek denetleyicisi: kayıt değişince 5 sn sonra, kasa açılınca, ana parola değişince; tek iş; hata durumu
+- [x] Ayarlarda "Otomatik yedek" satırı, açıklama penceresi, klasör değiştirme ve kapatma; yedek kartında durum
+- [x] Güvenlik tasarımı, kılavuz ve değişiklik günlüğü
+- [x] Android 17 ve 11 emülatörlerinde deneme
 - [ ] Telefonda deneme (proje sahibiyle): Samsung "Dosyalarım", Drive'ın seçicide çıkıp çıkmadığı, geri yükleme
+
+**Durum (2026-11-18, gece):** Kodda bitti ([plan](docs/otomatik-yedek-plani.md)). Uygulama sırasında verilen kararlar:
+
+- Ayarlardaki satır diğer anahtarlar gibi davranıyor: dokununca açılıp kapanıyor. Klasörü değiştirme ve hemen yedekleme ayrı satırlarda.
+- Android, seçiciden gelen geçici izni etkinlik kapanana kadar tutuyor; denetleyici bu yüzden yazmadan önce kalıcı izne bakıyor.
+
+Testler: 1418 birim ve arayüz testi. Gerçek Storage Access Framework testi ([`auto-backup-device-test.sh`](scripts/auto-backup-device-test.sh)) Android 17 ve 11 emülatörlerinde geçti, iki emülatörde de bütün entegrasyon testleri yeşil. Sürüm `1.2.0+6` oldu.
+
+Telefon denemesi ve yayın proje sahibini bekliyor. Telefondaki KeyKey artık yayın anahtarıyla imzalı, bu yüzden deneme APK'sı onun üstüne kurulamaz. Deneme ya yayından sonra Obtainium güncellemesiyle yapılır ya da ayrı paket adlı bir deneme derlemesiyle.
 
 **Bitti sayılması için:** kayıt değişince seçilen klasörde doğrulanmış bir yedek oluşuyor ve geri yükleme ekranıyla açılıyor; budama yalnızca otomatik yedeklere dokunuyor; izin kalkınca hata ayarlarda görünüyor.
 

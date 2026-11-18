@@ -463,7 +463,7 @@ Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/googl
 
 ```json
 {
-  "version": 4,
+  "version": 5,
   "otpRequireAuth": false,
   "autofillCopyOtp": true,
   "lastBackupAt": 1730000000000,
@@ -477,6 +477,10 @@ Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/googl
     "digits": true,
     "symbols": true,
     "words": 6
+  },
+  "autoBackupFolder": {
+    "uri": "content://com.android.externalstorage.documents/tree/primary%3AKeyKey",
+    "name": "KeyKey"
   }
 }
 ```
@@ -484,6 +488,7 @@ Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/googl
 - `autofillCopyOtp` sürüm 2 ile geldi ve [doldurmadan sonra 2FA kodunu kopyalamayı](#2fa-kodu) açar. Sürüm 1 kaydı okunmaya devam eder; o zaman bu ayar açık sayılır.
 - `lastBackupAt` ve `backupReminderSnoozedUntil` sürüm 3 ile geldi: son yedeğin zamanı ve [yedek hatırlatıcısının](#yedek-hatırlatıcısı) susturulduğu son an, 1970'ten beri geçen milisaniye ya da `null`. Daha eski kayıtlarda ikisi de `null` sayılır.
 - `vaultSort` (`name` ya da `recent`) ve `generator` sürüm 4 ile geldi: kasa listesinin sıralaması ve parola üreticisinin son **kullanılan** seçenekleri (uzunluk 8–64, en az bir karakter türü, cümlede 4–12 sözcük). Üretilen parola yazılmaz. Daha eski kayıtlarda ada göre sıralama ve varsayılan üretici kullanılır. Sınır dışı bir değer kaydın tamamını okunamaz yapar (aşağıdaki kural). Sürüm 4 kaydını içeren bir yedek KeyKey'in eski bir sürümünde açılırsa ayar kaydı okunamaz sayılır, ek onay açık gelir.
+- `autoBackupFolder` sürüm 5 ile geldi: [otomatik yedeğin](#otomatik-yedek) klasörü ya da `null`. Tam iki alan taşır; `uri` `content://` ile başlar, `name` boş olamaz. Daha eski kayıtlarda otomatik yedek kapalı sayılır. Sürüm 5 kaydını içeren bir yedek eski bir sürümde açılırsa yine ayar kaydı okunamaz sayılır.
 - Kayıt yoksa ek onay kapalıdır. Kayıt var ama okunamıyorsa, biçime uymuyorsa veya türü farklıysa ek onay **açık** sayılır: dosyayı değiştiren biri ayarı böyle kapatamasın. Kod kopyalama ise kapalı sayılır. Kullanıcı doğrulayıp ek onayı kapatabilir. Kaydın tamamen silinmesi ise [kayıt silme sınırına](#bilinen-sınırlar) girer.
 
 **Sınır:** Bu, kasa anahtarını değiştirmez. 2FA anahtarı yine kasa anahtarından türetilir, çünkü ana parola ve kurtarma anahtarı da 2FA kayıtlarını açabilmelidir. Ayar, kilidi açık telefonu eline alan birine karşı koruma sağlar, cihazdaki zararlı yazılıma karşı korumaz.
@@ -635,6 +640,17 @@ parça   = uzunluk (4 bayt, büyük uçlu) || şifreli parça
 - Yazılan dosya hemen geri okunur ve bayt bayt karşılaştırılır. Tutmazsa yarım dosya silinmeye çalışılır ve kullanıcıya hata gösterilir. Yazılan baytlar işi bitince bellekte sıfırlanır.
 - Son yedeğin zamanı [ayar kaydında](#kodları-görmek-için-ek-onay), yani kasanın içinde şifreli tutulur ve Ayarlar'da gösterilir.
 
+### Otomatik yedek
+
+Kullanıcı bir klasör seçerse, kasa açıkken kayıtlar değiştikçe o klasöre kendiliğinden yedek yazılır. Tasarım, seçilmeyen yaklaşımlar ve gerekçeler: [otomatik yedek](otomatik-yedek.md).
+
+- **Biçim ve anahtar elle yedekle aynı.** Dosya `BackupService` ile, [yedek biçiminde](#yedek-biçimi) üretilir; alındığı andaki ana parola veya kurtarma anahtarıyla açılır. Kripto çekirdeğinde değişiklik yoktur.
+- **Yalnızca kasa açıkken.** Yedek kasa anahtarı gerektirdiği için arka planda çalışan bir iş ve kasa dışında saklanan bir anahtar yoktur. Parola veya 2FA kayıtları değişince (5 sn sonra, peş peşe değişiklikler tek yedekte), kasa açılınca (değişiklik son yedekten yeniyse) ve ana parola değişince yazılır. Kasa kilitlenince bekleyen yedek iptal olur.
+- **Klasör.** Android'in klasör seçicisiyle (`ACTION_OPEN_DOCUMENT_TREE`) seçilir; KeyKey yalnızca o klasör için kalıcı okuma ve yazma izni alır, depolama veya internet izni gerekmez. Klasörün adresi [ayar kaydında](#kodları-görmek-için-ek-onay), kasanın içinde şifreli durur. Otomatik yedek kapatılınca veya klasör değişince izin bırakılır; klasördeki dosyalar silinmez.
+- **Yazma.** Her yedek yeni bir dosyadır (`keykey-otomatik-YYYY-AA-GG-SSddss.keykey`, İngilizce arayüzde `keykey-auto-…`). Yazılan dosya geri okunup karşılaştırılır; tutmazsa silinir ve eski yedeklere dokunulmaz. Yazmadan önce kalıcı izin denetlenir; başka telefondan gelen bir klasör adresi için izin yoktur ve durum kullanıcıya gösterilir.
+- **Budama.** Yalnızca yeni dosya doğrulandıktan sonra ve yalnızca adı otomatik yedek kalıbına tam uyan dosyalar: her günün en yenisi ve en yeni 14 gün kalır. Elle alınan yedekler ve başka dosyalar hiç silinmez.
+- **Kopya sayısı.** Klasördeki her dosya, ele geçiren birinin ana parolayı çevrimdışı deneyebileceği bir kopyadır ([bilinen sınır 4](#bilinen-sınırlar)); eşitleme uygulaması bunları başka cihazlara da taşır. Kullanıcıya açarken söylenir.
+
 ### Geri yükleme
 
 1. Dosya belge seçiciyle seçilir ve yapısı denetlenir. Kasanın kendisine henüz dokunulmaz.
@@ -719,7 +735,7 @@ Kasa açıkken arama yapılabilsin diye kayıtların tamamı çözülüp bellekt
 2. **Kayıt silme fark edilmez.** Bir kayıt satırı silinirse uygulama bunu şifreleme düzeyinde anlayamaz. Bu saldırı veri okutmaz, yalnızca veri kaybettirir.
 3. **Üst veri sızıntısı.** Kayıt sayısı, türleri, zaman damgaları ve 256 baytlık dolgu blok sayısı görünür.
 4. **Parola gücü esastır.** Argon2id denemeyi yavaşlatır, ama zayıf bir parolayı güçlendiremez. Yedek dosyası da aynı sınıra tabidir.
-5. **Sarmalama anahtarı dönmez.** Parola değişse de kasa anahtarı aynı kalır. Eski parolayı ve o zamanki üst bilgiyi birlikte ele geçiren biri kasa anahtarına ulaşabilir, eski yedekler de eski parolayla açılmaya devam eder.
+5. **Sarmalama anahtarı dönmez.** Parola değişse de kasa anahtarı aynı kalır. Eski parolayı ve o zamanki üst bilgiyi birlikte ele geçiren biri kasa anahtarına ulaşabilir, eski yedekler de eski parolayla açılmaya devam eder. Otomatik yedekler de buna dahildir: parola değişince yeni yedek hemen yeni parolayla yazılır, ama klasördeki eskiler budanana kadar eski parolayla açılır.
 6. **Hatalı deneme beklemesi yalnızca uygulamanın kuralıdır.** Sayaç şifresizdir ve kopyalanmış bir kasa dosyası üzerindeki denemeleri sınırlamaz. Ayrıntılar [Kilit](#kilit) bölümünde.
 7. **Kilitten sonra bellekte kalan dizeler.** Yazılan ana parola ve ekranda gösterilmiş değerler (parola, kullanıcı adı) kilitten sonra da Dart'ın henüz toplanmamış dizelerinde kalabilir; denetimde kilitten 2,5 dakika sonra bile bulundular ([ölçüm](guvenlik-denetimi.md#bellek)). Anahtarlar, kurtarma anahtarı ve 2FA anahtarları bulunmadı. Bu belleği okumak root ya da süreçte kod çalıştırmayı gerektirir; böyle bir saldırgan ana parolayı yazılırken de görebileceği için risk kabul edildi. Ayrıntılar [Bellek](#bellek) bölümünde.
 8. **Doldurma bildirimi güvenli pencerenin dışında.** Doldurmadan sonraki bildirim kaydın adını taşır ve KeyKey'in `FLAG_SECURE` penceresinin dışında görünür: ekran kaydına girer, erişilebilirlik servislerine bildirilir. Bildirimden önce kayıt adı KeyKey dışında hiç görünmüyordu. Kayıt adı genelde zaten ekranda olan uygulamanın ya da sitenin adı olduğu ve kullanıcı adı ile parola bildirime girmediği için bu kabul edildi.
