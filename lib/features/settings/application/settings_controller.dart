@@ -84,6 +84,10 @@ class SettingsController extends Notifier<AppSettings?> {
   Future<void> setGenerator(GeneratorPreferences generator) =>
       _update((current) => current.copyWith(generator: generator));
 
+  /// Otomatik yedeğin klasörü; `null` kapatır.
+  Future<void> setAutoBackupFolder(AutoBackupFolder? folder) =>
+      _update((current) => current.withAutoBackupFolder(folder));
+
   Future<void> _update(AppSettings Function(AppSettings) change) async {
     final repository = _repository;
     final current = state;

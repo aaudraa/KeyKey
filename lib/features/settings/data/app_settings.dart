@@ -8,6 +8,34 @@ import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/generator/application/generator_preferences.dart';
 import 'package:keykey/features/vault/application/login_search.dart';
 
+/// Otomatik yedeğin klasörü: Android'in klasör ağacı adresi ve gösterilen ad.
+final class AutoBackupFolder {
+  const new({required this.uri, required this.name});
+
+  /// `content://…/tree/…`.
+  final String uri;
+
+  /// Ayarlarda gösterilen ad.
+  final String name;
+
+  Map<String, Object?> toJson() => {'uri': uri, 'name': name};
+
+  /// Tam iki alan, ikisi de boş olmayan metin, adres `content://` ile başlar.
+  /// Uymazsa `null`.
+  static AutoBackupFolder? tryParse(Object? value) {
+    if (value is! Map<String, Object?> ||
+        value.length != 2 ||
+        !value.keys.toSet().containsAll(const {'uri', 'name'})) {
+      return null;
+    }
+    final uri = value['uri'];
+    final name = value['name'];
+    if (uri is! String || !uri.startsWith('content://')) return null;
+    if (name is! String || name.isEmpty) return null;
+    return AutoBackupFolder(uri: uri, name: name);
+  }
+}
+
 /// Kasanın içinde, şifreli saklanan ayarlar.
 ///
 /// Biçim güvenlik tasarımı belgesinde. Okurken doğrulama katıdır.
@@ -19,6 +47,7 @@ final class AppSettings {
     this.backupReminderSnoozedUntil,
     this.vaultSort = LoginSort.name,
     this.generator = GeneratorPreferences.defaults,
+    this.autoBackupFolder,
   });
 
   static const defaults = AppSettings(
@@ -36,8 +65,9 @@ final class AppSettings {
 
   /// Sürüm 2 [autofillCopyOtp], sürüm 3 yedek bilgilerini ([lastBackupAt],
   /// [backupReminderSnoozedUntil]), sürüm 4 [vaultSort] ve [generator]
-  /// alanlarını ekledi. Eski sürümler okunmaya devam eder.
-  static const currentVersion = 4;
+  /// alanlarını, sürüm 5 [autoBackupFolder] alanını ekledi. Eski sürümler
+  /// okunmaya devam eder.
+  static const currentVersion = 5;
 
   /// 2FA kodlarını göstermeden önce parmak izi veya ana parola istenir.
   final bool otpRequireAuth;
@@ -58,6 +88,9 @@ final class AppSettings {
   /// Parola üreticisinin son kullanılan seçenekleri.
   final GeneratorPreferences generator;
 
+  /// Otomatik yedeğin klasörü; kapalıysa `null`.
+  final AutoBackupFolder? autoBackupFolder;
+
   /// Yedek zamanları yalnızca ileri alınır, silinmez; bu yüzden `null`
   /// verilen alan olduğu gibi kalır.
   AppSettings copyWith({
@@ -75,6 +108,19 @@ final class AppSettings {
         backupReminderSnoozedUntil ?? this.backupReminderSnoozedUntil,
     vaultSort: vaultSort ?? this.vaultSort,
     generator: generator ?? this.generator,
+    autoBackupFolder: autoBackupFolder,
+  );
+
+  /// Otomatik yedeğin klasörünü değiştirir; `null` kapatır. [copyWith] bu
+  /// alana dokunmaz.
+  AppSettings withAutoBackupFolder(AutoBackupFolder? folder) => AppSettings(
+    otpRequireAuth: otpRequireAuth,
+    autofillCopyOtp: autofillCopyOtp,
+    lastBackupAt: lastBackupAt,
+    backupReminderSnoozedUntil: backupReminderSnoozedUntil,
+    vaultSort: vaultSort,
+    generator: generator,
+    autoBackupFolder: folder,
   );
 
   Uint8List toJsonBytes() => utf8.encode(
@@ -87,6 +133,7 @@ final class AppSettings {
           backupReminderSnoozedUntil?.millisecondsSinceEpoch,
       'vaultSort': _sortName(vaultSort),
       'generator': generator.toJson(),
+      'autoBackupFolder': autoBackupFolder?.toJson(),
     }),
   );
 
@@ -107,7 +154,8 @@ final class AppSettings {
     }
     if (decoded is! Map<String, Object?>) return null;
     // Sürüm 1'de kod kopyalama yoktu; varsayılanı açık. Sürüm 3'ten önce
-    // yedek bilgisi, sürüm 4'ten önce sıralama ve üretici yoktu.
+    // yedek bilgisi, sürüm 4'ten önce sıralama ve üretici, sürüm 5'ten önce
+    // otomatik yedek yoktu.
     const v3 = {
       'version',
       'otpRequireAuth',
@@ -119,7 +167,13 @@ final class AppSettings {
       1 => const {'version', 'otpRequireAuth'},
       2 => const {'version', 'otpRequireAuth', 'autofillCopyOtp'},
       3 => v3,
-      currentVersion => const {...v3, 'vaultSort', 'generator'},
+      4 => const {...v3, 'vaultSort', 'generator'},
+      currentVersion => const {
+        ...v3,
+        'vaultSort',
+        'generator',
+        'autoBackupFolder',
+      },
       _ => null,
     };
     if (keys == null ||
@@ -136,7 +190,7 @@ final class AppSettings {
     if (!_isTime(lastBackupAt) || !_isTime(snoozedUntil)) return null;
     var vaultSort = LoginSort.name;
     var generator = GeneratorPreferences.defaults;
-    if (decoded['version'] == currentVersion) {
+    if (decoded['version'] case 4 || currentVersion) {
       final sortName = decoded['vaultSort'];
       final sort = LoginSort.values
           .where((s) => _sortName(s) == sortName)
@@ -146,6 +200,14 @@ final class AppSettings {
       vaultSort = sort;
       generator = parsed;
     }
+    AutoBackupFolder? autoBackupFolder;
+    if (decoded['version'] == currentVersion) {
+      final folder = decoded['autoBackupFolder'];
+      if (folder != null) {
+        autoBackupFolder = AutoBackupFolder.tryParse(folder);
+        if (autoBackupFolder == null) return null;
+      }
+    }
     return AppSettings(
       otpRequireAuth: otpRequireAuth,
       autofillCopyOtp: autofillCopyOtp,
@@ -153,6 +215,7 @@ final class AppSettings {
       backupReminderSnoozedUntil: _toTime(snoozedUntil),
       vaultSort: vaultSort,
       generator: generator,
+      autoBackupFolder: autoBackupFolder,
     );
   }
 

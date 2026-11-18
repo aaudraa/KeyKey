@@ -263,6 +263,78 @@ void main() {
     });
   });
 
+  group('sürüm 5: otomatik yedek klasörü', () {
+    const v4 =
+        '{"version":4,"otpRequireAuth":false,"autofillCopyOtp":true,'
+        '"lastBackupAt":null,"backupReminderSnoozedUntil":null,'
+        '"vaultSort":"name","generator":{"passphrase":false,"length":20,'
+        '"lowercase":true,"uppercase":true,"digits":true,"symbols":true,'
+        '"words":6}}';
+    String v5(String folder) => v4
+        .replaceFirst('"version":4', '"version":5')
+        .replaceFirst('"vaultSort"', '"autoBackupFolder":$folder,"vaultSort"');
+    const folder = AutoBackupFolder(
+      uri: 'content://com.android.externalstorage.documents/tree/primary%3ADocuments%2FKeyKey',
+      name: 'KeyKey',
+    );
+
+    test('sürüm 4 kaydı okunuyor, otomatik yedek kapalı', () async {
+      await putRaw(encrypt(v4));
+      final settings = await repository.load();
+      expect(settings.otpRequireAuth, isFalse);
+      expect(settings.autoBackupFolder, isNull);
+    });
+
+    test('klasör yazılıp okunuyor', () async {
+      await repository.save(AppSettings.defaults.withAutoBackupFolder(folder));
+      final settings = await repository.load();
+      expect(settings.autoBackupFolder?.uri, folder.uri);
+      expect(settings.autoBackupFolder?.name, 'KeyKey');
+      expect(settings.otpRequireAuth, isFalse);
+    });
+
+    test('klasörsüz sürüm 5 kaydı okunuyor', () async {
+      await putRaw(encrypt(v5('null')));
+      final settings = await repository.load();
+      expect(settings.otpRequireAuth, isFalse);
+      expect(settings.autoBackupFolder, isNull);
+    });
+
+    test('withAutoBackupFolder(null) klasörü siliyor, gerisini koruyor', () {
+      final settings = AppSettings.defaults
+          .copyWith(otpRequireAuth: true, vaultSort: LoginSort.recentlyUpdated)
+          .withAutoBackupFolder(folder)
+          .withAutoBackupFolder(null);
+      expect(settings.autoBackupFolder, isNull);
+      expect(settings.otpRequireAuth, isTrue);
+      expect(settings.vaultSort, LoginSort.recentlyUpdated);
+    });
+
+    test('copyWith klasörü koruyor', () {
+      final settings = AppSettings.defaults
+          .withAutoBackupFolder(folder)
+          .copyWith(otpRequireAuth: true);
+      expect(settings.autoBackupFolder?.uri, folder.uri);
+    });
+
+    test('geçersiz klasör alanı kaydı okunamaz yapıyor', () async {
+      for (final json in [
+        v5('1'),
+        v5('"content://x/tree/1"'),
+        v5('{"uri":"content://x/tree/1"}'),
+        v5('{"uri":"content://x/tree/1","name":""}'),
+        v5('{"uri":"","name":"KeyKey"}'),
+        v5('{"uri":"file:///sdcard/KeyKey","name":"KeyKey"}'),
+        v5('{"uri":"content://x/tree/1","name":1}'),
+        v5('{"uri":"content://x/tree/1","name":"KeyKey","x":1}'),
+        v4.replaceFirst('"version":4', '"version":5'),
+      ]) {
+        await putRaw(encrypt(json));
+        expect((await repository.load()).otpRequireAuth, isTrue, reason: json);
+      }
+    });
+  });
+
   test('aynı kimlikte başka türden kayıt okunamaz sayılıyor', () async {
     await putRaw(Uint8List(64), type: 'login');
     expect((await repository.load()).otpRequireAuth, isTrue);
