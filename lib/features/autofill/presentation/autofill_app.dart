@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/theme.dart';
 import 'package:keykey/features/autofill/application/autofill_bridge.dart';
+import 'package:keykey/features/autofill/presentation/autofill_card_pick_screen.dart';
 import 'package:keykey/features/autofill/presentation/autofill_pick_screen.dart';
 import 'package:keykey/features/autofill/presentation/autofill_save_screen.dart';
 import 'package:keykey/features/autofill/presentation/autofill_sheet_frame.dart';
@@ -85,14 +86,19 @@ class AutofillHome extends ConsumerWidget {
                 child: LockScreen(
                   allowRecovery: false,
                   compact: true,
-                  subtitle: save == null
-                      ? l10n.autofillFor(name)
-                      : l10n.autofillSaveFor(name),
+                  subtitle: save != null
+                      ? l10n.autofillSaveFor(name)
+                      : target.forCard
+                      ? l10n.autofillCardFor(name)
+                      : l10n.autofillFor(name),
                 ),
               ),
               VaultOpen() when save != null => AutofillSaveScreen(
                 target: target,
                 save: save,
+              ),
+              VaultOpen() when target.forCard => AutofillCardPickScreen(
+                target: target,
               ),
               VaultOpen() => AutofillPickScreen(target: target),
             };

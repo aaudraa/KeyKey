@@ -1705,6 +1705,40 @@
   "@autofillSetupOpenFailed": {
     "description": "The system or Chrome setting could not be opened."
   },
+  "autofillCardFor": "Card for {target}",
+  "@autofillCardFor": {
+    "description": "Subtitle of the autofill sheet when a payment form asks for a card. Shows which app or website will receive the card.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillCardEmpty": "There are no cards in the vault yet. You can add one in KeyKey's Vault tab.",
+  "@autofillCardEmpty": {
+    "description": "Shown in the autofill card list when the vault has no cards."
+  },
+  "autofillCardSearch": "Search cards",
+  "@autofillCardSearch": {
+    "description": "Label of the search box in the autofill card list."
+  },
+  "autofillWarnInsecureCard": "The connection is not encrypted (http). Card details travel over the network in the clear.",
+  "@autofillWarnInsecureCard": {
+    "description": "Warning before filling a card into a page opened over http."
+  },
+  "autofillWarnCard": "Selected card: {name}",
+  "@autofillWarnCard": {
+    "description": "Names the card the user picked, under a fill warning.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillCardFilledUnnamed": "Card filled",
+  "@autofillCardFilledUnnamed": {
+    "description": "Short system notice after a card without a name or number was filled."
+  },
   "autofillWarnWebViewUnknown": "This app shows a web page inside it. KeyKey cannot verify who the page belongs to, and the app can read the password that is filled.",
   "@autofillWarnWebViewUnknown": {
     "description": "WebView warning when the page did not report its address."
