@@ -28,13 +28,17 @@ int _digitCount(String text) {
   return count;
 }
 
-/// Kutu zaten doluyken yazılan rakam reddedilir; yoksa araya giren rakam
-/// sondakini sessizce silerdi.
+/// Kutu zaten doluyken araya yazılan rakam reddedilir; yoksa sondaki rakam
+/// sessizce silinirdi. Bir seçimin yerine yapıştırma boş kutudaki gibi
+/// işlenir.
 bool _overflowsFull(
   TextEditingValue oldValue,
   TextEditingValue newValue,
   int max,
-) => _digitCount(newValue.text) > max && _digitCount(oldValue.text) >= max;
+) =>
+    oldValue.selection.isCollapsed &&
+    _digitCount(newValue.text) > max &&
+    _digitCount(oldValue.text) >= max;
 
 /// İmleci, önündeki [digits] rakamdan sonraya koyar.
 int _offsetAfterDigits(String formatted, int digits) {
@@ -77,15 +81,27 @@ class CardNumberInputFormatter extends TextInputFormatter {
 }
 
 /// Son kullanmayı `AA/YY` biçiminde yazar: en çok dört rakam, ikinci
-/// rakamdan sonra eğik çizgi.
+/// rakamdan sonra eğik çizgi. Dört haneli yılla yapıştırılan tarih
+/// ("12/2030") kısaltılır.
 class ExpiryInputFormatter extends TextInputFormatter {
   const new();
+
+  static final _fullYear = RegExp(r'^\s*([0-9]{1,2})\s*/\s*([0-9]{4})\s*$');
 
   @override
   TextEditingValue formatEditUpdate(
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
+    final pasted = _fullYear.firstMatch(newValue.text);
+    if (pasted != null) {
+      final text =
+          '${pasted.group(1)!.padLeft(2, '0')}/${pasted.group(2)!.substring(2)}';
+      return TextEditingValue(
+        text: text,
+        selection: TextSelection.collapsed(offset: text.length),
+      );
+    }
     if (_overflowsFull(oldValue, newValue, 4)) return oldValue;
     final (digits, before) = _digitsBefore(newValue, 4);
     final formatted = digits.length > 2

@@ -452,8 +452,10 @@ abstract final class LoginExportReader {
 
   /// Kart değerleri metin ya da sayı olabiliyor (Bitwarden ay ve yılı sayı
   /// yazabiliyor, başka araçlar numarayı da). Hiçbir değer atılmaz: metne
-  /// çevrilir; alanına uymazsa çağıran onu nota taşır. Tam sayı olmayan ya da
-  /// çok büyük sayılar olduğu gibi yazılır, rakamları uydurulmaz.
+  /// çevrilir. Numara, güvenlik kodu ya da tarih alanına uymazsa çağıran onu
+  /// nota taşır; kart sahibinin biçim kuralı yoktur, metin olarak kalır. Tam
+  /// sayı olmayan ya da çok büyük sayılar olduğu gibi yazılır, rakamları
+  /// uydurulmaz.
   static String _scalar(Object? value) => switch (value) {
     null => '',
     final String text => text.trim(),

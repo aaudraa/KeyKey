@@ -124,12 +124,3 @@ List<LoginItem> sortLogins(List<LoginItem> items, LoginSort sort) {
   }
   return sorted;
 }
-
-/// Kayıtlarda kullanılan klasörler, sıralı.
-List<String> foldersOf(Iterable<LoginItem> items) {
-  return {
-    for (final item in items)
-      if (!item.content.isTrashed && item.content.folder != null)
-        item.content.folder!,
-  }.toList()..sort((a, b) => foldForSearch(a).compareTo(foldForSearch(b)));
-}

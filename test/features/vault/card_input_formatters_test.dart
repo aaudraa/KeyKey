@@ -77,6 +77,23 @@ void main() {
       expect(apply('1a2'), '12');
     });
 
+    test('dört haneli yılla yapıştırılan tarih AA/YY olur', () {
+      expect(apply('12/2030'), '12/30');
+      expect(apply('9/2031'), '09/31');
+      expect(apply(' 03 / 2029 '), '03/29');
+    });
+
+    test('dolu tarihin tamamı seçilip yapıştırılan tarih yerine geçer', () {
+      final value = formatter.formatEditUpdate(
+        const TextEditingValue(
+          text: '12/30',
+          selection: TextSelection(baseOffset: 0, extentOffset: 5),
+        ),
+        _typed('01/2032'),
+      );
+      expect(value.text, '01/32');
+    });
+
     test('dolu tarihin ortasına yazılan rakam sondakini silmez', () {
       final value = formatter.formatEditUpdate(
         _typed('12/30'),
