@@ -73,7 +73,7 @@ void main() {
   test('geçerli JSON okunur', () {
     final card = CardContent.fromJsonBytes(_json(_valid()));
     expect(card.expiry, CardExpiry(month: 12, year: 2028));
-    expect(card.brand, CardBrand.visa);
+    expect(card.cardBrand, CardBrand.visa);
   });
 
   group('katı okuma', () {

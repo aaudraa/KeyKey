@@ -119,7 +119,7 @@ final class CardContent implements VaultItemContent<CardContent> {
   final DateTime? trashedAt;
 
   /// Numaradan çıkarılır, saklanmaz.
-  CardBrand? get brand => detectCardBrand(number);
+  CardBrand? get cardBrand => detectCardBrand(number);
 
   @override
   bool get isTrashed => trashedAt != null;

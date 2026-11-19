@@ -20,10 +20,10 @@ enum CardBrand {
 }
 
 /// Önek aralığı: numaranın ilk `length` hanesi `from` ile `to` arasında.
-typedef _Range = ({int length, int from, int to, CardBrand brand});
+typedef _Range = ({int length, int from, int to, CardBrand issuer});
 
 _Range _r(int from, int to, CardBrand brand) =>
-    (length: from.toString().length, from: from, to: to, brand: brand);
+    (length: from.toString().length, from: from, to: to, issuer: brand);
 
 /// En uzun önek önce denenir: Discover'ın 622126-622925 aralığı UnionPay'in
 /// 62'sinden, Troy'un 9792'si ve Maestro'nun dörtlüleri diğerlerinden önce.
@@ -55,7 +55,7 @@ CardBrand? detectCardBrand(String digits) {
     if (digits.length < range.length) continue;
     final prefix = int.tryParse(digits.substring(0, range.length));
     if (prefix != null && prefix >= range.from && prefix <= range.to) {
-      return range.brand;
+      return range.issuer;
     }
   }
   return null;
