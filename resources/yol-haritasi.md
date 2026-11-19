@@ -638,7 +638,7 @@ Faz 14'teki kartların ödeme formlarına doldurulması ([#149](https://github.c
 - [x] Doldurma ekranında kart listesi, arama, `http` uyarısı
 - [x] Örnek uygulamada üç kart formu; Android 17 ve 11 emülatörlerinde elle deneme, kayıt taraması
 - [x] Güvenlik tasarımı, kılavuz, değişiklik günlüğü, sürüm `1.5.0+9`
-- [ ] Son gözden geçirme
+- [x] Son gözden geçirme
 - [ ] Telefonda deneme (proje sahibiyle)
 
 **Uygulama sırasında verilen kararlar:**
@@ -648,6 +648,15 @@ Faz 14'teki kartların ödeme formlarına doldurulması ([#149](https://github.c
 - Yanlış türde bir doldurma çağrısı (kart isteğine giriş, giriş isteğine kart) Kotlin'de doldurmadan kapanıyor. Bunun otomatik testi yok, çünkü etkinlik Android çerçevesi istiyor; Flutter yalnızca isteğin türüne uyan çağrıyı yapıyor ve bu test ediliyor.
 
 **Cihazda bulunan:** Android 14 ve sonrası ipucu verilmemiş gizli kutulara kendiliğinden `passwordAuto` ipucunu ekliyor. İlk denemede sınıflandırıcı bunu geliştiricinin ipucu sandı ve ipucusuz formdaki gizli CVV kutusu parola sayıldı: kart doldurulmadı, kutuda giriş önerisi çıktı. Bu ipucu artık yok sayılıyor; testle birlikte düzeltildi ve iki emülatörde yeniden denendi. Örnek uygulamanın açılır listeleri de doldurulmadı, çünkü koddan kurulan `ArrayAdapter` seçeneklerini doldurma sistemine vermiyor; bu KeyKey'in değil örnek uygulamanın eksiğiydi (`setAutofillOptions` eklendi). Seçeneklerini bildirmeyen gerçek bir uygulamada KeyKey listeye değer tahmin etmiyor.
+
+**Son gözden geçirme (2026-11-20):** Taze bir gözden geçirici bütün dalı okudu ve sınıflandırıcıyı örnek girdilerle ayrıca çalıştırdı. Kritik bulgu yok; Türkçe formlarda üç önemli bulgu vardı. Hepsi önce kırmızı bir testle düzeltildi, tasarım belgesi yeni kurallarla güncellendi:
+
+- "Kredi kartı sahibi" kutusu numara sanılıyor, numara sahibi kutusuna yazılıyordu. Kart türü adları ("kredi kartı") tek başına numara sayılmıyor; hediye ve üyelik kartları, taksit seçimi (Aralık kartı 12 taksit seçebilirdi), SMS ve resim kodları kart sayılmıyor; aynı yeri tutan güçlü kanıtlı alan varsa sözcükle bulunan tahmin geçersiz.
+- Kart numarasıyla girilen banka formunda captcha "Güvenlik kodu" formu ödeme formu yapıyordu. Yalnızca zayıf kanıtla verilecek karar, formda kart dışı parola kutusu ya da kart şifresi varsa verilmiyor.
+- Tek başına duran gizli "Güvenlik kodu" kutusu parola sayılıyordu; artık hiçbir formda sayılmıyor.
+- Bırakılanlar (küçük): birleşik "AA/YY" açılır listesi tanınıyor ama doldurulmuyor; kutu sınırları numaradan kısa bölünmüş numara kesik yazılıyor; standart dışı `autocomplete` değerleri Chrome'un kart tahminini gizleyebilir (cihazda denenmeli); Pigeon'un ürettiği `toString` kart değerlerini yazıyor (hiçbir yerde kaydedilmiyor); kart listesinde son dört haneyle arama yok.
+
+Testler: 1667 birim ve arayüz testi, 65 Kotlin testi. Bütün entegrasyon testleri son kodla Android 17 ve 11 emülatörlerinde geçti. Düzeltmelerden sonra örnek formlar iki emülatörde yeniden denendi; Android 17'nin kaydı temiz.
 
 **Bitti sayılması için:** üç örnek formda (ipuçlu, ipucusuz, web) kart listeden seçilip bütün alanlar doğru doluyor; güvenlik kodu parola sanılmıyor ve kaydetme önerisi çıkmıyor; giriş doldurma ve kaydetme eskisi gibi çalışıyor.
 
