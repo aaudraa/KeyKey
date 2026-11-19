@@ -105,6 +105,21 @@ class CardClassifierTest {
     }
 
     @Test
+    fun sisteminParolaIpucuGeliştiriciIpucuSayılmıyor() {
+        // Android 14+ ipucu verilmemiş gizli kutulara "passwordAuto" ekliyor;
+        // Android 17 emülatöründe ipucusuz formdaki CVV böyle parola sanıldı.
+        assertEquals(
+            strong(FieldKind.CARD_SECURITY_CODE),
+            guess(FieldInfo(autofillHints = listOf("passwordAuto"), inputType = numberPassword, hint = "CVV")),
+        )
+        assertEquals(
+            weak(FieldKind.CARD_SECURITY_CODE),
+            guess(FieldInfo(autofillHints = listOf("passwordAuto"), inputType = numberPassword, hint = "Güvenlik kodu")),
+        )
+        assertNull(guess(FieldInfo(autofillHints = listOf("passwordAuto"), inputType = textPassword, hint = "Parola")))
+    }
+
+    @Test
     fun güvenlikKoduAdlarıGüçlü() {
         assertEquals(
             strong(FieldKind.CARD_SECURITY_CODE),

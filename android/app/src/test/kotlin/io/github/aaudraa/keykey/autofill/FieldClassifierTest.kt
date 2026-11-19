@@ -191,6 +191,20 @@ class FieldClassifierTest {
     }
 
     @Test
+    fun sisteminParolaIpucuOlanCvvParolaSayılmıyor() {
+        // Android 17 emülatöründeki ipucusuz form: sistem CVV'ye "passwordAuto" ekledi.
+        val form = FormParser.parse(
+            listOf(
+                FieldInfo(inputType = number, hint = "Kart numarası"),
+                FieldInfo(inputType = text, hint = "Son kullanma (AA/YY)"),
+                FieldInfo(autofillHints = listOf("passwordAuto"), inputType = numberPassword, hint = "CVV"),
+            ),
+        )
+        assertEquals(listOf(2), form.of(FieldKind.CARD_SECURITY_CODE))
+        assertFalse(form.hasCredentials)
+    }
+
+    @Test
     fun zayıfSözcüklerİkiGruptaÖdemeFormuYapar() {
         val form = FormParser.parse(
             listOf(

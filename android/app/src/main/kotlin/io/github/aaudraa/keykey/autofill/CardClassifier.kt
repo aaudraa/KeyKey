@@ -37,6 +37,9 @@ object CardClassifier {
         "cc-csc" to FieldKind.CARD_SECURITY_CODE,
     )
 
+    /** Alanın türü hakkında bir şey söylemeyen ipuçları. */
+    private val NON_DEVELOPER_HINTS = setOf("off", "on", "passwordauto")
+
     /** Chrome'un HTML niteliklerinde gönderdiği tahminler, öncelik sırasıyla. */
     internal val CHROME_ATTRIBUTES =
         listOf("computed-autofill-hints", "crowdsourcing-autofill-hints", "ua-autofill-hints")
@@ -101,11 +104,14 @@ object CardClassifier {
 
     private fun guess(field: FieldInfo, html: Map<String, String>): CardGuess? {
         // Geliştirici ipucu verdiyse ona güvenilir; başka bir şeyse (parola,
-        // adres) alan kart değildir.
+        // adres) alan kart değildir. "passwordAuto" geliştiricinin değil
+        // sistemin ipucudur: Android 14+ ipucu verilmemiş her gizli kutuya
+        // ekliyor, gizli rakam CVV kutusu da buna dahil.
         val hints = field.autofillHints.map { it.lowercase(Locale.ROOT) }
+            .filterNot { it in NON_DEVELOPER_HINTS }
         if (hints.isNotEmpty()) {
             hints.firstNotNullOfOrNull { HINTS[it] }?.let { return CardGuess(it, strong = true) }
-            if (hints.none { it == "off" || it == "on" }) return null
+            return null
         }
         html["autocomplete"]?.lowercase(Locale.ROOT)?.split(' ')
             ?.firstNotNullOfOrNull { HINTS[it] }
