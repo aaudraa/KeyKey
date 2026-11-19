@@ -309,6 +309,29 @@ void main() {
       expect(none.content.notes, isEmpty);
     });
 
+    test('sayı olarak yazılmış numara, kod ve kart sahibi okunur', () {
+      final card = cardOf({
+        'number': 4111111111111111,
+        'code': 123,
+        'cardholderName': 42,
+        'expMonth': 7.0,
+        'expYear': 2031,
+      });
+      expect(card.adjusted, isFalse);
+      expect(card.content.number, '4111111111111111');
+      expect(card.content.securityCode, '123');
+      expect(card.content.cardholder, '42');
+      expect(card.content.expiry, CardExpiry(month: 7, year: 2031));
+    });
+
+    test('başka türde değer atılmaz, nota gider', () {
+      final card = cardOf({'number': 1.5, 'code': true});
+      expect(card.adjusted, isTrue);
+      expect(card.content.number, isEmpty);
+      expect(card.content.securityCode, isEmpty);
+      expect(card.content.notes, 'Card number: 1.5\nSecurity code: true');
+    });
+
     test('4 haneden uzun güvenlik kodu nota gider', () {
       final card = cardOf({'code': '12345'});
       expect(card.content.securityCode, isEmpty);

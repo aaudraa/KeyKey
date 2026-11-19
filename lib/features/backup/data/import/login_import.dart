@@ -383,7 +383,7 @@ abstract final class LoginExportReader {
     if (card is! Map<String, Object?>) return null;
     final moved = <String>[];
 
-    final rawNumber = _text(card['number']).trim();
+    final rawNumber = _scalar(card['number']);
     final number = normalizeCardNumber(rawNumber) ?? '';
     if (number.isEmpty && rawNumber.isNotEmpty) {
       moved.add('${labels.cardNumber}: $rawNumber');
@@ -397,7 +397,7 @@ abstract final class LoginExportReader {
       if (expiry == null) moved.add('${labels.expiry}: $month/$year');
     }
 
-    var code = _text(card['code']).trim();
+    var code = _scalar(card['code']);
     if (!CardContent.isValidSecurityCode(code)) {
       moved.add('${labels.securityCode}: $code');
       code = '';
@@ -418,7 +418,7 @@ abstract final class LoginExportReader {
     }
 
     final name = _text(item['name']).trim();
-    final cardholder = _text(card['cardholderName']).trim();
+    final cardholder = _scalar(card['cardholderName']);
     final notes = [
       _lines(_text(item['notes'])),
       ...extra,
@@ -450,12 +450,24 @@ abstract final class LoginExportReader {
     );
   }
 
-  /// Bitwarden ay ve yılı metin ya da sayı yazabiliyor.
+  /// Kart değerleri metin ya da sayı olabiliyor (Bitwarden ay ve yılı sayı
+  /// yazabiliyor, başka araçlar numarayı da). Hiçbir değer atılmaz: metne
+  /// çevrilir; alanına uymazsa çağıran onu nota taşır. Tam sayı olmayan ya da
+  /// çok büyük sayılar olduğu gibi yazılır, rakamları uydurulmaz.
   static String _scalar(Object? value) => switch (value) {
+    null => '',
     final String text => text.trim(),
     final int number => '$number',
-    _ => '',
+    final double number
+        when number.isFinite &&
+            number == number.truncateToDouble() &&
+            number.abs() <= _maxExactDouble =>
+      '${number.toInt()}',
+    _ => jsonEncode(value),
   };
+
+  /// 2^53: bundan büyük double tam sayıları kesin tutamaz.
+  static const _maxExactDouble = 9007199254740992.0;
 
   static final _expiryPart = RegExp(r'^[0-9]{1,4}$');
 
