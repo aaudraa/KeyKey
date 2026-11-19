@@ -106,6 +106,14 @@ class _AddPanelState extends State<AddPanel> {
                   : null,
             ),
             _PanelRow(
+              icon: Icons.sticky_note_2_outlined,
+              title: l10n.addNote,
+              hint: l10n.addNoteHint,
+              onTap: widget.passwordEnabled
+                  ? () => widget.onChosen(AddChoice.note)
+                  : null,
+            ),
+            _PanelRow(
               icon: Icons.shield_outlined,
               title: l10n.addOtp,
               hint: l10n.addOtpHint,

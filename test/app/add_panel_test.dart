@@ -12,6 +12,7 @@ import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:keykey/features/vault/presentation/card_edit_screen.dart';
 import 'package:keykey/features/vault/presentation/login_edit_screen.dart';
+import 'package:keykey/features/vault/presentation/note_edit_screen.dart';
 import 'package:keykey/features/vault/presentation/trash_screen.dart';
 import 'package:sodium/sodium_sumo.dart';
 
@@ -288,6 +289,17 @@ void main() {
 
     expect(_location(tester), AppRoutes.cardNew);
     expect(find.byType(CardEditScreen), findsOneWidget);
+  });
+
+  testWidgets('"Güvenli not" not formunu açar', (tester) async {
+    await pumpApp(tester);
+    await openPanel(tester);
+
+    await tester.tap(find.text('Güvenli not'));
+    await tester.pumpAndSettle();
+
+    expect(_location(tester), AppRoutes.noteNew);
+    expect(find.byType(NoteEditScreen), findsOneWidget);
   });
 
   testWidgets('kayıtlar yüklenmeden "Kart" etkisiz', (tester) async {

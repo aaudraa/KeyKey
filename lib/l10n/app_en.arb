@@ -2216,5 +2216,10 @@
   "cardExpired": "Expired",
   "cardNumberWarning": "This doesn't look like a card number. You can still save it.",
   "cardExpiryInvalid": "Use a month from 01 to 12 and a two-digit year.",
-  "cardCopyNumber": "Copy card number"
+  "cardCopyNumber": "Copy card number",
+  "addNote": "Secure note",
+  "addNoteHint": "Wi-Fi, door codes, recovery codes",
+  "noteNewTitle": "New note",
+  "noteText": "Text",
+  "noteCopy": "Copy text"
 }

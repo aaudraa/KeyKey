@@ -520,5 +520,10 @@
   "cardExpired": "Süresi doldu",
   "cardNumberWarning": "Bu numara bir kart numarasına benzemiyor. Yine de kaydedebilirsin.",
   "cardExpiryInvalid": "Ay 01-12, yıl iki haneli olmalı.",
-  "cardCopyNumber": "Kart numarasını kopyala"
+  "cardCopyNumber": "Kart numarasını kopyala",
+  "addNote": "Güvenli not",
+  "addNoteHint": "Wi-Fi, kapı kodu, kurtarma kodları",
+  "noteNewTitle": "Yeni not",
+  "noteText": "Metin",
+  "noteCopy": "Metni kopyala"
 }

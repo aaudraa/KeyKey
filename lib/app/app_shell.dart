@@ -111,8 +111,7 @@ class _AppShellState extends ConsumerState<AppShell>
       case AddChoice.card:
         router.go(AppRoutes.cardNew);
       case AddChoice.note:
-        // Not formu Görev 5'te; o zamana kadar seçenek panelde yok.
-        break;
+        router.go(AppRoutes.noteNew);
       case AddChoice.otpManual:
         router.go(AppRoutes.authenticatorNew);
       case AddChoice.otpScan:
