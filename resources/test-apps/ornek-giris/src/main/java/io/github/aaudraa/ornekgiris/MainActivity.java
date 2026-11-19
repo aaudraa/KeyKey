@@ -1,6 +1,7 @@
 package io.github.aaudraa.ornekgiris;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.autofill.AutofillManager;
@@ -42,6 +43,18 @@ public class MainActivity extends Activity {
         });
         layout.addView(login);
         layout.addView(result);
+
+        // Kart doldurma denemeleri için ödeme formları.
+        layout.addView(link("Kart formu", CardActivity.class));
+        layout.addView(link("Kart formu (ipucusuz)", CardWordsActivity.class));
+        layout.addView(link("Kart formu (web)", CardWebActivity.class));
         setContentView(layout);
+    }
+
+    private Button link(String label, Class<?> target) {
+        Button button = new Button(this);
+        button.setText(label);
+        button.setOnClickListener(view -> startActivity(new Intent(this, target)));
+        return button;
     }
 }
