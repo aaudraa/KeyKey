@@ -5,6 +5,7 @@ KeyKey parolalarını ve iki adımlı doğrulama kodlarını telefonunda, şifre
 <li>Kayıt ekleme, düzenleme ve arama; klasörler, çöp kutusu, özel alanlar</li>
 <li>Parola üretici ve güç ölçer</li>
 <li>Zayıf ve tekrar eden parolaları gösteren çevrimdışı rapor</li>
+<li>Banka kartları ve güvenli notlar; listede kartın yalnızca son dört hanesi görünür</li>
 </ul>
 
 <b>2FA kodları</b>
@@ -16,6 +17,7 @@ KeyKey parolalarını ve iki adımlı doğrulama kodlarını telefonunda, şifre
 <b>Otomatik doldurma</b>
 <ul>
 <li>Android uygulamalarında ve Chrome'da parola doldurma ve kaydetme</li>
+<li>Ödeme formlarında kart doldurma: numara, son kullanma, güvenlik kodu</li>
 <li>Uygulamalar imza sertifikasıyla eşleşir; şüpheli durumlarda uyarı çıkar</li>
 </ul>
 

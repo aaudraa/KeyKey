@@ -15,5 +15,8 @@
         <activity
             android:name=".WebViewActivity"
             android:exported="true" />
+        <activity android:name=".CardActivity" />
+        <activity android:name=".CardWordsActivity" />
+        <activity android:name=".CardWebActivity" />
     </application>
 </manifest>

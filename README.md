@@ -43,7 +43,7 @@ Eski bir `v0.x` deneme sürümü kullanıyorsan önce [geçiş adımlarını](re
 | **Parola kasası** | Kayıt ekleme ve düzenleme, arama, klasörler, çöp kutusu, parola üretici, güç ölçer; zayıf ve tekrar eden parolaları gösteren çevrimdışı parola raporu |
 | **Kartlar ve notlar** | Banka kartları (numara, son kullanma, güvenlik kodu, PIN; marka numaradan anlaşılır) ve güvenli notlar; parolalarla aynı listede, klasörlerde ve çöp kutusunda |
 | **2FA doğrulama** | TOTP ve HOTP kodları, QR ile ekleme, Google Authenticator, Aegis ve 2FAS'tan aktarım, kodları göstermek için isteğe bağlı ek onay |
-| **Otomatik doldurma** | Android uygulamalarında ve Chrome'da parola doldurma ve kaydetme; uygulamalar imza sertifikasıyla eşleşir, şüpheli durumlarda uyarı verilir |
+| **Otomatik doldurma** | Android uygulamalarında ve Chrome'da parola doldurma ve kaydetme, ödeme formlarında kart doldurma; uygulamalar imza sertifikasıyla eşleşir, şüpheli durumlarda uyarı verilir |
 | **Kilit** | Ana parola, parmak iziyle açma, otomatik kilitlenme, kurtarma anahtarı |
 | **Yedekleme** | Şifreli yedek, otomatik yedek ve geri yükleme; Bitwarden (kart ve notlar dahil), Chrome, Firefox ve KeePassXC'den içe aktarma; başka bir parola yöneticisine geçmek için şifresiz dışa aktarma (CSV ya da kartlar dahil JSON) |
 | **Görünüm** | Açık, koyu ya da sistem teması; Türkçe ve İngilizce |

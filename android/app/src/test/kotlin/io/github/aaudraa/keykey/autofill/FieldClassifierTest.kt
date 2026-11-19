@@ -161,6 +161,233 @@ class FieldClassifierTest {
     }
 
     @Test
+    fun kartNumarasıylaGirişFormuGirişKalır() {
+        val form = FormParser.parse(
+            listOf(
+                FieldInfo(inputType = text, hint = "Kart numarası"),
+                FieldInfo(inputType = numberPassword, hint = "Şifre"),
+            ),
+        )
+        assertFalse(form.hasCard)
+        assertEquals(listOf(0), form.of(FieldKind.USERNAME))
+        assertEquals(listOf(1), form.of(FieldKind.PASSWORD))
+    }
+
+    @Test
+    fun cvvliFormÖdemeFormu() {
+        val form = FormParser.parse(
+            listOf(
+                FieldInfo(inputType = text, hint = "Kart numarası"),
+                FieldInfo(inputType = text, hint = "AA/YY"),
+                FieldInfo(inputType = numberPassword, hint = "CVV"),
+            ),
+        )
+        assertTrue(form.hasCard)
+        assertFalse(form.hasCredentials)
+        assertEquals(listOf(0), form.of(FieldKind.CARD_NUMBER))
+        assertEquals(listOf(1), form.of(FieldKind.CARD_EXPIRY))
+        assertEquals(listOf(2), form.of(FieldKind.CARD_SECURITY_CODE))
+        assertEquals(emptyList<Int>(), form.of(FieldKind.PASSWORD))
+    }
+
+    @Test
+    fun sisteminParolaIpucuOlanCvvParolaSayılmıyor() {
+        // Android 17 emülatöründeki ipucusuz form: sistem CVV'ye "passwordAuto" ekledi.
+        val form = FormParser.parse(
+            listOf(
+                FieldInfo(inputType = number, hint = "Kart numarası"),
+                FieldInfo(inputType = text, hint = "Son kullanma (AA/YY)"),
+                FieldInfo(autofillHints = listOf("passwordAuto"), inputType = numberPassword, hint = "CVV"),
+            ),
+        )
+        assertEquals(listOf(2), form.of(FieldKind.CARD_SECURITY_CODE))
+        assertFalse(form.hasCredentials)
+    }
+
+    @Test
+    fun zayıfSözcüklerİkiGruptaÖdemeFormuYapar() {
+        val form = FormParser.parse(
+            listOf(
+                FieldInfo(inputType = text, hint = "Kart numarası"),
+                FieldInfo(inputType = numberPassword, hint = "Güvenlik kodu"),
+            ),
+        )
+        assertTrue(form.hasCard)
+        assertFalse(form.hasCredentials)
+        assertEquals(listOf(1), form.of(FieldKind.CARD_SECURITY_CODE))
+    }
+
+    @Test
+    fun yalnızCvvKutusu() {
+        val form = FormParser.parse(listOf(FieldInfo(inputType = numberPassword, idEntry = "cvv")))
+        assertTrue(form.hasCard)
+        assertFalse(form.hasCredentials)
+    }
+
+    @Test
+    fun karışıkFormdaGirişVeKartAyrı() {
+        val form = FormParser.parse(
+            listOf(
+                FieldInfo(inputType = textEmail),
+                FieldInfo(inputType = textPassword, idEntry = "password"),
+                FieldInfo(autofillHints = listOf("creditCardNumber"), inputType = number),
+                html("type" to "password", "autocomplete" to "cc-csc"),
+            ),
+        )
+        assertEquals(listOf(0), form.of(FieldKind.USERNAME))
+        assertEquals(listOf(1), form.of(FieldKind.PASSWORD))
+        assertEquals(listOf(2), form.of(FieldKind.CARD_NUMBER))
+        assertEquals(listOf(3), form.of(FieldKind.CARD_SECURITY_CODE))
+        assertTrue(form.hasCredentials)
+        assertTrue(form.hasCard)
+        assertEquals(listOf(2, 3), form.cardIndices)
+    }
+
+    @Test
+    fun ödemeFormundaKartAlanıKullanıcıAdıTahminiOlmuyor() {
+        // Kart sahibi kutusu düz metin; parola kutusundan önce gelse de
+        // kullanıcı adı sayılmamalı.
+        val form = FormParser.parse(
+            listOf(
+                FieldInfo(inputType = text, hint = "Kart sahibi"),
+                FieldInfo(autofillHints = listOf("creditCardNumber"), inputType = text),
+                FieldInfo(inputType = textPassword),
+            ),
+        )
+        assertEquals(listOf(0), form.of(FieldKind.CARD_HOLDER))
+        assertEquals(emptyList<Int>(), form.of(FieldKind.USERNAME))
+    }
+
+    @Test
+    fun ayVeYılSözcükleriTekBaşınaÖdemeFormuYapmaz() {
+        val form = FormParser.parse(
+            listOf(
+                FieldInfo(inputType = text, hint = "Ay"),
+                FieldInfo(inputType = text, hint = "Yıl"),
+                FieldInfo(inputType = textPassword),
+            ),
+        )
+        assertFalse(form.hasCard)
+        assertEquals(listOf(2), form.of(FieldKind.PASSWORD))
+    }
+
+    @Test
+    fun kartSahibiTekBaşınaÖdemeFormuYapmaz() {
+        val form = FormParser.parse(
+            listOf(
+                FieldInfo(inputType = text, hint = "Kart sahibi"),
+                FieldInfo(inputType = textPassword),
+            ),
+        )
+        assertFalse(form.hasCard)
+        assertEquals(listOf(0), form.of(FieldKind.USERNAME))
+    }
+
+    @Test
+    fun ödemeFormundaGenelAyVeYılKutularıSonKullanma() {
+        val form = FormParser.parse(
+            listOf(
+                FieldInfo(autofillHints = listOf("creditCardNumber"), inputType = text),
+                FieldInfo(idEntry = "month", autofillType = 3),
+                FieldInfo(idEntry = "year", autofillType = 3),
+            ),
+        )
+        assertEquals(listOf(1), form.of(FieldKind.CARD_EXP_MONTH))
+        assertEquals(listOf(2), form.of(FieldKind.CARD_EXP_YEAR))
+    }
+
+    @Test
+    fun kartNumarasıSahibiKutusunaGitmiyor() {
+        // Gözden geçirme: numara "Kredi kartı sahibi" kutusuna yazılıyordu.
+        val form = FormParser.parse(
+            listOf(
+                FieldInfo(inputType = text, hint = "Kredi kartı sahibi"),
+                FieldInfo(inputType = number, hint = "Kart numarası"),
+                FieldInfo(inputType = text, hint = "AA/YY"),
+                FieldInfo(inputType = numberPassword, hint = "CVV"),
+            ),
+        )
+        assertEquals(listOf(0), form.of(FieldKind.CARD_HOLDER))
+        assertEquals(listOf(1), form.of(FieldKind.CARD_NUMBER))
+    }
+
+    @Test
+    fun güçlüKanıtAynıTürdekiZayıfTahminiGeçersizKılar() {
+        // İpuçlu numara kutusu varken sözcükle bulunan ikinci "numara"
+        // kutusu (başka bir kartın, üyelik numarasının...) doldurulmaz.
+        val numbers = FormParser.parse(
+            listOf(
+                FieldInfo(inputType = text, hint = "Kart no"),
+                FieldInfo(autofillHints = listOf("creditCardNumber"), inputType = number),
+            ),
+        )
+        assertEquals(listOf(1), numbers.of(FieldKind.CARD_NUMBER))
+        assertFalse(numbers.hasCredentials)
+        // Tek kutuda son kullanma varken "Ay" listesi (doğum ayı olabilir) doldurulmaz.
+        val expiry = FormParser.parse(
+            listOf(
+                FieldInfo(autofillHints = listOf("creditCardNumber"), inputType = number),
+                FieldInfo(autofillHints = listOf("creditCardExpirationDate"), inputType = text),
+                FieldInfo(hint = "Ay", autofillType = 3),
+                FieldInfo(hint = "Yıl", autofillType = 3),
+            ),
+        )
+        assertEquals(listOf(1), expiry.of(FieldKind.CARD_EXPIRY))
+        assertEquals(emptyList<Int>(), expiry.of(FieldKind.CARD_EXP_MONTH))
+        assertEquals(emptyList<Int>(), expiry.of(FieldKind.CARD_EXP_YEAR))
+        // Geliştirici yalnızca ayı işaretlediyse sözcükle bulunan yıl kalır.
+        val monthOnly = FormParser.parse(
+            listOf(
+                FieldInfo(autofillHints = listOf("creditCardExpirationMonth"), autofillType = 3),
+                FieldInfo(hint = "Yıl", autofillType = 3),
+            ),
+        )
+        assertEquals(listOf(0), monthOnly.of(FieldKind.CARD_EXP_MONTH))
+        assertEquals(listOf(1), monthOnly.of(FieldKind.CARD_EXP_YEAR))
+    }
+
+    @Test
+    fun kartNumarasıylaGirişFormuGüvenlikKoduylaDaGirişKalır() {
+        // Gözden geçirme: banka girişindeki captcha "Güvenlik kodu" formu
+        // ödeme formu yapıyor, kullanıcı adı kayboluyordu.
+        val withPassword = FormParser.parse(
+            listOf(
+                FieldInfo(inputType = text, hint = "Kart numarası"),
+                FieldInfo(inputType = textPassword, hint = "Şifre"),
+                FieldInfo(inputType = text, hint = "Güvenlik kodu"),
+            ),
+        )
+        assertFalse(withPassword.hasCard)
+        assertEquals(listOf(0), withPassword.of(FieldKind.USERNAME))
+        assertEquals(listOf(1), withPassword.of(FieldKind.PASSWORD))
+        // Kart şifresiyle giriş: çevrim içi ödeme PIN istemez.
+        val withPin = FormParser.parse(
+            listOf(
+                FieldInfo(inputType = text, hint = "Kart numarası"),
+                FieldInfo(inputType = numberPassword, hint = "Kart şifresi"),
+                FieldInfo(inputType = text, hint = "Güvenlik kodu"),
+            ),
+        )
+        assertFalse(withPin.hasCard)
+        assertTrue(withPin.hasCredentials)
+        assertEquals(listOf(0), withPin.of(FieldKind.USERNAME))
+        assertEquals(listOf(1), withPin.of(FieldKind.PASSWORD))
+    }
+
+    @Test
+    fun tekBaşınaGüvenlikKoduKutusuParolaSayılmıyor() {
+        // Kayıtlı kartın kodunu yeniden soran ekran: kutuya parola
+        // doldurulmamalı, kod parola diye kaydedilmemeli.
+        for (hint in listOf("Güvenlik kodu", "Security code")) {
+            val form = FormParser.parse(
+                listOf(FieldInfo(inputType = numberPassword, hint = hint, maxLength = 3)),
+            )
+            assertEquals(emptyList<Int>(), form.of(FieldKind.PASSWORD))
+            assertFalse(form.hasCredentials)
+        }
+    }
+
+    @Test
     fun boşForm() {
         assertFalse(FormParser.parse(emptyList()).hasCredentials)
         assertFalse(FormParser.parse(listOf(FieldInfo(inputType = text, hint = "Ad soyad"))).hasCredentials)

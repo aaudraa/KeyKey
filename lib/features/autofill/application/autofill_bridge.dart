@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' show immutable;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/core/platform/platform_api.g.dart';
+import 'package:keykey/features/vault/data/card_content.dart';
 
 /// Kullanıcının forma yazıp kaydetmeyi onayladığı değerler.
 @immutable
@@ -9,6 +10,38 @@ final class AutofillSave {
 
   final String username;
   final String password;
+}
+
+/// Forma doldurulacak kart değerleri. PIN yok: hiçbir alana doldurulmaz.
+@immutable
+final class AutofillCard {
+  const new({
+    required this.number,
+    required this.cardholder,
+    required this.securityCode,
+    this.expMonth,
+    this.expYear,
+  });
+
+  factory of(CardContent content) => AutofillCard(
+    number: content.number,
+    cardholder: content.cardholder,
+    securityCode: content.securityCode,
+    expMonth: content.expiry?.month,
+    expYear: content.expiry?.year,
+  );
+
+  final String number;
+  final String cardholder;
+  final String securityCode;
+  final int? expMonth;
+
+  /// Dört haneli yıl.
+  final int? expYear;
+
+  /// Değerler günlüğe ya da hata metnine düşmesin.
+  @override
+  String toString() => 'AutofillCard(…)';
 }
 
 /// Doldurulacak formun sahibi: uygulama ve varsa web sitesi.
@@ -28,6 +61,7 @@ final class AutofillTarget {
     this.inWebView = false,
     this.hasUsernameField = true,
     this.hasPasswordField = true,
+    this.forCard = false,
     this.save,
   });
 
@@ -54,6 +88,10 @@ final class AutofillTarget {
   final bool hasUsernameField;
   final bool hasPasswordField;
 
+  /// Ekran "KeyKey ile kart doldur" önerisinden açıldı: kart listesi
+  /// gösterilir.
+  final bool forCard;
+
   /// Ekran kaydetmek için açıldıysa formdaki değerler; doldurmada `null`.
   final AutofillSave? save;
 
@@ -76,6 +114,11 @@ abstract interface class AutofillBridge {
     required String notice,
   });
 
+  /// Kartı forma verir; Android [notice] bildirimini gösterir ve ekranı
+  /// kapatır. Bildirim yalnızca kartın adını ya da marka ve son dört haneyi
+  /// taşır.
+  Future<void> fillCard({required AutofillCard card, required String notice});
+
   /// Hiçbir şey doldurmadan kapatır. Kaydetme bitince de kullanılır.
   Future<void> cancel();
 }
@@ -97,6 +140,7 @@ final class PigeonAutofillBridge implements AutofillBridge {
       inWebView: request.inWebView,
       hasUsernameField: request.hasUsernameField,
       hasPasswordField: request.hasPasswordField,
+      forCard: request.forCard,
       save: switch (request.save) {
         final save? => AutofillSave(
           username: save.username,
@@ -117,6 +161,19 @@ final class PigeonAutofillBridge implements AutofillBridge {
     required String password,
     required String notice,
   }) => _api.fill(username, password, notice);
+
+  @override
+  Future<void> fillCard({required AutofillCard card, required String notice}) =>
+      _api.fillCard(
+        CardFillValues(
+          number: card.number,
+          cardholder: card.cardholder,
+          expMonth: card.expMonth,
+          expYear: card.expYear,
+          securityCode: card.securityCode,
+        ),
+        notice,
+      );
 
   @override
   Future<void> cancel() => _api.cancel();

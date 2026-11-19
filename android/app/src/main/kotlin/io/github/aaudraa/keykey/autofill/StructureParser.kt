@@ -35,6 +35,10 @@ class ParsedStructure(
     fun firstValue(kind: FieldKind): String? =
         form.of(kind).firstNotNullOfOrNull { index -> values.getOrNull(index)?.takeIf { it.isNotEmpty() } }
 
+    /** Doldurulacak kart alanları, formdaki sırasıyla. PIN alanı girmez. */
+    val cardIds: List<AutofillId>
+        get() = form.cardIndices.map { ids[it] }
+
     /** Doldurulacak kullanıcı adı ve parola alanları, sırasıyla. */
     val credentialIds: List<AutofillId>
         get() = (idsOf(FieldKind.USERNAME) + idsOf(FieldKind.PASSWORD) + idsOf(FieldKind.NEW_PASSWORD))
@@ -61,6 +65,9 @@ object StructureParser {
             val id = node.autofillId
             if (id != null && node.autofillType != View.AUTOFILL_TYPE_NONE) {
                 val html = node.htmlInfo
+                val attributes = html?.attributes
+                    ?.associate { (it.first ?: "") to (it.second ?: "") }
+                    .orEmpty()
                 ids += id
                 if (readValues) {
                     val value = node.autofillValue
@@ -71,13 +78,13 @@ object StructureParser {
                     inputType = node.inputType,
                     autofillType = node.autofillType,
                     htmlTag = html?.tag,
-                    htmlAttributes = html?.attributes
-                        ?.associate { (it.first ?: "") to (it.second ?: "") }
-                        .orEmpty(),
+                    htmlAttributes = attributes,
                     idEntry = node.idEntry,
                     hint = node.hint,
                     isVisible = visible,
                     isEnabled = node.isEnabled,
+                    options = node.autofillOptions?.map { it.toString() }.orEmpty(),
+                    maxLength = maxLengthOf(node, attributes),
                 )
             }
             for (i in 0 until node.childCount) visit(node.getChildAt(i), visible)
@@ -96,5 +103,16 @@ object StructureParser {
             values = values,
             hasWebContent = hasWebContent || webDomain != null,
         )
+    }
+
+    /**
+     * Kutunun uzunluk sınırı. Uygulamalarda `maxTextLength`, Chrome'da
+     * `maxlength` niteliği. Bilinmiyorsa 0.
+     */
+    private fun maxLengthOf(node: AssistStructure.ViewNode, attributes: Map<String, String>): Int {
+        val native = node.maxTextLength
+        if (native > 0) return native
+        val html = attributes.entries.firstOrNull { it.key.equals("maxlength", ignoreCase = true) }
+        return html?.value?.trim()?.toIntOrNull()?.takeIf { it > 0 } ?: 0
     }
 }

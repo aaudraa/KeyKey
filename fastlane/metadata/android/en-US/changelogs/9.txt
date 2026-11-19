@@ -1,0 +1,1 @@
+Card autofill: tap a card field in a payment form and "Fill card with KeyKey" appears; open KeyKey, pick a card, and the number, cardholder, expiry and security code are filled together. The PIN is never filled. Security code fields are no longer mistaken for passwords or offered for saving as one.

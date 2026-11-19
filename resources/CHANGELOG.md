@@ -2,6 +2,20 @@
 
 KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesinde](docs/yayin.md#sürüm-numarası). `v1.0.0`'dan önceki sürümler fazların sonunu işaretler ve hata ayıklama anahtarıyla imzalıdır; kalıcı bir kurulum için kullanılmamalıdır.
 
+## 1.5.0 (2026-11-19): Kart doldurma
+
+Faz 15 ([tasarım](docs/kart-doldurma.md)).
+
+### Eklenenler
+
+- Otomatik doldurma ödeme formlarındaki kart alanlarını tanıyor: numara, kart sahibi, son kullanma (tek kutu ya da ayrı ay ve yıl, açılır liste dahil) ve güvenlik kodu. Kart kutusunda **KeyKey ile kart doldur** önerisi çıkıyor; kasa açılınca kart listeden seçiliyor ve form doluyor. PIN hiçbir yere doldurulmuyor, panoya hiçbir şey kopyalanmıyor.
+- Tanıma Android ipuçlarına, HTML `autocomplete` niteliğine, Chrome'un kendi alan tahminine ve Türkçe/İngilizce kutu adlarına bakıyor. Son kullanma kutunun istediği biçimde yazılıyor (AA/YY, AA/YYYY, ayraçsız); açılır listede ay sayıyla ya da Türkçe/İngilizce adıyla eşleşiyor. Dört kutuya bölünmüş kart numarası da dolduruluyor.
+- Şifresiz (`http`) sayfaya kart doldurulmadan önce uyarı ve onay geliyor.
+
+### Düzeltilenler
+
+- Ödeme formlarındaki güvenlik kodu kutusu parola sanılıyordu: kutuda "KeyKey ile doldur" önerisi çıkıyor, form gönderilince güvenlik kodunu parola diye kaydetmek öneriliyordu. Artık ödeme formundaki güvenlik kodu ve kart şifresi kutuları, tek başına duran "Güvenlik kodu" kutusu da parola sayılmıyor. Kart numarasıyla girilen banka formları giriş formu olarak kalıyor.
+
 ## 1.4.0 (2026-11-19): Kartlar ve güvenli notlar
 
 Faz 14 ([tasarım](docs/kart-ve-not.md)).

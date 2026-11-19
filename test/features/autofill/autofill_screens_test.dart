@@ -24,6 +24,9 @@ import 'package:keykey/features/onboarding/application/terms_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
+import 'package:keykey/features/vault/application/records_controller.dart';
+import 'package:keykey/features/vault/data/card_content.dart';
+import 'package:keykey/features/vault/data/card_number.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:sodium/sodium_sumo.dart';
@@ -38,6 +41,7 @@ class FakeAutofillBridge implements AutofillBridge {
   ({String username, String password})? filled;
   String? notice;
   int fillCount = 0;
+  AutofillCard? card;
   bool cancelled = false;
 
   @override
@@ -63,6 +67,16 @@ class FakeAutofillBridge implements AutofillBridge {
   }
 
   @override
+  Future<void> fillCard({
+    required AutofillCard card,
+    required String notice,
+  }) async {
+    this.card = card;
+    this.notice = notice;
+    fillCount++;
+  }
+
+  @override
   Future<void> cancel() async => cancelled = true;
 }
 
@@ -83,6 +97,7 @@ void main() {
   late SodiumSumo sodium;
   late FakeVaultService service;
   late FakeLoginRepository logins;
+  late FakeRecordRepository<CardContent> cards;
   late FakeOtpRepository otps;
   late FakeSettingsRepository settings;
   late RecordingClipboard clipboard;
@@ -108,6 +123,33 @@ void main() {
     otps = FakeOtpRepository();
     settings = FakeSettingsRepository();
     clipboard = RecordingClipboard();
+    cards = FakeRecordRepository<CardContent>(
+      items: [
+        FakeRecordRepository.item(
+          CardContent(
+            name: 'Örnek kart',
+            cardholder: 'DENEME KİŞİ',
+            number: '4111111111111111',
+            expiry: CardExpiry(month: 12, year: 2028),
+            securityCode: '123',
+            pin: '1234',
+          ),
+          id: 11,
+        ),
+        FakeRecordRepository.item(
+          CardContent(name: '', number: '5555555555554444'),
+          id: 12,
+        ),
+        FakeRecordRepository.item(
+          CardContent(
+            name: 'Eski kart',
+            number: '4000056655665556',
+            trashedAt: DateTime.utc(2026, 11),
+          ),
+          id: 13,
+        ),
+      ],
+    );
     logins = FakeLoginRepository(
       items: [
         FakeLoginRepository.item(
@@ -190,6 +232,7 @@ void main() {
           vaultServiceProvider.overrideWithValue(service),
           initialVaultStatusProvider.overrideWithValue(status),
           loginRepositoryFactoryProvider.overrideWithValue((_) => logins),
+          cardRepositoryFactoryProvider.overrideWithValue((_) => cards),
           settingsRepositoryFactoryProvider.overrideWithValue((_) => settings),
           otpRepositoryFactoryProvider.overrideWithValue((_) => otps),
           sensitiveClipboardProvider.overrideWithValue(clipboard),
@@ -1159,12 +1202,216 @@ void main() {
     });
   });
 
+  group('kart', () {
+    const cardApp = AutofillTarget(
+      packageName: 'io.github.aaudraa.ornekgiris',
+      appLabel: 'Örnek Giriş',
+      certsSha256: [cert],
+      forCard: true,
+    );
+    const cardSite = AutofillTarget(
+      packageName: 'com.android.chrome',
+      appLabel: 'Chrome',
+      webDomain: 'odeme.example.com',
+      webScheme: 'https',
+      forCard: true,
+    );
+    const insecureSite = AutofillTarget(
+      packageName: 'com.android.chrome',
+      appLabel: 'Chrome',
+      webDomain: 'odeme.example.com',
+      webScheme: 'http',
+      forCard: true,
+    );
+
+    Future<FakeAutofillBridge> pumpOpen(
+      WidgetTester tester, {
+      AutofillTarget target = cardApp,
+    }) => pumpAutofill(
+      tester,
+      status: VaultOpen(service.newSession()),
+      target: target,
+    );
+
+    VaultStatus vaultStatus(WidgetTester tester) =>
+        ProviderScope.containerOf(tester.element(find.byType(AutofillHome)))
+            .read(vaultControllerProvider);
+
+    testWidgets('kilitliyken alt başlık kart için, kart adı görünmüyor', (
+      tester,
+    ) async {
+      await pumpAutofill(
+        tester,
+        status: VaultLocked(service.header),
+        target: cardApp,
+      );
+
+      expect(find.text('Örnek Giriş için kart'), findsOneWidget);
+      expect(find.text('Örnek kart'), findsNothing);
+    });
+
+    testWidgets('kartlar listeleniyor, parolalar ve çöpteki kart yok', (
+      tester,
+    ) async {
+      await pumpOpen(tester);
+
+      expect(find.text('Örnek Giriş için kart'), findsOneWidget);
+      expect(find.text('Örnek kart'), findsOneWidget);
+      expect(find.text('Mastercard •••• 4444'), findsWidgets);
+      expect(find.text('Eski kart'), findsNothing);
+      expect(find.text('Banka'), findsNothing);
+      expect(find.text('Örnek hesap'), findsNothing);
+      // Tam numara listede yok.
+      expect(find.textContaining('4111111111111111'), findsNothing);
+    });
+
+    testWidgets('kasada kart yoksa söyleniyor', (tester) async {
+      cards.items.clear();
+      final bridge = await pumpOpen(tester);
+
+      expect(
+        find.text(
+          "Kasada henüz kart yok. Kartı KeyKey'de Kasa sekmesinden "
+          'ekleyebilirsin.',
+        ),
+        findsOneWidget,
+      );
+      expect(bridge.fillCount, 0);
+    });
+
+    testWidgets('arama kart sahibini buluyor, numarayı bulmuyor', (
+      tester,
+    ) async {
+      await pumpOpen(tester);
+
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Kart ara'),
+        'deneme',
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Örnek kart'), findsOneWidget);
+      expect(find.text('Mastercard •••• 4444'), findsNothing);
+
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Kart ara'),
+        '4111',
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Örnek kart'), findsNothing);
+    });
+
+    testWidgets('kart seçilince değerler veriliyor ve kasa kilitleniyor', (
+      tester,
+    ) async {
+      final bridge = await pumpOpen(tester);
+
+      await tester.tap(find.text('Örnek kart'));
+      await tester.pumpAndSettle();
+
+      final card = bridge.card!;
+      expect(card.number, '4111111111111111');
+      expect(card.cardholder, 'DENEME KİŞİ');
+      expect(card.expMonth, 12);
+      expect(card.expYear, 2028);
+      expect(card.securityCode, '123');
+      expect(bridge.notice, 'Örnek kart dolduruldu');
+      expect(bridge.filled, isNull);
+      expect(bridge.fillCount, 1);
+      expect(vaultStatus(tester), isA<VaultLocked>());
+      // Kart doldurmada panoya hiçbir şey kopyalanmaz.
+      expect(clipboard.copied, isEmpty);
+    });
+
+    testWidgets('adsız kartın bildiriminde marka ve son dört hane', (
+      tester,
+    ) async {
+      final bridge = await pumpOpen(tester);
+
+      await tester.tap(find.text('Mastercard •••• 4444').first);
+      await tester.pumpAndSettle();
+
+      expect(bridge.notice, 'Mastercard •••• 4444 dolduruldu');
+      expect(bridge.card!.expMonth, isNull);
+    });
+
+    testWidgets('https sitede uyarı yok', (tester) async {
+      final bridge = await pumpOpen(tester, target: cardSite);
+
+      expect(find.text('odeme.example.com için kart'), findsOneWidget);
+      await tester.tap(find.text('Örnek kart'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Doldurmadan önce'), findsNothing);
+      expect(bridge.card, isNotNull);
+    });
+
+    testWidgets('http sitede önce uyarı; vazgeçilirse doldurulmuyor', (
+      tester,
+    ) async {
+      final bridge = await pumpOpen(tester, target: insecureSite);
+
+      await tester.tap(find.text('Örnek kart'));
+      await tester.pumpAndSettle();
+      expect(find.text('Doldurmadan önce'), findsOneWidget);
+      expect(
+        find.text('Bağlantı şifresiz (http). Kart bilgileri ağda açık gider.'),
+        findsOneWidget,
+      );
+      expect(find.text('Seçilen kart: Örnek kart'), findsOneWidget);
+
+      await tester.tap(find.text('Vazgeç'));
+      await tester.pumpAndSettle();
+      expect(bridge.card, isNull);
+      expect(find.text('Örnek kart'), findsOneWidget);
+      expect(vaultStatus(tester), isA<VaultOpen>());
+    });
+
+    testWidgets('http sitede geri tuşu uyarıdan listeye döner', (tester) async {
+      final bridge = await pumpOpen(tester, target: insecureSite);
+
+      await tester.tap(find.text('Örnek kart'));
+      await tester.pumpAndSettle();
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Doldurmadan önce'), findsNothing);
+      expect(find.text('Örnek kart'), findsOneWidget);
+      expect(bridge.card, isNull);
+      expect(bridge.cancelled, isFalse);
+    });
+
+    testWidgets('http sitede onaylanırsa dolduruluyor', (tester) async {
+      final bridge = await pumpOpen(tester, target: insecureSite);
+
+      await tester.tap(find.text('Örnek kart'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Yine de doldur'));
+      await tester.pumpAndSettle();
+
+      expect(bridge.card!.number, '4111111111111111');
+      expect(vaultStatus(tester), isA<VaultLocked>());
+    });
+
+    testWidgets('giriş isteğinde kart listesi açılmıyor', (tester) async {
+      await pumpAutofill(tester, status: VaultOpen(service.newSession()));
+
+      expect(find.text('Örnek kart'), findsNothing);
+      expect(find.text('Örnek hesap'), findsOneWidget);
+    });
+  });
+
   group('erişilebilirlik', () {
     const saveTarget = AutofillTarget(
       packageName: 'io.github.aaudraa.ornekgiris',
       appLabel: 'Örnek Giriş',
       certsSha256: [cert],
       save: AutofillSave(username: 'ayse', password: 'yeni-parola-1'),
+    );
+    const cardTarget = AutofillTarget(
+      packageName: 'io.github.aaudraa.ornekgiris',
+      appLabel: 'Örnek Giriş',
+      certsSha256: [cert],
+      forCard: true,
     );
 
     Future<void> checkGuidelines(WidgetTester tester) async {
@@ -1184,6 +1431,7 @@ void main() {
       for (final (name, target) in [
         ('doldurma', app),
         ('kaydetme', saveTarget),
+        ('kart', cardTarget),
       ]) {
         testWidgets('$name, ${brightness.name}, yazı x$scale', (tester) async {
           tester.platformDispatcher

@@ -13,6 +13,7 @@ import android.service.autofill.InlinePresentation
 import android.service.autofill.SaveCallback
 import android.service.autofill.SaveInfo
 import android.service.autofill.SaveRequest
+import android.view.autofill.AutofillId
 import android.widget.RemoteViews
 import android.widget.inline.InlinePresentationSpec
 import androidx.autofill.inline.UiVersions
@@ -24,8 +25,9 @@ import io.github.aaudraa.keykey.R
 /**
  * Android'in otomatik doldurma servisi.
  *
- * Kasaya hiç dokunmaz, kayıt adlarını bilmez. Doldurulacak alan bulursa tek
- * bir öneri döndürür: "KeyKey ile doldur". Öneriye dokunulunca
+ * Kasaya hiç dokunmaz, kayıt adlarını bilmez. Doldurulacak alan bulursa
+ * değer taşımayan kilitli bir öneri döndürür: "KeyKey ile doldur", ödeme
+ * formunun kart alanlarında "KeyKey ile kart doldur". Öneriye dokunulunca
  * [AutofillActivity] açılır; kasa orada açılır ve kayıt orada seçilir.
  * Form gönderilince sistem kaydetmeyi önerir; kullanıcı kabul ederse
  * [onSaveRequest] değerleri yine kasaya dokunmadan aynı ekrana verir.
@@ -51,12 +53,13 @@ class KeyKeyAutofillService : AutofillService() {
         }
         // KeyKey'in kendi formları (ana parola, kayıt düzenleme) ve sistem
         // formları doldurulmaz.
-        if (IgnoredPackages.isIgnored(parsed.packageName, packageName) || !parsed.form.hasCredentials) {
+        val fillable = parsed.form.hasCredentials || parsed.form.hasCard
+        if (IgnoredPackages.isIgnored(parsed.packageName, packageName) || !fillable) {
             callback.onSuccess(null)
             return
         }
-        val inlineSpec = request.inlineSuggestionsRequest?.inlinePresentationSpecs?.firstOrNull()
-        callback.onSuccess(lockedResponse(request.id, parsed, inlineSpec))
+        val inlineSpecs = request.inlineSuggestionsRequest?.inlinePresentationSpecs.orEmpty()
+        callback.onSuccess(lockedResponse(request.id, parsed, inlineSpecs))
     }
 
     override fun onSaveRequest(request: SaveRequest, callback: SaveCallback) {
@@ -98,22 +101,65 @@ class KeyKeyAutofillService : AutofillService() {
         callback.onSuccess()
     }
 
+    /**
+     * Formdaki her tür için bir öneri: giriş alanları için "KeyKey ile
+     * doldur", kart alanları için "KeyKey ile kart doldur". Android bir
+     * öneriyi yalnızca odaktaki alana değer veren öneriler arasında
+     * gösterir; iki öneri kendi alanlarında çıkar.
+     */
     private fun lockedResponse(
         requestId: Int,
         parsed: ParsedStructure,
-        inlineSpec: InlinePresentationSpec?,
+        inlineSpecs: List<InlinePresentationSpec>,
     ): FillResponse {
-        val ids = parsed.credentialIds.toTypedArray()
+        val datasets = buildList {
+            if (parsed.form.hasCredentials) {
+                add(
+                    Triple(
+                        AutofillActivity.ACTION_FILL_LOGIN,
+                        parsed.credentialIds,
+                        getString(R.string.autofill_fill_with_keykey),
+                    ),
+                )
+            }
+            if (parsed.form.hasCard) {
+                add(
+                    Triple(
+                        AutofillActivity.ACTION_FILL_CARD,
+                        parsed.cardIds,
+                        getString(R.string.autofill_fill_card_with_keykey),
+                    ),
+                )
+            }
+        }
+        return FillResponse.Builder().apply {
+            datasets.forEachIndexed { index, (action, ids, label) ->
+                // Biçimler öneri sayısından azsa sonuncusu kullanılır.
+                val spec = inlineSpecs.getOrNull(index) ?: inlineSpecs.lastOrNull()
+                addDataset(lockedDataset(requestId, action, ids, label, spec))
+            }
+            saveInfo(parsed)?.let { setSaveInfo(it) }
+        }.build()
+    }
+
+    private fun lockedDataset(
+        requestId: Int,
+        action: String,
+        ids: List<AutofillId>,
+        label: String,
+        inlineSpec: InlinePresentationSpec?,
+    ): Dataset {
         // Sistem kimlik doğrulama sonucunu niyete ekleyeceği için değiştirilebilir
-        // olmalı. Niyet açıkça bizim ekranımıza yöneliyor.
-        val intent = Intent(this, AutofillActivity::class.java)
+        // olmalı. Niyet açıkça bizim ekranımıza yöneliyor. İki öneri eylemleriyle
+        // ayrılır: Android yalnızca ek verisi farklı iki PendingIntent'i aynı
+        // sayar ve FLAG_CANCEL_CURRENT ikincisiyle birincisini iptal ederdi.
+        val intent = Intent(this, AutofillActivity::class.java).setAction(action)
         val pending = PendingIntent.getActivity(
             this,
             requestId,
             intent,
             PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_CANCEL_CURRENT,
         )
-        val label = getString(R.string.autofill_fill_with_keykey)
         val menu = RemoteViews(packageName, R.layout.autofill_item).apply {
             setTextViewText(R.id.autofill_text, label)
         }
@@ -124,13 +170,10 @@ class KeyKeyAutofillService : AutofillService() {
         // döndürünce sistem onu hemen doldurur. Değerler boştur; servis
         // kaydı bilmez.
         @Suppress("DEPRECATION")
-        val dataset = Dataset.Builder(menu).apply {
+        return Dataset.Builder(menu).apply {
             if (inline != null) setInlinePresentation(inline)
             for (id in ids) setValue(id, null)
             setAuthentication(pending.intentSender)
-        }.build()
-        return FillResponse.Builder().addDataset(dataset).apply {
-            saveInfo(parsed)?.let { setSaveInfo(it) }
         }.build()
     }
 
