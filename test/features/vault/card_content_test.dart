@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -74,6 +75,24 @@ void main() {
     final card = CardContent.fromJsonBytes(_json(_valid()));
     expect(card.expiry, CardExpiry(month: 12, year: 2028));
     expect(card.cardBrand, CardBrand.visa);
+  });
+
+  test('sabit örnek dosya açılıyor', () {
+    // Bu dosya değişmez: 1.4.0'da kaydedilen kartlar her sürümde açılmalı.
+    final fixture = File('test/fixtures/vault/card-v1.json').readAsBytesSync();
+
+    final card = CardContent.fromJsonBytes(fixture);
+
+    expect(card.name, 'Örnek kart');
+    expect(card.cardholder, 'DENEME KİŞİ');
+    expect(card.number, '4111111111111111');
+    expect(card.expiry, CardExpiry(month: 12, year: 2028));
+    expect(card.securityCode, '123');
+    expect(card.pin, '1234');
+    expect(card.notes, 'Not');
+    expect(card.favorite, isTrue);
+    expect(card.folder, 'Banka');
+    expect(card.trashedAt, isNull);
   });
 
   group('katı okuma', () {

@@ -9,7 +9,7 @@ description = "Yalnızca deneme verisi içeren biçim uyumluluğu dosyaları"
 paths = [
   '''^test/fixtures/crypto/vault-v1\.json$''',
   '''^integration_test/vault_v1_fixture\.dart$''',
-  '''^test/fixtures/backup/backup-v1\.json$''',
+  '''^test/fixtures/backup/backup-v[12]\.json$''',
 ]
 
 # İçe aktarma testlerinin örnek dosyaları. Aegis ve 2FAS örnekleri Aegis

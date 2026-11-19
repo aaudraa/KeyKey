@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -38,6 +39,19 @@ void main() {
     final decoded =
         jsonDecode(utf8.decode(full.toJsonBytes())) as Map<String, Object?>;
     expect(decoded.keys.toSet(), _valid().keys.toSet());
+  });
+
+  test('sabit örnek dosya açılıyor', () {
+    // Bu dosya değişmez: 1.4.0'da kaydedilen notlar her sürümde açılmalı.
+    final fixture = File('test/fixtures/vault/note-v1.json').readAsBytesSync();
+
+    final note = NoteContent.fromJsonBytes(fixture);
+
+    expect(note.name, 'Örnek not');
+    expect(note.text, 'İlk satır\nikinci satır: ığüşöç');
+    expect(note.favorite, isFalse);
+    expect(note.folder, 'İş');
+    expect(note.trashedAt, DateTime.utc(2026, 11));
   });
 
   group('katı okuma', () {
