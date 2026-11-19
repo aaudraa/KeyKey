@@ -138,18 +138,6 @@ void main() {
         ['A'],
       );
     });
-
-    test('klasör listesi sıralı ve çöp kutusunu saymıyor', () {
-      final items = [
-        item('A', folder: 'Zeka'),
-        item('B', folder: 'İş'),
-        item('C', folder: 'İş'),
-        item('D', folder: 'Silinen', trashedAt: DateTime.utc(2026)),
-        item('E'),
-      ];
-
-      expect(foldersOf(items), ['İş', 'Zeka']);
-    });
   });
 
   group('sıralama', () {

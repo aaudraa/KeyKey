@@ -16,7 +16,8 @@ import '../../support/fake_vault_service.dart';
 void main() {
   const password = 'kırmızı-Bisiklet-47-Deniz';
   const vaultText =
-      'Henüz parola yok. İlkini kaydetmek için alttaki + düğmesine dokun.';
+      'Henüz kayıt yok. Parola, kart ya da not eklemek için '
+      'alttaki + düğmesine dokun.';
 
   late SodiumSumo sodium;
   late FakeVaultService service;

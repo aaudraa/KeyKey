@@ -27,8 +27,12 @@ import 'package:keykey/features/settings/presentation/change_password_screen.dar
 import 'package:keykey/features/settings/presentation/licenses_screen.dart';
 import 'package:keykey/features/settings/presentation/new_recovery_key_screen.dart';
 import 'package:keykey/features/settings/presentation/settings_screen.dart';
+import 'package:keykey/features/vault/presentation/card_detail_screen.dart';
+import 'package:keykey/features/vault/presentation/card_edit_screen.dart';
 import 'package:keykey/features/vault/presentation/login_detail_screen.dart';
 import 'package:keykey/features/vault/presentation/login_edit_screen.dart';
+import 'package:keykey/features/vault/presentation/note_detail_screen.dart';
+import 'package:keykey/features/vault/presentation/note_edit_screen.dart';
 import 'package:keykey/features/vault/presentation/password_report_screen.dart';
 import 'package:keykey/features/vault/presentation/trash_screen.dart';
 import 'package:keykey/features/vault/presentation/vault_screen.dart';
@@ -36,6 +40,8 @@ import 'package:keykey/features/vault/presentation/vault_screen.dart';
 abstract final class AppRoutes {
   static const vault = '/kasa';
   static const vaultNew = '/kasa/yeni';
+  static const cardNew = '/kasa/yeni-kart';
+  static const noteNew = '/kasa/yeni-not';
   static const vaultTrash = '/kasa/cop';
   static const vaultReport = '/kasa/rapor';
   static const authenticator = '/2fa';
@@ -60,6 +66,14 @@ abstract final class AppRoutes {
   static const unavailable = '/kullanilamiyor';
 
   static String vaultItem(String idHex) => '/kasa/kayit/$idHex';
+
+  static String cardItem(String idHex) => '/kasa/kart/$idHex';
+
+  static String cardItemEdit(String idHex) => '/kasa/kart/$idHex/duzenle';
+
+  static String noteItem(String idHex) => '/kasa/not/$idHex';
+
+  static String noteItemEdit(String idHex) => '/kasa/not/$idHex/duzenle';
 
   /// Bir ya da birkaç paketin lisans metni; adlar sorgu parametresinde.
   static String licenseText({
@@ -139,7 +153,7 @@ String resumeLocationFor(String path) {
   return AppRoutes.vault;
 }
 
-final _vaultItem = RegExp(r'^/kasa/kayit/[^/]+$');
+final _vaultItem = RegExp(r'^/kasa/(kayit|kart|not)/[^/]+$');
 
 const Set<String> _gateRoutes = {
   AppRoutes.terms,
@@ -235,8 +249,44 @@ final routerProvider = Provider<GoRouter>((ref) {
                     builder: (context, state) => const LoginEditScreen(),
                   ),
                   kkRoute(
+                    parentNavigatorKey: rootNavigatorKey,
+                    path: 'yeni-kart',
+                    builder: (context, state) => const CardEditScreen(),
+                  ),
+                  kkRoute(
+                    parentNavigatorKey: rootNavigatorKey,
+                    path: 'yeni-not',
+                    builder: (context, state) => const NoteEditScreen(),
+                  ),
+                  kkRoute(
                     path: 'cop',
                     builder: (context, state) => const TrashScreen(),
+                  ),
+                  kkRoute(
+                    path: 'not/:id',
+                    builder: (context, state) =>
+                        NoteDetailScreen(idHex: state.pathParameters['id']!),
+                    routes: [
+                      kkRoute(
+                        parentNavigatorKey: rootNavigatorKey,
+                        path: 'duzenle',
+                        builder: (context, state) =>
+                            NoteEditScreen(idHex: state.pathParameters['id']),
+                      ),
+                    ],
+                  ),
+                  kkRoute(
+                    path: 'kart/:id',
+                    builder: (context, state) =>
+                        CardDetailScreen(idHex: state.pathParameters['id']!),
+                    routes: [
+                      kkRoute(
+                        parentNavigatorKey: rootNavigatorKey,
+                        path: 'duzenle',
+                        builder: (context, state) =>
+                            CardEditScreen(idHex: state.pathParameters['id']),
+                      ),
+                    ],
                   ),
                   kkRoute(
                     path: 'rapor',

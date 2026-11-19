@@ -12,6 +12,9 @@ import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
+import 'package:keykey/features/vault/application/records_controller.dart';
+import 'package:keykey/features/vault/data/card_content.dart';
+import 'package:keykey/features/vault/data/note_content.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../test/support/fake_vault_service.dart';
@@ -35,6 +38,12 @@ void main() {
         vaultServiceProvider.overrideWithValue(service),
         loginRepositoryFactoryProvider.overrideWithValue(
           (_) => FakeLoginRepository(),
+        ),
+        cardRepositoryFactoryProvider.overrideWithValue(
+          (_) => FakeRecordRepository<CardContent>(),
+        ),
+        noteRepositoryFactoryProvider.overrideWithValue(
+          (_) => FakeRecordRepository<NoteContent>(),
         ),
         otpRepositoryFactoryProvider.overrideWithValue(
           (_) => FakeOtpRepository(),

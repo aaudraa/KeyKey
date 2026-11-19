@@ -11,32 +11,111 @@ import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/presentation/confirm_identity.dart';
 import 'package:keykey/features/backup/application/backup_service.dart';
 import 'package:keykey/features/backup/data/export/bitwarden_csv_export.dart';
+import 'package:keykey/features/backup/data/export/bitwarden_json_export.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
+import 'package:keykey/features/vault/application/records_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
+
+/// Şifresiz dışa aktarmanın biçimi.
+enum ExportFormat {
+  /// Bitwarden CSV: parolalar, 2FA ve notlar; kartlar yazılmaz.
+  csv,
+
+  /// Bitwarden JSON: kartlar dahil her şey.
+  json,
+}
 
 /// Önerilen dosya adı: `keykey-disa-aktarma-2026-11-07.csv`. [prefix]
 /// arayüz dilinden gelir (`keykey-export`).
 String plaintextExportFileName(
   DateTime time, {
   String prefix = 'keykey-disa-aktarma',
+  String extension = 'csv',
 }) {
   String two(int value) => value.toString().padLeft(2, '0');
   final local = time.toLocal();
   return '$prefix-${local.year}-${two(local.month)}-'
-      '${two(local.day)}.csv';
+      '${two(local.day)}.$extension';
 }
 
-/// Kasayı şifresiz Bitwarden CSV'si olarak kullanıcının seçtiği yere
-/// kaydeder.
+/// Biçimi sorar; vazgeçilirse `null`. [hasCards] ise CSV'nin kartları
+/// yazmadığı söylenir.
+Future<ExportFormat?> showExportFormatChoice(
+  BuildContext context, {
+  required bool hasCards,
+}) {
+  final l10n = AppLocalizations.of(context);
+  return showKkSheet<ExportFormat>(
+    context,
+    builder: (context) => KkSheetContent(
+      title: l10n.exportFormatTitle,
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.exportWarningCancel),
+        ),
+      ],
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.table_chart_outlined),
+            title: Text(l10n.exportFormatCsv),
+            subtitle: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.exportFormatCsvHint),
+                if (hasCards)
+                  Text(
+                    l10n.exportFormatCsvNoCards,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+              ],
+            ),
+            onTap: () => Navigator.of(context).pop(ExportFormat.csv),
+          ),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.data_object_rounded),
+            title: Text(l10n.exportFormatJson),
+            subtitle: Text(l10n.exportFormatJsonHint),
+            onTap: () => Navigator.of(context).pop(ExportFormat.json),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+/// Kasayı şifresiz Bitwarden CSV'si ya da JSON'u olarak kullanıcının
+/// seçtiği yere kaydeder.
 ///
-/// Önce dosyanın şifresiz olduğu anlatılır, sonra parmak izi veya ana
-/// parolayla kimlik doğrulanır. Dosya yalnızca belge seçicinin verdiği yere
-/// yazılır; uygulamanın klasöründe kopya kalmaz.
+/// Önce biçim seçilir, sonra dosyanın şifresiz olduğu anlatılır, sonra
+/// parmak izi veya ana parolayla kimlik doğrulanır. Dosya yalnızca belge
+/// seçicinin verdiği yere yazılır; uygulamanın klasöründe kopya kalmaz.
 Future<void> exportPlaintext(BuildContext context, WidgetRef ref) async {
   final l10n = AppLocalizations.of(context);
   final snack = kkSnackFor(context);
+  final opened = ref.read(vaultControllerProvider);
+  if (opened is! VaultOpen) return;
+  final bool hasCards;
+  try {
+    final cards = await ref
+        .read(cardRepositoryFactoryProvider)(opened.session)
+        .loadAll();
+    hasCards = cards.items.any((item) => !item.content.isTrashed);
+  } on VaultLockedException {
+    return;
+  }
+  if (!context.mounted) return;
+  final format = await showExportFormatChoice(context, hasCards: hasCards);
+  if (format == null || !context.mounted) return;
   final warned = await showKkConfirm(
     context,
     title: l10n.exportWarningTitle,
@@ -58,11 +137,27 @@ Future<void> exportPlaintext(BuildContext context, WidgetRef ref) async {
     final otps = await ref
         .read(otpRepositoryFactoryProvider)(status.session)
         .loadAll();
-    bytes = Uint8List.fromList(
-      utf8.encode(
-        BitwardenCsvExport.build(logins: logins.items, otps: otps.items),
+    final notes = await ref
+        .read(noteRepositoryFactoryProvider)(status.session)
+        .loadAll();
+    final text = switch (format) {
+      ExportFormat.csv => BitwardenCsvExport.build(
+        logins: logins.items,
+        otps: otps.items,
+        notes: notes.items,
       ),
-    );
+      ExportFormat.json => BitwardenJsonExport.build(
+        logins: logins.items,
+        otps: otps.items,
+        cards:
+            (await ref
+                    .read(cardRepositoryFactoryProvider)(status.session)
+                    .loadAll())
+                .items,
+        notes: notes.items,
+      ),
+    };
+    bytes = Uint8List.fromList(utf8.encode(text));
   } on VaultLockedException {
     return;
   }
@@ -76,8 +171,12 @@ Future<void> exportPlaintext(BuildContext context, WidgetRef ref) async {
           suggestedName: plaintextExportFileName(
             now,
             prefix: l10n.exportFilePrefix,
+            extension: format.name,
           ),
-          mimeType: 'text/csv',
+          mimeType: switch (format) {
+            ExportFormat.csv => 'text/csv',
+            ExportFormat.json => 'application/json',
+          },
           bytes: bytes,
         ),
       );

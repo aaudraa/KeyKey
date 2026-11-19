@@ -15,9 +15,14 @@ import 'package:keykey/features/generator/presentation/generator_sheet.dart';
 import 'package:keykey/features/generator/presentation/password_strength_meter.dart';
 import 'package:keykey/features/vault/application/login_search.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
+import 'package:keykey/features/vault/application/records_controller.dart';
+import 'package:keykey/features/vault/application/vault_entries.dart';
+import 'package:keykey/features/vault/data/card_content.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
+import 'package:keykey/features/vault/data/note_content.dart';
 import 'package:keykey/features/vault/presentation/cert_fingerprint.dart';
+import 'package:keykey/features/vault/presentation/folder_suggestions.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
@@ -121,14 +126,23 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
     _initialized = true;
   }
 
-  /// Başka kayıtlardaki klasörler, çöptekiler hariç. Düzenlenen kaydın
-  /// kendi klasörü sayılmaz; yoksa tek kayıttaki "is" hiç "İş" yapılamazdı.
-  List<String> get _folders => switch (ref.read(loginsControllerProvider)) {
-    LoginsLoaded(:final items) => foldersOf(
-      items.where((item) => item.id != _original?.id),
-    ),
-    _ => const [],
-  };
+  /// Başka kayıtlardaki (parola, kart, not) klasörler, çöptekiler hariç.
+  /// Düzenlenen kaydın kendi klasörü sayılmaz; yoksa tek kayıttaki "is" hiç
+  /// "İş" yapılamazdı. Kartlar ya da notlar henüz yüklenmediyse yalnızca
+  /// parolalarınkiler önerilir.
+  List<String> get _folders => foldersOfEntries([
+    if (ref.read(loginsControllerProvider) case LoginsLoaded(:final items))
+      for (final item in items)
+        if (item.id != _original?.id) LoginEntry(item),
+    if (ref.read(cardsControllerProvider) case RecordsLoaded<CardContent>(
+      :final items,
+    ))
+      for (final item in items) CardEntry(item),
+    if (ref.read(notesControllerProvider) case RecordsLoaded<NoteContent>(
+      :final items,
+    ))
+      for (final item in items) NoteEntry(item),
+  ]);
 
   /// Harf büyüklüğü farklı yazılmış ad var olan klasöre bağlanır; "İş" ve
   /// "iş" iki klasör olmasın.
@@ -416,7 +430,7 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
                         textInputAction: TextInputAction.next,
                         onChanged: _changed,
                       ),
-                      _FolderSuggestions(
+                      FolderSuggestions(
                         folders: _folders,
                         controller: _folder,
                         onPicked: (folder) {
@@ -519,52 +533,6 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
           ),
         ),
       ),
-    );
-  }
-}
-
-/// Klasör kutusunun altında, yazılana uyan var olan klasörler.
-class _FolderSuggestions extends StatelessWidget {
-  const new({
-    required this.folders,
-    required this.controller,
-    required this.onPicked,
-  });
-
-  final List<String> folders;
-  final TextEditingController controller;
-  final ValueChanged<String> onPicked;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: controller,
-      builder: (context, _) {
-        final typed = foldForSearch(controller.text.trim());
-        final matches = [
-          for (final folder in folders)
-            if (foldForSearch(folder).contains(typed) &&
-                foldForSearch(folder) != typed)
-              folder,
-        ];
-        if (matches.isEmpty) return const SizedBox.shrink();
-        return Padding(
-          key: const Key('folder-suggestions'),
-          padding: const EdgeInsets.only(top: 8),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 4,
-            children: [
-              for (final folder in matches)
-                ActionChip(
-                  avatar: const Icon(Icons.folder_outlined, size: 18),
-                  label: Text(folder),
-                  onPressed: () => onPicked(folder),
-                ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

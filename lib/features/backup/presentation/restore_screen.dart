@@ -24,6 +24,7 @@ import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/recovery_key_formatter.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
+import 'package:keykey/features/vault/application/records_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Belge seçiciyle bir yedek seçtirir, yapısını denetler ve geri yükleme
@@ -53,6 +54,9 @@ Future<void> pickBackupToRestore(BuildContext context, WidgetRef ref) async {
       final BackupFile file;
       try {
         file = ref.read(restoreServiceProvider).parse(bytes);
+      } on NewerBackupException {
+        show(l10n.restoreNewerVersion);
+        return;
       } on InvalidBackupException {
         show(l10n.restoreNotBackup);
         return;
@@ -116,6 +120,8 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
       );
     } on CorruptedDataException {
       _fail(l10n.restoreCorrupted);
+    } on NewerBackupException {
+      _fail(l10n.restoreNewerVersion);
     } on InvalidBackupException {
       _fail(l10n.restoreCorrupted);
     } finally {
@@ -157,7 +163,9 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
           .merge(backup, session);
       ref
         ..invalidate(loginsControllerProvider)
-        ..invalidate(otpsControllerProvider);
+        ..invalidate(otpsControllerProvider)
+        ..invalidate(cardsControllerProvider)
+        ..invalidate(notesControllerProvider);
       // Birleştirilen kayıtlar yedeğin zamanlarını taşır; değişiklik ölçütü
       // onları yeni saymayabilir. Otomatik yedek kapalıysa bir şey yapmaz.
       unawaited(ref.read(autoBackupControllerProvider.notifier).backUpNow());
@@ -292,7 +300,15 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
       GlassSurface(
         padding: const EdgeInsets.all(16),
         child: Text(
-          l10n.restoreSummary(date, opened.loginCount, opened.otpCount),
+          opened.hasCardsOrNotes
+              ? l10n.restoreSummaryAll(
+                  date,
+                  opened.loginCount,
+                  opened.otpCount,
+                  opened.cardCount,
+                  opened.noteCount,
+                )
+              : l10n.restoreSummary(date, opened.loginCount, opened.otpCount),
           style: theme.textTheme.titleMedium,
         ),
       ),

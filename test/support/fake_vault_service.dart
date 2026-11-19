@@ -40,8 +40,13 @@ import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
+import 'package:keykey/features/vault/application/records_controller.dart';
+import 'package:keykey/features/vault/data/card_content.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
+import 'package:keykey/features/vault/data/note_content.dart';
+import 'package:keykey/features/vault/data/record_content.dart';
+import 'package:keykey/features/vault/data/vault_record_repository.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../core/storage/test_data.dart';
@@ -321,6 +326,76 @@ class RecordingClipboard implements SensitiveClipboard {
   Future<void> copy(String text) async => copied.add(text);
 }
 
+/// Bellekte duran kart ya da not deposu.
+class FakeRecordRepository<C extends VaultItemContent<C>>
+    implements VaultRecordRepository<C> {
+  new({List<VaultRecord<C>>? items, this.unreadableCount = 0})
+    : items = items ?? [];
+
+  final List<VaultRecord<C>> items;
+  final int unreadableCount;
+  DateTime now = DateTime.utc(2026, 11, 5, 12);
+  var _nextId = 1;
+
+  @override
+  String get type => C == CardContent
+      ? VaultRecordRepository.cardType
+      : VaultRecordRepository.noteType;
+
+  static VaultRecord<C> item<C>(C content, {int id = 0, DateTime? updatedAt}) {
+    final bytes = Uint8List(16)
+      ..[0] = 100
+      ..[15] = id;
+    return VaultRecord(
+      id: bytes,
+      content: content,
+      createdAt: DateTime.utc(2026),
+      updatedAt: updatedAt ?? DateTime.utc(2026),
+    );
+  }
+
+  @override
+  Future<LoadedRecords<C>> loadAll() async =>
+      LoadedRecords(items: [...items], unreadableCount: unreadableCount);
+
+  @override
+  Future<VaultRecord<C>> add(C content) async {
+    final created = VaultRecord(
+      id: Uint8List(16)
+        ..[0] = 201
+        ..[15] = _nextId++,
+      content: content,
+      createdAt: now,
+      updatedAt: now,
+    );
+    items.add(created);
+    return created;
+  }
+
+  @override
+  Future<VaultRecord<C>> update(VaultRecord<C> item, C content) async {
+    final updated = VaultRecord(
+      id: item.id,
+      content: content,
+      createdAt: item.createdAt,
+      updatedAt: now,
+    );
+    final index = items.indexWhere((other) => listEquals(other.id, item.id));
+    if (index >= 0) items[index] = updated;
+    return updated;
+  }
+
+  @override
+  Future<void> deletePermanently(VaultRecord<C> item) async {
+    items.removeWhere((other) => listEquals(other.id, item.id));
+  }
+
+  @override
+  Future<List<VaultRecord<C>>> purgeExpiredTrash(
+    List<VaultRecord<C>> items,
+  ) async => items;
+}
+
 /// Bellekte çalışan kayıt deposu. Şifrelemeyi depo testleri sınar.
 class FakeLoginRepository implements LoginRepository {
   new({List<LoginItem>? items, this.unreadableCount = 0}) : items = items ?? [];
@@ -448,6 +523,7 @@ class FakeDocumentFiles implements DocumentFiles {
 
   /// Son kaydedilen dosyanın adı ve baytlarının kopyası.
   String? savedName;
+  String? savedMimeType;
   Uint8List? savedBytes;
   int saves = 0;
   int opens = 0;
@@ -465,6 +541,7 @@ class FakeDocumentFiles implements DocumentFiles {
     saves++;
     gateWasActive = readGate?.call();
     savedName = suggestedName;
+    savedMimeType = mimeType;
     savedBytes = Uint8List.fromList(bytes);
     bytes.fillRange(0, bytes.length, 0);
     return nextSave;
@@ -557,12 +634,16 @@ class FakeBackupService implements BackupService {
   /// Kayıtların en son değiştiği an; `null` boş kasa demek.
   DateTime? latest;
 
+  /// `true` ise yedek boyut sınırını aşıyormuş gibi davranır.
+  bool tooLarge = false;
+
   @override
   Future<DateTime?> latestChange() async => latest;
 
   @override
   Future<Uint8List> create(VaultSession session, DateTime now) async {
     if (session.isDisposed) throw const VaultLockedException();
+    if (tooLarge) throw const BackupTooLargeException();
     creates++;
     return Uint8List.fromList(bytes);
   }
@@ -579,6 +660,14 @@ class FakeRestoreService implements RestoreService {
   int replaces = 0;
   int merges = 0;
   bool corrupted = false;
+
+  /// `true` ise yedek açılırken daha yeni bir sürümün içeriği gibi davranır.
+  bool newer = false;
+  int cardCount = 0;
+  int noteCount = 0;
+
+  /// Birleştirme sırasında kasaya yazılıyormuş gibi çağrılır.
+  void Function()? onMerge;
   MergeCounts mergeResult = const MergeCounts(added: 2, updated: 1, kept: 4);
 
   /// Gerçek biçimde, kayıtsız bir yedek dosyası.
@@ -616,12 +705,15 @@ class FakeRestoreService implements RestoreService {
 
   OpenedBackup _opened(BackupFile file) {
     if (corrupted) throw const CorruptedDataException();
+    if (newer) throw const NewerBackupException('Daha yeni içerik.');
     return OpenedBackup.forTesting(
       header: file.header,
       vaultKey: sodium.secureRandom(32),
       createdAt: DateTime.utc(2026, 11, 1, 9),
       loginCount: 3,
       otpCount: 2,
+      cardCount: cardCount,
+      noteCount: noteCount,
     );
   }
 
@@ -641,6 +733,7 @@ class FakeRestoreService implements RestoreService {
   Future<MergeCounts> merge(OpenedBackup backup, VaultSession session) async {
     if (session.isDisposed) throw const VaultLockedException();
     merges++;
+    onMerge?.call();
     return mergeResult;
   }
 }
@@ -775,6 +868,8 @@ Future<void> pumpKeyKey(
   required FakeVaultService service,
   FakeLoginRepository? logins,
   FakeOtpRepository? otps,
+  FakeRecordRepository<CardContent>? cards,
+  FakeRecordRepository<NoteContent>? notes,
   DateTime Function()? clock,
   FakeQrImageReader? qrImages,
   FakeQrCamera? camera,
@@ -796,6 +891,8 @@ Future<void> pumpKeyKey(
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
   final repository = logins ?? FakeLoginRepository();
   final otpRepository = otps ?? FakeOtpRepository();
+  final cardRepository = cards ?? FakeRecordRepository<CardContent>();
+  final noteRepository = notes ?? FakeRecordRepository<NoteContent>();
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -804,6 +901,8 @@ Future<void> pumpKeyKey(
         initialVaultStatusProvider.overrideWithValue(status),
         loginRepositoryFactoryProvider.overrideWithValue((_) => repository),
         otpRepositoryFactoryProvider.overrideWithValue((_) => otpRepository),
+        cardRepositoryFactoryProvider.overrideWithValue((_) => cardRepository),
+        noteRepositoryFactoryProvider.overrideWithValue((_) => noteRepository),
         settingsRepositoryFactoryProvider.overrideWithValue(
           (_) => settings ?? FakeSettingsRepository(),
         ),

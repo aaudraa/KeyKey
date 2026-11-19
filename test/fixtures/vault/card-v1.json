@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "name": "Örnek kart",
+  "cardholder": "DENEME KİŞİ",
+  "number": "4111111111111111",
+  "expMonth": 12,
+  "expYear": 2028,
+  "securityCode": "123",
+  "pin": "1234",
+  "notes": "Not",
+  "favorite": true,
+  "folder": "Banka",
+  "trashedAt": null
+}

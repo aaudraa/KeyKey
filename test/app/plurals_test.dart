@@ -22,4 +22,15 @@ void main() {
       '7 Kas tarihli yedek: 1 parola ve 2 2FA hesabı.',
     );
   });
+
+  test('kartlı yedeğin özeti', () {
+    expect(
+      en.restoreSummaryAll('Nov 7', 1, 2, 1, 3),
+      'Backup from Nov 7: 1 password, 2 2FA accounts, 1 card and 3 notes.',
+    );
+    expect(
+      tr.restoreSummaryAll('7 Kas', 1, 2, 1, 3),
+      '7 Kas tarihli yedek: 1 parola, 2 2FA hesabı, 1 kart ve 3 not.',
+    );
+  });
 }

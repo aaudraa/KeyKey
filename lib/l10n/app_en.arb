@@ -411,7 +411,7 @@
   "@vaultFavorites": {
     "description": "Filter chip."
   },
-  "vaultEmpty": "No passwords yet. Tap + below to save your first one.",
+  "vaultEmpty": "Nothing here yet. Tap + below to add a password, card or note.",
   "@vaultEmpty": {
     "description": "Empty vault message."
   },
@@ -1906,7 +1906,7 @@
   "@restoreReplaceConfirmTitle": {
     "description": "Title of the replace confirmation dialog."
   },
-  "restoreReplaceConfirmBody": "Every password and 2FA account in this vault will be deleted and replaced with the backup. Fingerprint unlock is turned off. This cannot be undone.",
+  "restoreReplaceConfirmBody": "Every password, card, note and 2FA account in this vault will be deleted and replaced with the backup. Fingerprint unlock is turned off. This cannot be undone.",
   "@restoreReplaceConfirmBody": {
     "description": "Body of the replace confirmation dialog."
   },
@@ -1950,7 +1950,7 @@
   "@backupReminderLater": {
     "description": "Snoozes the backup reminder for a week."
   },
-  "loginImportTitle": "Import passwords",
+  "loginImportTitle": "Import",
   "@loginImportTitle": {
     "description": "Settings tile and screen title for importing passwords."
   },
@@ -2058,7 +2058,7 @@
   "@exportTitle": {
     "description": "Settings tile for the plaintext export."
   },
-  "exportHelp": "CSV file for moving to another password manager",
+  "exportHelp": "CSV or JSON file for moving to another password manager",
   "@exportHelp": {
     "description": "Subtitle of the plaintext export tile."
   },
@@ -2066,7 +2066,7 @@
   "@exportWarningTitle": {
     "description": "Title of the warning before exporting."
   },
-  "exportWarningBody": "All your passwords, notes and 2FA keys are written into the file as plain text. Any app or person that can reach the file can read them, including the cloud it syncs to.\n\nUse it only to move to another password manager, and delete it right after importing. To keep a backup, use \"Back up now\" instead; backups are encrypted.",
+  "exportWarningBody": "All your passwords, cards, notes and 2FA keys are written into the file as plain text. Any app or person that can reach the file can read them, including the cloud it syncs to.\n\nUse it only to move to another password manager, and delete it right after importing. To keep a backup, use \"Back up now\" instead; backups are encrypted.",
   "@exportWarningBody": {
     "description": "Explains the risk of the plaintext export."
   },
@@ -2203,5 +2203,99 @@
         "type": "int"
       }
     }
+  },
+  "addCard": "Card",
+  "addCardHint": "Bank and credit cards",
+  "cardNewTitle": "New card",
+  "cardholder": "Cardholder",
+  "cardNumber": "Card number",
+  "cardExpiry": "Expiry (MM/YY)",
+  "cardExpiryShort": "Expiry",
+  "cardSecurityCode": "Security code",
+  "cardPin": "PIN",
+  "cardExpired": "Expired",
+  "cardNumberWarning": "This doesn't look like a card number. You can still save it.",
+  "cardExpiryInvalid": "Use a month from 01 to 12 and a two-digit year.",
+  "cardCopyNumber": "Copy card number",
+  "addNote": "Secure note",
+  "addNoteHint": "Wi-Fi, door codes, recovery codes",
+  "noteNewTitle": "New note",
+  "noteText": "Text",
+  "noteTooLong": "A note can be at most 64 KiB. The extra text was not added.",
+  "@noteTooLong": {
+    "description": "Shown when typed or pasted text would make a secure note longer than 64 KiB."
+  },
+  "noteCopy": "Copy text",
+  "vaultKindLogins": "Passwords",
+  "vaultKindCards": "Cards",
+  "vaultKindNotes": "Notes",
+  "restoreSummaryAll": "Backup from {date}: {logins, plural, =1{1 password} other{{logins} passwords}}, {otps, plural, =1{1 2FA account} other{{otps} 2FA accounts}}, {cards, plural, =1{1 card} other{{cards} cards}} and {notes, plural, =1{1 note} other{{notes} notes}}.",
+  "@restoreSummaryAll": {
+    "description": "Summary of an opened backup that has cards or notes.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "logins": {
+        "type": "int"
+      },
+      "otps": {
+        "type": "int"
+      },
+      "cards": {
+        "type": "int"
+      },
+      "notes": {
+        "type": "int"
+      }
+    }
+  },
+  "restoreNewerVersion": "This backup was made with a newer version of KeyKey. Update the app and try again.",
+  "@restoreNewerVersion": {
+    "description": "Shown when a backup comes from a newer app version."
+  },
+  "backupTooLarge": "The vault does not fit in one backup file (64 MB limit). Shorten large notes and try again.",
+  "@backupTooLarge": {
+    "description": "Shown when the backup would exceed the file size limit."
+  },
+  "importLabelCardNumber": "Card number",
+  "@importLabelCardNumber": {
+    "description": "Label put before a card number that was moved into the card's notes during import."
+  },
+  "importLabelExpiry": "Expiry",
+  "@importLabelExpiry": {
+    "description": "Label put before an unreadable expiry moved into the notes during import."
+  },
+  "importLabelSecurityCode": "Security code",
+  "@importLabelSecurityCode": {
+    "description": "Label put before a security code moved into the notes during import."
+  },
+  "importCardAdjusted": "Some values were moved to the card's notes",
+  "@importCardAdjusted": {
+    "description": "Import preview: values that did not fit the card fields were kept in its notes."
+  },
+  "exportFormatTitle": "Choose a format",
+  "@exportFormatTitle": {
+    "description": "Title of the plaintext export format choice."
+  },
+  "exportFormatCsv": "CSV",
+  "@exportFormatCsv": {
+    "description": "CSV export format."
+  },
+  "exportFormatCsvHint": "Read by Bitwarden, KeePassXC and most managers.",
+  "@exportFormatCsvHint": {
+    "description": "Explains which apps read the CSV export."
+  },
+  "exportFormatCsvNoCards": "Cards are not included in this format.",
+  "@exportFormatCsvNoCards": {
+    "description": "Shown under CSV when the vault has cards."
+  },
+  "exportFormatJson": "JSON",
+  "@exportFormatJson": {
+    "description": "JSON export format."
+  },
+  "exportFormatJsonHint": "Everything, cards included. Bitwarden's format.",
+  "@exportFormatJsonHint": {
+    "description": "Explains the JSON export."
   }
 }

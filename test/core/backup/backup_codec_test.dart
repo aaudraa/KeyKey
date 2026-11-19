@@ -10,8 +10,13 @@ import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/crypto/record_cipher.dart';
 import 'package:keykey/core/crypto/vault_header.dart';
 import 'package:keykey/core/storage/vault_store.dart';
+import 'package:keykey/features/authenticator/data/otp_content.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
+import 'package:keykey/features/vault/data/card_content.dart';
+import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
+import 'package:keykey/features/vault/data/note_content.dart';
+import 'package:keykey/features/vault/data/vault_record_repository.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 void main() {
@@ -190,12 +195,135 @@ void main() {
     });
 
     test('yedeklenen türler uygulamanın kayıt türleriyle aynı', () {
-      expect(BackupCodec.recordTypes, {
+      expect(BackupCodec.legacyRecordTypes, {
         LoginRepository.recordType,
         RecordCipher.otpType,
         SettingsRepository.recordType,
       });
+      expect(BackupCodec.recordTypes, {
+        ...BackupCodec.legacyRecordTypes,
+        VaultRecordRepository.cardType,
+        VaultRecordRepository.noteType,
+      });
     });
+
+    test('yalnızca eski türler varsa içerik sürümü 1', () async {
+      final contents = await decode(await encode(sampleRecords()));
+      expect(contents.version, 1);
+    });
+
+    test('kayıt içerik sürümleri yedeğin içerik sürümüyle birlikte', () {
+      // Eski bir sürüm, tanımadığı kayıt içeriğini "bozuk" diye reddeder.
+      // Bir kaydın içerik sürümü artarsa yedeğin içerik sürümü de artırılmalı
+      // (güvenlik tasarımı, "Yedek"); o zaman eski sürüm "daha yeni yedek"
+      // der. Bu test, o adımın unutulmaması için sürümleri sabitliyor.
+      expect(
+        {
+          'login': LoginContent.currentVersion,
+          'otp': OtpContent.currentVersion,
+          'settings': AppSettings.currentVersion,
+          'card': CardContent.currentVersion,
+          'note': NoteContent.currentVersion,
+          'payload': BackupCodec.payloadVersion,
+        },
+        {
+          'login': 2,
+          'otp': 1,
+          'settings': 5,
+          'card': 1,
+          'note': 1,
+          'payload': 2,
+        },
+      );
+    });
+
+    test('kart ya da not varsa içerik sürümü 2', () async {
+      for (final type in ['card', 'note']) {
+        final records = [...sampleRecords(), record(9, type: type)];
+        final contents = await decode(await encode(records));
+        expect(contents.version, 2, reason: type);
+        expectSame(contents.records, records);
+      }
+    });
+
+    test('64 MiB sınırını aşacak yedek yazılmıyor', () async {
+      final big = Uint8List(25 * 1024 * 1024);
+      final records = [
+        for (var i = 0; i < 2; i++)
+          StoredRecord(
+            id: Uint8List(16)..[0] = i,
+            type: 'note',
+            blob: big,
+            createdAt: createdAt,
+            updatedAt: createdAt,
+          ),
+      ];
+      await expectLater(
+        encode(records),
+        throwsA(isA<BackupTooLargeException>()),
+      );
+    });
+
+    test(
+      'tam 64 MiB yedek yazılıp okunuyor, bir bayt fazlası yazılmıyor',
+      () async {
+        // Boyut şifrelemeden önce hesaplanıyor; hesap yazılanla bayt bayt
+        // aynı olmalı. Tek kaydın blob'u ve zamanlarının basamak sayısı
+        // içerik uzunluğunu bayt bayt ayarlıyor.
+        StoredRecord big(int blobBytes, int createdDigits, int updatedDigits) =>
+            StoredRecord(
+              id: Uint8List(16)..[0] = 1,
+              type: 'note',
+              blob: Uint8List(blobBytes),
+              createdAt: DateTime.fromMillisecondsSinceEpoch(
+                pow(10, createdDigits - 1).toInt(),
+                isUtc: true,
+              ),
+              updatedAt: DateTime.fromMillisecondsSinceEpoch(
+                pow(10, updatedDigits - 1).toInt(),
+                isUtc: true,
+              ),
+            );
+        const tagAndLength = 4 + 17;
+        const streamHeader = 24;
+        const chunk = BackupCodec.chunkSize;
+        const limit = BackupCodec.maxFileSize;
+
+        // Küçük bir yedekten içeriğin sabit kısmı çıkarılıyor (tek parça).
+        final probe = await encode([big(3, 1, 1)]);
+        final prefix = prefixLength(probe);
+        final fixed =
+            probe.length - prefix - streamHeader - tagAndLength - (4 + 1 + 1);
+        int sizeFor(int payload) =>
+            prefix +
+            streamHeader +
+            payload +
+            (payload + chunk - 1) ~/ chunk * tagAndLength;
+
+        var payload =
+            (limit - prefix - streamHeader) * chunk ~/ (chunk + tagAndLength);
+        while (sizeFor(payload) < limit) {
+          payload++;
+        }
+        while (sizeFor(payload) > limit) {
+          payload--;
+        }
+        expect(sizeFor(payload), limit, reason: 'Tam sınır elde edilemedi.');
+
+        final variable = payload - fixed;
+        final groups = (variable - 2) ~/ 4;
+        final digits = variable - groups * 4;
+        final exact = await encode([big(groups * 3, digits - 1, 1)]);
+        expect(exact.length, limit);
+        expect(() => codec.parse(exact), returnsNormally);
+
+        await expectLater(
+          encode([big(groups * 3, digits, 1)]),
+          throwsA(isA<BackupTooLargeException>()),
+        );
+      },
+      timeout: const Timeout(Duration(minutes: 2)),
+    );
   });
 
   group('bozuk ve değiştirilmiş dosyalar', () {
@@ -295,7 +423,11 @@ void main() {
       expectInvalid(Uint8List(0));
       expectInvalid(Uint8List.fromList(utf8.encode('KEYKEY')));
       expectInvalid(copy()..[0] = 0x6B);
-      expectInvalid(copy()..[8] = 2);
+      expectInvalid(copy()..[8] = 0);
+      expect(
+        () => codec.parse(copy()..[8] = 2),
+        throwsA(isA<NewerBackupException>()),
+      );
       // Üst bilgi uzunluğu 0 ve tavanın üstü.
       expectInvalid(copy()..setRange(9, 13, [0, 0, 0, 0]));
       expectInvalid(copy()..setRange(9, 13, [0, 0, 0x10, 0x01]));
@@ -414,8 +546,46 @@ void main() {
       expect(contents.records.single.blob, [1, 2, 3]);
     });
 
+    test('daha yeni içerik sürümü ayrı hatayla reddediliyor', () async {
+      await expectLater(
+        decode(await withPayload({...payload([]), 'version': 3})),
+        throwsA(isA<NewerBackupException>()),
+      );
+    });
+
+    test(
+      'daha yeni içerik sürümü alanları değişse de yeni diye bildiriliyor',
+      () async {
+        // Sonraki bir sürüm kök alanlarını değiştirebilir; bu sürüm onu
+        // "bozuk" sanmamalı.
+        await expectLater(
+          decode(
+            await withPayload({...payload([]), 'version': 3, 'app': '1.5.0'}),
+          ),
+          throwsA(isA<NewerBackupException>()),
+        );
+        await expectLater(
+          decode(await withPayload({'version': 3, 'items': <Object>[]})),
+          throwsA(isA<NewerBackupException>()),
+        );
+      },
+    );
+
+    test('sürüm 2 içerikte kart ve not açılıyor', () async {
+      final contents = await decode(
+        await withPayload({
+          ...payload([
+            entry(type: 'card'),
+            entry(id: 'AQECAwQFBgcICQoLDA0ODw==', type: 'note'),
+          ]),
+          'version': 2,
+        }),
+      );
+      expect(contents.records.map((r) => r.type), ['card', 'note']);
+    });
+
     test('bilinmeyen sürüm, eksik ve fazla alan reddediliyor', () async {
-      await expectInvalid({...payload([]), 'version': 2});
+      await expectInvalid({...payload([]), 'version': 0});
       await expectInvalid({'version': 1, 'records': <Object>[]});
       await expectInvalid({...payload([]), 'ek': true});
       await expectInvalid(
@@ -429,6 +599,11 @@ void main() {
 
     test('bilinmeyen tür ve yinelenen kimlik reddediliyor', () async {
       await expectInvalid(payload([entry(type: 'card')]));
+      await expectInvalid(payload([entry(type: 'note')]));
+      await expectInvalid({
+        ...payload([entry(type: 'kimlik')]),
+        'version': 2,
+      });
       await expectInvalid(payload([entry(), entry()]));
       await expectInvalid(payload([entry(id: 'AAEC')]));
     });

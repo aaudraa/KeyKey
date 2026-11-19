@@ -108,6 +108,10 @@ class _AppShellState extends ConsumerState<AppShell>
     switch (choice) {
       case AddChoice.password:
         router.go(AppRoutes.vaultNew);
+      case AddChoice.card:
+        router.go(AppRoutes.cardNew);
+      case AddChoice.note:
+        router.go(AppRoutes.noteNew);
       case AddChoice.otpManual:
         router.go(AppRoutes.authenticatorNew);
       case AddChoice.otpScan:

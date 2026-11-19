@@ -14,6 +14,7 @@ deneme-parolası-ığüşöç
 cihaz-parolası-ığüşöç
 bu-yanlis-bir-parola-99
 deneme-Parola-Uzun-91
+yeşil-Kart-82-Not-Defteri
 
 # Kayıt parolaları ve elle denemedeki değerler
 kk-deneme-ilk
@@ -39,3 +40,8 @@ site399.example.com
 tomsmith
 zeynep
 banka.example.com
+
+# Kart ve not (1.4.0). Üç haneli güvenlik kodu çok kısa olduğu için aranmaz.
+4111111111111111
+4111 1111 1111 1111
+kirmizi-kapi

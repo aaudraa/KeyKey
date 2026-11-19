@@ -23,7 +23,8 @@ void main() {
 
   const lockedTitle = 'KeyKey kilitli';
   const vaultText =
-      'Henüz parola yok. İlkini kaydetmek için alttaki + düğmesine dokun.';
+      'Henüz kayıt yok. Parola, kart ya da not eklemek için '
+      'alttaki + düğmesine dokun.';
   const otpEmptyText =
       'Henüz 2FA hesabı yok. İlkini kurmak için alttaki + düğmesine dokun.';
 

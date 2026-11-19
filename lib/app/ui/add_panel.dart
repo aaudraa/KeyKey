@@ -10,7 +10,7 @@ import 'package:keykey/app/ui/kk_section.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// "+" kutusunda seçilebilecek ekleme yolları.
-enum AddChoice { password, otpScan, otpImage, otpManual, otpImport }
+enum AddChoice { password, card, note, otpScan, otpImage, otpManual, otpImport }
 
 /// Menüdeki "+" ile açılan kutu: arkada kararan ve bulanan ekran, menünün
 /// hemen üstünde cam kutu. Önce "Parola mı, 2FA kodu mu" diye sorar; "2FA
@@ -95,6 +95,22 @@ class _AddPanelState extends State<AddPanel> {
               hint: l10n.addPasswordHint,
               onTap: widget.passwordEnabled
                   ? () => widget.onChosen(AddChoice.password)
+                  : null,
+            ),
+            _PanelRow(
+              icon: Icons.credit_card_rounded,
+              title: l10n.addCard,
+              hint: l10n.addCardHint,
+              onTap: widget.passwordEnabled
+                  ? () => widget.onChosen(AddChoice.card)
+                  : null,
+            ),
+            _PanelRow(
+              icon: Icons.sticky_note_2_outlined,
+              title: l10n.addNote,
+              hint: l10n.addNoteHint,
+              onTap: widget.passwordEnabled
+                  ? () => widget.onChosen(AddChoice.note)
                   : null,
             ),
             _PanelRow(

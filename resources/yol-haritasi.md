@@ -2,7 +2,7 @@
 
 KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. 1.3.0'a kadar tamamen çevrimdışıydı; 2026-11-19'da internet gerektiren özelliklere de açılma kararı alındı ([İnternet](#temel-kararlar)). Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-19 · **Şu anki faz:** 14, kart ve güvenli not kayıtları. [1.3.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.3.0) yayında, otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
+**Son güncelleme:** 2026-11-19 · **Şu anki faz:** 14 (kart ve güvenli not kayıtları) bitti ve 1.4.0 olarak yayına çıkıyor; sıradaki 15, kart doldurma. [1.3.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.3.0) yayında, otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
 
 > [!IMPORTANT]
 > **KeyKey 1.0 yayında.** Projenin kendi güvenlik denetimi tamamlandı, ama bağımsız bir denetim yapılmadı. Şifreli yedeğini düzenli al ve telefonun dışında da sakla.
@@ -27,7 +27,7 @@ KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uyg
 | 11 | Kullanıcı gözüyle iyileştirmeler | M | 10 | `faz/11-kullanici-gozuyle` | Tamamlandı |
 | 12 | Otomatik yedek | M | 11 | `faz/12-otomatik-yedek` | Tamamlandı (1.2.0) |
 | 13 | Yeni kurtarma anahtarı | S | 12 | `faz/13-kurtarma-anahtari` | Tamamlandı (1.3.0) |
-| 14 | Kart ve güvenli not kayıtları | L | 13 | `faz/14-kart-ve-not` | Sürüyor |
+| 14 | Kart ve güvenli not kayıtları | L | 13 | `faz/14-kart-ve-not` | Tamamlandı (1.4.0) |
 | 15 | Kart doldurma | M | 14 | `faz/15-kart-doldurma` | Planlandı |
 | 16 | İnternete açılma ve sızıntı kontrolü | M | 14 | `faz/16-internet` | Planlandı |
 | 17 | Kilit süresi, klavye, toplu seçim, Steam Guard | M | 14 | `faz/17-kullanim-kolayligi` | Planlandı |
@@ -586,6 +586,46 @@ Testler: 1467 birim ve arayüz testi; cihaz testleri (yenilemenin gerçek libsod
 
 **Bitti sayılması için:** yeni anahtar kasayı açıyor, eskisi açmıyor; yanlış parola ya da yarıda bırakma hiçbir şeyi değiştirmiyor; kurulum eskisi gibi çalışıyor.
 
+### Faz 14 — Kart ve güvenli not kayıtları
+
+Proje sahibi 2026-11-19'da kart bilgilerini en çok ihtiyaç duyduğu şey olarak söyledi. Tasarım: [`kart-ve-not.md`](docs/kart-ve-not.md), plan: [`kart-ve-not-plani.md`](docs/kart-ve-not-plani.md). Bu fazda internet izni eklenmedi.
+
+- [x] Veri: `card` ve `note` kayıt türleri, katı JSON biçimleri, ortak kayıt deposu ve denetleyicisi; kart numarası, marka, Luhn ve son kullanma kuralları
+- [x] Kart ekranları: kart yüzü, ayrıntı, form (numara gruplanır, yapıştırılan boşluk ve tire temizlenir, Luhn uyarısı)
+- [x] Not ekranları: ayrıntı, form (64 KiB sınırı); yalnızca "Kopyala" ve "Tümünü seç" olan seçim menüsü
+- [x] Kasa listesi üç türü birlikte gösteriyor, tür düğmeleri; çöp kutusu üç türü birlikte
+- [x] Yedek: içerik sürümü 2 yalnızca kart ya da not varsa; daha yeni sürüm hatası; 64 MiB'ı aşan yedek yazılmıyor; geri yükleme kart ve notları doğruluyor ve sayıyor; otomatik yedek kart ve notları izliyor
+- [x] Bitwarden'dan kart ve not içe aktarma; uymayan değer kartın notuna
+- [x] Şifresiz dışa aktarmada biçim seçimi: CSV (notlar dahil) ve Bitwarden JSON (kartlar dahil)
+- [x] Güvenlik tasarımı, kılavuz, değişiklik günlüğü, sürüm `1.4.0+8`
+- [x] Android 17 ve 11 emülatörlerinde bütün cihaz testleri
+- [x] Son gözden geçirme
+- [ ] Telefonda deneme (proje sahibiyle, Obtainium güncellemesinden sonra)
+
+**Uygulama sırasında verilen kararlar:**
+
+- Kartsız ve notsuz yedek hâlâ içerik sürümü 1 ile yazılıyor; 1.3.0 kartlı yedeği "bozuk" diye reddediyor, değişiklik günlüğü bunu söylüyor.
+- Geri yükleme özeti eski yedekte "0 kart ve 0 not" demesin diye iki metin var; kart ya da not varsa beşli özet çıkıyor.
+- Elle yedekte sınırı aşan kasa için ayrı bir metin var ("Başka bir konum dene" yanlış yönlendirirdi); otomatik yedek bunu "yazılamadı" olarak gösteriyor.
+- JSON dışa aktarmada marka Bitwarden'ın adlarıyla yazılıyor (Troy onda yok, `Other`); KeyKey içe aktarırken markayı zaten yok sayıyor.
+- Bitwarden'ın onay kutusu alanları kart ve notta `ad: değer` satırı olarak nota ekleniyor; parolada eskisi gibi alınmıyor.
+
+**Son gözden geçirme (2026-11-19):** Taze bir gözden geçirici bütün dalı okudu; kritik bulgu yok. Düzeltilenler, her biri önce kırmızı bir testle:
+
+- Daha yeni içerik sürümü, JSON alanları denetlenmeden önce okunuyor; yoksa sonraki bir sürümün yedeği 1.4.0'da "bozuk" görünebilirdi. Yayımlanan sürümün davranışı sonradan değişmediği için yayından önce düzeltildi. Kayıt içerik sürümleri yedeğin içerik sürümüyle birlikte bir testte sabitlendi; tam 64 MiB sınırı bayt bayt sınanıyor.
+- "Kasanın yerine yedeği koy" onayı kartları ve notları da sayıyor.
+- Yarım son kullanma Kaydet'i sessizce kapatmıyor, uyarı çıkıyor; "12/2030" yapıştırılınca "12/30" oluyor; dolu numaraya araya yazılan rakam sondakini silmiyor.
+- Metin kutularında uzun basınca açılan menüde kes ve kopyala hassas panodan geçiyor (parolalar dahil, bu 1.0'dan beri vardı); paylaş, ara, çevir düğmeleri yok. Not seçim menüsünde "Kopyalandı" bildirimi gerçek panoda çıkmıyordu.
+- Bitwarden'da sayı olarak yazılmış kart değerleri okunuyor, başka türde değer nota gidiyor; 64 KiB'ı aşan not yapıştırması söyleniyor; kart görünümü yalnızca son dört haneyi gösteriyor; adsız kart sıralamada ve silme onayında listedeki adıyla; parola formu kart ve not klasörlerini de öneriyor.
+- Kart, not ve içerik sürümü 2 yedeği için sabit örnek dosyalar eklendi.
+- Bırakılanlar: donanım klavyesinde Ctrl+C ve klavyenin kendi kopyala düğmesi sistem panosuna yazıyor (bilinen sınır); entegrasyon testi yedeği arayüzden değil servislerden geri yüklüyor (arayüz yolu arayüz testlerinde ve telefon denemesinde); arama metninin her değişiklikte yeniden hazırlanması (performans testi geçiyor).
+
+Düzeltmeler ikinci bir gözden geçirmeden geçti; bulguların hepsi kapandı.
+
+Testler: 1649 birim ve arayüz testi. Bütün entegrasyon testleri son kodla Android 17 ve 11 emülatörlerinde geçti. Aynı koşularda cihaz kaydı deneme değerleri için tarandı: Android 17 temiz; Android 11'de Gboard'ın panodaki kart numarasını verdiği sistem metin sınıflandırıcısı numarayı bir hata metninde logcat'e yazdı ([denetim](docs/guvenlik-denetimi.md#kayıtlar-logcat)). KeyKey'in kendisi kayıt yazmıyor; bu, pano sınırlarına eklendi.
+
+**Bitti sayılması için:** kart ve not eklenip düzenleniyor, kasa listesinde ve çöpte görünüyor; yedekten geri geliyor; Bitwarden'dan içe ve JSON'la dışa aktarılınca alanlar kaybolmuyor; kartsız yedekler eski sürümlerle açılıyor.
+
 ## 1.0 sonrası
 
 **2026-11-19:** Proje sahibi bu bölümdeki fikirlerin, kendi kararını bekleyenler dahil hepsini onayladı ve internete açılmaya karar verdi ([İnternet](#temel-kararlar)). Sıra benim kararım ve [Durum](#durum) tablosunda faz olarak duruyor. Gerekçesi:
@@ -599,7 +639,7 @@ Testler: 1467 birim ve arayüz testi; cihaz testleri (yenilemenin gerçek libsod
 
 | Fikir | Faz | Not |
 |---|---|---|
-| Kart ve güvenli not kayıtları | 14 | Kayıt modeli türlere açık; veritabanında `type` sütunu zaten var. Tasarım faz dalında yazılıyor (`docs/kart-ve-not.md`). |
+| Kart ve güvenli not kayıtları | 14 | Kayıt modeli türlere açık; veritabanında `type` sütunu zaten var. Tasarım: [kart ve not](docs/kart-ve-not.md). |
 | Kart doldurma | 15 | Android'in doldurma sistemi kart alanlarını da tanıyor (`creditCardNumber` vb.). |
 | Sızıntı kontrolü (Have I Been Pwned) | 16 | k-anonimlik ile parolayı göndermeden çalışır, internet gerektirir. |
 | Otomatik senkron (WebDAV, Google Drive) | 18 | Uçtan uca şifreli. Önce WebDAV; Drive için OAuth istemcisi proje sahibinin hesabında açılır. |

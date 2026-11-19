@@ -7,6 +7,8 @@ import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
+import 'package:keykey/features/vault/application/records_controller.dart';
+import 'package:keykey/features/vault/data/card_content.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../../support/fake_vault_service.dart';
@@ -35,6 +37,7 @@ void main() {
     VaultStatus status, {
     FakeSettingsRepository? settings,
     FakeBackupFolders? folders,
+    FakeRecordRepository<CardContent>? cards,
   }) async {
     await pumpKeyKey(
       tester,
@@ -44,6 +47,7 @@ void main() {
       restores: restores,
       settings: settings,
       folders: folders,
+      cards: cards,
     );
     if (status is VaultNotSetUp) await skipIntro(tester);
   }
@@ -141,6 +145,49 @@ void main() {
       expect(find.textContaining('3 parola ve 2 2FA hesabı'), findsOneWidget);
     });
 
+    testWidgets('daha yeni sürümün dosyası söyleniyor', (tester) async {
+      documents.nextOpen = DocumentOpened(Uint8List.fromList(backup)..[8] = 2);
+      await openFromSetup(tester);
+
+      expect(
+        find.text(
+          "Bu yedek KeyKey'in daha yeni bir sürümüyle alınmış. Uygulamayı "
+          'güncelleyip yeniden dene.',
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('daha yeni sürümün içeriği açarken söyleniyor', (tester) async {
+      restores.newer = true;
+      await openFromSetup(tester);
+      await typeSecret(tester, FakeRestoreService.password);
+
+      expect(
+        find.text(
+          "Bu yedek KeyKey'in daha yeni bir sürümüyle alınmış. Uygulamayı "
+          'güncelleyip yeniden dene.',
+        ),
+        findsOneWidget,
+      );
+      expect(restores.replaces, 0);
+    });
+
+    testWidgets('kartlı yedeğin özeti kartları ve notları sayıyor', (
+      tester,
+    ) async {
+      restores
+        ..cardCount = 1
+        ..noteCount = 2;
+      await openFromSetup(tester);
+      await typeSecret(tester, FakeRestoreService.password);
+
+      expect(
+        find.textContaining('3 parola, 2 2FA hesabı, 1 kart ve 2 not'),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('bozuk yedek söyleniyor', (tester) async {
       restores.corrupted = true;
       await openFromSetup(tester);
@@ -162,12 +209,14 @@ void main() {
       WidgetTester tester, {
       FakeSettingsRepository? settings,
       FakeBackupFolders? folders,
+      FakeRecordRepository<CardContent>? cards,
     }) async {
       await pump(
         tester,
         VaultOpen(service.newSession()),
         settings: settings,
         folders: folders,
+        cards: cards,
       );
       await tester.tap(find.byIcon(Icons.settings_outlined));
       await tester.pumpAndSettle();
@@ -218,6 +267,11 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Kasan değiştirilsin mi?'), findsOneWidget);
       expect(find.byType(BottomSheet), findsOneWidget);
+      // Kartlar ve notlar da silinir; onay metni bunu söylemeli.
+      expect(
+        find.textContaining('parolalar, kartlar, notlar ve 2FA hesapları'),
+        findsOneWidget,
+      );
 
       await tester.tap(find.text('Vazgeç'));
       await tester.pumpAndSettle();
@@ -238,6 +292,27 @@ void main() {
       expect(restores.replaces, 1);
       expect(service.biometricEnabled, isFalse);
       expect(find.text('KeyKey kilitli'), findsOneWidget);
+    });
+
+    testWidgets('birleştirmeden sonra yeni kartlar listede', (tester) async {
+      final cards = FakeRecordRepository<CardContent>();
+      restores.onMerge = () => cards.items.add(
+        FakeRecordRepository.item(CardContent(name: 'Yedekten'), id: 7),
+      );
+      await openFromSettings(tester, cards: cards);
+
+      await tester.tap(find.text('Kasamla birleştir'));
+      await tester.pumpAndSettle();
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.text('Yedekten geri yükle')),
+      );
+      final state = container.read(cardsControllerProvider);
+      expect(state, isA<RecordsLoaded<CardContent>>());
+      expect(
+        (state as RecordsLoaded<CardContent>).items.single.content.name,
+        'Yedekten',
+      );
     });
 
     testWidgets('birleştirince otomatik yedek hemen yazılıyor', (tester) async {

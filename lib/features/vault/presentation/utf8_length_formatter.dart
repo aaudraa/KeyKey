@@ -1,0 +1,30 @@
+import 'dart:convert';
+
+import 'package:flutter/services.dart';
+
+/// Metni UTF-8 bayt sınırında tutar: sınırı aşan değişiklik uygulanmaz ve
+/// [onRejected] çağrılır.
+///
+/// `maxLength` karakter sayar; Türkçe harfler iki bayt olduğu için kayıt
+/// sınırı (ör. 64 KiB not) bayt üzerinden denetlenir.
+class Utf8LengthLimitingFormatter extends TextInputFormatter {
+  const new(this.maxBytes, {this.onRejected});
+
+  final int maxBytes;
+
+  /// Sınırı aşan değişiklik reddedilince; ekran kullanıcıya söyler.
+  final VoidCallback? onRejected;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final text = newValue.text;
+    // Her UTF-16 birimi en çok 3 bayt olur; kısa metinde kodlamaya gerek yok.
+    if (text.length * 3 <= maxBytes) return newValue;
+    if (utf8.encode(text).length <= maxBytes) return newValue;
+    onRejected?.call();
+    return oldValue;
+  }
+}

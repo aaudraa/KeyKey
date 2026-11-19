@@ -25,7 +25,9 @@ import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:keykey/features/settings/presentation/settings_screen.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
+import 'package:keykey/features/vault/application/records_controller.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
+import 'package:keykey/features/vault/data/vault_record_repository.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sodium/sodium_sumo.dart';
 
@@ -39,7 +41,8 @@ void main() {
   const password = 'dogru-Ana-Parola-47';
   const texts = BiometricTexts(title: 'KeyKey testi', negativeButton: 'Vazgeç');
   const vaultText =
-      'Henüz parola yok. İlkini kaydetmek için alttaki + düğmesine dokun.';
+      'Henüz kayıt yok. Parola, kart ya da not eklemek için '
+      'alttaki + düğmesine dokun.';
   const testTimeout = Timeout(Duration(minutes: 3));
 
   // Betik olmadan pencerede boşuna beklememek için yalnızca betikle çalışır.
@@ -176,6 +179,20 @@ void main() {
             vaultServiceProvider.overrideWithValue(service),
             loginRepositoryFactoryProvider.overrideWithValue(
               (session) => LoginRepository(
+                store: store,
+                session: session,
+                sodium: sodium,
+              ),
+            ),
+            cardRepositoryFactoryProvider.overrideWithValue(
+              (session) => cardRepository(
+                store: store,
+                session: session,
+                sodium: sodium,
+              ),
+            ),
+            noteRepositoryFactoryProvider.overrideWithValue(
+              (session) => noteRepository(
                 store: store,
                 session: session,
                 sodium: sodium,

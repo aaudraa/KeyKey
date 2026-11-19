@@ -1,6 +1,6 @@
 # KeyKey kullanım kılavuzu
 
-KeyKey, parolalarını ve 2FA kodlarını yalnızca telefonunda, şifreli olarak saklayan bir uygulama. Hesap açman gerekmez, internete bağlanmaz. Bu kılavuz kurulumdan yedeklemeye kadar her şeyi adım adım anlatıyor.
+KeyKey, parolalarını, kartlarını, güvenli notlarını ve 2FA kodlarını yalnızca telefonunda, şifreli olarak saklayan bir uygulama. Hesap açman gerekmez, internete bağlanmaz. Bu kılavuz kurulumdan yedeklemeye kadar her şeyi adım adım anlatıyor.
 
 Görüntülerdeki kayıtlar örnektir.
 
@@ -10,6 +10,7 @@ Görüntülerdeki kayıtlar örnektir.
 - [İlk kasa](#ilk-kasa)
 - [Kilit ve parmak izi](#kilit-ve-parmak-izi)
 - [Parolalar](#parolalar)
+- [Kartlar ve güvenli notlar](#kartlar-ve-güvenli-notlar)
 - [2FA kodları](#2fa-kodları)
 - [Otomatik doldurma](#otomatik-doldurma)
 - [Yedekleme ve yeni telefona geçiş](#yedekleme-ve-yeni-telefona-geçiş)
@@ -67,7 +68,7 @@ Eski telefonundan bir KeyKey yedeğin varsa kasa oluşturmak yerine **Yedekten g
 
 <img src="../design/kilavuz/04-kasa-listesi.webp" width="240" alt="Kasa listesi"> <img src="../design/kilavuz/05-kayit-ayrintisi.webp" width="240" alt="Kayıt ayrıntısı">
 
-**Kasa** sekmesi bütün kayıtlarını gösterir. Üstteki kutuyla arayabilir, **Favoriler** ve klasör düğmeleriyle süzebilirsin. Sağ üstteki **⋮** menüsünden ada ya da son değişene göre sıralarsın; seçimin kilitten sonra da kalır. Kartın sağındaki simge parolayı doğrudan kopyalar. Kasa boşken başka bir uygulamadan **Parolaları içe aktar** ya da **Yedekten geri yükle** kısayollarını da görürsün.
+**Kasa** sekmesi bütün kayıtlarını gösterir: parolalar, kartlar ve güvenli notlar bir arada. Üstteki kutuyla arayabilir, **Favoriler** ve klasör düğmeleriyle süzebilirsin. Birden fazla türde kaydın varsa **Parolalar**, **Kartlar** ve **Notlar** düğmeleri de çıkar. Sağ üstteki **⋮** menüsünden ada ya da son değişene göre sıralarsın; seçimin kilitten sonra da kalır. Kartın sağındaki simge parolayı doğrudan kopyalar. Kasa boşken başka bir uygulamadan **İçe aktar** ya da **Yedekten geri yükle** kısayollarını da görürsün.
 
 Bir kayda dokununca ayrıntıları açılır: kullanıcı adı, parola, bağlı 2FA kodu, web adresi ve klasör. Her satırın yanında kopyalama düğmesi var. Parola **Göster**'e dokunana kadar gizli kalır. Web adresinin yanındaki **Siteyi aç** sayfayı tarayıcında açar. Düzenlemek için üstteki kalem simgesine dokun. Kaydı favorilere eklemek ya da çöpe taşımak için ayrıntı ekranının sağ üstündeki **⋮** menüsünü kullan.
 
@@ -90,6 +91,24 @@ Kasa ekranının sağ üstündeki **⋮** menüsünde:
 
 - **Çöp kutusu:** Sildiğin kayıtlar burada 30 gün durur, sonra kalıcı olarak silinir. Yanlışlıkla sildiğini buradan geri yüklersin. Çöp kutusunun **⋮** menüsünde **Tümünü geri yükle** ve onay isteyen **Çöpü boşalt** var.
 - **Parola raporu:** Zayıf ve birden çok kayıtta kullandığın parolaları gösterir. Hesaplama telefonda yapılır, hiçbir yere gönderilmez.
+
+## Kartlar ve güvenli notlar
+
+**Kart eklemek için:** **+** → **Kart**. Kartın adını (örneğin "Maaş kartı"), kart sahibini, numarayı, son kullanma tarihini (AA/YY), güvenlik kodunu ve istersen PIN'i yaz. Numarayı yazarken ya da yapıştırırken boşluk ve tireler kendiliğinden düzelir; marka (Visa, Mastercard, Troy…) numaradan anlaşılır. Numara bir kart numarasına benzemiyorsa altında uyarı çıkar ama yine kaydedebilirsin.
+
+- Listede kartın yalnızca son dört hanesi ve son kullanma tarihi görünür; süresi geçmişse **Süresi doldu** yazar. Satırın sağındaki düğme numarayı kopyalar.
+- Ayrıntı ekranında numara, güvenlik kodu ve PIN gizli gelir; **Göster**'e dokununca açılır. Kopyalanan değer 30 saniye sonra panodan silinir.
+
+**Güvenli not eklemek için:** **+** → **Güvenli not**. Wi-Fi parolası, kapı kodu, kurtarma kodları gibi bir kayda uymayan sırlar için. Bir not en çok 64 KB metin taşır; fazlasını yapıştırırsan eklenmez ve bunu söyler.
+
+- Listede notun yalnızca adı görünür, metni görünmez. Arama da yalnızca ada ve klasöre bakar.
+- Ayrıntı ekranında metnin bir kısmını seçip **Kopyala** diyebilir ya da **Metni kopyala** ile hepsini kopyalayabilirsin. Kopyalanan metin de 30 saniye sonra panodan silinir.
+
+Kartlar ve notlar da klasöre konabilir, favorilere eklenebilir; sildiğinde çöp kutusuna gider. Yedeğe, otomatik yedeğe ve şifresiz dışa aktarmaya (JSON) girerler.
+
+Düzenleme ekranlarında bir metni seçip **Kopyala** ya da **Kes** dersen o da 30 saniye sonra panodan silinir.
+
+**Eski sürümle açma:** Kart ya da not içeren bir yedeği KeyKey 1.3.0 ve öncesi açamaz ve "Yedek bozuk ya da değiştirilmiş" der. Yedek bozuk değildir, KeyKey'i güncellemen yeter. Kartın ve notun yoksa yedek eski sürümlerde de açılır.
 
 ## 2FA kodları
 
@@ -157,20 +176,20 @@ KeyKey verilerini hiçbir yere göndermediği için **telefon kaybolursa ya da b
 **Açık bir kasaya geri yüklemek için:** Ayarlar → Yedek ve aktarım → **Yedekten geri yükle**. İki seçenek çıkar:
 
 - **Birleştir:** Yedekteki kayıtlar kasana eklenir. Aynı kayıt iki yerde de varsa daha yeni olan kalır.
-- **Değiştir:** Kasan silinir, yerine yedek gelir. Geri alınamaz, bu yüzden ayrıca onay ister.
+- **Değiştir:** Kasan (parolalar, kartlar, notlar ve 2FA hesapları) silinir, yerine yedek gelir. Geri alınamaz, bu yüzden ayrıca onay ister.
 
 ## Başka uygulamalardan geçiş
 
 <img src="../design/kilavuz/10-ice-aktarma.webp" width="240" alt="Parola içe aktarma">
 
-**Parolalar:** Ayarlar → Yedek ve aktarım → **Parolaları içe aktar**. Bitwarden (şifresiz JSON ya da CSV), Chrome, Firefox ve KeePassXC dışa aktarma dosyalarını okur. Kayıtlar eklenmeden önce liste halinde gösterilir; kasanda zaten olanlar işaretlenir ve seçilmez. Bitwarden ve KeePassXC'deki 2FA anahtarları da 2FA hesabı olarak eklenir.
+**Parolalar, kartlar ve notlar:** Ayarlar → Yedek ve aktarım → **İçe aktar**. Bitwarden (şifresiz JSON ya da CSV), Chrome, Firefox ve KeePassXC dışa aktarma dosyalarını okur. Kayıtlar eklenmeden önce liste halinde gösterilir; kasanda zaten olanlar işaretlenir ve seçilmez. Bitwarden ve KeePassXC'deki 2FA anahtarları da 2FA hesabı olarak eklenir. Bitwarden'daki kartlar ve güvenli notlar da alınır. Karta uymayan bir değer (örneğin harf içeren bir numara) atılmaz, kartın notuna yazılır ve listede bunu görürsün; Bitwarden'da `PIN` adlı bir alan varsa kartın PIN'i olur.
 
 > [!WARNING]
 > Dışa aktarma dosyası şifresizdir; içinde bütün parolaların düz metin olarak durur. İçe aktardıktan sonra dosyayı Dosyalar uygulamasından ya da Drive'dan kendin sil. KeyKey bu dosyayı silemez.
 
 **2FA hesapları:** Ayarlar → Yedek ve aktarım → **2FA hesaplarını içe aktar** (Aegis, 2FAS), ya da **+** → **2FA kodu** → **Başka uygulamadan aktar** (Google Authenticator'ın dışa aktarma QR'ları da). Şifreli dosyalar için o uygulamada belirlediğin parola istenir.
 
-**KeyKey'den ayrılmak istersen:** Ayarlar → Yedek ve aktarım → **Şifresiz dışa aktar**, çoğu parola yöneticisinin okuyabildiği bir CSV dosyası verir. Dosya şifresiz olduğu için önce uyarı çıkar ve kimliğini doğrulaman istenir.
+**KeyKey'den ayrılmak istersen:** Ayarlar → Yedek ve aktarım → **Şifresiz dışa aktar**. Önce biçimi seçersin: **CSV** çoğu parola yöneticisinin okuduğu biçimdir ama kartları taşımaz; **JSON** Bitwarden'ın biçimidir ve kartlar dahil her şeyi taşır. Dosya şifresiz olduğu için önce uyarı çıkar ve kimliğini doğrulaman istenir.
 
 ## Görünüm
 

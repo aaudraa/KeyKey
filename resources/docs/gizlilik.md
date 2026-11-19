@@ -1,6 +1,6 @@
 # Gizlilik bildirimi
 
-**Geçerlilik:** KeyKey 1.0 ve sonrası · **Son güncelleme:** 2026-11-17 · English: [privacy.md](privacy.md)
+**Geçerlilik:** KeyKey 1.0 ve sonrası · **Son güncelleme:** 2026-11-19 · English: [privacy.md](privacy.md)
 
 KeyKey hiçbir veri toplamaz ve hiçbir yere göndermez. Uygulamanın internet izni yoktur, bu yüzden istese de cihazdan veri çıkaramaz. Bunu kurulu uygulamanın izinlerinden ya da kaynak koddan herkes doğrulayabilir.
 
@@ -13,7 +13,7 @@ KeyKey hiçbir veri toplamaz ve hiçbir yere göndermez. Uygulamanın internet i
 
 ## Cihazda tutulanlar
 
-- Girdiğin parolalar, 2FA hesapları, notlar ve ayarlar yalnızca senin cihazında, ana parolandan türetilen anahtarla şifrelenmiş bir veritabanında durur. Şifreleme ayrıntıları [güvenlik tasarımında](guvenlik-tasarimi.md).
+- Girdiğin parolalar, kartlar, güvenli notlar, 2FA hesapları ve ayarlar yalnızca senin cihazında, ana parolandan türetilen anahtarla şifrelenmiş bir veritabanında durur. Şifreleme ayrıntıları [güvenlik tasarımında](guvenlik-tasarimi.md).
 - Android'in bulut yedeği kapalıdır; kasa Google hesabına yedeklenmez.
 - İki istisna var, ikisi de uygulamanın kendi klasöründe ayrı, şifresiz küçük birer dosya ve başka hiçbir bilgi içermez:
   - Tema seçimin (sistem, açık ya da koyu): kilit ekranı da seçtiğin temayla açılsın diye.
@@ -36,7 +36,7 @@ KeyKey'i doldurma servisi olarak seçersen Android, bir giriş formuna dokunduğ
 
 ## Pano
 
-Kopyaladığın parola ve 2FA kodları panoda "hassas" olarak işaretlenir (Android 13 ve üstü, klavye önizlemesinde görünmez) ve 30 saniye sonra silinir.
+Kopyaladığın parola, kart bilgisi, not ve 2FA kodları panoda "hassas" olarak işaretlenir (Android 13 ve üstü, klavye önizlemesinde görünmez) ve 30 saniye sonra silinir.
 
 ## Dosyalar
 

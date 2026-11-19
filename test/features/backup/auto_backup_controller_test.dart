@@ -15,7 +15,10 @@ import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
+import 'package:keykey/features/vault/application/records_controller.dart';
+import 'package:keykey/features/vault/data/card_content.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
+import 'package:keykey/features/vault/data/note_content.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../../support/fake_vault_service.dart';
@@ -82,6 +85,12 @@ void main() {
         ),
         otpRepositoryFactoryProvider.overrideWithValue(
           (_) => FakeOtpRepository(),
+        ),
+        cardRepositoryFactoryProvider.overrideWithValue(
+          (_) => FakeRecordRepository<CardContent>(),
+        ),
+        noteRepositoryFactoryProvider.overrideWithValue(
+          (_) => FakeRecordRepository<NoteContent>(),
         ),
         backupFoldersProvider.overrideWithValue(folders),
         backupServiceProvider.overrideWithValue(backups),
@@ -177,6 +186,26 @@ void main() {
       async.elapse(const Duration(seconds: 6));
       expect(folders.writes, 1);
     });
+  });
+
+  test('kart ya da not değişince de yazılır', () {
+    for (final provider in [cardsControllerProvider, notesControllerProvider]) {
+      fakeAsync((async) {
+        settings.settings = settings.settings.copyWith(lastBackupAt: now);
+        backups.latest = now.subtract(const Duration(hours: 1));
+        folders.writes = 0;
+        final container = open();
+        async.elapse(const Duration(seconds: 10));
+        expect(folders.writes, 0);
+
+        backups.latest = now.add(const Duration(seconds: 1));
+        container
+          ..invalidate(provider)
+          ..read(provider);
+        async.elapse(const Duration(seconds: 6));
+        expect(folders.writes, 1, reason: '$provider');
+      });
+    }
   });
 
   test('klasöre erişim yoksa yedek üretilmez, durum noAccess', () {

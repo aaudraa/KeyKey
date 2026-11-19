@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/features/backup/data/import/login_import.dart';
+import 'package:keykey/features/vault/data/card_number.dart';
 
 /// Örneklerin bir kısmı Bitwarden'ın içe aktarma testlerinden
 /// (bitwarden/clients, GPL-3.0); diğerleri dışa aktaranların yazdığı
@@ -161,7 +162,10 @@ void main() {
     test('CSV: birden çok adres, özel alanlar, favori ve klasör', () {
       final export = read('bitwarden.csv');
       expect(export.source, LoginExportSource.bitwardenCsv);
-      expect(export.skipped, 1, reason: 'not satırı');
+      expect(export.skipped, 0);
+      final note = export.notes.single;
+      expect(note.name, 'Gizli not');
+      expect(note.text, 'Not içeriği');
       final forum = export.logins[0];
       expect(forum.urls, [
         'https://forum.example.com',
@@ -180,11 +184,13 @@ void main() {
       expect(app.name, 'Uygulama');
     });
 
-    test('JSON: klasör, gizli alan, TOTP; kart ve not atlanıyor', () {
+    test('JSON: klasör, gizli alan, TOTP; kimlik atlanıyor', () {
       final export = read('bitwarden.json');
       expect(export.source, LoginExportSource.bitwardenJson);
       expect(export.logins, hasLength(2));
-      expect(export.skipped, 2);
+      expect(export.cards, hasLength(1));
+      expect(export.notes, hasLength(1));
+      expect(export.skipped, 1, reason: 'kimlik');
       final company = export.logins[0];
       expect(company.folder, 'İş');
       expect(company.favorite, isTrue);
@@ -200,6 +206,28 @@ void main() {
       expect(simple.notes, '');
     });
 
+    test('JSON: kart alanları, PIN ve kalan özel alanlar', () {
+      final imported = read('bitwarden.json').cards.single;
+      expect(imported.adjusted, isFalse);
+      final card = imported.content;
+      expect(card.name, 'Kart');
+      expect(card.cardholder, 'Ali Veli');
+      expect(card.number, '4111111111111111');
+      expect(card.expiry, CardExpiry(month: 1, year: 2028));
+      expect(card.securityCode, '123');
+      expect(card.pin, '1234');
+      expect(card.folder, 'İş');
+      expect(card.favorite, isTrue);
+      expect(card.notes, 'kart notu\nBanka: Deneme Bankası');
+    });
+
+    test('JSON: not metnine özel alanlar ekleniyor', () {
+      final note = read('bitwarden.json').notes.single;
+      expect(note.name, 'Not');
+      expect(note.text, 'gizli\nAğ: Ev');
+      expect(note.folder, 'İş');
+    });
+
     test('boş dışa aktarma', () {
       final export = read('bitwarden_empty.json');
       expect(export.logins, isEmpty);
@@ -211,6 +239,134 @@ void main() {
         () => read('bitwarden_password_protected.json'),
         throwsA(isA<EncryptedBitwardenExportException>()),
       );
+    });
+  });
+
+  group('Bitwarden kartında biçime uymayan değerler', () {
+    LoginExport readItems(
+      List<Map<String, Object?>> items, {
+      ImportLabels labels = ImportLabels.english,
+    }) => LoginExportReader.read(
+      Uint8List.fromList(
+        utf8.encode(jsonEncode({'encrypted': false, 'items': items})),
+      ),
+      labels: labels,
+    );
+
+    ImportedCard cardOf(
+      Map<String, Object?> card, {
+      List<Map<String, Object?>> fields = const [],
+      ImportLabels labels = ImportLabels.english,
+    }) => readItems([
+      {'type': 3, 'name': 'Kart', 'fields': fields, 'card': card},
+    ], labels: labels).cards.single;
+
+    test('rakam dışı numara boş kalır, ham değeri nota gider', () {
+      final card = cardOf({'number': 'abc'});
+      expect(card.adjusted, isTrue);
+      expect(card.content.number, isEmpty);
+      expect(card.content.notes, 'Card number: abc');
+    });
+
+    test('etiketler arayüz dilinden gelir', () {
+      final card = cardOf(
+        {'number': 'abc', 'code': '12345'},
+        labels: const ImportLabels(
+          cardNumber: 'Kart numarası',
+          expiry: 'Son kullanma',
+          securityCode: 'Güvenlik kodu',
+        ),
+      );
+      expect(card.content.notes, 'Kart numarası: abc\nGüvenlik kodu: 12345');
+    });
+
+    test(
+      'ay ve yıl metin ya da sayı olabilir, iki haneli yıla 2000 eklenir',
+      () {
+        expect(
+          cardOf({'expMonth': 7, 'expYear': 2031}).content.expiry,
+          CardExpiry(month: 7, year: 2031),
+        );
+        expect(
+          cardOf({'expMonth': '12', 'expYear': '30'}).content.expiry,
+          CardExpiry(month: 12, year: 2030),
+        );
+      },
+    );
+
+    test('okunamayan ya da tek başına ay ve yıl nota gider', () {
+      final bad = cardOf({'expMonth': '13', 'expYear': '28'});
+      expect(bad.content.expiry, isNull);
+      expect(bad.adjusted, isTrue);
+      expect(bad.content.notes, 'Expiry: 13/28');
+
+      final monthOnly = cardOf({'expMonth': '5', 'expYear': null});
+      expect(monthOnly.content.expiry, isNull);
+      expect(monthOnly.content.notes, 'Expiry: 5/');
+
+      final none = cardOf({'expMonth': null, 'expYear': ''});
+      expect(none.adjusted, isFalse);
+      expect(none.content.notes, isEmpty);
+    });
+
+    test('sayı olarak yazılmış numara, kod ve kart sahibi okunur', () {
+      final card = cardOf({
+        'number': 4111111111111111,
+        'code': 123,
+        'cardholderName': 42,
+        'expMonth': 7.0,
+        'expYear': 2031,
+      });
+      expect(card.adjusted, isFalse);
+      expect(card.content.number, '4111111111111111');
+      expect(card.content.securityCode, '123');
+      expect(card.content.cardholder, '42');
+      expect(card.content.expiry, CardExpiry(month: 7, year: 2031));
+    });
+
+    test('başka türde değer atılmaz, nota gider', () {
+      final card = cardOf({'number': 1.5, 'code': true});
+      expect(card.adjusted, isTrue);
+      expect(card.content.number, isEmpty);
+      expect(card.content.securityCode, isEmpty);
+      expect(card.content.notes, 'Card number: 1.5\nSecurity code: true');
+    });
+
+    test('4 haneden uzun güvenlik kodu nota gider', () {
+      final card = cardOf({'code': '12345'});
+      expect(card.content.securityCode, isEmpty);
+      expect(card.content.notes, 'Security code: 12345');
+    });
+
+    test('rakam dışı PIN alanı PIN olmaz, nota gider', () {
+      final card = cardOf(
+        const {},
+        fields: [
+          {'name': 'PIN', 'value': '12ab', 'type': 1},
+          {'name': 'Pin', 'value': '9876', 'type': 1},
+        ],
+      );
+      expect(card.content.pin, '9876');
+      expect(card.content.notes, 'PIN: 12ab');
+    });
+
+    test("64 KiB'ı aşan not atlanır ve sayılır", () {
+      final export = readItems([
+        {'type': 2, 'name': 'Uzun', 'notes': 'a' * 70000},
+        {'type': 2, 'name': 'Kısa', 'notes': 'b'},
+      ]);
+      expect(export.notes.single.name, 'Kısa');
+      expect(export.skipped, 1);
+    });
+
+    test('adı ve içeriği boş kart ya da not atlanır', () {
+      final export = readItems([
+        {'type': 3, 'name': '', 'card': <String, Object?>{}},
+        {'type': 2, 'name': ' ', 'notes': ''},
+      ]);
+      expect(export.cards, isEmpty);
+      expect(export.notes, isEmpty);
+      expect(export.skipped, 2);
     });
   });
 

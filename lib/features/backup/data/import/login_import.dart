@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:keykey/features/backup/data/import/csv_reader.dart';
+import 'package:keykey/features/vault/data/card_content.dart';
+import 'package:keykey/features/vault/data/card_number.dart';
+import 'package:keykey/features/vault/data/note_content.dart';
 
 /// Dosya tanınan bir parola dışa aktarma biçiminde değil.
 final class UnknownLoginExportException implements Exception {
@@ -49,18 +52,52 @@ final class ImportedLogin {
   final String? totp;
 }
 
+/// Başka bir uygulamadan okunan kart.
+final class ImportedCard {
+  const new({required this.content, required this.adjusted});
+
+  final CardContent content;
+
+  /// Biçime uymayan bir değer alanından çıkarılıp kartın notuna yazıldı.
+  final bool adjusted;
+}
+
+/// Biçime uymayan kart değerleri nota yazılırken başlarına konan etiketler.
+/// Veri katmanı dil bilmez; ekran arayüz dilindekileri verir.
+final class ImportLabels {
+  const new({
+    required this.cardNumber,
+    required this.expiry,
+    required this.securityCode,
+  });
+
+  static const english = ImportLabels(
+    cardNumber: 'Card number',
+    expiry: 'Expiry',
+    securityCode: 'Security code',
+  );
+
+  final String cardNumber;
+  final String expiry;
+  final String securityCode;
+}
+
 /// Okunan dosyanın sonucu.
 final class LoginExport {
   const new({
     required this.source,
     required this.logins,
     required this.skipped,
+    this.cards = const [],
+    this.notes = const [],
   });
 
   final LoginExportSource source;
   final List<ImportedLogin> logins;
+  final List<ImportedCard> cards;
+  final List<NoteContent> notes;
 
-  /// Desteklenmeyen (kart, not, kimlik) veya bozuk satırların sayısı.
+  /// Desteklenmeyen (kimlik, SSH anahtarı) veya bozuk satırların sayısı.
   final int skipped;
 }
 
@@ -73,7 +110,10 @@ final class LoginExport {
 abstract final class LoginExportReader {
   static const int maxBytes = 10 * 1024 * 1024;
 
-  static LoginExport read(Uint8List bytes) {
+  static LoginExport read(
+    Uint8List bytes, {
+    ImportLabels labels = ImportLabels.english,
+  }) {
     if (bytes.length > maxBytes) throw const UnknownLoginExportException();
     final String text;
     try {
@@ -82,7 +122,7 @@ abstract final class LoginExportReader {
       throw const UnknownLoginExportException();
     }
     final trimmed = text.replaceFirst('﻿', '').trimLeft();
-    if (trimmed.startsWith('{')) return _bitwardenJson(trimmed);
+    if (trimmed.startsWith('{')) return _bitwardenJson(trimmed, labels);
     final List<List<String>> rows;
     try {
       rows = CsvReader.read(text);
@@ -94,7 +134,7 @@ abstract final class LoginExportReader {
     final columns = {for (final (i, name) in header.indexed) name: i};
     final body = rows.skip(1);
     if (columns.keys.toSet().containsAll(_bitwardenColumns)) {
-      return _rows(LoginExportSource.bitwardenCsv, body, header, _bitwardenRow);
+      return _bitwardenCsv(body, header);
     }
     if (columns.keys.toSet().containsAll(_keepassColumns)) {
       return _rows(LoginExportSource.keepassxcCsv, body, header, _keepassRow);
@@ -155,9 +195,51 @@ abstract final class LoginExportReader {
     return LoginExport(source: source, logins: logins, skipped: skipped);
   }
 
+  /// Bitwarden CSV'si yalnızca giriş ve not taşır; kart yazmaz.
+  static LoginExport _bitwardenCsv(
+    Iterable<List<String>> rows,
+    List<String> header,
+  ) {
+    final logins = <ImportedLogin>[];
+    final notes = <NoteContent>[];
+    var skipped = 0;
+    for (final row in rows) {
+      if (row.length != header.length) {
+        skipped++;
+        continue;
+      }
+      final cells = {for (final (i, name) in header.indexed) name: row[i]};
+      if (cells['type']!.trim().toLowerCase() == 'note') {
+        final note = _note(
+          name: cells['name']!,
+          text: cells['notes'] ?? '',
+          fields: _bitwardenCsvFields(cells['fields'] ?? ''),
+          folder: cells['folder'],
+          favorite: (cells['favorite'] ?? '').trim() == '1',
+        );
+        if (note == null) {
+          skipped++;
+        } else {
+          notes.add(note);
+        }
+        continue;
+      }
+      final login = _bitwardenRow(cells);
+      if (login == null) {
+        skipped++;
+      } else {
+        logins.add(login);
+      }
+    }
+    return LoginExport(
+      source: LoginExportSource.bitwardenCsv,
+      logins: logins,
+      notes: notes,
+      skipped: skipped,
+    );
+  }
+
   static ImportedLogin? _bitwardenRow(Map<String, String> row) {
-    // Bitwarden CSV'si yalnızca giriş ve not içerir; notlar alınmaz.
-    if (row['type']!.trim().toLowerCase() == 'note') return null;
     return _login(
       name: row['name']!,
       username: row['login_username']!,
@@ -196,7 +278,7 @@ abstract final class LoginExportReader {
     urls: [row['url']!],
   );
 
-  static LoginExport _bitwardenJson(String text) {
+  static LoginExport _bitwardenJson(String text, ImportLabels labels) {
     final Object? root;
     try {
       root = jsonDecode(text);
@@ -218,19 +300,218 @@ abstract final class LoginExportReader {
             id: name,
     };
     final logins = <ImportedLogin>[];
+    final cards = <ImportedCard>[];
+    final notes = <NoteContent>[];
     var skipped = 0;
     for (final item in items) {
-      final login = _bitwardenItem(item, folders);
-      if (login == null) {
-        skipped++;
-      } else {
-        logins.add(login);
+      // Tür 1 giriş, 2 güvenli not, 3 kart; 4 kimlik ve 5 SSH anahtarı
+      // desteklenmiyor.
+      final record = switch (item) {
+        {'type': 1} => _bitwardenItem(item, folders),
+        final Map<String, Object?> map when map['type'] == 2 => _bitwardenNote(
+          map,
+          folders,
+        ),
+        final Map<String, Object?> map when map['type'] == 3 => _bitwardenCard(
+          map,
+          folders,
+          labels,
+        ),
+        _ => null,
+      };
+      switch (record) {
+        case final ImportedLogin login:
+          logins.add(login);
+        case final ImportedCard card:
+          cards.add(card);
+        case final NoteContent note:
+          notes.add(note);
+        default:
+          skipped++;
       }
     }
     return LoginExport(
       source: LoginExportSource.bitwardenJson,
       logins: logins,
+      cards: cards,
+      notes: notes,
       skipped: skipped,
+    );
+  }
+
+  /// Kart ve notun özel alanları: tür 0 metin, 1 gizli, 2 onay kutusu. Tür 3
+  /// bağlı alan değer taşımaz.
+  static List<({String name, String value, bool hidden})> _bitwardenFields(
+    Map<String, Object?> item,
+  ) => [
+    if (item['fields'] case final List<Object?> list)
+      for (final field in list)
+        if (field
+            case {
+              'name': final String? name,
+              'value': final String? value,
+              'type': final int type,
+            }
+            when type >= 0 && type <= 2)
+          (name: name ?? '', value: value ?? '', hidden: type == 1),
+  ];
+
+  static String? _folderOf(Map<String, Object?> item, Map<String, String> ids) {
+    final folderId = item['folderId'];
+    return folderId is String ? ids[folderId] : null;
+  }
+
+  static NoteContent? _bitwardenNote(
+    Map<String, Object?> item,
+    Map<String, String> folders,
+  ) => _note(
+    name: _text(item['name']),
+    text: _text(item['notes']),
+    fields: _bitwardenFields(item),
+    folder: _folderOf(item, folders),
+    favorite: item['favorite'] == true,
+  );
+
+  /// Biçime uyan değerler alanlarına girer; uymayanlar etiketiyle kartın
+  /// notuna yazılır, hiçbiri atılmaz.
+  static ImportedCard? _bitwardenCard(
+    Map<String, Object?> item,
+    Map<String, String> folders,
+    ImportLabels labels,
+  ) {
+    final card = item['card'];
+    if (card is! Map<String, Object?>) return null;
+    final moved = <String>[];
+
+    final rawNumber = _scalar(card['number']);
+    final number = normalizeCardNumber(rawNumber) ?? '';
+    if (number.isEmpty && rawNumber.isNotEmpty) {
+      moved.add('${labels.cardNumber}: $rawNumber');
+    }
+
+    final month = _scalar(card['expMonth']);
+    final year = _scalar(card['expYear']);
+    CardExpiry? expiry;
+    if (month.isNotEmpty || year.isNotEmpty) {
+      expiry = _expiry(month, year);
+      if (expiry == null) moved.add('${labels.expiry}: $month/$year');
+    }
+
+    var code = _scalar(card['code']);
+    if (!CardContent.isValidSecurityCode(code)) {
+      moved.add('${labels.securityCode}: $code');
+      code = '';
+    }
+
+    var pin = '';
+    final extra = <String>[];
+    for (final field in _bitwardenFields(item)) {
+      final value = field.value.trim();
+      if (pin.isEmpty &&
+          field.name.trim().toLowerCase() == 'pin' &&
+          value.isNotEmpty &&
+          CardContent.isValidPin(value)) {
+        pin = value;
+      } else {
+        extra.add('${field.name}: ${field.value}');
+      }
+    }
+
+    final name = _text(item['name']).trim();
+    final cardholder = _scalar(card['cardholderName']);
+    final notes = [
+      _lines(_text(item['notes'])),
+      ...extra,
+      ...moved,
+    ].where((line) => line.isNotEmpty).join('\n');
+    if (name.isEmpty &&
+        cardholder.isEmpty &&
+        number.isEmpty &&
+        expiry == null &&
+        code.isEmpty &&
+        pin.isEmpty &&
+        notes.isEmpty) {
+      return null;
+    }
+    final folder = _folderOf(item, folders)?.trim();
+    return ImportedCard(
+      content: CardContent(
+        name: name,
+        cardholder: cardholder,
+        number: number,
+        expiry: expiry,
+        securityCode: code,
+        pin: pin,
+        notes: notes,
+        favorite: item['favorite'] == true,
+        folder: folder == null || folder.isEmpty ? null : folder,
+      ),
+      adjusted: moved.isNotEmpty,
+    );
+  }
+
+  /// Kart değerleri metin ya da sayı olabiliyor (Bitwarden ay ve yılı sayı
+  /// yazabiliyor, başka araçlar numarayı da). Hiçbir değer atılmaz: metne
+  /// çevrilir. Numara, güvenlik kodu ya da tarih alanına uymazsa çağıran onu
+  /// nota taşır; kart sahibinin biçim kuralı yoktur, metin olarak kalır. Tam
+  /// sayı olmayan ya da çok büyük sayılar olduğu gibi yazılır, rakamları
+  /// uydurulmaz.
+  static String _scalar(Object? value) => switch (value) {
+    null => '',
+    final String text => text.trim(),
+    final int number => '$number',
+    final double number
+        when number.isFinite &&
+            number == number.truncateToDouble() &&
+            number.abs() <= _maxExactDouble =>
+      '${number.toInt()}',
+    _ => jsonEncode(value),
+  };
+
+  /// 2^53: bundan büyük double tam sayıları kesin tutamaz.
+  static const _maxExactDouble = 9007199254740992.0;
+
+  static final _expiryPart = RegExp(r'^[0-9]{1,4}$');
+
+  static CardExpiry? _expiry(String month, String year) {
+    if (!_expiryPart.hasMatch(month) || !_expiryPart.hasMatch(year)) {
+      return null;
+    }
+    final m = int.parse(month);
+    var y = int.parse(year);
+    if (year.length <= 2) y += 2000;
+    if (m < 1 || m > 12 || y < CardExpiry.minYear || y > CardExpiry.maxYear) {
+      return null;
+    }
+    return CardExpiry(month: m, year: y);
+  }
+
+  /// Windows'ta alınan dışa aktarmalarda satır sonları CRLF gelir.
+  static String _lines(String text) =>
+      text.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+
+  /// Notun metni ve sonuna eklenen özel alanları. Hiçbir şey yoksa ya da
+  /// metin sınırı aşıyorsa `null`.
+  static NoteContent? _note({
+    required String name,
+    required String text,
+    required List<({String name, String value, bool hidden})> fields,
+    String? folder,
+    bool favorite = false,
+  }) {
+    final body = [
+      _lines(text),
+      for (final field in fields) '${field.name}: ${field.value}',
+    ].where((line) => line.isNotEmpty).join('\n');
+    final cleanName = name.trim();
+    if (cleanName.isEmpty && body.trim().isEmpty) return null;
+    if (!NoteContent.fitsTextLimit(body)) return null;
+    final cleanFolder = folder?.trim();
+    return NoteContent(
+      name: cleanName,
+      text: body,
+      folder: cleanFolder == null || cleanFolder.isEmpty ? null : cleanFolder,
+      favorite: favorite,
     );
   }
 
@@ -238,7 +519,6 @@ abstract final class LoginExportReader {
     Object? item,
     Map<String, String> folders,
   ) {
-    // Tür 1 giriş; 2 not, 3 kart, 4 kimlik, 5 SSH anahtarı desteklenmiyor.
     if (item is! Map<String, Object?> || item['type'] != 1) return null;
     final login = item['login'];
     if (login is! Map<String, Object?>) return null;

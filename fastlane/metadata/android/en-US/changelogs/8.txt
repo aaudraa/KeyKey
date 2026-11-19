@@ -1,0 +1,1 @@
+Cards and secure notes: keep your bank cards (number, expiry, security code, PIN) and notes such as Wi-Fi passwords or recovery codes in your vault. The list shows only a card's last four digits. They go into backups and auto backups, import from Bitwarden, and the new JSON format of the plaintext export carries cards too. Restoring a backup with cards needs KeyKey 1.4.0.

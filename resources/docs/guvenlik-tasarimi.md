@@ -22,7 +22,7 @@ Bu belge KeyKey'in verileri nasıl şifrelediğini bayt düzeyinde anlatır. Kod
 
 | Varlık | Nerede durur |
 |---|---|
-| Kayıtlar: parolalar, kullanıcı adları, notlar, 2FA gizli anahtarları, adresler | Diskte şifreli; kasa açıkken çözülmüş halde bellekte |
+| Kayıtlar: parolalar, kullanıcı adları, notlar, 2FA gizli anahtarları, adresler, kart bilgileri, güvenli notlar | Diskte şifreli; kasa açıkken çözülmüş halde bellekte |
 | Ana parola | Hiçbir yerde saklanmaz; yazılırken klavyeden ve bellekten geçer |
 | Kurtarma anahtarı | Kullanıcının kâğıdında ya da kendi seçtiği yerde (dosya, başka bir parola yöneticisi); uygulamada saklanmaz |
 | Kasa anahtarı | Diskte yalnızca sarılmış halde; kasa açıkken korumalı bellekte |
@@ -252,6 +252,59 @@ Tür `otp` olan kayıtlar 2FA anahtarıyla şifrelenir. Düz metin şu JSON'dur:
 - Çöp kutusu ve okunamayan kayıt kuralları parola kaydıyla aynıdır. Yanlışlıkla silinen 2FA hesabı servise girişi engelleyebileceği için hemen silinmez.
 - `loginId`'nin gösterdiği kayıt silinmişse eşleşme yok sayılır.
 
+### Kart kaydının içeriği
+
+Tür `card` olan kayıtlar (1.4.0) kayıt anahtarıyla şifrelenir. Düz metin şu JSON'dur:
+
+```json
+{
+  "version": 1,
+  "name": "Maaş kartı",
+  "cardholder": "AD SOYAD",
+  "number": "4111111111111111",
+  "expMonth": 12,
+  "expYear": 2028,
+  "securityCode": "123",
+  "pin": "",
+  "notes": "",
+  "favorite": false,
+  "folder": null,
+  "trashedAt": null
+}
+```
+
+| Alan | Kural |
+|---|---|
+| `number` | Yalnızca rakam, gruplanmadan, en çok 19 hane. Boş olabilir. Luhn denetimi formda yalnızca uyarıdır; tutmayan numara da kaydedilir, çünkü bazı kartlar (yerel kartlar, eski numaralar) ona uymaz. |
+| `expMonth`, `expYear` | İkisi birlikte sayı ya da ikisi de `null`. Ay 1-12, yıl dört haneli 2000-2099. Kart, son kullanma ayının sonunda süresi dolmuş sayılır. |
+| `securityCode` | Yalnızca rakam, en çok 4 hane. Boş olabilir. |
+| `pin` | Yalnızca rakam, en çok 12 hane. Boş olabilir. |
+
+- Marka (Visa, Mastercard, American Express, Troy, Discover, JCB, UnionPay, Maestro, Diners Club) saklanmaz; her gösterimde numaranın ilk hanelerinden çıkarılır. İçe aktarılan yanlış bir marka bilgisi böylece kayda girmez.
+- Okurken doğrulama parola kaydındaki kadar katıdır; kurala uymayan değer de reddedilir. Uygulama kurala uymayan bir kaydı yazamaz.
+- Listede tam numara görünmez: marka, son dört hane ve son kullanma. Ayrıntıdaki kart görünümü de yalnızca son dört haneyi gösterir. Numara, güvenlik kodu ve PIN ayrıntı ekranında gizli gelir; kopyalanınca [pano](#pano) kuralı geçerlidir.
+- Çöp kutusu ve okunamayan kayıt kuralları parola kaydıyla aynıdır.
+
+### Not kaydının içeriği
+
+Tür `note` olan kayıtlar (1.4.0) kayıt anahtarıyla şifrelenir. Düz metin şu JSON'dur:
+
+```json
+{
+  "version": 1,
+  "name": "Ev Wi-Fi",
+  "text": "...",
+  "favorite": false,
+  "folder": null,
+  "trashedAt": null
+}
+```
+
+- `text` en çok 64 KiB'tır (UTF-8 bayt). Form sınırı aşan girişi kabul etmez ve bunu kullanıcıya söyler; okurken daha uzunu reddedilir.
+- Listede not metni gösterilmez; not çoğu zaman sırrın kendisidir. Arama yalnızca ada ve klasöre bakar.
+- Ayrıntı ekranında metin seçilebilir. Seçim menüsünde yalnızca **Kopyala** ve **Tümünü seç** vardır ve kopyalama [pano](#pano) kuralından geçer. Sistemin menüsü (Paylaş, Çevir, Ara gibi) gösterilmez, çünkü metni başka uygulamalara gönderir ve panoya süresiz yazar.
+- Okurken doğrulama ve çöp kutusu kuralları parola kaydıyla aynıdır.
+
 ## Depolama
 
 Kasa, uygulamanın özel klasöründe tek bir SQLite dosyasında (`keykey.db`) durur. Android yedeklemesi ve cihaz aktarımı kapalıdır. Dosyanın tamamı şifrelenmez, koruma kayıt düzeyindeki şifrelemeden gelir. Bu yüzden SQLCipher gerekmiyor ve şifresiz kalan alanlar yukarıdaki listeyle sınırlı kalıyor.
@@ -374,6 +427,7 @@ Ana uygulama ve doldurma ekranı aynı korumayı kullanır (`WindowProtection`).
 - Pano 30 saniye sonra temizlenir. Bunu önce zamanlayıcı yapar. Süreç durdurulduysa veya dondurulduysa, 10 saniye paylı kurulan bir `AlarmManager` alarmı yapar. Pay olmadan Android 11'de alarm zamanlayıcıdan önce çalıştı ve kullanıcının yeni kopyasını sildi.
 - Pano okunabiliyorsa yalnızca hâlâ bizim kopyamızı taşıyorsa silinir. Bunu anlamak için kopyalanan metnin kendisi değil, SHA-256 özeti tutulur. Panonun zaman damgası bu iş için güvenilir çıkmadı, cihaz testinde eşleşmedi. Okunamıyorsa, örneğin uygulama arka plandaysa veya Android o an izin vermiyorsa, silinir. Android 14 emülatöründe uygulama öndeyken de zaman zaman okunamadı.
 - Yeni bir kopyalama öncekinin süresini sıfırlar.
+- Metin kutularında (düzenleme ekranları, açılmış gizli kutular) uzun basınca açılan menüde yalnızca kes, kopyala, yapıştır ve tümünü seç vardır; kes ve kopyala da bu yoldan geçer. Sistemin kendi menüsü panoya hassas işaret ve süre olmadan yazar; paylaş, ara ve çevir gibi düğmeler metni başka uygulamalara verir. Gizli (noktalı) kutuda kes ve kopyala hiç çıkmaz. Notun seçilebilir metninde de menü yalnızca "Kopyala" ve "Tümünü seç"tir.
 - Kasa kilitlenince pano temizlenmez. Parolayı kopyalayıp tarayıcıya geçmek uygulamayı arka plana alır ve kasayı kilitler, temizlemek kopyalamayı işe yaramaz hale getirirdi.
 
 **Sınırlar:**
@@ -381,6 +435,8 @@ Ana uygulama ve doldurma ekranı aynı korumayı kullanır (`WindowProtection`).
 1. Android arka plandaki uygulamaya panoyu okutmaz. Kullanıcı bu sürede başka bir şey kopyaladıysa onu da silebiliriz.
 2. Alarm tam zamanında çalışmayabilir. Android, kesin alarm izni olmadan onu geciktirebilir. Cihaz testi, süreç ayaktayken arka planda temizlendiğini doğruluyor; sürecin kapatıldığı durum yalnızca alarma dayanıyor ve otomatik test edilmedi. Bu izni almıyoruz, çünkü parolanın panoda birkaç dakika daha kalması, izin listesini büyütmeye değmez.
 3. O sürede panoyu okuyan etkin klavye veya kötü amaçlı uygulama parolayı görebilir. Bu, [tehdit modelinde](#tehdit-modeli) "kısmen" olarak yazıyor.
+4. Donanım klavyesindeki Ctrl+C ve klavye uygulamasının kendi kopyala düğmesi bu menüden geçmez; seçili metni sistemin panosuna doğrudan yazar.
+5. Android 11 ve 12'de klavye kopyalanan metni işleyebilir. Android 11 emülatöründe Gboard kopyalanan kart numarasını sistemin metin sınıflandırıcısına verdi, sınıflandırıcı da onu bir hata metninde logcat'e yazdı ([denetim](guvenlik-denetimi.md#kayıtlar-logcat)). KeyKey hassas işaretini bu sürümlerde de koyuyor ama Gboard ona bakmıyor. Logcat'i yalnızca sistem ve adb okuyabilir.
 
 ## Tarayıcıda açma
 
@@ -619,7 +675,7 @@ parça   = uzunluk (4 bayt, büyük uçlu) || şifreli parça
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "createdAt": 1730000000000,
   "records": [
     {
@@ -634,10 +690,13 @@ parça   = uzunluk (4 bayt, büyük uçlu) || şifreli parça
 ```
 
 - Kayıtlar veritabanındaki halleriyle, yani [kayıt biçiminde](#kayıt-biçimi) şifreli olarak taşınır. Yedek bu yüzden iki katmanlıdır: dosyayı açan biri bile kayıtları ayrıca kasa anahtarının alt anahtarlarıyla çözmek zorundadır. Kayıt sayısı, türleri ve zaman damgaları da dış katmanda gizli kalır; veritabanı dosyasından farklı olarak yedek bunları ele vermez.
-- `type` yalnızca `login`, `otp` veya `settings` olabilir. İkili alanlar Base64'tür.
+- **İçerik sürümü.** Sürüm 1'de `type` yalnızca `login`, `otp` veya `settings` olabilir. Sürüm 2 (1.4.0) `card` ve `note` türlerini ekledi. Yedekte kart ya da not yoksa içerik yine sürüm 1 olarak yazılır; böylece kartsız yedekler 1.4.0 öncesi sürümlerle de açılır. 1.3.0 ve öncesi, sürüm 2 bir yedeği "bozuk ya da değiştirilmiş" diye reddeder. 1.4.0'dan sonra daha yeni bir dosya ya da içerik sürümü ayrı bir hatayla (`NewerBackupException`) ayrılır ve kullanıcıya uygulamayı güncellemesi söylenir. İçerik sürümü, JSON'un alanları denetlenmeden önce okunur; sonraki bir sürüm kök alanlarını değiştirse de "daha yeni" diye bildirilir. Sürüm 1 içerikte `card` ya da `note` türü reddedilir.
+- **Kayıt içeriği sürümü değişirse yedeğin içerik sürümü de artar.** Eski bir sürüm tanımadığı kayıt içeriğini "bozuk" diye reddeder; içerik sürümü artarsa "daha yeni yedek" der. 1.4.0 öncesinde parola (sürüm 2) ve ayar (sürüm 5) kayıtları bu kural olmadan değişti; o dönemin eski sürümleri yeni yedekleri "bozuk" diye reddediyor. Bir test, kayıt içerik sürümlerini yedeğin içerik sürümüyle birlikte sabitliyor; biri değişince test kırılır ve bu adım hatırlanır.
+- İkili alanlar Base64'tür.
 - Parmak izi yuvası ve hatalı deneme sayacı yedeğe girmez. Parmak izi yalnızca o cihazın Keystore anahtarıyla açılır, sayaç da cihaza aittir.
 - **Okurken doğrulama katıdır:** Sihir, sürüm, uzunluklar, üst bilgi ve JSON alanları tek tek denetlenir. Bilinmeyen sürüm, eksik veya fazla alan, yinelenen kayıt kimliği ve yanlış tür reddedilir.
 - **Sınırlar:** Dosya en fazla 64 MiB, kayıt sayısı en fazla 100 000 olabilir. Argon2id parametreleri kasadaki tavanla sınırlıdır; böylece değiştirilmiş bir dosya cihazı belleksiz bırakamaz.
+- **Yazarken boyut denetimi:** Notlar 64 KiB'a kadar olabildiği için kasa sınırı aşabilir. Dosyanın boyutu şifrelemeden önce kesin olarak hesaplanır (baş kısım, akış başlığı, düz metin, her parçanın uzunluk alanı ve etiketi); 64 MiB'ı aşarsa yedek yazılmaz (`BackupTooLargeException`). Bir test tam 64 MiB'lık yedeğin yazılıp okunduğunu, bir bayt fazlasının yazılmadığını denetler. Elle yedekte kullanıcıya sebebi söylenir, otomatik yedekte "yazılamadı" durumu gösterilir. Okunamayacak bir dosya böylece hiç üretilmez.
 
 ### Yedek alma
 
@@ -652,7 +711,7 @@ parça   = uzunluk (4 bayt, büyük uçlu) || şifreli parça
 Kullanıcı bir klasör seçerse, kasa açıkken kayıtlar değiştikçe o klasöre kendiliğinden yedek yazılır. Tasarım, seçilmeyen yaklaşımlar ve gerekçeler: [otomatik yedek](otomatik-yedek.md).
 
 - **Biçim ve anahtar elle yedekle aynı.** Dosya `BackupService` ile, [yedek biçiminde](#yedek-biçimi) üretilir; alındığı andaki ana parola veya kurtarma anahtarıyla açılır. Kripto çekirdeğinde değişiklik yoktur.
-- **Yalnızca kasa açıkken.** Yedek kasa anahtarı gerektirdiği için arka planda çalışan bir iş ve kasa dışında saklanan bir anahtar yoktur. Parola veya 2FA kayıtları değişince (5 sn sonra, peş peşe değişiklikler tek yedekte), kasa açılınca (değişiklik son yedekten yeniyse), ana parola değişince (kurtarma anahtarıyla yeni parola belirlenince de), kurtarma anahtarı yenilenince ve kasaya birleştirerek geri yüklenince yazılır. Parola ya da kurtarma anahtarı değiştiği anda kasa kilitlenirse yedek, kasa yeniden açılınca yazılır. Kasa kilitlenince bekleyen yedek iptal olur.
+- **Yalnızca kasa açıkken.** Yedek kasa anahtarı gerektirdiği için arka planda çalışan bir iş ve kasa dışında saklanan bir anahtar yoktur. Parola, 2FA, kart veya not kayıtları değişince (5 sn sonra, peş peşe değişiklikler tek yedekte), kasa açılınca (değişiklik son yedekten yeniyse), ana parola değişince (kurtarma anahtarıyla yeni parola belirlenince de), kurtarma anahtarı yenilenince ve kasaya birleştirerek geri yüklenince yazılır. Parola ya da kurtarma anahtarı değiştiği anda kasa kilitlenirse yedek, kasa yeniden açılınca yazılır. Kasa kilitlenince bekleyen yedek iptal olur.
 - **Klasör.** Android'in klasör seçicisiyle (`ACTION_OPEN_DOCUMENT_TREE`) seçilir; KeyKey yalnızca o klasör için kalıcı okuma ve yazma izni alır, depolama veya internet izni gerekmez. Klasörün adresi [ayar kaydında](#kodları-görmek-için-ek-onay), kasanın içinde şifreli durur. Otomatik yedek kapatılınca veya klasör değişince izin bırakılır; klasördeki dosyalar silinmez. İzin cihaza bağlı olduğu için açık kasanın yerine yedek konunca bu cihazın klasörü korunur.
 - **Yazma.** Her yedek yeni bir dosyadır (`keykey-otomatik-YYYY-AA-GG-SSddss-<cihaz>.keykey`, İngilizce arayüzde `keykey-auto-…`). `<cihaz>` bu kurulumun kasanın dışında tutulan, rastgele altı onaltılık karakterlik kimliğidir; gizli değildir, yedekle taşınmaz. Dosya önce `.part` ekli bir ara adla yazılır, geri okunup karşılaştırılır ve ancak tutarsa son adına çevrilir; tutmazsa silinir ve eski yedeklere dokunulmaz. Sağlayıcı yeniden adlandırmayı desteklemiyorsa son adla doğrudan yazılır. Sağlayıcı dosyaya başka bir ad verdiyse (`… (1)`) dosya silinir ve yazma başarısız sayılır. Yazmadan önce kalıcı izin denetlenir; başka telefondan gelen bir klasör adresi için izin yoktur ve durum kullanıcıya gösterilir.
 - **Budama.** Yalnızca yeni dosya doğrulandıktan sonra ve yalnızca adı otomatik yedek kalıbına tam uyan, bu kurulumun cihaz kimliğini taşıyan dosyalar: en yeni 5 dosya ve en yeni 14 günün her birinin en yenisi kalır. Bu kurulumun yarım kalmış ara dosyaları da silinir; alt klasörlere dokunulmaz. Aynı klasörü kullanan başka bir kurulumun yedekleri silinmez. Elle alınan yedekler ve başka dosyalar hiç silinmez.
@@ -677,7 +736,7 @@ Son yedek zamanı dosya kaydedildikten sonra yazıldığı için yedeğin içind
 
 ### Yedek hatırlatıcısı
 
-- Son yedekten sonra değişmiş bir parola veya 2FA kaydı varsa ve son yedek 14 günden eskiyse (ya da hiç yedek alınmadıysa) kasa ekranında bir hatırlatma çıkar. Değişiklik, veritabanındaki şifresiz `updatedAt` değerinden anlaşılır; ayar kaydı sayılmaz.
+- Son yedekten sonra değişmiş bir parola, 2FA, kart veya not kaydı varsa ve son yedek 14 günden eskiyse (ya da hiç yedek alınmadıysa) kasa ekranında bir hatırlatma çıkar. Değişiklik, veritabanındaki şifresiz `updatedAt` değerinden anlaşılır; ayar kaydı sayılmaz.
 - "Sonra" seçilirse hatırlatma 7 gün susar. Bildirim izni istenmez, hatırlatma yalnızca uygulama içindedir.
 - Son yedek zamanı ve susturma süresi ayar kaydında tutulur (ayar kaydı biçimi sürüm 3).
 
@@ -685,7 +744,7 @@ Son yedek zamanı dosya kaydedildikten sonra yazıldığı için yedeğin içind
 
 | Kaynak | Biçim | Not |
 |---|---|---|
-| Bitwarden | Şifresiz JSON ve CSV dışa aktarma | Yalnızca giriş kayıtları alınır. `totp` alanı 2FA hesabı olarak eklenir ve kayda bağlanır. Metin ve gizli özel alanlar alınır. CSV'deki `login_uri` alanı, Bitwarden'ın okuyucusundaki gibi kendi içinde bir CSV satırıdır. Parola korumalı veya hesaba bağlı şifreli JSON desteklenmez; kullanıcıya şifresiz dışa aktarması söylenir. Örneklerden biri 2026-11'de alınmış gerçek bir JSON dışa aktarmasıdır; kişisel değerleri sahteleriyle değiştirildi. |
+| Bitwarden | Şifresiz JSON ve CSV dışa aktarma | Giriş, kart ve güvenli not kayıtları alınır (aşağıda). `totp` alanı 2FA hesabı olarak eklenir ve kayda bağlanır. Metin ve gizli özel alanlar alınır. CSV'deki `login_uri` alanı, Bitwarden'ın okuyucusundaki gibi kendi içinde bir CSV satırıdır. Parola korumalı veya hesaba bağlı şifreli JSON desteklenmez; kullanıcıya şifresiz dışa aktarması söylenir. Örneklerden biri 2026-11'de alınmış gerçek bir JSON dışa aktarmasıdır; kişisel değerleri sahteleriyle değiştirildi. |
 | Chrome | Parolalar CSV'si (`name,url,username,password,note`) | Android'de Chrome'un parola yöneticisi `name` sütununa kayıt adı yerine alan adını yazar. Örneklerden biri Android Chrome 145'in gerçek dışa aktarmasıdır. |
 | Firefox | Parolalar CSV'si (`url,username,password,httpRealm,formActionOrigin,guid,timeCreated,timeLastUsed,timePasswordChanged`) | Kayıt adı yoktur, ad adresin alan adından gelir. Yalnızca adres, kullanıcı adı ve parola alınır; `httpRealm`, `formActionOrigin`, `guid` ve zaman sütunları yok sayılır. Biçim, Chrome'dan ayrılması için `httpRealm` ve `formActionOrigin` sütunlarından tanınır. |
 | KeePassXC | CSV dışa aktarma | `TOTP` sütunu 2FA hesabı olarak eklenir. Grubun yolu, kök grup atılarak klasör olur; kök grubun adı KeePassXC'in arayüz diline göre değişir. Örnek, KeePassXC 2.8.0'ın kendi komut satırı aracıyla alınmış gerçek bir dışa aktarmadır. |
@@ -694,20 +753,28 @@ Son yedek zamanı dosya kaydedildikten sonra yazıldığı için yedeğin içind
 - CSV okuyucu kendi kodumuzdur ve RFC 4180'e uyar: tırnak içinde virgül ve satır sonu, `""` kaçışı, isteğe bağlı UTF-8 BOM. Rastgele bozulmuş girdilerle de sınanır.
 - Notlardaki satır sonları `\n` olur; Windows'ta alınan dışa aktarmalar CRLF yazar.
 - Dosyalar güvenilmeyen veri sayılır: bilinmeyen sütunlar ve alanlar yok sayılır, bozuk satır atlanır, bozuk dosya uygulamayı düşürmez. 2FA bağlantıları [`otpauth://` kurallarıyla](#otpauth-bağlantıları) okunur.
-- Kart, not ve kimlik gibi desteklenmeyen kayıtlar atlanır ve sayısı söylenir. Uygulama adresleri (Bitwarden'ın `androidapp://`, Chrome'un `android://` adresleri) alınmaz, çünkü KeyKey uygulama bağlarken imza sertifikası da ister.
-- Kayıtlar eklenmeden önce liste halinde gösterilir. Adresi, kullanıcı adı ve parolası kasadaki bir kayıtla aynı olan satırlar yinelenen diye işaretlenir ve varsayılan olarak seçilmez.
+- Kimlik ve SSH anahtarı gibi desteklenmeyen kayıtlar atlanır ve sayısı söylenir. Uygulama adresleri (Bitwarden'ın `androidapp://`, Chrome'un `android://` adresleri) alınmaz, çünkü KeyKey uygulama bağlarken imza sertifikası da ister.
+- Kayıtlar eklenmeden önce liste halinde gösterilir. Adresi, kullanıcı adı ve parolası kasadaki bir kayıtla aynı olan satırlar yinelenen diye işaretlenir ve varsayılan olarak seçilmez. Kartta ad ve numara, notta ad ve metin kasadakiyle aynıysa o da yinelenendir.
+
+**Kart ve not (1.4.0).** Bitwarden JSON'da tür 3 kart, tür 2 güvenli not olur; CSV'de `type` sütunu `note` olan satırlar not olur (Bitwarden CSV kart taşımaz). Klasör ve favori iki türde de alınır.
+
+- Kart alanları `cardholderName`, `number`, `expMonth`, `expYear`, `code`'dur. Bitwarden'ın `brand` alanı yok sayılır; marka numaradan çıkarılır.
+- **Biçime uymayan değer atılmaz.** Numarada boşluk ve tireden başka karakter varsa ya da 19 haneyi aşıyorsa, ay ya da yıl okunamıyorsa (ya da yalnızca biri varsa), güvenlik kodu rakam dışıysa ya da 4 haneden uzunsa o alan boş kalır; ham değer etiketiyle (`Kart numarası: …`, `Son kullanma: ay/yıl`, `Güvenlik kodu: …`; etiketler arayüz dilinde) kartın notuna eklenir. Önizleme bunu kartın satırında söyler. Ay ve yıl metin ya da sayı olabilir; iki haneli yıla 2000 eklenir. Numara, güvenlik kodu ve kart sahibi de sayı olarak yazılmışsa okunur. Başka türde bir değer (ör. `true`, `1.5`) metne çevrilir: numara, güvenlik kodu ya da tarihse aynı kuralla nota taşınır; kart sahibinin biçim kuralı olmadığı için orada metin olarak kalır. 2^53'ten büyük sayıların rakamları kesin olmadığı için uydurulmaz, olduğu gibi yazılır.
+- **PIN:** Bitwarden kartında PIN alanı yoktur. Adı `PIN` olan (büyük küçük harf fark etmez), rakamdan oluşan ve en çok 12 haneli ilk özel alan PIN olur. Kalan özel alanlar (metin, gizli, onay kutusu) `ad: değer` satırları olarak notun sonuna eklenir; nottaki özel alanlar da öyle.
+- 64 KiB'ı aşan not ve hiçbir alanı dolu olmayan kart ya da not atlanır ve atlananlara sayılır.
 - Dosya [2FA içe aktarmadaki](#içe-aktarma) gibi belge seçiciyle seçilir ve önbelleğe kopyalanmadan doğrudan okunur; baytlar okunduktan sonra bellekte sıfırlanır. İşlem bitince kullanıcıya düz metin kaynak dosyasını silmesi hatırlatılır; KeyKey o dosyayı silemez, çünkü yalnızca bir kez okuma izni almıştır.
 
 ### Düz metin dışa aktarma
 
 Başka bir parola yöneticisine geçmek için. Dosya **şifresizdir**; bu yüzden iki adımlı onay ister.
 
-- Önce dosyanın şifresiz olduğu ve kimlerin okuyabileceği açıkça anlatılır. Ardından ana parola veya parmak iziyle [kimlik doğrulanır](#kodları-görmek-için-ek-onay).
-- Biçim Bitwarden'ın CSV sütunlarıdır (`folder,favorite,type,name,notes,fields,reprompt,login_uri,login_username,login_password,login_totp`); çoğu parola yöneticisi bu biçimi okur. Bağlı 2FA hesabı `login_totp` sütununa `otpauth://` bağlantısı olarak yazılır. Bir kayda bağlı olmayan 2FA hesapları ayrı satırlara yazılır. Bağlı uygulamalar `androidapp://` adresi olarak eklenir.
+- Önce biçim seçilir (CSV ya da JSON), sonra dosyanın şifresiz olduğu ve kimlerin okuyabileceği açıkça anlatılır. Ardından ana parola veya parmak iziyle [kimlik doğrulanır](#kodları-görmek-için-ek-onay).
+- **CSV:** Bitwarden'ın CSV sütunları (`folder,favorite,type,name,notes,fields,reprompt,login_uri,login_username,login_password,login_totp`); çoğu parola yöneticisi bu biçimi okur. Bağlı 2FA hesabı `login_totp` sütununa `otpauth://` bağlantısı olarak yazılır. Bir kayda bağlı olmayan 2FA hesapları ayrı satırlara yazılır. Bağlı uygulamalar `androidapp://` adresi olarak eklenir. Notlar `type=note` satırlarıdır. Bitwarden CSV kart taşıyamadığı için kartlar yazılmaz; kasada kart varsa biçim penceresi bunu söyler.
+- **JSON (1.4.0):** Bitwarden'ın şifresiz JSON biçimi (`encrypted: false`, `folders`, `items`; tür 1 giriş, 2 güvenli not, 3 kart). Kartlar dahil her şeyi taşır; Bitwarden, KeePassXC ve Proton Pass içe alabiliyor. Öğe kimliği kayıt kimliğinin UUID biçimidir, klasör kimlikleri sırayla üretilir. 2FA hesapları CSV'deki kuralla yazılır. Kartın PIN'i `PIN` adlı gizli bir özel alandır; marka Bitwarden'ın adlarıyla yazılır (Troy onda olmadığı için `Other`). Boş alanlar `null` olur. Dosya `.json` uzantısıyla, `application/json` türüyle kaydedilir.
 - Çöp kutusundaki kayıtlar ve parola geçmişi dışa aktarılmaz.
 - Dosya `ACTION_CREATE_DOCUMENT` ile kaydedilir, uygulamanın klasöründe kopya kalmaz. Kaydedilen baytlar bellekte sıfırlanır.
 - Hücreler formül kaçışından geçirilmez. `=` ile başlayan bir parola olduğu gibi yazılır; dosya tablo programında açılmak için değil, başka bir parola yöneticisine verilmek içindir.
-- KeyKey kendi dışa aktarmasını Bitwarden CSV'si olarak geri okur (gidiş-dönüş testi). Biçimin taşıyamadıkları: özel alanların gizli işareti, uygulama imza özetleri (KeyKey `androidapp://` adreslerini içe almaz) ve parola geçmişi. Bağlı olmayan 2FA hesapları geri okununca 2FA hesabı bağlı birer kayıt olur.
+- KeyKey kendi dışa aktarmasını geri okur (iki biçim için de gidiş-dönüş testi). CSV'nin taşıyamadıkları: kartlar, özel alanların gizli işareti, uygulama imza özetleri (KeyKey `androidapp://` adreslerini içe almaz) ve parola geçmişi. JSON gizli işareti ve kartın bütün alanlarını (PIN dahil) taşır; uygulama imza özetleri ve parola geçmişi onda da yoktur. İki biçimde de bağlı olmayan 2FA hesapları geri okununca 2FA hesabı bağlı birer kayıt olur.
 
 ## Hata davranışı
 
@@ -719,6 +786,8 @@ Başka bir parola yöneticisine geçmek için. Dosya **şifresizdir**; bu yüzde
 | Üst bilgi okunamadı | `InvalidVaultHeaderException` | Bozuk dosya veya desteklenmeyen sürüm. |
 | Kayıt açılmadı | `CorruptedDataException` | Değiştirilmiş, bozulmuş veya yanlış bağlamdaki kayıt. |
 | Yedek dosyası okunamadı | `InvalidBackupException` | Yedek değil, desteklenmeyen sürüm, sınır dışı boyut veya bozuk yapı. |
+| Yedek daha yeni bir sürümden | `NewerBackupException` (`InvalidBackupException`'ın alt türü) | Dosya ya da içerik sürümü bu uygulamanınkinden büyük. Kullanıcıya uygulamayı güncellemesi söylenir. |
+| Yedek sınırı aşıyor | `BackupTooLargeException` | Yazılacak dosya 64 MiB'tan büyük; dosya yazılmaz. |
 | Yedeğin içeriği açılmadı | `CorruptedDataException` | Parola doğru ama dosya kesilmiş, değiştirilmiş veya sonuna veri eklenmiş. |
 | Keystore anahtarı kullanılamıyor | `BiometricInvalidated` sonucu | Yeni parmak izi eklenmiş veya ekran kilidi kaldırılmış. Yuva silinir, ana parola istenir. |
 | Parmak izi yuvası açılmadı | `BiometricFailed` sonucu | Yuva bozulmuş, değiştirilmiş veya başka bir kasaya ait. Ana parola çalışmaya devam eder. |
@@ -740,7 +809,7 @@ Kasa açıkken arama yapılabilsin diye kayıtların tamamı çözülüp bellekt
 
 1. **Geri alma fark edilmez.** Diske yazma yetkisi olan biri bir kaydı aynı kaydın eski haliyle veya tüm kasayı eski bir kopyasıyla değiştirebilir. Çünkü AD eski kopyada da geçerlidir. Bunu önlemek için dosya dışında güvenilir bir sayaç gerekir, yerel bir uygulamada yoktur.
 2. **Kayıt silme fark edilmez.** Bir kayıt satırı silinirse uygulama bunu şifreleme düzeyinde anlayamaz. Bu saldırı veri okutmaz, yalnızca veri kaybettirir.
-3. **Üst veri sızıntısı.** Kayıt sayısı, türleri, zaman damgaları ve 256 baytlık dolgu blok sayısı görünür.
+3. **Üst veri sızıntısı.** Kayıt sayısı, türleri, zaman damgaları ve 256 baytlık dolgu blok sayısı görünür. Türler `card` ve `note`'u da kapsadığı için veritabanı dosyasını okuyan biri kaç kartın ve kaç notun olduğunu görür; yedekte bunlar dış katmanda gizlidir. Uzun bir notun dolgu blok sayısı metnin kabaca uzunluğunu verir.
 4. **Parola gücü esastır.** Argon2id denemeyi yavaşlatır, ama zayıf bir parolayı güçlendiremez. Yedek dosyası da aynı sınıra tabidir.
 5. **Sarmalama anahtarı dönmez.** Parola değişse de kasa anahtarı aynı kalır. Eski parolayı ve o zamanki üst bilgiyi birlikte ele geçiren biri kasa anahtarına ulaşabilir, eski yedekler de eski parolayla açılmaya devam eder. Otomatik yedekler de buna dahildir: parola değişince yeni yedek hemen yeni parolayla yazılır, ama klasördeki eskiler budanana kadar eski parolayla açılır. Kurtarma anahtarı yenilenince de aynı: eski anahtar bu cihazdaki kasayı açmaz, ama eski yedekleri ve kasa dosyasının eski kopyalarını açar.
 6. **Hatalı deneme beklemesi yalnızca uygulamanın kuralıdır.** Sayaç şifresizdir ve kopyalanmış bir kasa dosyası üzerindeki denemeleri sınırlamaz. Ayrıntılar [Kilit](#kilit) bölümünde.

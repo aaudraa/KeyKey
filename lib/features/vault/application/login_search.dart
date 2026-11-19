@@ -1,3 +1,4 @@
+import 'package:keykey/features/vault/application/vault_entries.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 
 /// Listenin sıralaması.
@@ -10,6 +11,7 @@ final class LoginFilter {
     this.favoritesOnly = false,
     this.folder,
     this.sort = LoginSort.name,
+    this.kind,
   });
 
   final String query;
@@ -19,18 +21,24 @@ final class LoginFilter {
   final String? folder;
   final LoginSort sort;
 
+  /// `null` ise bütün türler.
+  final VaultKind? kind;
+
   LoginFilter copyWith({
     String? query,
     bool? favoritesOnly,
     String? folder,
     bool clearFolder = false,
     LoginSort? sort,
+    VaultKind? kind,
+    bool clearKind = false,
   }) {
     return LoginFilter(
       query: query ?? this.query,
       favoritesOnly: favoritesOnly ?? this.favoritesOnly,
       folder: clearFolder ? null : folder ?? this.folder,
       sort: sort ?? this.sort,
+      kind: clearKind ? null : kind ?? this.kind,
     );
   }
 }
@@ -115,13 +123,4 @@ List<LoginItem> sortLogins(List<LoginItem> items, LoginSort sort) {
       sorted.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
   }
   return sorted;
-}
-
-/// Kayıtlarda kullanılan klasörler, sıralı.
-List<String> foldersOf(Iterable<LoginItem> items) {
-  return {
-    for (final item in items)
-      if (!item.content.isTrashed && item.content.folder != null)
-        item.content.folder!,
-  }.toList()..sort((a, b) => foldForSearch(a).compareTo(foldForSearch(b)));
 }

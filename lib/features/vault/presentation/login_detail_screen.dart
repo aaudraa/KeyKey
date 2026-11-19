@@ -7,20 +7,17 @@ import 'package:keykey/app/router.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
-import 'package:keykey/app/ui/kk_copy_icon.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_menu.dart';
-import 'package:keykey/app/ui/kk_metrics.dart';
-import 'package:keykey/app/ui/kk_secret_text.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/app/ui/record_avatar.dart';
-import 'package:keykey/app/web_page.dart';
 import 'package:keykey/core/platform/web_links.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/presentation/linked_otp_tile.dart';
 import 'package:keykey/features/authenticator/presentation/otp_display.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
+import 'package:keykey/features/vault/presentation/detail_fields.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
 import 'package:keykey/features/vault/presentation/vault_screen.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
@@ -58,9 +55,9 @@ class LoginDetailScreen extends ConsumerWidget {
     // Ayarlar'daki gibi ince çizgi. Kayıt tek parça okunsun.
     final access = <Widget>[
       if (content.username.isNotEmpty)
-        _Field(label: l10n.loginUsername, value: content.username),
+        DetailField(label: l10n.loginUsername, value: content.username),
       if (content.password.isNotEmpty)
-        _Field(
+        DetailField(
           label: l10n.loginPassword,
           value: content.password,
           hidden: true,
@@ -68,7 +65,7 @@ class LoginDetailScreen extends ConsumerWidget {
       for (final otp in linkedOtps)
         LinkedOtpTile(key: ValueKey(otpIdHex(otp)), item: otp),
       for (final url in content.urls)
-        _Field(label: l10n.loginUrl, value: url, page: webPageUri(url)),
+        DetailField(label: l10n.loginUrl, value: url, page: webPageUri(url)),
       for (final app in content.apps)
         ListTile(
           leading: Icon(
@@ -81,11 +78,15 @@ class LoginDetailScreen extends ConsumerWidget {
     ];
     final extra = <Widget>[
       if (content.folder != null)
-        _Field(label: l10n.loginFolder, value: content.folder!),
+        DetailField(label: l10n.loginFolder, value: content.folder!),
       for (final field in content.customFields)
-        _Field(label: field.name, value: field.value, hidden: field.hidden),
+        DetailField(
+          label: field.name,
+          value: field.value,
+          hidden: field.hidden,
+        ),
       if (content.notes.isNotEmpty)
-        _Field(label: l10n.loginNotes, value: content.notes),
+        DetailField(label: l10n.loginNotes, value: content.notes),
     ];
     final history = <Widget>[
       if (content.passwordHistory.isNotEmpty)
@@ -97,7 +98,7 @@ class LoginDetailScreen extends ConsumerWidget {
             title: Text(l10n.loginHistory(content.passwordHistory.length)),
             children: [
               for (final entry in content.passwordHistory)
-                _Field(
+                DetailField(
                   label: MaterialLocalizations.of(context)
                       .formatMediumDate(entry.changedAt.toLocal()),
                   value: entry.password,
@@ -176,7 +177,7 @@ class LoginDetailScreen extends ConsumerWidget {
           const SizedBox(height: 20),
           for (final rows in [access, extra, history])
             if (rows.isNotEmpty) ...[
-              _FieldGroup(rows: rows),
+              DetailFieldGroup(rows: rows),
               const SizedBox(height: 12),
             ],
           const SizedBox(height: 6),
@@ -214,120 +215,6 @@ class LoginDetailScreen extends ConsumerWidget {
       action: KkSnackAction(
         label: l10n.loginUndo,
         onPressed: () => unawaited(controller.restoreById(item.id)),
-      ),
-    );
-  }
-}
-
-/// Tek kartta, aralarında ince çizgi olan satırlar.
-class _FieldGroup extends StatelessWidget {
-  const new({required this.rows});
-
-  final List<Widget> rows;
-
-  @override
-  Widget build(BuildContext context) {
-    return GlassSurface(
-      child: ClipRRect(
-        borderRadius: const BorderRadius.all(
-          Radius.circular(KkMetrics.cardRadius),
-        ),
-        child: Material(
-          type: MaterialType.transparency,
-          child: Column(
-            children: [
-              for (var i = 0; i < rows.length; i++) ...[
-                if (i > 0) const Divider(height: 1, indent: 16),
-                rows[i],
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Etiketli bir değer. [hidden] ise göster düğmesine basılana kadar gizlidir.
-///
-/// Kilitlenince ekran kapandığı için açılan değer de yeniden gizlenir.
-class _Field extends ConsumerStatefulWidget {
-  const new({
-    required this.label,
-    required this.value,
-    this.hidden = false,
-    this.page,
-  });
-
-  final String label;
-  final String value;
-  final bool hidden;
-
-  /// Değer bir web sayfasıysa tarayıcıda açma düğmesi çıkar.
-  final Uri? page;
-
-  @override
-  ConsumerState<_Field> createState() => _FieldState();
-}
-
-class _FieldState extends ConsumerState<_Field> {
-  bool _revealed = false;
-
-  @override
-  void didUpdateWidget(_Field oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Kayıt düzenlenince satırlar kayabilir; açılmış değer başka bir alana
-    // ya da yeni değere geçmesin.
-    if (oldWidget.label != widget.label || oldWidget.value != widget.value) {
-      _revealed = false;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final accent = KkGlass.of(context).accent;
-    final concealed = widget.hidden && !_revealed;
-    return ListTile(
-      title: Text(widget.label, style: Theme.of(context).textTheme.labelMedium),
-      // Gizliyken ekran okuyucu noktaları değil "gizli" okur.
-      subtitle: Semantics(
-        label: concealed ? l10n.secretConcealed : null,
-        excludeSemantics: concealed,
-        child: widget.hidden
-            ? KkSecretText(
-                text: widget.value,
-                revealed: _revealed,
-                style: const TextStyle(fontFamily: 'monospace'),
-              )
-            : Text(widget.value),
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (widget.hidden)
-            IconButton(
-              tooltip: concealed ? l10n.secretShow : l10n.secretHide,
-              icon: Icon(
-                concealed
-                    ? Icons.visibility_outlined
-                    : Icons.visibility_off_outlined,
-                color: accent,
-              ),
-              onPressed: () => setState(() => _revealed = !_revealed),
-            ),
-          if (widget.page case final page?)
-            IconButton(
-              tooltip: l10n.loginOpenSite,
-              icon: Icon(Icons.open_in_new_rounded, color: accent),
-              onPressed: () => unawaited(openWebPage(context, ref, page)),
-            ),
-          KkCopyIcon(
-            tooltip: l10n.copyField(widget.label),
-            color: accent,
-            onCopy: () => copySensitive(context, ref, widget.value),
-          ),
-        ],
       ),
     );
   }

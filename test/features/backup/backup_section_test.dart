@@ -78,7 +78,7 @@ void main() {
     expect(find.text('Yedek al'), findsNothing);
     for (final row in [
       'Yedekten geri yükle',
-      'Parolaları içe aktar',
+      'İçe aktar',
       '2FA hesaplarını içe aktar',
       'Şifresiz dışa aktar',
     ]) {
@@ -269,6 +269,25 @@ void main() {
     expect(settings.settings.lastBackupAt, isNull);
     expect(
       find.text('Yedek kaydedilemedi. Başka bir konum dene.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('sınırı aşan yedek kaydedilmiyor, sebebi söyleniyor', (
+    tester,
+  ) async {
+    backups.tooLarge = true;
+    await pumpSettings(tester);
+
+    await tester.tap(find.text('Yedekle'));
+    await tester.pumpAndSettle();
+
+    expect(settings.settings.lastBackupAt, isNull);
+    expect(
+      find.text(
+        'Kasa tek yedek dosyasına sığmıyor (64 MB sınırı). Büyük notları '
+        'kısaltıp yeniden dene.',
+      ),
       findsOneWidget,
     );
   });

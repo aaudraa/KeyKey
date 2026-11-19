@@ -13,6 +13,7 @@ local.properties
 # deneme yedeği hariç.
 *.keykey
 !/test/fixtures/backup/backup-v1.keykey
+!/test/fixtures/backup/backup-v2.keykey
 
 # ---------------------------------------------------------------------------
 # Dart / Flutter
