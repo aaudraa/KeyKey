@@ -12,6 +12,7 @@ import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
+import 'package:keykey/features/vault/application/records_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Son otomatik yedeğin neden yazılamadığı.
@@ -108,7 +109,9 @@ class AutoBackupController extends Notifier<AutoBackupStatus> {
         }
       })
       ..listen(loginsControllerProvider, (_, _) => _schedule())
-      ..listen(otpsControllerProvider, (_, _) => _schedule());
+      ..listen(otpsControllerProvider, (_, _) => _schedule())
+      ..listen(cardsControllerProvider, (_, _) => _schedule())
+      ..listen(notesControllerProvider, (_, _) => _schedule());
     return const AutoBackupStatus();
   }
 

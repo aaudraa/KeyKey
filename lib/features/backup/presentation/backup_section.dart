@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/ui/kk_section.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
+import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/presentation/scanned_code_handler.dart';
@@ -35,6 +36,9 @@ Future<bool> backUpVault(BuildContext context, WidgetRef ref) async {
   try {
     bytes = await ref.read(backupServiceProvider).create(status.session, now);
   } on VaultLockedException {
+    return false;
+  } on BackupTooLargeException {
+    snack(l10n.backupTooLarge);
     return false;
   }
   final result = await ref

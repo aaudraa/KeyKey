@@ -528,5 +528,8 @@
   "noteCopy": "Metni kopyala",
   "vaultKindLogins": "Parolalar",
   "vaultKindCards": "Kartlar",
-  "vaultKindNotes": "Notlar"
+  "vaultKindNotes": "Notlar",
+  "restoreSummaryAll": "{date} tarihli yedek: {logins} parola, {otps} 2FA hesabı, {cards} kart ve {notes} not.",
+  "restoreNewerVersion": "Bu yedek KeyKey'in daha yeni bir sürümüyle alınmış. Uygulamayı güncelleyip yeniden dene.",
+  "backupTooLarge": "Kasa tek yedek dosyasına sığmıyor (64 MB sınırı). Büyük notları kısaltıp yeniden dene."
 }

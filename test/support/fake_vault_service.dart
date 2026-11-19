@@ -632,12 +632,16 @@ class FakeBackupService implements BackupService {
   /// Kayıtların en son değiştiği an; `null` boş kasa demek.
   DateTime? latest;
 
+  /// `true` ise yedek boyut sınırını aşıyormuş gibi davranır.
+  bool tooLarge = false;
+
   @override
   Future<DateTime?> latestChange() async => latest;
 
   @override
   Future<Uint8List> create(VaultSession session, DateTime now) async {
     if (session.isDisposed) throw const VaultLockedException();
+    if (tooLarge) throw const BackupTooLargeException();
     creates++;
     return Uint8List.fromList(bytes);
   }
@@ -654,6 +658,14 @@ class FakeRestoreService implements RestoreService {
   int replaces = 0;
   int merges = 0;
   bool corrupted = false;
+
+  /// `true` ise yedek açılırken daha yeni bir sürümün içeriği gibi davranır.
+  bool newer = false;
+  int cardCount = 0;
+  int noteCount = 0;
+
+  /// Birleştirme sırasında kasaya yazılıyormuş gibi çağrılır.
+  void Function()? onMerge;
   MergeCounts mergeResult = const MergeCounts(added: 2, updated: 1, kept: 4);
 
   /// Gerçek biçimde, kayıtsız bir yedek dosyası.
@@ -691,12 +703,15 @@ class FakeRestoreService implements RestoreService {
 
   OpenedBackup _opened(BackupFile file) {
     if (corrupted) throw const CorruptedDataException();
+    if (newer) throw const NewerBackupException('Daha yeni içerik.');
     return OpenedBackup.forTesting(
       header: file.header,
       vaultKey: sodium.secureRandom(32),
       createdAt: DateTime.utc(2026, 11, 1, 9),
       loginCount: 3,
       otpCount: 2,
+      cardCount: cardCount,
+      noteCount: noteCount,
     );
   }
 
@@ -716,6 +731,7 @@ class FakeRestoreService implements RestoreService {
   Future<MergeCounts> merge(OpenedBackup backup, VaultSession session) async {
     if (session.isDisposed) throw const VaultLockedException();
     merges++;
+    onMerge?.call();
     return mergeResult;
   }
 }

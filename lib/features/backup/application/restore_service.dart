@@ -9,8 +9,12 @@ import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/data/otp_content.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
+import 'package:keykey/features/vault/data/card_content.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
+import 'package:keykey/features/vault/data/note_content.dart';
+import 'package:keykey/features/vault/data/record_content.dart';
+import 'package:keykey/features/vault/data/vault_record_repository.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 /// Açılmış ve bütün kayıtları doğrulanmış bir yedek.
@@ -24,6 +28,8 @@ final class OpenedBackup {
     required this.records,
     required this.loginCount,
     required this.otpCount,
+    this.cardCount = 0,
+    this.noteCount = 0,
   });
 
   /// Ekran testleri için; kayıt içermez.
@@ -34,6 +40,8 @@ final class OpenedBackup {
     required DateTime createdAt,
     int loginCount = 0,
     int otpCount = 0,
+    int cardCount = 0,
+    int noteCount = 0,
   }) => OpenedBackup._(
     header: header,
     vaultKey: vaultKey,
@@ -41,6 +49,8 @@ final class OpenedBackup {
     records: const [],
     loginCount: loginCount,
     otpCount: otpCount,
+    cardCount: cardCount,
+    noteCount: noteCount,
   );
 
   final VaultHeader header;
@@ -51,6 +61,11 @@ final class OpenedBackup {
   /// Çöp kutusundakiler dahil.
   final int loginCount;
   final int otpCount;
+  final int cardCount;
+  final int noteCount;
+
+  /// Yedekte kart ya da not var mı; özet metni buna göre seçilir.
+  bool get hasCardsOrNotes => cardCount > 0 || noteCount > 0;
 
   bool _disposed = false;
 
@@ -265,6 +280,8 @@ class RestoreService {
       final cipher = RecordCipher(_sodium, key, file.header.vaultId);
       var logins = 0;
       var otps = 0;
+      var cards = 0;
+      var notes = 0;
       try {
         for (final record in contents.records) {
           final plain = cipher.decrypt(
@@ -280,10 +297,28 @@ class RestoreService {
               case RecordCipher.otpType:
                 OtpContent.fromJsonBytes(plain);
                 otps++;
+              case VaultRecordRepository.cardType:
+                try {
+                  CardContent.fromJsonBytes(plain);
+                } on InvalidRecordContentException {
+                  throw const InvalidBackupException('Okunamayan kart kaydı.');
+                }
+                cards++;
+              case VaultRecordRepository.noteType:
+                try {
+                  NoteContent.fromJsonBytes(plain);
+                } on InvalidRecordContentException {
+                  throw const InvalidBackupException('Okunamayan not kaydı.');
+                }
+                notes++;
               case SettingsRepository.recordType:
                 if (AppSettings.tryParse(plain) == null) {
                   throw const InvalidBackupException('Okunamayan ayar kaydı.');
                 }
+              default:
+                throw const InvalidBackupException(
+                  'Desteklenmeyen kayıt türü.',
+                );
             }
           } on InvalidLoginContentException {
             throw const InvalidBackupException('Okunamayan parola kaydı.');
@@ -303,6 +338,8 @@ class RestoreService {
         records: contents.records,
         loginCount: logins,
         otpCount: otps,
+        cardCount: cards,
+        noteCount: notes,
       );
     } on Object {
       key.dispose();

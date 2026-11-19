@@ -40,15 +40,15 @@ void main() {
     await database.close();
   });
 
-  Future<void> putLogin(int seed) {
+  Future<void> putLogin(int seed, {String type = 'login'}) {
     final id = Uint8List(16)..[0] = seed;
     return store.putRecord(
       StoredRecord(
         id: id,
-        type: 'login',
+        type: type,
         blob: session.records.encrypt(
           recordId: id,
-          type: 'login',
+          type: type,
           plainText: Uint8List.fromList(utf8.encode('{"deneme":$seed}')),
         ),
         createdAt: DateTime.utc(2026, 1, seed),
@@ -122,6 +122,16 @@ void main() {
     await putLogin(3);
     await putLogin(5);
     expect(await backups.latestChange(), DateTime.utc(2026, 2, 5));
+  });
+
+  test('son değişiklik kart ve notları da sayıyor', () async {
+    final backups = BackupService(sodium: sodium, store: store);
+    await putLogin(3);
+    await putLogin(7, type: 'card');
+    expect(await backups.latestChange(), DateTime.utc(2026, 2, 7));
+
+    await putLogin(9, type: 'note');
+    expect(await backups.latestChange(), DateTime.utc(2026, 2, 9));
   });
 
   test('önerilen dosya adı yerel tarihi taşıyor', () {

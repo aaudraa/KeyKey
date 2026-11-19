@@ -27,8 +27,22 @@ final class InvalidVaultHeaderException extends CryptoException {
 
 /// Dosya bir KeyKey yedeği değil, desteklenmeyen bir sürümde veya yapısı
 /// bozuk. Parola sorulmadan önce anlaşılır.
-final class InvalidBackupException extends CryptoException {
+base class InvalidBackupException extends CryptoException {
   const new(super.message);
+}
+
+/// Yedek bu uygulamanın bilmediği, daha yeni bir dosya ya da içerik
+/// sürümünde. Kullanıcıya uygulamayı güncellemesi söylenir.
+final class NewerBackupException extends InvalidBackupException {
+  const new(super.message);
+}
+
+/// Yazılacak yedek dosyası boyut sınırını aşıyor; dosya yazılmaz.
+final class BackupTooLargeException implements Exception {
+  const new();
+
+  @override
+  String toString() => 'BackupTooLargeException';
 }
 
 /// Kayıt bozulmuş, değiştirilmiş veya yanlış bağlamda açılmaya çalışılmış.

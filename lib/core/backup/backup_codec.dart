@@ -13,10 +13,17 @@ import 'package:sodium/sodium_sumo.dart';
 /// Kayıtlar hâlâ kayıt biçiminde şifrelidir; yedeğin kasa anahtarıyla
 /// çözülürler.
 final class BackupContents {
-  const new({required this.createdAt, required this.records});
+  const new({
+    required this.createdAt,
+    required this.records,
+    this.version = BackupCodec.legacyPayloadVersion,
+  });
 
   final DateTime createdAt;
   final List<StoredRecord> records;
+
+  /// İçerik sürümü: yalnızca eski türler varsa 1, kart ya da not varsa 2.
+  final int version;
 }
 
 /// Yapısı denetlenmiş ama henüz açılmamış bir yedek dosyası.
@@ -44,7 +51,11 @@ final class BackupCodec {
 
   static const magic = 'KEYKEYBK';
   static const formatVersion = 1;
-  static const payloadVersion = 1;
+  static const payloadVersion = 2;
+
+  /// Kart ve not öncesi içerik sürümü. Yalnızca [legacyRecordTypes] varsa
+  /// yedek bu sürümle yazılır; böylece eski uygulamalar onu açabilir.
+  static const legacyPayloadVersion = 1;
   static const backupContext = 'keykey/v1/backup';
 
   static const int maxFileSize = 64 * 1024 * 1024;
@@ -52,8 +63,11 @@ final class BackupCodec {
   static const maxRecords = 100000;
   static const int chunkSize = 64 * 1024;
 
-  /// Yedeğe girebilen kayıt türleri. Parola, 2FA ve ayar kayıtları.
-  static const Set<String> recordTypes = {'login', 'otp', 'settings'};
+  /// İçerik sürümü 1'deki kayıt türleri: parola, 2FA ve ayar.
+  static const Set<String> legacyRecordTypes = {'login', 'otp', 'settings'};
+
+  /// Yedeğe girebilen kayıt türleri; sürüm 2 kart ve notu da taşır.
+  static const Set<String> recordTypes = {...legacyRecordTypes, 'card', 'note'};
 
   static const _keyLength = 32;
   static const _recordIdLength = 16;
@@ -86,6 +100,15 @@ final class BackupCodec {
 
     final payload = utf8.encode(_payloadJson(records, createdAt));
     try {
+      // Boyut şifrelemeden önce kesin olarak bilinir: her parça uzunluk
+      // alanı ve doğrulama etiketiyle büyür.
+      final chunks = (payload.length + chunkSize - 1) ~/ chunkSize;
+      final size =
+          prefixBytes.length +
+          _stream.headerBytes +
+          payload.length +
+          chunks * (_lengthBytes + _stream.aBytes);
+      if (size > maxFileSize) throw const BackupTooLargeException();
       final ad = _associatedData(prefixBytes);
       final messages = <SecretStreamPlainMessage>[];
       for (var start = 0; start < payload.length; start += chunkSize) {
@@ -141,6 +164,9 @@ final class BackupCodec {
       throw const InvalidBackupException('KeyKey yedeği değil.');
     }
     final version = reader.take(1);
+    if (version != null && version[0] > formatVersion) {
+      throw const NewerBackupException('Daha yeni yedek sürümü.');
+    }
     if (version == null || version[0] != formatVersion) {
       throw const InvalidBackupException('Desteklenmeyen yedek sürümü.');
     }
@@ -264,7 +290,9 @@ final class BackupCodec {
   static String _payloadJson(List<StoredRecord> records, DateTime createdAt) {
     final ids = <String>{};
     final entries = <Map<String, Object>>[];
+    var version = legacyPayloadVersion;
     for (final record in records) {
+      if (!legacyRecordTypes.contains(record.type)) version = payloadVersion;
       if (!recordTypes.contains(record.type)) {
         throw ArgumentError.value(record.type, 'type', 'Yedeklenmeyen tür');
       }
@@ -281,7 +309,7 @@ final class BackupCodec {
       });
     }
     return jsonEncode({
-      'version': payloadVersion,
+      'version': version,
       'createdAt': createdAt.millisecondsSinceEpoch,
       'records': entries,
     });
@@ -295,9 +323,16 @@ final class BackupCodec {
       throw const InvalidBackupException('İçerik okunamadı.');
     }
     final root = _object(decoded, const {'version', 'createdAt', 'records'});
-    if (root['version'] != payloadVersion) {
+    final version = root['version'];
+    if (version is int && version > payloadVersion) {
+      throw const NewerBackupException('Daha yeni içerik sürümü.');
+    }
+    if (version is! int || version < legacyPayloadVersion) {
       throw const InvalidBackupException('Desteklenmeyen içerik sürümü.');
     }
+    final allowed = version == legacyPayloadVersion
+        ? legacyRecordTypes
+        : recordTypes;
     final list = root['records'];
     if (list is! List<Object?> || list.length > maxRecords) {
       throw const InvalidBackupException('Geçersiz kayıt listesi.');
@@ -313,7 +348,7 @@ final class BackupCodec {
         'blob',
       });
       final type = entry['type'];
-      if (type is! String || !recordTypes.contains(type)) {
+      if (type is! String || !allowed.contains(type)) {
         throw const InvalidBackupException('Desteklenmeyen kayıt türü.');
       }
       final id = _bytes(entry['id']);
@@ -333,6 +368,7 @@ final class BackupCodec {
     return BackupContents(
       createdAt: _time(root['createdAt']),
       records: records,
+      version: version,
     );
   }
 

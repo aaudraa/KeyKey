@@ -15,7 +15,9 @@ import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
+import 'package:keykey/features/vault/application/records_controller.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
+import 'package:keykey/features/vault/data/vault_record_repository.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sodium/sodium_sumo.dart';
 
@@ -139,6 +141,20 @@ void main() {
             ),
             loginRepositoryFactoryProvider.overrideWithValue(
               (session) => LoginRepository(
+                store: VaultStore(database),
+                session: session,
+                sodium: sodium,
+              ),
+            ),
+            cardRepositoryFactoryProvider.overrideWithValue(
+              (session) => cardRepository(
+                store: VaultStore(database),
+                session: session,
+                sodium: sodium,
+              ),
+            ),
+            noteRepositoryFactoryProvider.overrideWithValue(
+              (session) => noteRepository(
                 store: VaultStore(database),
                 session: session,
                 sodium: sodium,

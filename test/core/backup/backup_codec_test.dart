@@ -12,6 +12,7 @@ import 'package:keykey/core/crypto/vault_header.dart';
 import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
+import 'package:keykey/features/vault/data/vault_record_repository.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 void main() {
@@ -190,11 +191,48 @@ void main() {
     });
 
     test('yedeklenen türler uygulamanın kayıt türleriyle aynı', () {
-      expect(BackupCodec.recordTypes, {
+      expect(BackupCodec.legacyRecordTypes, {
         LoginRepository.recordType,
         RecordCipher.otpType,
         SettingsRepository.recordType,
       });
+      expect(BackupCodec.recordTypes, {
+        ...BackupCodec.legacyRecordTypes,
+        VaultRecordRepository.cardType,
+        VaultRecordRepository.noteType,
+      });
+    });
+
+    test('yalnızca eski türler varsa içerik sürümü 1', () async {
+      final contents = await decode(await encode(sampleRecords()));
+      expect(contents.version, 1);
+    });
+
+    test('kart ya da not varsa içerik sürümü 2', () async {
+      for (final type in ['card', 'note']) {
+        final records = [...sampleRecords(), record(9, type: type)];
+        final contents = await decode(await encode(records));
+        expect(contents.version, 2, reason: type);
+        expectSame(contents.records, records);
+      }
+    });
+
+    test('64 MiB sınırını aşacak yedek yazılmıyor', () async {
+      final big = Uint8List(25 * 1024 * 1024);
+      final records = [
+        for (var i = 0; i < 2; i++)
+          StoredRecord(
+            id: Uint8List(16)..[0] = i,
+            type: 'note',
+            blob: big,
+            createdAt: createdAt,
+            updatedAt: createdAt,
+          ),
+      ];
+      await expectLater(
+        encode(records),
+        throwsA(isA<BackupTooLargeException>()),
+      );
     });
   });
 
@@ -295,7 +333,11 @@ void main() {
       expectInvalid(Uint8List(0));
       expectInvalid(Uint8List.fromList(utf8.encode('KEYKEY')));
       expectInvalid(copy()..[0] = 0x6B);
-      expectInvalid(copy()..[8] = 2);
+      expectInvalid(copy()..[8] = 0);
+      expect(
+        () => codec.parse(copy()..[8] = 2),
+        throwsA(isA<NewerBackupException>()),
+      );
       // Üst bilgi uzunluğu 0 ve tavanın üstü.
       expectInvalid(copy()..setRange(9, 13, [0, 0, 0, 0]));
       expectInvalid(copy()..setRange(9, 13, [0, 0, 0x10, 0x01]));
@@ -414,8 +456,28 @@ void main() {
       expect(contents.records.single.blob, [1, 2, 3]);
     });
 
+    test('daha yeni içerik sürümü ayrı hatayla reddediliyor', () async {
+      await expectLater(
+        decode(await withPayload({...payload([]), 'version': 3})),
+        throwsA(isA<NewerBackupException>()),
+      );
+    });
+
+    test('sürüm 2 içerikte kart ve not açılıyor', () async {
+      final contents = await decode(
+        await withPayload({
+          ...payload([
+            entry(type: 'card'),
+            entry(id: 'AQECAwQFBgcICQoLDA0ODw==', type: 'note'),
+          ]),
+          'version': 2,
+        }),
+      );
+      expect(contents.records.map((r) => r.type), ['card', 'note']);
+    });
+
     test('bilinmeyen sürüm, eksik ve fazla alan reddediliyor', () async {
-      await expectInvalid({...payload([]), 'version': 2});
+      await expectInvalid({...payload([]), 'version': 0});
       await expectInvalid({'version': 1, 'records': <Object>[]});
       await expectInvalid({...payload([]), 'ek': true});
       await expectInvalid(
@@ -429,6 +491,11 @@ void main() {
 
     test('bilinmeyen tür ve yinelenen kimlik reddediliyor', () async {
       await expectInvalid(payload([entry(type: 'card')]));
+      await expectInvalid(payload([entry(type: 'note')]));
+      await expectInvalid({
+        ...payload([entry(type: 'kimlik')]),
+        'version': 2,
+      });
       await expectInvalid(payload([entry(), entry()]));
       await expectInvalid(payload([entry(id: 'AAEC')]));
     });

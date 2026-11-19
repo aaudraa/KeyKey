@@ -13,6 +13,9 @@ import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/backup/application/backup_service.dart';
 import 'package:keykey/features/backup/application/restore_service.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
+import 'package:keykey/features/vault/data/card_content.dart';
+import 'package:keykey/features/vault/data/note_content.dart';
+import 'package:keykey/features/vault/data/vault_record_repository.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 /// İki ayrı kasa: biri yedeği alan, öbürü yedeği alan telefon.
@@ -59,6 +62,12 @@ void main() {
   final otpJson = jsonEncode(
     jsonDecode(File('test/fixtures/vault/otp-v1.json').readAsStringSync()),
   );
+  final cardJson = utf8.decode(
+    CardContent(name: 'Maaş', number: '4111111111111111').toJsonBytes(),
+  );
+  final noteJson = utf8.decode(
+    NoteContent(name: 'Wi-Fi', text: 'gizli').toJsonBytes(),
+  );
 
   Future<void> put(
     _Vault vault,
@@ -67,7 +76,14 @@ void main() {
     String? json,
     DateTime? updatedAt,
   }) {
-    final plain = json ?? (type == 'otp' ? otpJson : loginJson);
+    final plain =
+        json ??
+        switch (type) {
+          'otp' => otpJson,
+          'card' => cardJson,
+          'note' => noteJson,
+          _ => loginJson,
+        };
     return vault.store.putRecord(
       StoredRecord(
         id: id(n),
@@ -128,6 +144,36 @@ void main() {
       expect(opened.records, hasLength(4));
       expect(opened.createdAt, DateTime.utc(2026, 11, 7));
       opened.dispose();
+    });
+
+    test('kart ve notlar sayılıyor', () async {
+      await put(a, 1);
+      await put(a, 2, type: 'card');
+      await put(a, 3, type: 'card');
+      await put(a, 4, type: 'note');
+
+      final opened = await restore.openWithPassword(
+        await backupOf(a),
+        passwordA,
+      );
+      expect(opened.loginCount, 1);
+      expect(opened.cardCount, 2);
+      expect(opened.noteCount, 1);
+      opened.dispose();
+    });
+
+    test('biçime uymayan kart ya da not içeren yedek reddediliyor', () async {
+      await put(a, 1, type: 'card', json: '{"version":99}');
+      await expectLater(
+        restore.openWithPassword(await backupOf(a), passwordA),
+        throwsA(isA<InvalidBackupException>()),
+      );
+      await put(a, 1, type: 'card');
+      await put(a, 2, type: 'note', json: '{"version":1}');
+      await expectLater(
+        restore.openWithPassword(await backupOf(a), passwordA),
+        throwsA(isA<InvalidBackupException>()),
+      );
     });
 
     test('kurtarma anahtarıyla açılıyor', () async {
@@ -434,6 +480,35 @@ void main() {
       }
       expect(readPlain(b, records.singleWhere((r) => r.id.last == 2)), otpJson);
     });
+
+    test(
+      'birleştirilen kart ve not açık kasanın deposundan okunuyor',
+      () async {
+        await put(a, 1, type: 'card');
+        await put(a, 2, type: 'note');
+        final opened = await openA();
+
+        await RestoreService(
+          sodium: sodium,
+          store: b.store,
+        ).merge(opened, b.session);
+        opened.dispose();
+
+        final cards = await cardRepository(
+          store: b.store,
+          session: b.session,
+          sodium: sodium,
+        ).loadAll();
+        final notes = await noteRepository(
+          store: b.store,
+          session: b.session,
+          sodium: sodium,
+        ).loadAll();
+        expect(cards.items.single.content.number, '4111111111111111');
+        expect(cards.unreadableCount, 0);
+        expect(notes.items.single.content.text, 'gizli');
+      },
+    );
 
     test('aynı kimlikte yeni olan kalıyor', () async {
       // A'da 1 yeni, 2 eski; B'de 1 eski, 2 yeni.

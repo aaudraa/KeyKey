@@ -2224,5 +2224,34 @@
   "noteCopy": "Copy text",
   "vaultKindLogins": "Passwords",
   "vaultKindCards": "Cards",
-  "vaultKindNotes": "Notes"
+  "vaultKindNotes": "Notes",
+  "restoreSummaryAll": "Backup from {date}: {logins, plural, =1{1 password} other{{logins} passwords}}, {otps, plural, =1{1 2FA account} other{{otps} 2FA accounts}}, {cards, plural, =1{1 card} other{{cards} cards}} and {notes, plural, =1{1 note} other{{notes} notes}}.",
+  "@restoreSummaryAll": {
+    "description": "Summary of an opened backup that has cards or notes.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "logins": {
+        "type": "int"
+      },
+      "otps": {
+        "type": "int"
+      },
+      "cards": {
+        "type": "int"
+      },
+      "notes": {
+        "type": "int"
+      }
+    }
+  },
+  "restoreNewerVersion": "This backup was made with a newer version of KeyKey. Update the app and try again.",
+  "@restoreNewerVersion": {
+    "description": "Shown when a backup comes from a newer app version."
+  },
+  "backupTooLarge": "The vault does not fit in one backup file (64 MB limit). Shorten large notes and try again.",
+  "@backupTooLarge": {
+    "description": "Shown when the backup would exceed the file size limit."
+  }
 }

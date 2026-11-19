@@ -273,6 +273,25 @@ void main() {
     );
   });
 
+  testWidgets('sınırı aşan yedek kaydedilmiyor, sebebi söyleniyor', (
+    tester,
+  ) async {
+    backups.tooLarge = true;
+    await pumpSettings(tester);
+
+    await tester.tap(find.text('Yedekle'));
+    await tester.pumpAndSettle();
+
+    expect(settings.settings.lastBackupAt, isNull);
+    expect(
+      find.text(
+        'Kasa tek yedek dosyasına sığmıyor (64 MB sınırı). Büyük notları '
+        'kısaltıp yeniden dene.',
+      ),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('12 gün önceki yedek gün olarak yazılıyor', (tester) async {
     settings = FakeSettingsRepository(
       AppSettings.defaults.copyWith(lastBackupAt: DateTime(2026, 10, 26, 23)),
