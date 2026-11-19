@@ -161,8 +161,9 @@ Details: [Yedekleme](guvenlik-tasarimi.md#yedekleme).
 - **WebViews (AutoSpill).** A `webDomain` from a non-browser app isn't used for matching, because the host app can read what gets filled.
 - **Suspicious cases ask for confirmation**: no match, a WebView, plain `http`, or a matching package name with a different signature (shown as "this app may be fake"). With a signature mismatch KeyKey never offers to bind the app.
 - The autofill screen has its own lock and the same window protections.
+- **Cards (1.5.0).** Payment forms get a separate "Fill card with KeyKey" suggestion. A card isn't bound to any site or app, so it is always picked from the list after unlocking, and the list title names the target. The card PIN is never filled, nothing is copied to the clipboard, and plain `http` pages ask for confirmation. Card security-code fields are no longer mistaken for passwords, so KeyKey doesn't offer to save them.
 
-Details: [Otomatik doldurma](guvenlik-tasarimi.md#otomatik-doldurma).
+Details: [Otomatik doldurma](guvenlik-tasarimi.md#otomatik-doldurma), [Kart doldurma](guvenlik-tasarimi.md#kart-doldurma).
 
 ## Other protections
 

@@ -1,0 +1,1 @@
+Kart doldurma: ödeme formunda kart kutusuna dokununca "KeyKey ile kart doldur" önerisi çıkar; KeyKey'i açıp kartı seçersin, numara, kart sahibi, son kullanma ve güvenlik kodu birlikte dolar. PIN hiçbir yere doldurulmaz. Güvenlik kodu kutusu artık parola sanılmıyor ve parola diye kaydedilmesi önerilmiyor.

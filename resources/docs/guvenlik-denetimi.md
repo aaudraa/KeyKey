@@ -57,6 +57,15 @@ Android 17 emülatöründe otomatik doldurma altyapısı ayrıntılı kayıt tut
 
 Android 11'deki satır KeyKey'in değil. Test kart numarasını panoya kopyalayınca Gboard panodaki metni sistemin metin sınıflandırıcısına (`com.google.android.ext.services`, `TextClassifierImpl.generateLinks`) verdi. Sınıflandırıcı 16 haneli numarayı sayı diye okumaya çalışırken `NumberFormatException` attı ve hatanın metninde numarayı kayda yazdı. Android 13 ve üstünde kopya hassas işaretli olduğu için klavye onu işlemiyor; Android 17'de böyle bir satır yok. KeyKey eski sürümlerde de aynı işareti (`android.content.extra.IS_SENSITIVE`) koyuyor, ama Android 11'deki Gboard ona bakmıyor. Parola kopyalayan testlerde böyle bir satır çıkmadı; sınıflandırıcı yalnızca hata verince yazıyor. Logcat'i yalnızca sistem ve adb okuyabilir. Bu, [pano sınırlarına](guvenlik-tasarimi.md#pano) yazıldı.
 
+**1.5.0 (2026-11-19).** Kart doldurma, hata ayıklama derlemesiyle ve [örnek uygulamanın](../test-apps/ornek-giris) üç kart formuyla (Android ipuçlu ve açılır listeli, ipucusuz, WebView'da `autocomplete`'li HTML) elle denendi. Kart her formda listeden seçilip dolduruldu. Ardından giriş formunda kaydetme ve doldurma da denendi.
+
+| Deneme | Emülatör | Kayıt | Sonuç |
+|---|---|---|---|
+| Üç kart formunda kart doldurma, giriş kaydetme ve doldurma | Android 17 | 23 667 satır, baştan sona | Kart değerleri yok; 2 satır, KeyKey'in dışında |
+| Aynısı | Android 11 | 6 266 satır, baştan sona | Temiz |
+
+Android 17'deki iki satır, deneme betiğinin örnek giriş formuna `adb shell input text` ile yazdığı kullanıcı adı ve parolanın adb'nin kendi kaydında (`adbd service requested ... input text`) görünmesi. KeyKey'in ya da doldurma sisteminin satırı değil; betik bunları gizleyerek gösterdi. Kart numarası, güvenlik kodu ve ana parola iki kayıtta da yok.
+
 **Gerçek telefonda tekrar.** Üreticilerin değiştirdiği sistemler farklı kayıt tutabildiği için deneme Samsung telefonda da yapıldı: temiz ([Gerçek telefon](#gerçek-telefon)).
 
 ## Arayüz koruması
@@ -287,7 +296,7 @@ KeyKey'in `INTERNET` izni yok; Android bu izin olmadan soket açtırmaz. [`check
 - **Düzeltme:** `MainActivity` ve `AutofillActivity`'de `flutter_deeplinking_enabled` kapalı. `check-release-apk.sh` her etkinlikte bu ayarın kapalı olduğunu denetler.
 - **Doğrulama (sürüm derlemesi, Android 16):** Kasa açıkken iki adresle (`https://...` ve `keykey:///...`) gönderilen niyet ekranı değiştirmedi. Uygulama kapalıyken aynı niyetle açılınca kilit ekranı geldi, kilit açılınca kasaya gidildi.
 
-**Otomatik doldurma.** Doldurma isteğindeki uygulama ve alan adı başka bir uygulamadan gelen güvenilmeyen veridir; eşleştirme imza sertifikası ve güvenilen tarayıcı listesiyle yapılır ([Eşleştirme](guvenlik-tasarimi.md#eşleştirme)). Saldırı denemeleri Faz 6'da dört emülatörde yapıldı.
+**Otomatik doldurma.** Doldurma isteğindeki uygulama ve alan adı başka bir uygulamadan gelen güvenilmeyen veridir; eşleştirme imza sertifikası ve güvenilen tarayıcı listesiyle yapılır ([Eşleştirme](guvenlik-tasarimi.md#eşleştirme)). Saldırı denemeleri Faz 6'da dört emülatörde yapıldı. Kart doldurmada (1.5.0) giriş ve kart önerilerinin niyetleri eylemleriyle ayrılır; doldurma ekranı isteğin türünü buradan alır ve Kotlin her çağrıyı bu türe göre denetler: kart isteğine parola, giriş isteğine kart doldurulmaz ([Kart doldurma](guvenlik-tasarimi.md#kart-doldurma)).
 
 ## WebView
 

@@ -5,6 +5,7 @@ KeyKey keeps your passwords and two-factor codes on your phone, encrypted, and n
 <li>Add, edit and search logins; folders, trash, custom fields</li>
 <li>Password generator and strength meter</li>
 <li>Offline report of weak and reused passwords</li>
+<li>Bank cards and secure notes; the list shows only a card's last four digits</li>
 </ul>
 
 <b>Two-factor codes</b>
@@ -16,6 +17,7 @@ KeyKey keeps your passwords and two-factor codes on your phone, encrypted, and n
 <b>Autofill</b>
 <ul>
 <li>Fills and saves passwords in Android apps and in Chrome</li>
+<li>Fills cards in payment forms: number, expiry, security code</li>
 <li>Apps are matched by their signing certificate; suspicious cases show a warning</li>
 </ul>
 

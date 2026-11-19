@@ -135,7 +135,7 @@ Bir parola kaydıyla aynı siteye ait 2FA hesabı o kayda bağlanabilir. Kodu o 
 
 <img src="../design/kilavuz/13-ayarlar-doldurma.webp" width="240" alt="Otomatik doldurma ayarları">
 
-KeyKey, uygulamalardaki ve Chrome'daki giriş formlarını doldurabilir, yeni girdiğin parolaları kaydetmeyi önerebilir.
+KeyKey, uygulamalardaki ve Chrome'daki giriş formlarını ve ödeme formlarındaki kart bilgilerini doldurabilir, yeni girdiğin parolaları kaydetmeyi önerebilir.
 
 **Açmak için:**
 
@@ -150,6 +150,14 @@ KeyKey, uygulamalardaki ve Chrome'daki giriş formlarını doldurabilir, yeni gi
 - İlk kez bir uygulamada doldururken kaydı o uygulamaya bağlayabilirsin; sonraki seferler kendiliğinden eşleşir. Bağlama, uygulamanın imza sertifikasıyla yapılır, yani aynı adı taşıyan sahte bir uygulama eşleşmez.
 - **Kaydetme:** Yeni bir hesap açtığında ya da parolanı değiştirdiğinde Android kaydetmeyi önerir. KeyKey'in ekranında kaydı görür, istersen düzenleyip kaydedersin.
 - **2FA kodu:** Doldurduğun kayda bağlı bir 2FA hesabı varsa güncel kod panoya kopyalanır; kod kutusuna yapıştırman yeter. Ayarlar'daki **Doldurduktan sonra 2FA kodunu kopyala** ile kapatılabilir.
+
+**Kart doldurma:**
+
+- Ödeme formunda kart numarası, son kullanma ya da güvenlik kodu kutusuna dokununca **KeyKey ile kart doldur** önerisi çıkar. KeyKey'i açarsın, kartlarının listesinden birini seçersin; numara, kart sahibi, son kullanma ve güvenlik kodu birlikte dolar. PIN hiçbir yere doldurulmaz.
+- Kart hiçbir siteye ya da uygulamaya bağlı değildir, bu yüzden her seferinde listeden seçersin. Listenin başlığında kartın gideceği site ya da uygulama yazar; seçmeden önce ona bak.
+- Sayfa şifresiz (`http`) bağlantıyla açılmışsa KeyKey doldurmadan önce uyarır.
+- Kasanda kart yoksa da öneri çıkar (KeyKey kasayı açmadan kartın olup olmadığını bilemez); liste kart olmadığını söyler.
+- Forma elle yazdığın yeni bir kartı KeyKey kaydetmeyi önermez; kartı **+** → **Kart** ile eklersin.
 
 ## Yedekleme ve yeni telefona geçiş
 
