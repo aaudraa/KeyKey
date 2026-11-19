@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -7,7 +8,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/vault/data/card_content.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
+import 'package:keykey/features/vault/data/note_content.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../../support/fake_vault_service.dart';
@@ -18,6 +21,8 @@ void main() {
   late FakeDocumentFiles documents;
   late FakeLoginRepository logins;
   late FakeOtpRepository otps;
+  late FakeRecordRepository<CardContent> cards;
+  late FakeRecordRepository<NoteContent> notes;
 
   setUpAll(() async {
     sodium = await SodiumSumoInit.init();
@@ -28,6 +33,8 @@ void main() {
     documents = FakeDocumentFiles();
     logins = FakeLoginRepository();
     otps = FakeOtpRepository();
+    cards = FakeRecordRepository<CardContent>();
+    notes = FakeRecordRepository<NoteContent>();
   });
 
   Uint8List fixture(String name) =>
@@ -40,6 +47,8 @@ void main() {
       service: service,
       logins: logins,
       otps: otps,
+      cards: cards,
+      notes: notes,
       documents: documents,
     );
     await tester.tap(find.byIcon(Icons.settings_outlined));
@@ -48,7 +57,7 @@ void main() {
       tester.element(find.text('Yedekle')),
     );
     documents.readGate = () => container.read(externalActivityGateProvider);
-    final tile = find.text('Parolaları içe aktar');
+    final tile = find.text('İçe aktar');
     await tester.scrollUntilVisible(tile, 200);
     await tester.ensureVisible(tile);
     await tester.pumpAndSettle();
@@ -65,27 +74,29 @@ void main() {
     // Okunan dosya bellekte bırakılmadı.
     expect(bytes.every((byte) => byte == 0), isTrue);
     expect(
-      find.text('Bitwarden (JSON) dosyasından 2 kayıt okundu.'),
+      find.text('Bitwarden (JSON) dosyasından 4 kayıt okundu.'),
       findsOneWidget,
     );
     expect(
-      find.text('2 satır desteklenmediği ya da bozuk olduğu için atlandı.'),
+      find.text('1 satır desteklenmediği ya da bozuk olduğu için atlandı.'),
       findsOneWidget,
     );
     expect(find.text('Şirket'), findsOneWidget);
     expect(find.text('veli · sirket.example.com · 2FA ile'), findsOneWidget);
     expect(logins.items, isEmpty);
 
-    await tester.tap(find.text('2 kaydı ekle'));
+    await tester.tap(find.text('4 kaydı ekle'));
     await tester.pumpAndSettle();
 
     expect(find.text('Kaynak dosyayı sil'), findsOneWidget);
     expect(find.byType(BottomSheet), findsOneWidget);
     expect(find.textContaining('KeyKey bu dosyayı silemez'), findsOneWidget);
-    expect(find.text('2 kayıt eklendi.'), findsOneWidget);
+    expect(find.text('4 kayıt eklendi.'), findsOneWidget);
     await tester.tap(find.text('Tamam'));
     await tester.pumpAndSettle();
-    expect(find.text('Parolaları içe aktar'), findsOneWidget);
+    expect(find.text('İçe aktar'), findsOneWidget);
+    expect(cards.items.single.content.number, '4111111111111111');
+    expect(notes.items.single.content.name, 'Not');
 
     expect(logins.items.map((item) => item.content.name), ['Şirket', 'Basit']);
     final company = logins.items.first;
@@ -115,13 +126,90 @@ void main() {
       find.text('veli · sirket.example.com · 2FA ile · Kasanda var'),
       findsOneWidget,
     );
-    await tester.tap(find.text('1 kaydı ekle'));
+    await tester.tap(find.text('3 kaydı ekle'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Tamam'));
     await tester.pumpAndSettle();
 
     expect(logins.items.map((item) => item.content.name), ['Eski', 'Basit']);
     expect(otps.items, isEmpty);
+  });
+
+  testWidgets('kart ve not kendi simgeleriyle listede', (tester) async {
+    documents.nextOpen = DocumentOpened(fixture('bitwarden.json'));
+    await openImport(tester);
+
+    final cardTile = find.ancestor(
+      of: find.text('Kart'),
+      matching: find.byType(CheckboxListTile),
+    );
+    expect(
+      find.descendant(
+        of: cardTile,
+        matching: find.byIcon(Icons.credit_card_rounded),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: cardTile,
+        matching: find.text('Visa •••• 1111 · 01/28'),
+      ),
+      findsOneWidget,
+    );
+    final noteTile = find.ancestor(
+      of: find.text('Not'),
+      matching: find.byType(CheckboxListTile),
+    );
+    expect(
+      find.descendant(
+        of: noteTile,
+        matching: find.byIcon(Icons.sticky_note_2_outlined),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('nota taşınan değer söyleniyor, kasadaki kart seçilmiyor', (
+    tester,
+  ) async {
+    cards.items.add(
+      FakeRecordRepository.item(
+        CardContent(name: 'Kart', number: '4111111111111111'),
+      ),
+    );
+    documents.nextOpen = DocumentOpened(
+      Uint8List.fromList(
+        utf8.encode(
+          jsonEncode({
+            'encrypted': false,
+            'items': [
+              {
+                'type': 3,
+                'name': 'Kart',
+                'card': {'number': '4111111111111111'},
+              },
+              {
+                'type': 3,
+                'name': 'Bozuk',
+                'card': {'number': 'abc'},
+              },
+            ],
+          }),
+        ),
+      ),
+    );
+    await openImport(tester);
+
+    expect(find.text('Visa •••• 1111 · Kasanda var'), findsOneWidget);
+    expect(find.text('Bazı değerler kartın notuna taşındı'), findsOneWidget);
+    await tester.tap(find.text('1 kaydı ekle'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tamam'));
+    await tester.pumpAndSettle();
+
+    expect(cards.items.map((item) => item.content.name), ['Kart', 'Bozuk']);
+    expect(cards.items.last.content.notes, 'Kart numarası: abc');
   });
 
   testWidgets('seçim kaldırılınca düğme kapanıyor', (tester) async {

@@ -78,15 +78,63 @@
       "notes": "gizli",
       "secureNote": {
         "type": 0
-      }
+      },
+      "fields": [
+        {
+          "name": "Ağ",
+          "value": "Ev",
+          "type": 0,
+          "linkedId": null
+        }
+      ],
+      "folderId": "f1"
     },
     {
       "id": "a4",
+      "organizationId": null,
+      "folderId": "f1",
       "type": 3,
+      "reprompt": 0,
       "name": "Kart",
+      "notes": "kart notu",
+      "favorite": true,
+      "fields": [
+        {
+          "name": "pin",
+          "value": "1234",
+          "type": 1,
+          "linkedId": null
+        },
+        {
+          "name": "Banka",
+          "value": "Deneme Bankası",
+          "type": 0,
+          "linkedId": null
+        }
+      ],
       "card": {
-        "number": "4111111111111111"
-      }
+        "cardholderName": "Ali Veli",
+        "brand": "Visa",
+        "number": "4111 1111-1111 1111",
+        "expMonth": "1",
+        "expYear": "28",
+        "code": "123"
+      },
+      "collectionIds": null
+    },
+    {
+      "id": "a5",
+      "organizationId": null,
+      "folderId": null,
+      "type": 4,
+      "reprompt": 0,
+      "name": "Kimlik",
+      "notes": null,
+      "favorite": false,
+      "identity": {
+        "firstName": "Deneme"
+      },
+      "collectionIds": null
     }
   ]
 }

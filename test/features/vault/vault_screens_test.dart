@@ -173,7 +173,7 @@ void main() {
         documents: documents,
       );
 
-      await tester.tap(find.widgetWithText(TextButton, 'Parolaları içe aktar'));
+      await tester.tap(find.widgetWithText(TextButton, 'İçe aktar'));
       await tester.pumpAndSettle();
       expect(documents.opens, 1);
 
@@ -198,9 +198,9 @@ void main() {
         documents: documents,
       );
 
-      await tester.tap(find.widgetWithText(TextButton, 'Parolaları içe aktar'));
+      await tester.tap(find.widgetWithText(TextButton, 'İçe aktar'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('2 kaydı ekle'));
+      await tester.tap(find.text('4 kaydı ekle'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Tamam'));
       await tester.pumpAndSettle();
@@ -213,7 +213,7 @@ void main() {
 
     testWidgets('kayıt varken kısayollar yok', (tester) async {
       await pumpVault(tester);
-      expect(find.text('Parolaları içe aktar'), findsNothing);
+      expect(find.text('İçe aktar'), findsNothing);
       expect(find.text('Yedekten geri yükle'), findsNothing);
     });
 

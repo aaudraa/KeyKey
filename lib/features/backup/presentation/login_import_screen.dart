@@ -15,6 +15,11 @@ import 'package:keykey/features/backup/application/login_import_plan.dart';
 import 'package:keykey/features/backup/data/import/login_import.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
+import 'package:keykey/features/vault/application/records_controller.dart';
+import 'package:keykey/features/vault/data/card_content.dart';
+import 'package:keykey/features/vault/data/login_repository.dart';
+import 'package:keykey/features/vault/data/note_content.dart';
+import 'package:keykey/features/vault/presentation/vault_entry_tiles.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Belge seçiciyle bir parola dışa aktarması seçtirir, okur ve içe aktarma
@@ -48,7 +53,14 @@ Future<void> pickLoginExport(BuildContext context, WidgetRef ref) async {
     case DocumentOpened(:final bytes):
       final LoginExport export;
       try {
-        export = LoginExportReader.read(bytes);
+        export = LoginExportReader.read(
+          bytes,
+          labels: ImportLabels(
+            cardNumber: l10n.importLabelCardNumber,
+            expiry: l10n.importLabelExpiry,
+            securityCode: l10n.importLabelSecurityCode,
+          ),
+        );
       } on EncryptedBitwardenExportException {
         show(l10n.loginImportEncrypted);
         return;
@@ -62,8 +74,8 @@ Future<void> pickLoginExport(BuildContext context, WidgetRef ref) async {
   }
 }
 
-/// Dosyadan okunan girişleri gösterir; kullanıcı seçtiklerini ekler. Hiçbir
-/// şey onaydan önce kaydedilmez.
+/// Dosyadan okunan parola, kart ve notları gösterir; kullanıcı seçtiklerini
+/// ekler. Hiçbir şey onaydan önce kaydedilmez.
 ///
 /// Kasada zaten olan kayıtlar seçilmemiş gelir ama istenirse seçilebilir.
 class LoginImportScreen extends ConsumerStatefulWidget {
@@ -75,10 +87,17 @@ class LoginImportScreen extends ConsumerStatefulWidget {
   ConsumerState<LoginImportScreen> createState() => _LoginImportScreenState();
 }
 
+/// Listedeki satırın sırası: önce parolalar, sonra kartlar, sonra notlar.
+/// Seçim bu sıradaki konumu tutar.
 class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
   LoginImportPlan? _plan;
   Set<int> _selected = {};
   bool _saving = false;
+
+  List<T> _chosen<T>(List<T> items, int offset) => [
+    for (final (index, item) in items.indexed)
+      if (_selected.contains(offset + index)) item,
+  ];
 
   Future<void> _save(LoginImportPlan plan) async {
     if (_saving || _selected.isEmpty) return;
@@ -86,12 +105,17 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
     final snack = kkSnackFor(context);
     setState(() => _saving = true);
     try {
-      final chosen = [
-        for (final index in _selected.toList()..sort()) plan.candidates[index],
-      ];
-      final items = await ref.read(loginsControllerProvider.notifier).addAll([
-        for (final candidate in chosen) candidate.content,
-      ]);
+      final chosen = _chosen(plan.candidates, 0);
+      final cards = _chosen(plan.cards, plan.candidates.length);
+      final notes = _chosen(
+        plan.notes,
+        plan.candidates.length + plan.cards.length,
+      );
+      final items = chosen.isEmpty
+          ? const <LoginItem>[]
+          : await ref.read(loginsControllerProvider.notifier).addAll([
+              for (final candidate in chosen) candidate.content,
+            ]);
       // 2FA hesapları eklenen kayıtlara bağlanır.
       final otps = <OtpContent>[
         for (final (index, candidate) in chosen.indexed)
@@ -101,10 +125,20 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
       if (otps.isNotEmpty) {
         await ref.read(otpsControllerProvider.notifier).addAll(otps);
       }
+      if (cards.isNotEmpty) {
+        await ref.read(cardsControllerProvider.notifier).addAll([
+          for (final card in cards) card.content,
+        ]);
+      }
+      if (notes.isNotEmpty) {
+        await ref.read(notesControllerProvider.notifier).addAll([
+          for (final note in notes) note.content,
+        ]);
+      }
       if (!mounted) return;
       // Kayıt bitti; hatırlatma açıkken düğmede ilerleme halkası dönmesin.
       setState(() => _saving = false);
-      snack(l10n.loginImportDone(items.length));
+      snack(l10n.loginImportDone(items.length + cards.length + notes.length));
       await _remindToDelete(l10n);
       if (mounted) context.pop();
     } on VaultLockedException {
@@ -133,9 +167,14 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
     final l10n = AppLocalizations.of(context);
     final logins = ref.watch(loginsControllerProvider);
     final otps = ref.watch(otpsControllerProvider);
+    final cards = ref.watch(cardsControllerProvider);
+    final notes = ref.watch(notesControllerProvider);
     var plan = _plan;
     if (plan == null) {
-      if (logins is! LoginsLoaded || otps is! OtpsLoaded) {
+      if (logins is! LoginsLoaded ||
+          otps is! OtpsLoaded ||
+          cards is! RecordsLoaded<CardContent> ||
+          notes is! RecordsLoaded<NoteContent>) {
         return KkScaffold(
           appBar: kkAppBar(context, title: l10n.loginImportTitle),
           body: const Center(child: CircularProgressIndicator()),
@@ -146,10 +185,17 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
         widget.export,
         existingLogins: logins.items,
         existingOtps: otps.items,
+        existingCards: cards.items,
+        existingNotes: notes.items,
       );
+      final duplicates = [
+        for (final candidate in plan.candidates) candidate.duplicate,
+        for (final candidate in plan.cards) candidate.duplicate,
+        for (final candidate in plan.notes) candidate.duplicate,
+      ];
       _selected = {
-        for (final (index, candidate) in plan.candidates.indexed)
-          if (!candidate.duplicate) index,
+        for (final (index, duplicate) in duplicates.indexed)
+          if (!duplicate) index,
       };
     }
     final ready = plan;
@@ -164,15 +210,55 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
     );
   }
 
+  List<_Row> _rows(AppLocalizations l10n, LoginImportPlan plan) {
+    final now = DateTime.now();
+    String join(List<String> parts) =>
+        parts.where((part) => part.isNotEmpty).join(' · ');
+    return [
+      for (final candidate in plan.candidates)
+        _Row(
+          icon: Icons.key_rounded,
+          title: candidate.content.name,
+          subtitle: join([
+            candidate.content.username,
+            if (candidate.content.urls.isNotEmpty)
+              _hostOf(candidate.content.urls.first),
+            if (candidate.otp != null && !candidate.otpAlreadySaved)
+              l10n.loginImportWithOtp,
+            if (candidate.duplicate) l10n.loginImportDuplicate,
+          ]),
+        ),
+      for (final candidate in plan.cards)
+        _Row(
+          icon: Icons.credit_card_rounded,
+          title: cardTitle(candidate.content),
+          subtitle: join([
+            cardSummary(l10n, candidate.content, now),
+            if (candidate.adjusted) l10n.importCardAdjusted,
+            if (candidate.duplicate) l10n.loginImportDuplicate,
+          ]),
+        ),
+      for (final candidate in plan.notes)
+        _Row(
+          icon: Icons.sticky_note_2_outlined,
+          title: candidate.content.name.trim().isEmpty
+              ? '—'
+              : candidate.content.name,
+          subtitle: join([if (candidate.duplicate) l10n.loginImportDuplicate]),
+        ),
+    ];
+  }
+
   Widget _list(AppLocalizations l10n, LoginImportPlan plan) {
-    final hasDuplicates = plan.candidates.any((c) => c.duplicate);
+    final rows = _rows(l10n, plan);
+    final hasDuplicates =
+        plan.candidates.any((c) => c.duplicate) ||
+        plan.cards.any((c) => c.duplicate) ||
+        plan.notes.any((c) => c.duplicate);
     final notices = [
       _Notice(
         icon: Icons.description_outlined,
-        text: l10n.loginImportRead(
-          plan.candidates.length,
-          _sourceName(plan.source),
-        ),
+        text: l10n.loginImportRead(plan.total, _sourceName(plan.source)),
       ),
       if (plan.skipped > 0)
         _Notice(
@@ -197,7 +283,7 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
           child: CustomScrollView(
             slivers: [
               SliverList.list(children: notices),
-              if (plan.candidates.isEmpty)
+              if (rows.isEmpty)
                 SliverFillRemaining(
                   hasScrollBody: false,
                   child: Center(child: Text(l10n.loginImportNothing)),
@@ -207,18 +293,9 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                   sliver: SliverList.separated(
                     separatorBuilder: (_, _) => const SizedBox(height: 8),
-                    itemCount: plan.candidates.length,
+                    itemCount: rows.length,
                     itemBuilder: (context, index) {
-                      final candidate = plan.candidates[index];
-                      final content = candidate.content;
-                      final subtitle = [
-                        if (content.username.isNotEmpty) content.username,
-                        if (content.urls.isNotEmpty)
-                          _hostOf(content.urls.first),
-                        if (candidate.otp != null && !candidate.otpAlreadySaved)
-                          l10n.loginImportWithOtp,
-                        if (candidate.duplicate) l10n.loginImportDuplicate,
-                      ].where((part) => part.isNotEmpty).join(' · ');
+                      final row = rows[index];
                       return GlassSurface(
                         child: CheckboxListTile(
                           value: _selected.contains(index),
@@ -231,8 +308,14 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
                                     _selected.remove(index);
                                   }
                                 }),
-                          title: Text(content.name),
-                          subtitle: subtitle.isEmpty ? null : Text(subtitle),
+                          secondary: Icon(
+                            row.icon,
+                            color: KkGlass.of(context).accent,
+                          ),
+                          title: Text(row.title),
+                          subtitle: row.subtitle.isEmpty
+                              ? null
+                              : Text(row.subtitle),
                         ),
                       );
                     },
@@ -258,6 +341,15 @@ String _sourceName(LoginExportSource source) => switch (source) {
   LoginExportSource.firefoxCsv => 'Firefox (CSV)',
   LoginExportSource.keepassxcCsv => 'KeePassXC (CSV)',
 };
+
+/// Önizleme listesinin bir satırı.
+final class _Row {
+  const new({required this.icon, required this.title, required this.subtitle});
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+}
 
 class _Notice extends StatelessWidget {
   const new({required this.icon, required this.text});

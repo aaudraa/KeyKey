@@ -417,7 +417,7 @@
   "backupReminderNever": "Henüz yedek almadın. Bu telefon kaybolursa kasandaki her şey de kaybolur.",
   "backupReminderStale": "Son yedeğinden sonra kasanda değişiklik var ve o yedek iki haftadan eski.",
   "backupReminderLater": "Sonra",
-  "loginImportTitle": "Parolaları içe aktar",
+  "loginImportTitle": "İçe aktar",
   "loginImportHelp": "Bitwarden, Chrome, Firefox veya KeePassXC dışa aktarma dosyası",
   "otpImportSettingsTitle": "2FA hesaplarını içe aktar",
   "otpImportSettingsHelp": "Aegis veya 2FAS dışa aktarma dosyası",
@@ -531,5 +531,9 @@
   "vaultKindNotes": "Notlar",
   "restoreSummaryAll": "{date} tarihli yedek: {logins} parola, {otps} 2FA hesabı, {cards} kart ve {notes} not.",
   "restoreNewerVersion": "Bu yedek KeyKey'in daha yeni bir sürümüyle alınmış. Uygulamayı güncelleyip yeniden dene.",
-  "backupTooLarge": "Kasa tek yedek dosyasına sığmıyor (64 MB sınırı). Büyük notları kısaltıp yeniden dene."
+  "backupTooLarge": "Kasa tek yedek dosyasına sığmıyor (64 MB sınırı). Büyük notları kısaltıp yeniden dene.",
+  "importLabelCardNumber": "Kart numarası",
+  "importLabelExpiry": "Son kullanma",
+  "importLabelSecurityCode": "Güvenlik kodu",
+  "importCardAdjusted": "Bazı değerler kartın notuna taşındı"
 }

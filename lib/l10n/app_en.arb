@@ -1950,7 +1950,7 @@
   "@backupReminderLater": {
     "description": "Snoozes the backup reminder for a week."
   },
-  "loginImportTitle": "Import passwords",
+  "loginImportTitle": "Import",
   "@loginImportTitle": {
     "description": "Settings tile and screen title for importing passwords."
   },
@@ -2253,5 +2253,21 @@
   "backupTooLarge": "The vault does not fit in one backup file (64 MB limit). Shorten large notes and try again.",
   "@backupTooLarge": {
     "description": "Shown when the backup would exceed the file size limit."
+  },
+  "importLabelCardNumber": "Card number",
+  "@importLabelCardNumber": {
+    "description": "Label put before a card number that was moved into the card's notes during import."
+  },
+  "importLabelExpiry": "Expiry",
+  "@importLabelExpiry": {
+    "description": "Label put before an unreadable expiry moved into the notes during import."
+  },
+  "importLabelSecurityCode": "Security code",
+  "@importLabelSecurityCode": {
+    "description": "Label put before a security code moved into the notes during import."
+  },
+  "importCardAdjusted": "Some values were moved to the card's notes",
+  "@importCardAdjusted": {
+    "description": "Import preview: values that did not fit the card fields were kept in its notes."
   }
 }

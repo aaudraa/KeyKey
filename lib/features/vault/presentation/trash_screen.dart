@@ -91,14 +91,14 @@ class TrashScreen extends ConsumerWidget {
                     ),
                   },
                   title: Text(switch (entry) {
-                    CardEntry(:final item) => cardTitle(item),
+                    CardEntry(:final item) => cardTitle(item.content),
                     _ => entry.name.trim().isEmpty ? '—' : entry.name,
                   }),
                   subtitle: switch (entry) {
                     LoginEntry(:final item) when item.content.username != '' =>
                       Text(item.content.username),
                     CardEntry(:final item) => Text(
-                      cardSummary(l10n, item, DateTime.now()),
+                      cardSummary(l10n, item.content, DateTime.now()),
                     ),
                     _ => null,
                   },

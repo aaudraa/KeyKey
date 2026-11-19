@@ -78,7 +78,7 @@ void main() {
     expect(find.text('Yedek al'), findsNothing);
     for (final row in [
       'Yedekten geri yükle',
-      'Parolaları içe aktar',
+      'İçe aktar',
       '2FA hesaplarını içe aktar',
       'Şifresiz dışa aktar',
     ]) {

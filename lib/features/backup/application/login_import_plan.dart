@@ -5,8 +5,11 @@ import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/authenticator/data/otpauth_uri.dart';
 import 'package:keykey/features/backup/data/import/login_import.dart';
+import 'package:keykey/features/vault/data/card_content.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
+import 'package:keykey/features/vault/data/note_content.dart';
+import 'package:keykey/features/vault/data/vault_record_repository.dart';
 
 /// İçe aktarılabilecek bir kayıt.
 final class LoginImportCandidate {
@@ -30,6 +33,24 @@ final class LoginImportCandidate {
   final bool otpAlreadySaved;
 }
 
+/// İçe aktarılabilecek bir kart ya da not.
+final class RecordImportCandidate<C> {
+  const new({
+    required this.content,
+    required this.duplicate,
+    this.adjusted = false,
+  });
+
+  final C content;
+
+  /// Kasada aynısı var: kartta ad ve numara, notta ad ve metin. Varsayılan
+  /// olarak seçilmez.
+  final bool duplicate;
+
+  /// Biçime uymayan bir değer kartın notuna taşındı.
+  final bool adjusted;
+}
+
 /// Dosyadan çıkarılan, kaydedilmeye hazır liste.
 final class LoginImportPlan {
   const new({
@@ -37,10 +58,17 @@ final class LoginImportPlan {
     required this.candidates,
     required this.skipped,
     required this.skippedOtps,
+    this.cards = const [],
+    this.notes = const [],
   });
 
   final LoginExportSource source;
   final List<LoginImportCandidate> candidates;
+  final List<RecordImportCandidate<CardContent>> cards;
+  final List<RecordImportCandidate<NoteContent>> notes;
+
+  /// Parola, kart ve notların toplamı.
+  int get total => candidates.length + cards.length + notes.length;
 
   /// Desteklenmeyen veya bozuk satırlar.
   final int skipped;
@@ -55,7 +83,17 @@ LoginImportPlan planLoginImport(
   LoginExport export, {
   required Iterable<LoginItem> existingLogins,
   required Iterable<OtpItem> existingOtps,
+  Iterable<CardItem> existingCards = const [],
+  Iterable<NoteItem> existingNotes = const [],
 }) {
+  final knownCards = {
+    for (final item in existingCards)
+      (item.content.name.trim(), item.content.number),
+  };
+  final knownNotes = {
+    for (final item in existingNotes)
+      (item.content.name.trim(), item.content.text),
+  };
   final known = {for (final item in existingLogins) _fingerprint(item.content)};
   final secrets = {
     for (final item in existingOtps) _secretKey(item.content.parameters.secret),
@@ -103,6 +141,24 @@ LoginImportPlan planLoginImport(
   return LoginImportPlan(
     source: export.source,
     candidates: candidates,
+    cards: [
+      for (final card in export.cards)
+        RecordImportCandidate(
+          content: card.content,
+          duplicate: knownCards.contains((
+            card.content.name.trim(),
+            card.content.number,
+          )),
+          adjusted: card.adjusted,
+        ),
+    ],
+    notes: [
+      for (final note in export.notes)
+        RecordImportCandidate(
+          content: note,
+          duplicate: knownNotes.contains((note.name.trim(), note.text)),
+        ),
+    ],
     skipped: export.skipped,
     skippedOtps: skippedOtps,
   );

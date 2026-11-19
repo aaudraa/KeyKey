@@ -4,7 +4,9 @@ import 'package:keykey/features/authenticator/data/otp_content.dart';
 import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/backup/application/login_import_plan.dart';
 import 'package:keykey/features/backup/data/import/login_import.dart';
+import 'package:keykey/features/vault/data/card_content.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
+import 'package:keykey/features/vault/data/note_content.dart';
 
 import '../../../support/fake_vault_service.dart';
 
@@ -107,6 +109,81 @@ void main() {
           const ImportedLogin(name: 'B', username: 'u', password: 'p'),
         ).duplicate,
         isTrue,
+      );
+    });
+  });
+
+  group('kart ve not', () {
+    final card = CardContent(name: 'Maaş', number: '4111111111111111');
+    final note = NoteContent(name: 'Wi-Fi', text: 'parola: kapi');
+
+    LoginImportPlan planOf({
+      List<ImportedCard> cards = const [],
+      List<NoteContent> notes = const [],
+      List<CardContent> existingCards = const [],
+      List<NoteContent> existingNotes = const [],
+    }) => planLoginImport(
+      LoginExport(
+        source: LoginExportSource.bitwardenJson,
+        logins: const [],
+        cards: cards,
+        notes: notes,
+        skipped: 0,
+      ),
+      existingLogins: const [],
+      existingOtps: const [],
+      existingCards: [
+        for (final c in existingCards) FakeRecordRepository.item(c),
+      ],
+      existingNotes: [
+        for (final n in existingNotes) FakeRecordRepository.item(n),
+      ],
+    );
+
+    test('kart ve not adaylara giriyor, düzeltme işareti taşınıyor', () {
+      final plan = planOf(
+        cards: [ImportedCard(content: card, adjusted: true)],
+        notes: [note],
+      );
+      expect(plan.cards.single.content, same(card));
+      expect(plan.cards.single.adjusted, isTrue);
+      expect(plan.cards.single.duplicate, isFalse);
+      expect(plan.notes.single.content, same(note));
+      expect(plan.notes.single.duplicate, isFalse);
+    });
+
+    test('kasada aynı ad ve numaralı kart yinelenen sayılıyor', () {
+      expect(
+        planOf(
+          cards: [ImportedCard(content: card, adjusted: false)],
+          existingCards: [
+            CardContent(name: ' Maaş ', number: '4111111111111111'),
+          ],
+        ).cards.single.duplicate,
+        isTrue,
+      );
+      expect(
+        planOf(
+          cards: [ImportedCard(content: card, adjusted: false)],
+          existingCards: [
+            CardContent(name: 'Maaş', number: '5555555555554444'),
+          ],
+        ).cards.single.duplicate,
+        isFalse,
+      );
+    });
+
+    test('kasada aynı ad ve metinli not yinelenen sayılıyor', () {
+      expect(
+        planOf(notes: [note], existingNotes: [note]).notes.single.duplicate,
+        isTrue,
+      );
+      expect(
+        planOf(
+          notes: [note],
+          existingNotes: [NoteContent(name: 'Wi-Fi', text: 'eski')],
+        ).notes.single.duplicate,
+        isFalse,
       );
     });
   });

@@ -8,6 +8,7 @@ import 'package:keykey/app/ui/kk_copy_icon.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/app/ui/record_avatar.dart';
+import 'package:keykey/features/vault/data/card_content.dart';
 import 'package:keykey/features/vault/data/card_number.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:keykey/features/vault/data/vault_record_repository.dart';
@@ -85,8 +86,7 @@ Widget _titleWithStar(
 }
 
 /// Kartın liste ve çöp satırındaki özeti: "Visa •••• 4242 · 12/28".
-String cardSummary(AppLocalizations l10n, CardItem item, DateTime now) {
-  final content = item.content;
+String cardSummary(AppLocalizations l10n, CardContent content, DateTime now) {
   final number = content.number;
   final expiry = content.expiry;
   return [
@@ -100,8 +100,7 @@ String cardSummary(AppLocalizations l10n, CardItem item, DateTime now) {
 }
 
 /// Kartın listede görünen adı; ad boşsa marka ve son dört hane.
-String cardTitle(CardItem item) {
-  final content = item.content;
+String cardTitle(CardContent content) {
   final name = content.name.trim();
   if (name.isNotEmpty) return name;
   if (content.number.isEmpty) return '—';
@@ -123,12 +122,12 @@ class CardTile extends ConsumerWidget {
     final glass = KkGlass.of(context);
     final content = item.content;
     final idHex = loginIdHex(item.id);
-    final summary = cardSummary(l10n, item, DateTime.now());
+    final summary = cardSummary(l10n, content, DateTime.now());
     return KkCard(
       flash: watchLastSaved(ref, savedCardKey(idHex)),
       title: _titleWithStar(
         context,
-        cardTitle(item),
+        cardTitle(content),
         favorite: content.favorite,
       ),
       subtitle: summary.isEmpty ? null : Text(summary),
