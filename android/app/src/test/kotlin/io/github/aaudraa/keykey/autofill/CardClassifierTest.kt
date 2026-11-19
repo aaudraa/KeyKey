@@ -150,6 +150,36 @@ class CardClassifierTest {
     }
 
     @Test
+    fun kartTürüAdıKartSahibiniNumaraYapmıyor() {
+        // Gözden geçirme: "kredi kartı" gibi genel sözler sahibi kutusunu
+        // numara yapıyor, numara da sahibi kutusuna yazılıyordu.
+        assertEquals(weak(FieldKind.CARD_HOLDER), guess(FieldInfo(inputType = text, hint = "Kredi kartı sahibi")))
+        assertEquals(weak(FieldKind.CARD_HOLDER), guess(FieldInfo(inputType = text, hint = "Banka kartı sahibinin adı")))
+        assertEquals(weak(FieldKind.CARD_HOLDER), guess(FieldInfo(inputType = text, hint = "Name on credit card")))
+        assertEquals(weak(FieldKind.CARD_HOLDER), guess(FieldInfo(inputType = text, hint = "Kartın üzerindeki isim")))
+        assertEquals(weak(FieldKind.CARD_NUMBER), guess(FieldInfo(inputType = text, hint = "Kredi kartı numarası")))
+        assertEquals(weak(FieldKind.CARD_NUMBER), guess(FieldInfo(inputType = text, hint = "Credit card number")))
+        // Kart türünün adı tek başına numara demek değil (kartın adı, limit, borç).
+        assertNull(guess(FieldInfo(inputType = text, hint = "Kredi kartı")))
+        assertNull(guess(FieldInfo(inputType = text, hint = "Kredi kartı limiti")))
+        assertNull(guess(FieldInfo(inputType = text, hint = "Debit card")))
+    }
+
+    @Test
+    fun hediyeKartıTaksitVeSmsKoduKartSayılmıyor() {
+        assertNull(guess(FieldInfo(inputType = text, hint = "Gift card number")))
+        assertNull(guess(FieldInfo(inputType = text, hint = "Hediye kartı numarası")))
+        assertNull(guess(FieldInfo(inputType = text, hint = "Üye kartı numarası")))
+        assertNull(guess(FieldInfo(inputType = text, hint = "Loyalty card number")))
+        // Taksit listesi "ay" diyebilir; Aralık kartı 12 taksit seçmemeli.
+        assertNull(guess(FieldInfo(idEntry = "taksit_ay", autofillType = listType)))
+        assertNull(guess(FieldInfo(hint = "Installment months", autofillType = listType)))
+        // Türkçede "güvenlik kodu" çoğu zaman captcha ya da SMS kodudur.
+        assertNull(guess(FieldInfo(inputType = text, hint = "SMS ile gönderilen güvenlik kodu")))
+        assertNull(guess(FieldInfo(inputType = text, hint = "Resimdeki güvenlik kodu")))
+    }
+
+    @Test
     fun benzerSözcüklerKartSayılmıyor() {
         assertNull(guess(FieldInfo(inputType = text, hint = "Doğum yılı")))
         assertNull(guess(FieldInfo(inputType = text, hint = "Birth month")))

@@ -69,13 +69,19 @@ object CardClassifier {
     )
     private val HOLDER_WORDS = listOf(
         "cardholder", "card holder", "holder name", "holdername", "name on card", "nameoncard",
-        "kart sahib", "kartsahib", "kart üzerindeki", "kart uzerindeki",
+        "name on credit card", "name on debit card", "name on the card",
+        "kart sahib", "kartsahib", "kartı sahib", "karti sahib",
+        "kart üzerindeki", "kart uzerindeki", "kartı üzerindeki", "karti uzerindeki",
         "kartın üzerindeki", "kartin uzerindeki", "ccname",
     )
+
+    // "Kredi kartı", "debit card" gibi kart türü adları tek başına numara
+    // demek değil: kartın adı, limiti, sahibi de olabilir.
     private val NUMBER_WORDS = listOf(
         "card number", "cardnumber", "card no", "cardno", "card num", "cardnum",
-        "cc number", "ccnumber", "ccnum", "credit card", "creditcard", "debit card",
-        "kart numara", "kartnumara", "kart no", "kartno", "kredi kart", "banka kart",
+        "cc number", "ccnumber", "ccnum",
+        "kart numara", "kartnumara", "kartı numara", "karti numara",
+        "kart no", "kartno", "kartı no", "karti no",
     )
     private val EXPIRY_WORDS = listOf(
         "expir", "exp date", "expdate", "valid thru", "valid through", "validthru", "valid until",
@@ -86,8 +92,17 @@ object CardClassifier {
     private val YEAR_TOKENS = setOf("yıl", "yılı", "yil", "yili", "yy", "yyyy", "aaaa")
     private val PIN_WORDS = listOf("kart şifre", "kart sifre", "kartşifre", "kartsifre", "card pin", "cardpin")
 
-    /** Kart sanılmaması gereken alanlar: doğum tarihi, arama, captcha. */
-    private val EXCLUDED_WORDS = listOf("doğum", "dogum", "birth", "search", "captcha", "arama")
+    /**
+     * Kart sanılmaması gereken alanlar: doğum tarihi, arama, captcha ve SMS
+     * kodu ("güvenlik kodu" Türkçede çoğu zaman bunlardır), hediye ve üyelik
+     * kartları, taksit seçimi.
+     */
+    private val EXCLUDED_WORDS = listOf(
+        "doğum", "dogum", "birth", "search", "captcha", "arama",
+        "sms", "resim", "gönderilen", "gonderilen",
+        "gift", "hediye", "loyalty", "sadakat", "üye kart", "uye kart",
+        "taksit", "installment",
+    )
 
     private val SKIPPED_HTML_TYPES = setOf("hidden", "submit", "button", "checkbox", "radio", "search")
     private val TOKEN_SPLIT = Regex("[^\\p{L}\\p{N}]+")

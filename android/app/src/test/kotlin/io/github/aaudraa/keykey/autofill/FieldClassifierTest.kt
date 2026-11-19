@@ -297,6 +297,97 @@ class FieldClassifierTest {
     }
 
     @Test
+    fun kartNumarasıSahibiKutusunaGitmiyor() {
+        // Gözden geçirme: numara "Kredi kartı sahibi" kutusuna yazılıyordu.
+        val form = FormParser.parse(
+            listOf(
+                FieldInfo(inputType = text, hint = "Kredi kartı sahibi"),
+                FieldInfo(inputType = number, hint = "Kart numarası"),
+                FieldInfo(inputType = text, hint = "AA/YY"),
+                FieldInfo(inputType = numberPassword, hint = "CVV"),
+            ),
+        )
+        assertEquals(listOf(0), form.of(FieldKind.CARD_HOLDER))
+        assertEquals(listOf(1), form.of(FieldKind.CARD_NUMBER))
+    }
+
+    @Test
+    fun güçlüKanıtAynıTürdekiZayıfTahminiGeçersizKılar() {
+        // İpuçlu numara kutusu varken sözcükle bulunan ikinci "numara"
+        // kutusu (başka bir kartın, üyelik numarasının...) doldurulmaz.
+        val numbers = FormParser.parse(
+            listOf(
+                FieldInfo(inputType = text, hint = "Kart no"),
+                FieldInfo(autofillHints = listOf("creditCardNumber"), inputType = number),
+            ),
+        )
+        assertEquals(listOf(1), numbers.of(FieldKind.CARD_NUMBER))
+        assertFalse(numbers.hasCredentials)
+        // Tek kutuda son kullanma varken "Ay" listesi (doğum ayı olabilir) doldurulmaz.
+        val expiry = FormParser.parse(
+            listOf(
+                FieldInfo(autofillHints = listOf("creditCardNumber"), inputType = number),
+                FieldInfo(autofillHints = listOf("creditCardExpirationDate"), inputType = text),
+                FieldInfo(hint = "Ay", autofillType = 3),
+                FieldInfo(hint = "Yıl", autofillType = 3),
+            ),
+        )
+        assertEquals(listOf(1), expiry.of(FieldKind.CARD_EXPIRY))
+        assertEquals(emptyList<Int>(), expiry.of(FieldKind.CARD_EXP_MONTH))
+        assertEquals(emptyList<Int>(), expiry.of(FieldKind.CARD_EXP_YEAR))
+        // Geliştirici yalnızca ayı işaretlediyse sözcükle bulunan yıl kalır.
+        val monthOnly = FormParser.parse(
+            listOf(
+                FieldInfo(autofillHints = listOf("creditCardExpirationMonth"), autofillType = 3),
+                FieldInfo(hint = "Yıl", autofillType = 3),
+            ),
+        )
+        assertEquals(listOf(0), monthOnly.of(FieldKind.CARD_EXP_MONTH))
+        assertEquals(listOf(1), monthOnly.of(FieldKind.CARD_EXP_YEAR))
+    }
+
+    @Test
+    fun kartNumarasıylaGirişFormuGüvenlikKoduylaDaGirişKalır() {
+        // Gözden geçirme: banka girişindeki captcha "Güvenlik kodu" formu
+        // ödeme formu yapıyor, kullanıcı adı kayboluyordu.
+        val withPassword = FormParser.parse(
+            listOf(
+                FieldInfo(inputType = text, hint = "Kart numarası"),
+                FieldInfo(inputType = textPassword, hint = "Şifre"),
+                FieldInfo(inputType = text, hint = "Güvenlik kodu"),
+            ),
+        )
+        assertFalse(withPassword.hasCard)
+        assertEquals(listOf(0), withPassword.of(FieldKind.USERNAME))
+        assertEquals(listOf(1), withPassword.of(FieldKind.PASSWORD))
+        // Kart şifresiyle giriş: çevrim içi ödeme PIN istemez.
+        val withPin = FormParser.parse(
+            listOf(
+                FieldInfo(inputType = text, hint = "Kart numarası"),
+                FieldInfo(inputType = numberPassword, hint = "Kart şifresi"),
+                FieldInfo(inputType = text, hint = "Güvenlik kodu"),
+            ),
+        )
+        assertFalse(withPin.hasCard)
+        assertTrue(withPin.hasCredentials)
+        assertEquals(listOf(0), withPin.of(FieldKind.USERNAME))
+        assertEquals(listOf(1), withPin.of(FieldKind.PASSWORD))
+    }
+
+    @Test
+    fun tekBaşınaGüvenlikKoduKutusuParolaSayılmıyor() {
+        // Kayıtlı kartın kodunu yeniden soran ekran: kutuya parola
+        // doldurulmamalı, kod parola diye kaydedilmemeli.
+        for (hint in listOf("Güvenlik kodu", "Security code")) {
+            val form = FormParser.parse(
+                listOf(FieldInfo(inputType = numberPassword, hint = hint, maxLength = 3)),
+            )
+            assertEquals(emptyList<Int>(), form.of(FieldKind.PASSWORD))
+            assertFalse(form.hasCredentials)
+        }
+    }
+
+    @Test
     fun boşForm() {
         assertFalse(FormParser.parse(emptyList()).hasCredentials)
         assertFalse(FormParser.parse(listOf(FieldInfo(inputType = text, hint = "Ad soyad"))).hasCredentials)

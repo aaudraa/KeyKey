@@ -217,17 +217,40 @@ object FormParser {
      * kapsıyorsa form ödeme formudur ve kart alanları giriş tanımaya hiç
      * girmez. Böylece gizli rakam kutusu olan güvenlik kodu parola sayılmaz;
      * kart numarasıyla giriş yapılan bir banka formu ise giriş formu kalır.
+     * Yalnızca zayıf kanıtla karar verilecekken formda kart dışı bir parola
+     * kutusu ya da kart şifresi varsa form giriş formudur: çevrim içi ödeme
+     * PIN istemez, "güvenlik kodu" ise banka girişinde captcha olabilir.
+     * Aynı türde güçlü kanıtlı bir alan varsa zayıf tahmin geçersizdir; o
+     * alan hiç doldurulmaz.
      *
      * Parola alanı olup kullanıcı adı bulunamadıysa, ilk parola alanından
      * hemen önceki sıradan metin kutusu kullanıcı adı sayılır; çoğu giriş
      * formu böyledir.
      */
     fun parse(fields: List<FieldInfo>): ParsedForm {
-        val cards = fields.map { CardClassifier.classify(it) }
+        val guesses = fields.map { CardClassifier.classify(it) }
+        val superseded = guesses.map { guess ->
+            guess != null && !guess.strong &&
+                guesses.any { it != null && it.strong && supersedes(it.kind, guess.kind) }
+        }
+        val cards = guesses.mapIndexed { index, guess -> guess.takeUnless { superseded[index] } }
+        val logins = fields.map { FieldClassifier.classify(it) }
         val paymentForm = cards.any { it?.strong == true } ||
-            cards.mapNotNull { it?.kind?.cardGroup }.toSet().size >= 2
-        val kinds = fields.mapIndexed { index, field ->
-            cards[index]?.takeIf { paymentForm }?.kind ?: FieldClassifier.classify(field)
+            (
+                cards.mapNotNull { it?.kind?.cardGroup }.toSet().size >= 2 &&
+                    cards.none { it?.kind == FieldKind.CARD_PIN } &&
+                    cards.indices.none { cards[it] == null && logins[it] in PASSWORD_KINDS }
+                )
+        val kinds = fields.indices.map { index ->
+            val card = cards[index]
+            when {
+                superseded[index] -> null
+                paymentForm && card != null -> card.kind
+                // Ödeme formu olmasa da "güvenlik kodu" diyen gizli kutu
+                // parola değildir: ne parola doldurulur ne kod kaydedilir.
+                card?.kind == FieldKind.CARD_SECURITY_CODE && logins[index] in PASSWORD_KINDS -> null
+                else -> logins[index]
+            }
         }.toMutableList()
         val firstPassword = kinds.indexOfFirst {
             it == FieldKind.PASSWORD || it == FieldKind.NEW_PASSWORD
@@ -244,4 +267,12 @@ object FormParser {
         }
         return ParsedForm(grouped)
     }
+
+    private val PASSWORD_KINDS = setOf(FieldKind.PASSWORD, FieldKind.NEW_PASSWORD)
+    private val EXPIRY_PARTS = setOf(FieldKind.CARD_EXP_MONTH, FieldKind.CARD_EXP_YEAR)
+
+    /** Güçlü kanıtlı [strong] türü, aynı yeri tutan zayıf [weak] tahmini geçersiz kılar mı. */
+    private fun supersedes(strong: FieldKind, weak: FieldKind): Boolean = strong == weak ||
+        (strong == FieldKind.CARD_EXPIRY && weak in EXPIRY_PARTS) ||
+        (weak == FieldKind.CARD_EXPIRY && strong in EXPIRY_PARTS)
 }

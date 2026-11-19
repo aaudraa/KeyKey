@@ -14,7 +14,7 @@ Faz 15 ([tasarım](docs/kart-doldurma.md)).
 
 ### Düzeltilenler
 
-- Ödeme formlarındaki güvenlik kodu kutusu parola sanılıyordu: kutuda "KeyKey ile doldur" önerisi çıkıyor, form gönderilince güvenlik kodunu parola diye kaydetmek öneriliyordu. Artık güvenlik kodu ve kart şifresi kutuları parola sayılmıyor.
+- Ödeme formlarındaki güvenlik kodu kutusu parola sanılıyordu: kutuda "KeyKey ile doldur" önerisi çıkıyor, form gönderilince güvenlik kodunu parola diye kaydetmek öneriliyordu. Artık ödeme formundaki güvenlik kodu ve kart şifresi kutuları, tek başına duran "Güvenlik kodu" kutusu da parola sayılmıyor. Kart numarasıyla girilen banka formları giriş formu olarak kalıyor.
 
 ## 1.4.0 (2026-11-19): Kartlar ve güvenli notlar
 

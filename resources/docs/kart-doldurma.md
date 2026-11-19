@@ -15,7 +15,7 @@ Bugünkü doldurma servisinin ödeme formlarında bir de hatası var: güvenlik 
 - Uygulamalarda ve Chrome'da ödeme formunun kart alanları tanınır: numara, kart sahibi, son kullanma (tek kutu ya da ayrı ay ve yıl, metin kutusu ya da açılır liste) ve güvenlik kodu.
 - Kart alanında "KeyKey ile kart doldur" önerisi çıkar. Öneriye dokunulunca kasa açılır, kart listeden seçilir, form dolar.
 - Güvenlik kodu kutusu artık parola sayılmaz: ödeme formunda parola önerisi ve parola kaydetme önerisi çıkmaz.
-- Kart sahibinin adıyla, numarasıyla ya da markasıyla arama yapılabilir.
+- Kartın adıyla, kart sahibinin adıyla ya da markasıyla arama yapılabilir. Numarayla aranmaz (gözden geçirmede düzeltildi; ayrıntı [Doldurma ekranı](#doldurma-ekranı) bölümünde).
 
 ## Hedef olmayanlar
 
@@ -72,11 +72,21 @@ Sınıflandırma Kotlin'deki `FieldClassifier`'da kalır. Yeni alan türleri: ka
 
 **Ödeme formu kuralı.** Formda en az bir güçlü kanıt varsa ya da zayıf kanıtlar üç gruptan (numara, son kullanma, güvenlik kodu) en az ikisini kapsıyorsa form ödeme formudur ve bütün kart alanları kart sayılır. Değilse zayıf kanıtlar unutulur, alanlar bugünkü gibi giriş kurallarıyla tanınır. Kart sahibi kanıtı tek başına formu ödeme formu yapmaz.
 
+Son gözden geçirmeden sonra eklenen üç kural (karşı hedeflerdeki "yanlış kutu", "bozulan banka girişi" ve "parola sanılan güvenlik kodu" için):
+
+- **Zayıf kanıtla verilecek karar, formda kart dışı bir parola kutusu ya da kart şifresi varsa verilmez;** form giriş formudur. Çevrim içi ödeme PIN istemez; "güvenlik kodu" ise banka girişinde çoğu zaman captcha ya da SMS kodudur.
+- **Aynı yeri tutan güçlü kanıtlı bir alan varsa zayıf tahmin geçersizdir** ve o alan hiç doldurulmaz: ipuçlu numara kutusu varken sözcükle bulunan ikinci "numara" kutusu, tek kutuda son kullanma varken "Ay" ve "Yıl" listeleri (doğum tarihi olabilir).
+- **Ödeme formu olmasa da güvenlik kodu sözcükleriyle bulunan gizli kutu parola sayılmaz:** ne parola doldurulur ne kod kaydedilir.
+
+Sözcük listelerinde de iki düzeltme yapıldı: "kredi kartı", "debit card" gibi kart türü adları tek başına numara sayılmıyor ("Kredi kartı sahibi" numara sanılıyordu); hediye, üyelik ve sadakat kartları, taksit seçimi, SMS ve resim kodları kart sayılmıyor.
+
 Örnekler:
 
 - Kart numarası (sözcük) ve şifre kutusu: ödeme formu değil. Numara kutusu bugünkü gibi kullanıcı adı sayılabilir, giriş önerisi çıkar.
 - Kart numarası (sözcük), "AA/YY" ve gizli rakam kutusu "CVV": ödeme formu. Gizli kutu güvenlik kodudur, parola değil.
 - Yalnızca "CVV" kutusu (kayıtlı kartın kodunu yeniden soran ekran): güçlü kanıt, ödeme formu. Kart önerisi çıkar, giriş önerisi ve parola kaydetme önerisi çıkmaz.
+- Yalnızca gizli "Güvenlik kodu" kutusu: zayıf kanıt, ödeme formu değil. Kart önerisi çıkmaz, ama kutu parola da sayılmaz.
+- Kart numarası (sözcük), şifre kutusu ve "Güvenlik kodu" (captcha): giriş formu. Numara kutusu kullanıcı adı, şifre kutusu parola.
 
 **Kart şifresi.** Ödeme formunda "kart şifresi" ya da "card PIN" diyen kutu kart PIN'i sayılır: hiçbir zaman doldurulmaz, parola sayılmaz ve parola diye kaydedilmez. Kart sahibi gibi o da formu tek başına ödeme formu yapmaz.
 
