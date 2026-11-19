@@ -427,6 +427,11 @@ data class AutofillRequestInfo (
   val inWebView: Boolean,
   val hasUsernameField: Boolean,
   val hasPasswordField: Boolean,
+  /**
+   * Ekran "KeyKey ile kart doldur" önerisinden açıldı: kart listesi
+   * gösterilir, değerler [AutofillApi.fillCard] ile verilir.
+   */
+  val forCard: Boolean,
   /** Ekran kaydetmek için açıldıysa formdaki değerler; doldurmada `null`. */
   val save: AutofillSaveValues? = null
 )
@@ -442,8 +447,9 @@ data class AutofillRequestInfo (
       val inWebView = pigeonVar_list[6] as Boolean
       val hasUsernameField = pigeonVar_list[7] as Boolean
       val hasPasswordField = pigeonVar_list[8] as Boolean
-      val save = pigeonVar_list[9] as AutofillSaveValues?
-      return AutofillRequestInfo(packageName, appLabel, certsSha256, webDomain, webScheme, untrustedWebDomain, inWebView, hasUsernameField, hasPasswordField, save)
+      val forCard = pigeonVar_list[9] as Boolean
+      val save = pigeonVar_list[10] as AutofillSaveValues?
+      return AutofillRequestInfo(packageName, appLabel, certsSha256, webDomain, webScheme, untrustedWebDomain, inWebView, hasUsernameField, hasPasswordField, forCard, save)
     }
   }
   fun toList(): List<Any?> {
@@ -457,6 +463,7 @@ data class AutofillRequestInfo (
       inWebView,
       hasUsernameField,
       hasPasswordField,
+      forCard,
       save,
     )
   }
@@ -468,7 +475,7 @@ data class AutofillRequestInfo (
       return true
     }
     val other = other as AutofillRequestInfo
-    return PlatformApiPigeonUtils.deepEquals(this.packageName, other.packageName) && PlatformApiPigeonUtils.deepEquals(this.appLabel, other.appLabel) && PlatformApiPigeonUtils.deepEquals(this.certsSha256, other.certsSha256) && PlatformApiPigeonUtils.deepEquals(this.webDomain, other.webDomain) && PlatformApiPigeonUtils.deepEquals(this.webScheme, other.webScheme) && PlatformApiPigeonUtils.deepEquals(this.untrustedWebDomain, other.untrustedWebDomain) && PlatformApiPigeonUtils.deepEquals(this.inWebView, other.inWebView) && PlatformApiPigeonUtils.deepEquals(this.hasUsernameField, other.hasUsernameField) && PlatformApiPigeonUtils.deepEquals(this.hasPasswordField, other.hasPasswordField) && PlatformApiPigeonUtils.deepEquals(this.save, other.save)
+    return PlatformApiPigeonUtils.deepEquals(this.packageName, other.packageName) && PlatformApiPigeonUtils.deepEquals(this.appLabel, other.appLabel) && PlatformApiPigeonUtils.deepEquals(this.certsSha256, other.certsSha256) && PlatformApiPigeonUtils.deepEquals(this.webDomain, other.webDomain) && PlatformApiPigeonUtils.deepEquals(this.webScheme, other.webScheme) && PlatformApiPigeonUtils.deepEquals(this.untrustedWebDomain, other.untrustedWebDomain) && PlatformApiPigeonUtils.deepEquals(this.inWebView, other.inWebView) && PlatformApiPigeonUtils.deepEquals(this.hasUsernameField, other.hasUsernameField) && PlatformApiPigeonUtils.deepEquals(this.hasPasswordField, other.hasPasswordField) && PlatformApiPigeonUtils.deepEquals(this.forCard, other.forCard) && PlatformApiPigeonUtils.deepEquals(this.save, other.save)
   }
 
   override fun hashCode(): Int {
@@ -482,11 +489,12 @@ data class AutofillRequestInfo (
     result = 31 * result + PlatformApiPigeonUtils.deepHash(this.inWebView)
     result = 31 * result + PlatformApiPigeonUtils.deepHash(this.hasUsernameField)
     result = 31 * result + PlatformApiPigeonUtils.deepHash(this.hasPasswordField)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.forCard)
     result = 31 * result + PlatformApiPigeonUtils.deepHash(this.save)
     return result
   }
   override fun toString(): String {
-    return "AutofillRequestInfo(packageName=$packageName, appLabel=$appLabel, certsSha256=$certsSha256, webDomain=$webDomain, webScheme=$webScheme, untrustedWebDomain=$untrustedWebDomain, inWebView=$inWebView, hasUsernameField=$hasUsernameField, hasPasswordField=$hasPasswordField, save=$save)"
+    return "AutofillRequestInfo(packageName=$packageName, appLabel=$appLabel, certsSha256=$certsSha256, webDomain=$webDomain, webScheme=$webScheme, untrustedWebDomain=$untrustedWebDomain, inWebView=$inWebView, hasUsernameField=$hasUsernameField, hasPasswordField=$hasPasswordField, forCard=$forCard, save=$save)"
   }
 }
 
@@ -532,6 +540,64 @@ data class AutofillSaveValues (
   }
   override fun toString(): String {
     return "AutofillSaveValues(username=$username, password=$password)"
+  }
+}
+
+/**
+ * Forma doldurulacak kart değerleri. PIN burada yok: hiçbir alana
+ * doldurulmaz. [expYear] dört hanelidir.
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class CardFillValues (
+  val number: String,
+  val cardholder: String,
+  val expMonth: Long? = null,
+  val expYear: Long? = null,
+  val securityCode: String
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): CardFillValues {
+      val number = pigeonVar_list[0] as String
+      val cardholder = pigeonVar_list[1] as String
+      val expMonth = pigeonVar_list[2] as Long?
+      val expYear = pigeonVar_list[3] as Long?
+      val securityCode = pigeonVar_list[4] as String
+      return CardFillValues(number, cardholder, expMonth, expYear, securityCode)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      number,
+      cardholder,
+      expMonth,
+      expYear,
+      securityCode,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as CardFillValues
+    return PlatformApiPigeonUtils.deepEquals(this.number, other.number) && PlatformApiPigeonUtils.deepEquals(this.cardholder, other.cardholder) && PlatformApiPigeonUtils.deepEquals(this.expMonth, other.expMonth) && PlatformApiPigeonUtils.deepEquals(this.expYear, other.expYear) && PlatformApiPigeonUtils.deepEquals(this.securityCode, other.securityCode)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.number)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.cardholder)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.expMonth)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.expYear)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.securityCode)
+    return result
+  }
+  override fun toString(): String {
+    return "CardFillValues(number=$number, cardholder=$cardholder, expMonth=$expMonth, expYear=$expYear, securityCode=$securityCode)"
   }
 }
 
@@ -732,15 +798,20 @@ private open class PlatformApiPigeonCodec : StandardMessageCodec() {
       }
       138.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          AutofillSetupStatus.fromList(it)
+          CardFillValues.fromList(it)
         }
       }
       139.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          DocumentResult.fromList(it)
+          AutofillSetupStatus.fromList(it)
         }
       }
       140.toByte() -> {
+        (readValue(buffer) as? List<Any?>)?.let {
+          DocumentResult.fromList(it)
+        }
+      }
+      141.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
           FolderPickResult.fromList(it)
         }
@@ -786,16 +857,20 @@ private open class PlatformApiPigeonCodec : StandardMessageCodec() {
         stream.write(137)
         writeValue(stream, value.toList())
       }
-      is AutofillSetupStatus -> {
+      is CardFillValues -> {
         stream.write(138)
         writeValue(stream, value.toList())
       }
-      is DocumentResult -> {
+      is AutofillSetupStatus -> {
         stream.write(139)
         writeValue(stream, value.toList())
       }
-      is FolderPickResult -> {
+      is DocumentResult -> {
         stream.write(140)
+        writeValue(stream, value.toList())
+      }
+      is FolderPickResult -> {
+        stream.write(141)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -1006,6 +1081,13 @@ interface AutofillApi {
   fun hasSigningCertificates(packageName: String, certsSha256: List<String>): Boolean
   /** Değerleri forma verir, [notice] bildirimini gösterir ve ekranı kapatır. */
   fun fill(username: String, password: String, notice: String)
+  /**
+   * Kart değerlerini her alanın türüne göre biçimleyip forma verir,
+   * [notice] bildirimini gösterir ve ekranı kapatır. Ekran kart isteğiyle
+   * açılmadıysa ya da doldurulacak alan kalmadıysa hiçbir şey doldurmadan
+   * kapanır.
+   */
+  fun fillCard(values: CardFillValues, notice: String)
   /** Hiçbir şey doldurmadan ekranı kapatır. Kaydetme bitince de kullanılır. */
   fun cancel()
 
@@ -1061,6 +1143,25 @@ interface AutofillApi {
             val noticeArg = args[2] as String
             val wrapped: List<Any?> = try {
               api.fill(usernameArg, passwordArg, noticeArg)
+              listOf(null)
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.AutofillApi.fillCard$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val valuesArg = args[0] as CardFillValues
+            val noticeArg = args[1] as String
+            val wrapped: List<Any?> = try {
+              api.fillCard(valuesArg, noticeArg)
               listOf(null)
             } catch (exception: Throwable) {
               PlatformApiPigeonUtils.wrapError(exception)

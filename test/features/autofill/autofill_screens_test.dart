@@ -38,6 +38,7 @@ class FakeAutofillBridge implements AutofillBridge {
   ({String username, String password})? filled;
   String? notice;
   int fillCount = 0;
+  AutofillCard? card;
   bool cancelled = false;
 
   @override
@@ -58,6 +59,16 @@ class FakeAutofillBridge implements AutofillBridge {
     required String notice,
   }) async {
     filled = (username: username, password: password);
+    this.notice = notice;
+    fillCount++;
+  }
+
+  @override
+  Future<void> fillCard({
+    required AutofillCard card,
+    required String notice,
+  }) async {
+    this.card = card;
     this.notice = notice;
     fillCount++;
   }

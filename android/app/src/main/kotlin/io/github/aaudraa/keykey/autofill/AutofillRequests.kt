@@ -8,7 +8,12 @@ import java.util.UUID
 
 /** Çözümlenmiş formdan Flutter ekranına verilecek isteği kurar. */
 internal object AutofillRequests {
-    fun of(context: Context, form: ParsedStructure, save: AutofillSaveValues? = null): AutofillRequestInfo {
+    fun of(
+        context: Context,
+        form: ParsedStructure,
+        save: AutofillSaveValues? = null,
+        forCard: Boolean = false,
+    ): AutofillRequestInfo {
         val pm = context.packageManager
         // Web alan adına yalnızca güvenilen tarayıcıdan gelirse inanılır;
         // WebView'lı bir uygulama istediği alan adını yazabilir.
@@ -23,6 +28,7 @@ internal object AutofillRequests {
             inWebView = form.hasWebContent && !trustedBrowser,
             hasUsernameField = form.idsOf(FieldKind.USERNAME).isNotEmpty(),
             hasPasswordField = form.idsOf(FieldKind.PASSWORD).isNotEmpty(),
+            forCard = forCard,
             save = save,
         )
     }

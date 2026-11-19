@@ -100,6 +100,7 @@ class AutofillRequestInfo {
     required this.inWebView,
     required this.hasUsernameField,
     required this.hasPasswordField,
+    required this.forCard,
     this.save,
   });
 
@@ -126,6 +127,10 @@ class AutofillRequestInfo {
   bool hasUsernameField;
   bool hasPasswordField;
 
+  /// Ekran "KeyKey ile kart doldur" önerisinden açıldı: kart listesi
+  /// gösterilir, değerler [AutofillApi.fillCard] ile verilir.
+  bool forCard;
+
   /// Ekran kaydetmek için açıldıysa formdaki değerler; doldurmada `null`.
   AutofillSaveValues? save;
 }
@@ -136,6 +141,24 @@ class AutofillSaveValues {
 
   String username;
   String password;
+}
+
+/// Forma doldurulacak kart değerleri. PIN burada yok: hiçbir alana
+/// doldurulmaz. [expYear] dört hanelidir.
+class CardFillValues {
+  CardFillValues({
+    required this.number,
+    required this.cardholder,
+    required this.expMonth,
+    required this.expYear,
+    required this.securityCode,
+  });
+
+  String number;
+  String cardholder;
+  int? expMonth;
+  int? expYear;
+  String securityCode;
 }
 
 /// Otomatik doldurma ekranının Kotlin tarafı.
@@ -150,6 +173,12 @@ abstract class AutofillApi {
 
   /// Değerleri forma verir, [notice] bildirimini gösterir ve ekranı kapatır.
   void fill(String username, String password, String notice);
+
+  /// Kart değerlerini her alanın türüne göre biçimleyip forma verir,
+  /// [notice] bildirimini gösterir ve ekranı kapatır. Ekran kart isteğiyle
+  /// açılmadıysa ya da doldurulacak alan kalmadıysa hiçbir şey doldurmadan
+  /// kapanır.
+  void fillCard(CardFillValues values, String notice);
 
   /// Hiçbir şey doldurmadan ekranı kapatır. Kaydetme bitince de kullanılır.
   void cancel();

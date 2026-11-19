@@ -286,6 +286,7 @@ class AutofillRequestInfo {
     required this.inWebView,
     required this.hasUsernameField,
     required this.hasPasswordField,
+    required this.forCard,
     this.save,
   });
 
@@ -315,6 +316,10 @@ class AutofillRequestInfo {
 
   bool hasPasswordField;
 
+  /// Ekran "KeyKey ile kart doldur" önerisinden açıldı: kart listesi
+  /// gösterilir, değerler [AutofillApi.fillCard] ile verilir.
+  bool forCard;
+
   /// Ekran kaydetmek için açıldıysa formdaki değerler; doldurmada `null`.
   AutofillSaveValues? save;
 
@@ -329,6 +334,7 @@ class AutofillRequestInfo {
       inWebView,
       hasUsernameField,
       hasPasswordField,
+      forCard,
       save,
     ];
   }
@@ -349,7 +355,8 @@ class AutofillRequestInfo {
       inWebView: result[6]! as bool,
       hasUsernameField: result[7]! as bool,
       hasPasswordField: result[8]! as bool,
-      save: result[9] as AutofillSaveValues?,
+      forCard: result[9]! as bool,
+      save: result[10] as AutofillSaveValues?,
     );
   }
 
@@ -371,6 +378,7 @@ class AutofillRequestInfo {
         _deepEquals(inWebView, other.inWebView) &&
         _deepEquals(hasUsernameField, other.hasUsernameField) &&
         _deepEquals(hasPasswordField, other.hasPasswordField) &&
+        _deepEquals(forCard, other.forCard) &&
         _deepEquals(save, other.save);
   }
 
@@ -380,7 +388,7 @@ class AutofillRequestInfo {
 
   @override
   String toString() {
-    return 'AutofillRequestInfo(packageName: $packageName, appLabel: $appLabel, certsSha256: $certsSha256, webDomain: $webDomain, webScheme: $webScheme, untrustedWebDomain: $untrustedWebDomain, inWebView: $inWebView, hasUsernameField: $hasUsernameField, hasPasswordField: $hasPasswordField, save: $save)';
+    return 'AutofillRequestInfo(packageName: $packageName, appLabel: $appLabel, certsSha256: $certsSha256, webDomain: $webDomain, webScheme: $webScheme, untrustedWebDomain: $untrustedWebDomain, inWebView: $inWebView, hasUsernameField: $hasUsernameField, hasPasswordField: $hasPasswordField, forCard: $forCard, save: $save)';
   }
 }
 
@@ -428,6 +436,72 @@ class AutofillSaveValues {
   @override
   String toString() {
     return 'AutofillSaveValues(username: $username, password: $password)';
+  }
+}
+
+/// Forma doldurulacak kart değerleri. PIN burada yok: hiçbir alana
+/// doldurulmaz. [expYear] dört hanelidir.
+class CardFillValues {
+  CardFillValues({
+    required this.number,
+    required this.cardholder,
+    this.expMonth,
+    this.expYear,
+    required this.securityCode,
+  });
+
+  String number;
+
+  String cardholder;
+
+  int? expMonth;
+
+  int? expYear;
+
+  String securityCode;
+
+  List<Object?> _toList() {
+    return <Object?>[number, cardholder, expMonth, expYear, securityCode];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static CardFillValues decode(Object result) {
+    result as List<Object?>;
+    return CardFillValues(
+      number: result[0]! as String,
+      cardholder: result[1]! as String,
+      expMonth: result[2] as int?,
+      expYear: result[3] as int?,
+      securityCode: result[4]! as String,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! CardFillValues || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(number, other.number) &&
+        _deepEquals(cardholder, other.cardholder) &&
+        _deepEquals(expMonth, other.expMonth) &&
+        _deepEquals(expYear, other.expYear) &&
+        _deepEquals(securityCode, other.securityCode);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'CardFillValues(number: $number, cardholder: $cardholder, expMonth: $expMonth, expYear: $expYear, securityCode: $securityCode)';
   }
 }
 
@@ -622,14 +696,17 @@ class _PigeonCodec extends StandardMessageCodec {
     } else if (value is AutofillSaveValues) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    } else if (value is AutofillSetupStatus) {
+    } else if (value is CardFillValues) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    } else if (value is DocumentResult) {
+    } else if (value is AutofillSetupStatus) {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
-    } else if (value is FolderPickResult) {
+    } else if (value is DocumentResult) {
       buffer.putUint8(140);
+      writeValue(buffer, value.encode());
+    } else if (value is FolderPickResult) {
+      buffer.putUint8(141);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -662,10 +739,12 @@ class _PigeonCodec extends StandardMessageCodec {
       case 137:
         return AutofillSaveValues.decode(readValue(buffer)!);
       case 138:
-        return AutofillSetupStatus.decode(readValue(buffer)!);
+        return CardFillValues.decode(readValue(buffer)!);
       case 139:
-        return DocumentResult.decode(readValue(buffer)!);
+        return AutofillSetupStatus.decode(readValue(buffer)!);
       case 140:
+        return DocumentResult.decode(readValue(buffer)!);
+      case 141:
         return FolderPickResult.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -940,6 +1019,29 @@ class AutofillApi {
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
       <Object?>[username, password, notice],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
+  }
+
+  /// Kart değerlerini her alanın türüne göre biçimleyip forma verir,
+  /// [notice] bildirimini gösterir ve ekranı kapatır. Ekran kart isteğiyle
+  /// açılmadıysa ya da doldurulacak alan kalmadıysa hiçbir şey doldurmadan
+  /// kapanır.
+  Future<void> fillCard(CardFillValues values, String notice) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.AutofillApi.fillCard$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[values, notice],
     );
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     _extractReplyValueOrThrow(
