@@ -161,7 +161,7 @@ Alttaki + panelinde "Parola" ve "2FA" satırlarının arasına "Kart" ve "Güven
 - Son kullanma ayın sonunda geçer. Süresi geçmiş kartta kart görünümünün altında "Süresi doldu" yazar.
 - Menü, parola ayrıntısındakiyle aynı: düzenle, favori, çöp kutusuna taşı.
 
-**Not:** ad başlıkta, metin seçilebilir olarak altında. Tek bir "Kopyala" düğmesi bütün metni hassas pano kuralıyla kopyalar.
+**Not:** ad başlıkta, metin seçilebilir olarak altında. Tek bir "Kopyala" düğmesi bütün metni hassas pano kuralıyla kopyalar. Metnin bir kısmı seçildiğinde açılan menüde yalnızca "Kopyala" vardır ve o da aynı kuraldan geçer; sistemin kendi menüsü panoya doğrudan yazdığı için kullanılmaz.
 
 ### Düzenleme ekranları
 
@@ -184,14 +184,17 @@ Kasanın çöp kutusu üç türü birlikte gösterir; geri alma ve kalıcı silm
 - Yedeğe girebilen türler: `login`, `otp`, `card`, `note`, `settings`.
 - **Yedek içeriğinin sürümü:** kart ya da not varsa 2, yoksa 1. Okuyucu ikisini de kabul eder; sürüm 1'de kart ve not türü reddedilir.
   - Neden her zaman 2 değil: kart ve notu olmayan bir kasanın yedeği 1.3.0'da açılmaya devam eder. Yeni sürümde bir sorun çıkar da eski sürüme dönmek gerekirse yedek işe yarar.
-  - Kart içeren yedeği 1.3.0 "desteklenmeyen sürüm" diye reddeder; kartları sessizce atmaz.
+  - Kart içeren yedeği 1.3.0 reddeder ve kartları sessizce atmaz. Ama 1.3.0 bu hatayı "Yedek bozuk ya da değiştirilmiş" diye gösterir; yayımlanmış sürümün mesajı değiştirilemez. Değişiklik günlüğü ve kılavuz bunu söyler. Telefonlar Obtainium'la güncellendiği için eski sürüme dönmek nadir.
+- **Daha yeni sürümün yedeği:** 1.4.0'dan itibaren bilinmeyen dosya ya da içerik sürümü, bozuk dosyadan ayrı bir hatayla bildirilir: "Bu yedek KeyKey'in daha yeni bir sürümüyle alınmış. Uygulamayı güncelleyip yeniden dene." Böylece bir sonraki biçim değişikliği doğru anlatılır.
+- **Boyut:** yedek yazılırken de 64 MiB sınırı denetlenir. Okuyucu bu sınırı zaten uyguluyor; çok sayıda uzun not, açılamayacak bir yedek üretmemeli.
 - Kayıtlar veritabanındaki şifreli halleriyle taşınır, yedeğin dış katmanı kayıt türlerini zaten gizliyor.
 - **Geri yükleme:** birleştirmede kart ve notlar da açık kasanın kayıt anahtarıyla yeniden şifrelenir; aynı kimlikte kayıt varsa yeni olan kalır.
 - **Otomatik yedek ve hatırlatıcı:** kart ve not değişiklikleri de yedeği tetikler ve "son yedekten sonra değişen kayıt" sayılır.
 
 ### İçe aktarma
 
-- **Bitwarden JSON:** tür 2 (güvenli not) not olur, tür 3 (kart) kart olur. Kart alanları: `cardholderName`, `number`, `expMonth`, `expYear`, `code`. Bitwarden'ın `brand` alanı yok sayılır. Notun klasörü ve favorisi alınır. Özel alanlar notun sonuna eklenir.
+- **Bitwarden JSON:** tür 2 (güvenli not) not olur, tür 3 (kart) kart olur. Kart alanları: `cardholderName`, `number`, `expMonth`, `expYear`, `code`. Bitwarden'ın `brand` alanı yok sayılır. Klasör ve favori iki türde de alınır.
+- **Özel alanlar:** Bitwarden kartında PIN alanı yok. Kartın adı `PIN` olan (büyük küçük harf fark etmez), yalnızca rakamdan oluşan ve en çok 12 haneli ilk özel alanı PIN olur. Kalan özel alanlar, notunkiler gibi, `ad: değer` satırları olarak notun sonuna eklenir.
 - **Bitwarden CSV:** `type` sütunu `note` olan satırlar not olur (bugün atlanıyor). Bitwarden CSV kart taşımaz.
 - **Biçime uymayan kart değeri atılmaz:** numarada boşluk ve tireden başka karakter varsa, ay ya da yıl okunamıyorsa, güvenlik kodu 4 haneden uzunsa alan boş bırakılır ve ham değer etiketiyle birlikte kartın notuna eklenir. Önizleme ekranı bunu kartın yanında söyler.
 - Önizleme ekranı kart ve notları kendi simgeleriyle, parolalarla aynı listede gösterir. Yinelenen işareti: kartta ad ve numara, notta ad ve metin kasadakiyle aynıysa.
@@ -208,7 +211,8 @@ Bitwarden CSV kart taşıyamıyor. Bu yüzden şifresiz dışa aktarmaya ikinci 
 | **JSON (yeni)** | Hepsi: parolalar, 2FA, kartlar, notlar, klasörler | Bitwarden'ın şifresiz JSON biçimi; Bitwarden, KeePassXC ve Proton Pass içe alabiliyor |
 
 - İki adımlı onay ve dosya kaydetme bugünkü gibi. Biçim, onaydan önceki pencerede seçilir. Kasada kart varsa CSV seçeneğinin altında "Kartlar bu biçimde yazılmaz" der.
-- JSON, Bitwarden'ın şifresiz dışa aktarmasının alan adlarını kullanır (`encrypted: false`, `folders`, `items`; tür 1, 2, 3). 2FA bağlantıları CSV'deki kuralla yazılır.
+- JSON, Bitwarden'ın şifresiz dışa aktarmasının alan adlarını kullanır (`encrypted: false`, `folders`, `items`; tür 1, 2, 3). 2FA bağlantıları CSV'deki kuralla yazılır. Kartın PIN'i, `PIN` adlı gizli bir özel alan olarak yazılır; içe aktarma onu yine PIN'e çevirir.
+- Çöp kutusundaki kayıtlar ve parola geçmişi, CSV'deki gibi yazılmaz.
 - KeyKey kendi JSON'unu geri okuyabilmeli (gidiş-dönüş testi).
 
 ### Sürüm ve belgeler

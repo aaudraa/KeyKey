@@ -599,7 +599,7 @@ Testler: 1467 birim ve arayüz testi; cihaz testleri (yenilemenin gerçek libsod
 
 | Fikir | Faz | Not |
 |---|---|---|
-| Kart ve güvenli not kayıtları | 14 | Kayıt modeli türlere açık; veritabanında `type` sütunu zaten var. Tasarım faz dalında yazılıyor (`docs/kart-ve-not.md`). |
+| Kart ve güvenli not kayıtları | 14 | Kayıt modeli türlere açık; veritabanında `type` sütunu zaten var. Tasarım: [kart ve not](docs/kart-ve-not.md). |
 | Kart doldurma | 15 | Android'in doldurma sistemi kart alanlarını da tanıyor (`creditCardNumber` vb.). |
 | Sızıntı kontrolü (Have I Been Pwned) | 16 | k-anonimlik ile parolayı göndermeden çalışır, internet gerektirir. |
 | Otomatik senkron (WebDAV, Google Drive) | 18 | Uçtan uca şifreli. Önce WebDAV; Drive için OAuth istemcisi proje sahibinin hesabında açılır. |
