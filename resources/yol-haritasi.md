@@ -2,7 +2,7 @@
 
 KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. 1.3.0'a kadar tamamen çevrimdışıydı; 2026-11-19'da internet gerektiren özelliklere de açılma kararı alındı ([İnternet](#temel-kararlar)). Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-19 · **Şu anki faz:** 14 (kart ve güvenli not kayıtları) bitti ve 1.4.0 olarak yayına çıkıyor; sıradaki 15, kart doldurma. [1.3.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.3.0) yayında, otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
+**Son güncelleme:** 2026-11-19 · **Şu anki faz:** 14 (kart ve güvenli not kayıtları) bitti; sıradaki 15, kart doldurma. [1.4.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.4.0) yayında (kartlar ve güvenli notlar, telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
 
 > [!IMPORTANT]
 > **KeyKey 1.0 yayında.** Projenin kendi güvenlik denetimi tamamlandı, ama bağımsız bir denetim yapılmadı. Şifreli yedeğini düzenli al ve telefonun dışında da sakla.
@@ -623,6 +623,8 @@ Proje sahibi 2026-11-19'da kart bilgilerini en çok ihtiyaç duyduğu şey olara
 Düzeltmeler ikinci bir gözden geçirmeden geçti; bulguların hepsi kapandı.
 
 Testler: 1649 birim ve arayüz testi. Bütün entegrasyon testleri son kodla Android 17 ve 11 emülatörlerinde geçti. Aynı koşularda cihaz kaydı deneme değerleri için tarandı: Android 17 temiz; Android 11'de Gboard'ın panodaki kart numarasını verdiği sistem metin sınıflandırıcısı numarayı bir hata metninde logcat'e yazdı ([denetim](docs/guvenlik-denetimi.md#kayıtlar-logcat)). KeyKey'in kendisi kayıt yazmıyor; bu, pano sınırlarına eklendi.
+
+1.4.0 olarak yayımlandı (2026-11-19). İmza sertifikası aynı (`66ff7b5c…`), Obtainium 1.3.0'ın üstüne günceller; F-Droid'in kendi derlemesi APK'yla bayt bayt aynı çıktı.
 
 **Bitti sayılması için:** kart ve not eklenip düzenleniyor, kasa listesinde ve çöpte görünüyor; yedekten geri geliyor; Bitwarden'dan içe ve JSON'la dışa aktarılınca alanlar kaybolmuyor; kartsız yedekler eski sürümlerle açılıyor.
 
