@@ -322,11 +322,17 @@ final class BackupCodec {
     } on FormatException {
       throw const InvalidBackupException('İçerik okunamadı.');
     }
+    // Sürüm, alan denetiminden önce okunur: daha yeni bir sürüm kök alanlarını
+    // değiştirebilir ve bu "bozuk" değil "daha yeni" diye bildirilmeli. İçerik
+    // AEAD ile doğrulanmış olduğundan buraya yalnızca KeyKey'in yazdığı gelir.
+    if (decoded is Map<String, Object?>) {
+      final version = decoded['version'];
+      if (version is int && version > payloadVersion) {
+        throw const NewerBackupException('Daha yeni içerik sürümü.');
+      }
+    }
     final root = _object(decoded, const {'version', 'createdAt', 'records'});
     final version = root['version'];
-    if (version is int && version > payloadVersion) {
-      throw const NewerBackupException('Daha yeni içerik sürümü.');
-    }
     if (version is! int || version < legacyPayloadVersion) {
       throw const InvalidBackupException('Desteklenmeyen içerik sürümü.');
     }
