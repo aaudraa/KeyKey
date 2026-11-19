@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -7,25 +6,8 @@ import 'package:keykey/features/vault/application/breach_check.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 
+import '../../support/fake_range_source.dart';
 import '../../support/fake_vault_service.dart';
-
-/// Sorulan önekleri kaydeden sahte kaynak.
-class FakeRangeSource implements PwnedRangeSource {
-  new([this.answer]);
-
-  /// Önek için yanıt; `null` ise yalnızca dolgu satırı.
-  final FutureOr<String> Function(String prefix)? answer;
-
-  final calls = <String>[];
-
-  @override
-  Future<String> fetchRange(String prefix) async {
-    calls.add(prefix);
-    return await answer?.call(prefix) ?? '$_padding:0\r\n';
-  }
-}
-
-const _padding = '00000000000000000000000000000000000';
 
 LoginItem _login(
   int id,
@@ -79,8 +61,8 @@ void main() {
   test('sızan parolanın sayısı', () async {
     final source = FakeRangeSource(
       (prefix) => prefix == '5BAA6'
-          ? '${_suffix('password')}:10\r\n$_padding:0\r\n'
-          : '$_padding:0\r\n',
+          ? '${_suffix('password')}:10\r\n$pwnedPadding:0\r\n'
+          : '$pwnedPadding:0\r\n',
     );
     const strong = 'Vq7#kL2m!xR9pZ4wTe';
 
@@ -124,7 +106,7 @@ void main() {
         maxInFlight = max(maxInFlight, inFlight);
         await Future<void>.delayed(const Duration(milliseconds: 1));
         inFlight--;
-        return '$_padding:0\r\n';
+        return '$pwnedPadding:0\r\n';
       });
       final items = [
         for (var i = 0; i < 300; i++) _login(i % 250, 'parola-$i'),
@@ -201,7 +183,7 @@ void main() {
     var cancelled = false;
     final source = FakeRangeSource((prefix) {
       cancelled = true;
-      return '$_padding:0\r\n';
+      return '$pwnedPadding:0\r\n';
     });
     final items = [for (var i = 0; i < 20; i++) _login(i, 'parola-$i')];
 

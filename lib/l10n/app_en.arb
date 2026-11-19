@@ -2128,7 +2128,7 @@
   "@reportTitle": {
     "description": "Screen title and vault menu tooltip."
   },
-  "reportInfo": "Checked on this device only. Nothing is sent or saved; the report is gone when you leave this screen or the vault locks. Entries in the trash are not counted.",
+  "reportInfo": "Weak and reused passwords are worked out on this device only. Nothing is saved; the report is gone when you leave this screen or the vault locks. Entries in the trash are not counted. The breach check goes online only when you tap its button.",
   "@reportInfo": {
     "description": "Explanation at the top of the report."
   },
@@ -2174,6 +2174,73 @@
   "reportOpenHint": "Tap an entry to change its password.",
   "@reportOpenHint": {
     "description": "Hint under the sections."
+  },
+  "breachTitle": "Breach check",
+  "@breachTitle": {
+    "description": "Title of the breach check card in the password report."
+  },
+  "breachIntro": "Asks Have I Been Pwned whether your passwords have appeared in data breaches. Your passwords are never sent: only the first 5 characters of their hash go out, and the comparison happens on this phone. Have I Been Pwned sees your IP address.",
+  "@breachIntro": {
+    "description": "Explains what the breach check sends, shown above its button."
+  },
+  "breachSource": "Data: Have I Been Pwned (CC BY 4.0)",
+  "@breachSource": {
+    "description": "Attribution link to the Pwned Passwords data and its licence."
+  },
+  "breachCheck": "Check online",
+  "@breachCheck": {
+    "description": "Button that starts the breach check over the internet."
+  },
+  "breachProgress": "{done} / {total} prefixes",
+  "@breachProgress": {
+    "description": "Progress of the breach check; one request per hash prefix.",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "breachFailed": "Couldn't check. Check your internet connection.",
+  "@breachFailed": {
+    "description": "Shown when the breach check fails; no partial result is shown."
+  },
+  "breachRetry": "Try again",
+  "@breachRetry": {
+    "description": "Button to repeat a failed breach check."
+  },
+  "breachClean": "No passwords seen in breaches.",
+  "@breachClean": {
+    "description": "Breach check finished and found nothing."
+  },
+  "breachRecheck": "Check again",
+  "@breachRecheck": {
+    "description": "Button to run the breach check again."
+  },
+  "breachFoundTitle": "{count, plural, =1{Password seen in breaches (1)} other{Passwords seen in breaches ({count})}}",
+  "@breachFoundTitle": {
+    "description": "Section header listing entries whose password appeared in breaches.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "breachSeen": "{count, plural, =1{Seen once in breaches} other{Seen {count} times in breaches}}",
+  "@breachSeen": {
+    "description": "Under an entry: how many times its password appeared in breaches.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "breachFoundHint": "These passwords are on the lists attackers try. Change them all, and anywhere else you used the same password.",
+  "@breachFoundHint": {
+    "description": "Advice under the list of breached passwords."
   },
   "otpNoCode": "No code yet",
   "@otpNoCode": {
