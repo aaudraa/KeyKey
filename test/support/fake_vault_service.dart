@@ -523,6 +523,7 @@ class FakeDocumentFiles implements DocumentFiles {
 
   /// Son kaydedilen dosyanın adı ve baytlarının kopyası.
   String? savedName;
+  String? savedMimeType;
   Uint8List? savedBytes;
   int saves = 0;
   int opens = 0;
@@ -540,6 +541,7 @@ class FakeDocumentFiles implements DocumentFiles {
     saves++;
     gateWasActive = readGate?.call();
     savedName = suggestedName;
+    savedMimeType = mimeType;
     savedBytes = Uint8List.fromList(bytes);
     bytes.fillRange(0, bytes.length, 0);
     return nextSave;

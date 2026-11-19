@@ -9,6 +9,7 @@ import 'package:keykey/features/backup/application/login_import_plan.dart';
 import 'package:keykey/features/backup/data/export/bitwarden_csv_export.dart';
 import 'package:keykey/features/backup/data/import/login_import.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
+import 'package:keykey/features/vault/data/note_content.dart';
 
 import '../../../support/fake_vault_service.dart';
 
@@ -141,6 +142,29 @@ void main() {
     final csv = BitwardenCsvExport.build(logins: [trashed], otps: [trashedOtp]);
     expect(csv, isNot(contains('Silinen')));
     expect(csv, isNot(contains('Eski')));
+  });
+
+  test('not type=note satırı olarak yazılıyor ve geri okunuyor', () {
+    final note = FakeRecordRepository.item(
+      NoteContent(name: 'Ev Wi-Fi', text: 'ağ: Ev\nparola: kapi', folder: 'Ev'),
+      id: 1,
+    );
+    final trashedNote = FakeRecordRepository.item(
+      NoteContent(name: 'Silinen not', trashedAt: DateTime.utc(2026, 11)),
+      id: 2,
+    );
+    final csv = BitwardenCsvExport.build(
+      logins: const [],
+      otps: const [],
+      notes: [note, trashedNote],
+    );
+    expect(csv, isNot(contains('Silinen not')));
+    final export = LoginExportReader.read(Uint8List.fromList(utf8.encode(csv)));
+    expect(export.logins, isEmpty);
+    final read = export.notes.single;
+    expect(read.name, 'Ev Wi-Fi');
+    expect(read.text, 'ağ: Ev\nparola: kapi');
+    expect(read.folder, 'Ev');
   });
 
   test('boş kasa yalnızca başlık satırı', () {

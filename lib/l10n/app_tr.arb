@@ -439,7 +439,7 @@
   "exportTitle": "Şifresiz dışa aktar",
   "exportHelp": "Başka bir parola yöneticisine geçmek için CSV dosyası",
   "exportWarningTitle": "Bu dosya şifresiz",
-  "exportWarningBody": "Bütün parolaların, notların ve 2FA anahtarların dosyaya düz metin olarak yazılır. Dosyaya erişen her uygulama ve kişi, eşitlendiği bulut da dahil, hepsini okuyabilir.\n\nYalnızca başka bir parola yöneticisine geçmek için kullan ve içe aktardıktan hemen sonra sil. Yedek için bunun yerine \"Yedek al\"ı kullan; yedek şifrelidir.",
+  "exportWarningBody": "Bütün parolaların, kartların, notların ve 2FA anahtarların dosyaya düz metin olarak yazılır. Dosyaya erişen her uygulama ve kişi, eşitlendiği bulut da dahil, hepsini okuyabilir.\n\nYalnızca başka bir parola yöneticisine geçmek için kullan ve içe aktardıktan hemen sonra sil. Yedek için bunun yerine \"Yedek al\"ı kullan; yedek şifrelidir.",
   "exportWarningContinue": "Devam et",
   "exportWarningCancel": "Vazgeç",
   "exportConfirmTitle": "Şifresiz dışa aktar",
@@ -535,5 +535,11 @@
   "importLabelCardNumber": "Kart numarası",
   "importLabelExpiry": "Son kullanma",
   "importLabelSecurityCode": "Güvenlik kodu",
-  "importCardAdjusted": "Bazı değerler kartın notuna taşındı"
+  "importCardAdjusted": "Bazı değerler kartın notuna taşındı",
+  "exportFormatTitle": "Biçim seç",
+  "exportFormatCsv": "CSV",
+  "exportFormatCsvHint": "Bitwarden, KeePassXC ve çoğu yönetici okur.",
+  "exportFormatCsvNoCards": "Kartlar bu biçimde yazılmaz.",
+  "exportFormatJson": "JSON",
+  "exportFormatJsonHint": "Kartlar dahil her şey. Bitwarden'ın biçimi."
 }

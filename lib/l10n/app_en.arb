@@ -2066,7 +2066,7 @@
   "@exportWarningTitle": {
     "description": "Title of the warning before exporting."
   },
-  "exportWarningBody": "All your passwords, notes and 2FA keys are written into the file as plain text. Any app or person that can reach the file can read them, including the cloud it syncs to.\n\nUse it only to move to another password manager, and delete it right after importing. To keep a backup, use \"Back up now\" instead; backups are encrypted.",
+  "exportWarningBody": "All your passwords, cards, notes and 2FA keys are written into the file as plain text. Any app or person that can reach the file can read them, including the cloud it syncs to.\n\nUse it only to move to another password manager, and delete it right after importing. To keep a backup, use \"Back up now\" instead; backups are encrypted.",
   "@exportWarningBody": {
     "description": "Explains the risk of the plaintext export."
   },
@@ -2269,5 +2269,29 @@
   "importCardAdjusted": "Some values were moved to the card's notes",
   "@importCardAdjusted": {
     "description": "Import preview: values that did not fit the card fields were kept in its notes."
+  },
+  "exportFormatTitle": "Choose a format",
+  "@exportFormatTitle": {
+    "description": "Title of the plaintext export format choice."
+  },
+  "exportFormatCsv": "CSV",
+  "@exportFormatCsv": {
+    "description": "CSV export format."
+  },
+  "exportFormatCsvHint": "Read by Bitwarden, KeePassXC and most managers.",
+  "@exportFormatCsvHint": {
+    "description": "Explains which apps read the CSV export."
+  },
+  "exportFormatCsvNoCards": "Cards are not included in this format.",
+  "@exportFormatCsvNoCards": {
+    "description": "Shown under CSV when the vault has cards."
+  },
+  "exportFormatJson": "JSON",
+  "@exportFormatJson": {
+    "description": "JSON export format."
+  },
+  "exportFormatJsonHint": "Everything, cards included. Bitwarden's format.",
+  "@exportFormatJsonHint": {
+    "description": "Explains the JSON export."
   }
 }

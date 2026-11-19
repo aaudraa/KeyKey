@@ -3,6 +3,7 @@ import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/authenticator/data/otpauth_uri.dart';
 import 'package:keykey/features/backup/data/export/csv_writer.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
+import 'package:keykey/features/vault/data/vault_record_repository.dart';
 
 /// Kasayı Bitwarden'ın CSV biçiminde şifresiz dışa aktarır.
 ///
@@ -25,9 +26,12 @@ abstract final class BitwardenCsvExport {
     'login_totp',
   ];
 
+  /// Notlar `type=note` satırlarıdır. Bitwarden CSV kart taşımaz; kartlar
+  /// için `BitwardenJsonExport` kullanılır.
   static String build({
     required Iterable<LoginItem> logins,
     required Iterable<OtpItem> otps,
+    Iterable<NoteItem> notes = const [],
   }) {
     final liveLogins = [
       for (final item in logins)
@@ -87,6 +91,23 @@ abstract final class BitwardenCsvExport {
         content.account,
         '',
         _otpauth(otp),
+      ]);
+    }
+    for (final note in notes) {
+      final content = note.content;
+      if (content.isTrashed) continue;
+      rows.add([
+        content.folder ?? '',
+        if (content.favorite) '1' else '',
+        'note',
+        content.name,
+        content.text,
+        '',
+        '0',
+        '',
+        '',
+        '',
+        '',
       ]);
     }
     return CsvWriter.write(rows);
