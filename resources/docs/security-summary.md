@@ -170,7 +170,7 @@ Details: [Otomatik doldurma](guvenlik-tasarimi.md#otomatik-doldurma).
 - **Clipboard.** Copies are marked sensitive (Android 13+) and cleared after 30 seconds, by a timer or an alarm. The clipboard is cleared only if it still holds KeyKey's value, compared by SHA-256. [Pano](guvenlik-tasarimi.md#pano).
 - **Optional extra check for 2FA codes.** Codes are shown only after a fingerprint or master password check. That check really unwraps the vault key, and it counts towards the wrong-password delay.
 - **Imports.** Imports from Google Authenticator, Aegis, 2FAS, Bitwarden, Chrome, Firefox and KeePassXC treat files as untrusted: size and KDF limits apply, and the parsers are fuzzed with randomly corrupted input. scrypt and PBKDF2 are our own Dart code, used only to open other apps' exports and verified against RFC vectors.
-- **Logging.** The app writes nothing to logcat. A scan of the whole device log during all tests found none of the test secrets.
+- **Logging.** The app writes nothing to logcat. A scan of the whole device log during all tests found none of the test secrets, with one exception outside KeyKey: on Android 11, after a card number was copied, Gboard passed the clipboard text to the system text classifier, which wrote the number into an exception message (`NumberFormatException`). Android 13+ (sensitive clipboard flag) showed nothing. Logcat is readable only by the system and over adb. [Kayıtlar](guvenlik-denetimi.md#kayıtlar-logcat).
 
 ## Known limitations
 

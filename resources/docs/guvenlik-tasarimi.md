@@ -436,6 +436,7 @@ Ana uygulama ve doldurma ekranı aynı korumayı kullanır (`WindowProtection`).
 2. Alarm tam zamanında çalışmayabilir. Android, kesin alarm izni olmadan onu geciktirebilir. Cihaz testi, süreç ayaktayken arka planda temizlendiğini doğruluyor; sürecin kapatıldığı durum yalnızca alarma dayanıyor ve otomatik test edilmedi. Bu izni almıyoruz, çünkü parolanın panoda birkaç dakika daha kalması, izin listesini büyütmeye değmez.
 3. O sürede panoyu okuyan etkin klavye veya kötü amaçlı uygulama parolayı görebilir. Bu, [tehdit modelinde](#tehdit-modeli) "kısmen" olarak yazıyor.
 4. Donanım klavyesindeki Ctrl+C ve klavye uygulamasının kendi kopyala düğmesi bu menüden geçmez; seçili metni sistemin panosuna doğrudan yazar.
+5. Android 11 ve 12'de klavye kopyalanan metni işleyebilir. Android 11 emülatöründe Gboard kopyalanan kart numarasını sistemin metin sınıflandırıcısına verdi, sınıflandırıcı da onu bir hata metninde logcat'e yazdı ([denetim](guvenlik-denetimi.md#kayıtlar-logcat)). KeyKey hassas işaretini bu sürümlerde de koyuyor ama Gboard ona bakmıyor. Logcat'i yalnızca sistem ve adb okuyabilir.
 
 ## Tarayıcıda açma
 

@@ -48,6 +48,15 @@ Bu, projenin kendi denetimidir; bağımsız bir denetim değildir.
 
 Android 17 emülatöründe otomatik doldurma altyapısı ayrıntılı kayıt tutuyor (`AutofillManager`, `AutofillSession`), ama yalnızca alan kimliklerini ve durumları yazıyor. Klavye (Gboard) alanın parola alanı olduğunu kaydediyor, içeriğini yazmıyor.
 
+**1.4.0 (2026-11-19).** Kart ve not cihaz testinin değerleri (kart numarası, not metni, ana parola) aranacaklara eklendi; bütün entegrasyon testleri iki emülatörde yeniden tarandı.
+
+| Deneme | Emülatör | Kayıt | Sonuç |
+|---|---|---|---|
+| Entegrasyon testlerinin hepsi (kart ve not dahil) | Android 17 | 46 616 satır, baştan sona | Temiz |
+| Entegrasyon testlerinin hepsi (kart ve not dahil) | Android 11 | 25 050 satır, baştan sona | 1 satır, KeyKey'in dışında |
+
+Android 11'deki satır KeyKey'in değil. Test kart numarasını panoya kopyalayınca Gboard panodaki metni sistemin metin sınıflandırıcısına (`com.google.android.ext.services`, `TextClassifierImpl.generateLinks`) verdi. Sınıflandırıcı 16 haneli numarayı sayı diye okumaya çalışırken `NumberFormatException` attı ve hatanın metninde numarayı kayda yazdı. Android 13 ve üstünde kopya hassas işaretli olduğu için klavye onu işlemiyor; Android 17'de böyle bir satır yok. KeyKey eski sürümlerde de aynı işareti (`android.content.extra.IS_SENSITIVE`) koyuyor, ama Android 11'deki Gboard ona bakmıyor. Parola kopyalayan testlerde böyle bir satır çıkmadı; sınıflandırıcı yalnızca hata verince yazıyor. Logcat'i yalnızca sistem ve adb okuyabilir. Bu, [pano sınırlarına](guvenlik-tasarimi.md#pano) yazıldı.
+
 **Gerçek telefonda tekrar.** Üreticilerin değiştirdiği sistemler farklı kayıt tutabildiği için deneme Samsung telefonda da yapıldı: temiz ([Gerçek telefon](#gerçek-telefon)).
 
 ## Arayüz koruması
@@ -224,7 +233,7 @@ Telefon Android 13 olduğu için hassas işaretli pencere orada yok. Android 14+
 
 | Yol | Durum | Kanıt |
 |---|---|---|
-| Sistem kaydı (logcat) | Kayıt yazılmıyor | [Kayıtlar](#kayıtlar-logcat) |
+| Sistem kaydı (logcat) | KeyKey kayıt yazmıyor; Android 11'de klavyenin sınıflandırıcısı kopyalanan bir kart numarasını yazdı | [Kayıtlar](#kayıtlar-logcat) |
 | Android yedeği ve cihaz aktarımı | Kapalı | [Depolama](#depolama) |
 | Ekran görüntüsü, son uygulamalar önizlemesi, ekran kaydı | `FLAG_SECURE` | [Arayüz koruması](#arayüz-koruması) |
 | Pano | Hassas işaretli, 30 saniyede temizleniyor | [Pano](guvenlik-tasarimi.md#pano), pano cihaz testi |
