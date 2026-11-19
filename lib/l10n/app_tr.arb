@@ -525,6 +525,7 @@
   "addNoteHint": "Wi-Fi, kapı kodu, kurtarma kodları",
   "noteNewTitle": "Yeni not",
   "noteText": "Metin",
+  "noteTooLong": "Not en çok 64 KiB olabilir. Fazlası eklenmedi.",
   "noteCopy": "Metni kopyala",
   "vaultKindLogins": "Parolalar",
   "vaultKindCards": "Kartlar",

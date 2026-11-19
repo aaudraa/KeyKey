@@ -32,6 +32,10 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
   final _name = TextEditingController();
   final _text = TextEditingController();
   final _folder = TextEditingController();
+  late final _textLimit = Utf8LengthLimitingFormatter(
+    NoteContent.maxTextBytes,
+    onRejected: _textTooLong,
+  );
 
   NoteItem? _original;
   bool _initialized = false;
@@ -40,6 +44,11 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
   bool _done = false;
 
   bool get _isNew => widget.idHex == null;
+
+  void _textTooLong() {
+    if (!mounted) return;
+    showKkSnack(context, AppLocalizations.of(context).noteTooLong);
+  }
 
   bool get _canSave =>
       _name.text.trim().isNotEmpty || _text.text.trim().isNotEmpty;
@@ -195,9 +204,7 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
                   obscure: false,
                   multiline: true,
                   maxLines: 12,
-                  inputFormatters: const [
-                    Utf8LengthLimitingFormatter(NoteContent.maxTextBytes),
-                  ],
+                  inputFormatters: [_textLimit],
                   textInputAction: TextInputAction.newline,
                   onChanged: _changed,
                 ),

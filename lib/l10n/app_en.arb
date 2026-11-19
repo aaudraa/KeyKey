@@ -2221,6 +2221,10 @@
   "addNoteHint": "Wi-Fi, door codes, recovery codes",
   "noteNewTitle": "New note",
   "noteText": "Text",
+  "noteTooLong": "A note can be at most 64 KiB. The extra text was not added.",
+  "@noteTooLong": {
+    "description": "Shown when typed or pasted text would make a secure note longer than 64 KiB."
+  },
   "noteCopy": "Copy text",
   "vaultKindLogins": "Passwords",
   "vaultKindCards": "Cards",

@@ -109,6 +109,13 @@ void main() {
     await tester.pump();
 
     expect(tester.widget<TextField>(field('Metin')).controller!.text, isEmpty);
+    // Sessizce reddedilmez: kullanıcı neden girmediğini görür.
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(
+      find.text('Not en çok 64 KiB olabilir. Fazlası eklenmedi.'),
+      findsOneWidget,
+    );
+    await tester.pumpAndSettle(const Duration(seconds: 5));
   });
 
   testWidgets('kaydedilmemiş değişiklikle çıkarken onay ister', (tester) async {

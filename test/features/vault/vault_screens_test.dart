@@ -1379,6 +1379,36 @@ void main() {
 
     Finder chip(String label) => find.widgetWithText(FilterChip, label);
 
+    testWidgets('parola formu kart ve not klasörlerini de öneriyor', (
+      tester,
+    ) async {
+      cardRepo.items.add(
+        FakeRecordRepository.item(
+          CardContent(name: 'Yol', folder: 'Cüzdan'),
+          id: 4,
+        ),
+      );
+      noteRepo.items.add(
+        FakeRecordRepository.item(
+          NoteContent(name: 'Kod', text: 'x', folder: 'Ev'),
+          id: 5,
+        ),
+      );
+      await pumpMixed(tester);
+      await openAddPassword(tester);
+      await tapVisible(tester, find.text('Daha fazla seçenek'));
+      await tapVisible(tester, find.widgetWithText(ActionChip, 'Klasör'));
+
+      final suggestions = find.byKey(const Key('folder-suggestions'));
+      for (final folder in ['Banka', 'Cüzdan', 'Ev']) {
+        expect(
+          find.descendant(of: suggestions, matching: find.text(folder)),
+          findsOneWidget,
+          reason: folder,
+        );
+      }
+    });
+
     testWidgets('yalnızca parolalı kasada tür çipi yok', (tester) async {
       await pumpVault(tester);
 

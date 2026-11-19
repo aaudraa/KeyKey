@@ -15,8 +15,12 @@ import 'package:keykey/features/generator/presentation/generator_sheet.dart';
 import 'package:keykey/features/generator/presentation/password_strength_meter.dart';
 import 'package:keykey/features/vault/application/login_search.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
+import 'package:keykey/features/vault/application/records_controller.dart';
+import 'package:keykey/features/vault/application/vault_entries.dart';
+import 'package:keykey/features/vault/data/card_content.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
+import 'package:keykey/features/vault/data/note_content.dart';
 import 'package:keykey/features/vault/presentation/cert_fingerprint.dart';
 import 'package:keykey/features/vault/presentation/folder_suggestions.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
@@ -122,14 +126,23 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
     _initialized = true;
   }
 
-  /// Başka kayıtlardaki klasörler, çöptekiler hariç. Düzenlenen kaydın
-  /// kendi klasörü sayılmaz; yoksa tek kayıttaki "is" hiç "İş" yapılamazdı.
-  List<String> get _folders => switch (ref.read(loginsControllerProvider)) {
-    LoginsLoaded(:final items) => foldersOf(
-      items.where((item) => item.id != _original?.id),
-    ),
-    _ => const [],
-  };
+  /// Başka kayıtlardaki (parola, kart, not) klasörler, çöptekiler hariç.
+  /// Düzenlenen kaydın kendi klasörü sayılmaz; yoksa tek kayıttaki "is" hiç
+  /// "İş" yapılamazdı. Kartlar ya da notlar henüz yüklenmediyse yalnızca
+  /// parolalarınkiler önerilir.
+  List<String> get _folders => foldersOfEntries([
+    if (ref.read(loginsControllerProvider) case LoginsLoaded(:final items))
+      for (final item in items)
+        if (item.id != _original?.id) LoginEntry(item),
+    if (ref.read(cardsControllerProvider) case RecordsLoaded<CardContent>(
+      :final items,
+    ))
+      for (final item in items) CardEntry(item),
+    if (ref.read(notesControllerProvider) case RecordsLoaded<NoteContent>(
+      :final items,
+    ))
+      for (final item in items) NoteEntry(item),
+  ]);
 
   /// Harf büyüklüğü farklı yazılmış ad var olan klasöre bağlanır; "İş" ve
   /// "iş" iki klasör olmasın.
