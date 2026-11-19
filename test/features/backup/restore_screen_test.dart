@@ -267,6 +267,11 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Kasan değiştirilsin mi?'), findsOneWidget);
       expect(find.byType(BottomSheet), findsOneWidget);
+      // Kartlar ve notlar da silinir; onay metni bunu söylemeli.
+      expect(
+        find.textContaining('parolalar, kartlar, notlar ve 2FA hesapları'),
+        findsOneWidget,
+      );
 
       await tester.tap(find.text('Vazgeç'));
       await tester.pumpAndSettle();

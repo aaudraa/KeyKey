@@ -1906,7 +1906,7 @@
   "@restoreReplaceConfirmTitle": {
     "description": "Title of the replace confirmation dialog."
   },
-  "restoreReplaceConfirmBody": "Every password and 2FA account in this vault will be deleted and replaced with the backup. Fingerprint unlock is turned off. This cannot be undone.",
+  "restoreReplaceConfirmBody": "Every password, card, note and 2FA account in this vault will be deleted and replaced with the backup. Fingerprint unlock is turned off. This cannot be undone.",
   "@restoreReplaceConfirmBody": {
     "description": "Body of the replace confirmation dialog."
   },
@@ -2058,7 +2058,7 @@
   "@exportTitle": {
     "description": "Settings tile for the plaintext export."
   },
-  "exportHelp": "CSV file for moving to another password manager",
+  "exportHelp": "CSV or JSON file for moving to another password manager",
   "@exportHelp": {
     "description": "Subtitle of the plaintext export tile."
   },
