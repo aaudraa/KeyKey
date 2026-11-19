@@ -10,6 +10,7 @@ import 'package:keykey/app/ui/add_panel.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
+import 'package:keykey/features/vault/presentation/card_edit_screen.dart';
 import 'package:keykey/features/vault/presentation/login_edit_screen.dart';
 import 'package:keykey/features/vault/presentation/trash_screen.dart';
 import 'package:sodium/sodium_sumo.dart';
@@ -276,6 +277,33 @@ void main() {
     for (final fade in fades) {
       expect(fade.opacity.value, 1);
     }
+  });
+
+  testWidgets('"Kart" kart formunu açar', (tester) async {
+    await pumpApp(tester);
+    await openPanel(tester);
+
+    await tester.tap(find.text('Kart'));
+    await tester.pumpAndSettle();
+
+    expect(_location(tester), AppRoutes.cardNew);
+    expect(find.byType(CardEditScreen), findsOneWidget);
+  });
+
+  testWidgets('kayıtlar yüklenmeden "Kart" etkisiz', (tester) async {
+    await pumpKeyKey(
+      tester,
+      status: VaultOpen(service.newSession()),
+      service: service,
+      logins: _SlowLogins(),
+      settle: false,
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.tap(find.byKey(GlassNavBar.addKey));
+    await tester.pump(const Duration(seconds: 1));
+    await tester.tap(find.text('Kart'), warnIfMissed: false);
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.byType(CardEditScreen), findsNothing);
   });
 
   testWidgets('kayıtlar yüklenmeden "Parola" etkisiz', (tester) async {

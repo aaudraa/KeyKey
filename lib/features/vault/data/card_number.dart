@@ -102,6 +102,15 @@ String groupCardNumber(String digits) {
   return groups.join(' ');
 }
 
+/// Gruplanmış numaranın son grubu dışındaki rakamları noktayla gizler.
+String maskCardNumber(String digits) {
+  final groups = groupCardNumber(digits).split(' ');
+  return [
+    for (var i = 0; i < groups.length; i++)
+      if (i == groups.length - 1) groups[i] else '•' * groups[i].length,
+  ].join(' ');
+}
+
 /// Son dört hane; numara daha kısaysa tamamı.
 String lastFour(String digits) =>
     digits.length <= 4 ? digits : digits.substring(digits.length - 4);

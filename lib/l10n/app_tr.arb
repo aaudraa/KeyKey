@@ -507,5 +507,18 @@
         "type": "int"
       }
     }
-  }
+  },
+  "addCard": "Kart",
+  "addCardHint": "Banka ve kredi kartları",
+  "cardNewTitle": "Yeni kart",
+  "cardholder": "Kart sahibi",
+  "cardNumber": "Kart numarası",
+  "cardExpiry": "Son kullanma (AA/YY)",
+  "cardExpiryShort": "Son kullanma",
+  "cardSecurityCode": "Güvenlik kodu",
+  "cardPin": "PIN",
+  "cardExpired": "Süresi doldu",
+  "cardNumberWarning": "Bu numara bir kart numarasına benzemiyor. Yine de kaydedebilirsin.",
+  "cardExpiryInvalid": "Ay 01-12, yıl iki haneli olmalı.",
+  "cardCopyNumber": "Kart numarasını kopyala"
 }

@@ -28,10 +28,15 @@ class SecretField extends StatefulWidget {
     this.style,
     this.search = false,
     this.focusNode,
+    this.keyboardType,
     super.key,
   });
 
   final FocusNode? focusNode;
+
+  /// Verilmezse çok satırlıda `multiline`, diğerlerinde `visiblePassword`.
+  /// Rakam klavyesi (kart numarası, PIN) öneri göstermez.
+  final TextInputType? keyboardType;
 
   /// Arama kutusu: tam yuvarlak, başında büyüteç; [label] silik yazı olarak
   /// kutunun içinde durur.
@@ -86,9 +91,11 @@ class _SecretFieldState extends State<SecretField> {
       inputFormatters: widget.inputFormatters,
       style: widget.style,
       // visiblePassword, çoğu klavyede öneri ve öğrenmeyi de kapatır.
-      keyboardType: widget.multiline
-          ? TextInputType.multiline
-          : TextInputType.visiblePassword,
+      keyboardType:
+          widget.keyboardType ??
+          (widget.multiline
+              ? TextInputType.multiline
+              : TextInputType.visiblePassword),
       maxLines: widget.obscure ? 1 : widget.maxLines,
       minLines: 1,
       textInputAction: widget.textInputAction,

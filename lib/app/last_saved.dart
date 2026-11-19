@@ -12,6 +12,10 @@ final lastSavedProvider = NotifierProvider<LastSaved, String?>(LastSaved.new);
 String savedLoginKey(String idHex) => 'login:$idHex';
 String savedOtpKey(String idHex) => 'otp:$idHex';
 
+String savedCardKey(String idHex) => 'card:$idHex';
+
+String savedNoteKey(String idHex) => 'note:$idHex';
+
 class LastSaved extends Notifier<String?> {
   /// Okunmayan anahtarın unutulduğu süre.
   static const Duration window = KkMotion.savedFlashWindow;

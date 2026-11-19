@@ -2203,5 +2203,18 @@
         "type": "int"
       }
     }
-  }
+  },
+  "addCard": "Card",
+  "addCardHint": "Bank and credit cards",
+  "cardNewTitle": "New card",
+  "cardholder": "Cardholder",
+  "cardNumber": "Card number",
+  "cardExpiry": "Expiry (MM/YY)",
+  "cardExpiryShort": "Expiry",
+  "cardSecurityCode": "Security code",
+  "cardPin": "PIN",
+  "cardExpired": "Expired",
+  "cardNumberWarning": "This doesn't look like a card number. You can still save it.",
+  "cardExpiryInvalid": "Use a month from 01 to 12 and a two-digit year.",
+  "cardCopyNumber": "Copy card number"
 }

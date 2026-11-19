@@ -326,7 +326,6 @@ class RecordingClipboard implements SensitiveClipboard {
   Future<void> copy(String text) async => copied.add(text);
 }
 
-/// Bellekte çalışan kayıt deposu. Şifrelemeyi depo testleri sınar.
 /// Bellekte duran kart ya da not deposu.
 class FakeRecordRepository<C extends VaultItemContent<C>>
     implements VaultRecordRepository<C> {
@@ -397,6 +396,7 @@ class FakeRecordRepository<C extends VaultItemContent<C>>
   ) async => items;
 }
 
+/// Bellekte çalışan kayıt deposu. Şifrelemeyi depo testleri sınar.
 class FakeLoginRepository implements LoginRepository {
   new({List<LoginItem>? items, this.unreadableCount = 0}) : items = items ?? [];
 
