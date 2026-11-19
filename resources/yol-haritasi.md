@@ -586,6 +586,32 @@ Testler: 1467 birim ve arayüz testi; cihaz testleri (yenilemenin gerçek libsod
 
 **Bitti sayılması için:** yeni anahtar kasayı açıyor, eskisi açmıyor; yanlış parola ya da yarıda bırakma hiçbir şeyi değiştirmiyor; kurulum eskisi gibi çalışıyor.
 
+### Faz 14 — Kart ve güvenli not kayıtları
+
+Proje sahibi 2026-11-19'da kart bilgilerini en çok ihtiyaç duyduğu şey olarak söyledi. Tasarım: [`kart-ve-not.md`](docs/kart-ve-not.md), plan: [`kart-ve-not-plani.md`](docs/kart-ve-not-plani.md). Bu fazda internet izni eklenmedi.
+
+- [x] Veri: `card` ve `note` kayıt türleri, katı JSON biçimleri, ortak kayıt deposu ve denetleyicisi; kart numarası, marka, Luhn ve son kullanma kuralları
+- [x] Kart ekranları: kart yüzü, ayrıntı, form (numara gruplanır, yapıştırılan boşluk ve tire temizlenir, Luhn uyarısı)
+- [x] Not ekranları: ayrıntı, form (64 KiB sınırı); yalnızca "Kopyala" ve "Tümünü seç" olan seçim menüsü
+- [x] Kasa listesi üç türü birlikte gösteriyor, tür düğmeleri; çöp kutusu üç türü birlikte
+- [x] Yedek: içerik sürümü 2 yalnızca kart ya da not varsa; daha yeni sürüm hatası; 64 MiB'ı aşan yedek yazılmıyor; geri yükleme kart ve notları doğruluyor ve sayıyor; otomatik yedek kart ve notları izliyor
+- [x] Bitwarden'dan kart ve not içe aktarma; uymayan değer kartın notuna
+- [x] Şifresiz dışa aktarmada biçim seçimi: CSV (notlar dahil) ve Bitwarden JSON (kartlar dahil)
+- [x] Güvenlik tasarımı, kılavuz, değişiklik günlüğü, sürüm `1.4.0+8`
+- [ ] Android 17 ve 11 emülatörlerinde bütün cihaz testleri
+- [ ] Son gözden geçirme
+- [ ] Telefonda deneme (proje sahibiyle, Obtainium güncellemesinden sonra)
+
+**Uygulama sırasında verilen kararlar:**
+
+- Kartsız ve notsuz yedek hâlâ içerik sürümü 1 ile yazılıyor; 1.3.0 kartlı yedeği "bozuk" diye reddediyor, değişiklik günlüğü bunu söylüyor.
+- Geri yükleme özeti eski yedekte "0 kart ve 0 not" demesin diye iki metin var; kart ya da not varsa beşli özet çıkıyor.
+- Elle yedekte sınırı aşan kasa için ayrı bir metin var ("Başka bir konum dene" yanlış yönlendirirdi); otomatik yedek bunu "yazılamadı" olarak gösteriyor.
+- JSON dışa aktarmada marka Bitwarden'ın adlarıyla yazılıyor (Troy onda yok, `Other`); KeyKey içe aktarırken markayı zaten yok sayıyor.
+- Bitwarden'ın onay kutusu alanları kart ve notta `ad: değer` satırı olarak nota ekleniyor; parolada eskisi gibi alınmıyor.
+
+**Bitti sayılması için:** kart ve not eklenip düzenleniyor, kasa listesinde ve çöpte görünüyor; yedekten geri geliyor; Bitwarden'dan içe ve JSON'la dışa aktarılınca alanlar kaybolmuyor; kartsız yedekler eski sürümlerle açılıyor.
+
 ## 1.0 sonrası
 
 **2026-11-19:** Proje sahibi bu bölümdeki fikirlerin, kendi kararını bekleyenler dahil hepsini onayladı ve internete açılmaya karar verdi ([İnternet](#temel-kararlar)). Sıra benim kararım ve [Durum](#durum) tablosunda faz olarak duruyor. Gerekçesi:

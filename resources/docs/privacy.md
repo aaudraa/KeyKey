@@ -1,6 +1,6 @@
 # Privacy policy
 
-**Applies to:** KeyKey 1.0 and later · **Last updated:** 2026-11-17 · Türkçe: [gizlilik.md](gizlilik.md)
+**Applies to:** KeyKey 1.0 and later · **Last updated:** 2026-11-19 · Türkçe: [gizlilik.md](gizlilik.md)
 
 KeyKey collects no data and sends nothing anywhere. The app has no internet permission, so it could not send data off the device even if it tried. Anyone can verify this from the installed app's permissions or from the source code.
 
@@ -13,7 +13,7 @@ KeyKey collects no data and sends nothing anywhere. The app has no internet perm
 
 ## What stays on your device
 
-- Your passwords, 2FA accounts, notes and settings live only on your device, in a database encrypted with a key derived from your master password. Encryption details are in the [security summary](security-summary.md).
+- Your passwords, cards, secure notes, 2FA accounts and settings live only on your device, in a database encrypted with a key derived from your master password. Encryption details are in the [security summary](security-summary.md).
 - Android cloud backup is disabled; the vault is not backed up to your Google account.
 - There are two exceptions, each a small, separate, unencrypted file in the app's own folder that holds nothing else:
   - Your theme choice (system, light or dark), so the lock screen can open in your chosen theme.
@@ -36,7 +36,7 @@ If you select KeyKey as your autofill service, Android gives KeyKey the structur
 
 ## Clipboard
 
-Copied passwords and 2FA codes are marked as sensitive on the clipboard (Android 13 and later, hidden from keyboard previews) and cleared after 30 seconds.
+Copied passwords, card details, notes and 2FA codes are marked as sensitive on the clipboard (Android 13 and later, hidden from keyboard previews) and cleared after 30 seconds.
 
 ## Files
 

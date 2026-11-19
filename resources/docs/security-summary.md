@@ -114,6 +114,7 @@ record = version (1 byte, 0x01) || nonce (24 bytes) || ciphertext and tag
 
 - The plaintext is padded to 256-byte blocks (`sodium_pad`), so the length doesn't reveal the password length.
 - `otp` records use the OTP key; all other types use the record key.
+- Record types are `login`, `otp`, `settings` and, since 1.4.0, `card` and `note`. Each content is strict JSON with a version; unknown versions, missing or extra fields are rejected. A card stores the number as digits only (up to 19), expiry month and year, a security code (up to 4 digits) and a PIN (up to 12 digits); the brand is derived from the number, never stored. A note holds at most 64 KiB of text. Details: [Kart kaydının içeriği](guvenlik-tasarimi.md#kart-kaydının-içeriği), [Not kaydının içeriği](guvenlik-tasarimi.md#not-kaydının-içeriği).
 - AD: `keykey/v1/record`, `vaultId`, record ID (16 bytes), type.
 
 **Storage.** A single SQLite file in the app's private directory. The file as a whole isn't encrypted; protection comes from per-record encryption. `secure_delete` is on and `journal_mode` is `DELETE`. Android backup and device transfer are disabled. Details: [Depolama](guvenlik-tasarimi.md#depolama).
@@ -148,7 +149,8 @@ chunk = length (4 bytes BE) || encrypted chunk
 - Encryption: `crypto_secretstream_xchacha20poly1305`, with chunks of at most 64 KiB and the last one tagged `FINAL`. Truncated files, trailing data and reordered chunks are rejected. Every chunk's AD contains `keykey/v1/backup` and the file bytes up to the end of the header.
 - Inside are the records exactly as stored, still encrypted with the record and OTP keys, so a backup has two layers. Record count and types are hidden by the outer layer.
 - Restore checks the structure, decrypts and validates every record before writing anything, and writes in one SQLite transaction.
-- Limits: 64 MiB per file and 100 000 records.
+- Limits: 64 MiB per file and 100 000 records. The file size is computed before encryption and an oversized backup is not written.
+- Payload version 2 (1.4.0) adds `card` and `note`. A backup without cards or notes is still written as version 1, so older apps can open it; 1.3.0 and earlier reject a version 2 backup as damaged. Newer file or payload versions are reported as "update the app".
 
 Details: [Yedekleme](guvenlik-tasarimi.md#yedekleme).
 
@@ -176,7 +178,7 @@ These are accepted risks, numbered as in the [Turkish list](guvenlik-tasarimi.md
 
 1. **Rollback isn't detected.** Someone who can write to the disk can replace a record, or the whole vault, with an older copy that is still valid.
 2. **Record deletion isn't detected.** This only loses data; it doesn't reveal any.
-3. **Metadata leaks.** Record count, types, timestamps and the number of 256-byte padding blocks are visible in the database (not in backups).
+3. **Metadata leaks.** Record count, types, timestamps and the number of 256-byte padding blocks are visible in the database (not in backups). This includes how many cards and notes there are, and roughly how long a long note is.
 4. **Password strength matters.** Argon2id slows guessing down but can't fix a weak password; backups have the same limit.
 5. **The wrapped key doesn't rotate.** After a password change, someone holding the old password and an old header can still reach the vault key, and old backups still open with the old password.
 6. **The wrong-password delay is only the app's rule.** It doesn't limit guessing against a copied file.

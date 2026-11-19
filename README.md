@@ -41,10 +41,11 @@ Eski bir `v0.x` deneme sürümü kullanıyorsan önce [geçiş adımlarını](re
 | Alan | Özellikler |
 |---|---|
 | **Parola kasası** | Kayıt ekleme ve düzenleme, arama, klasörler, çöp kutusu, parola üretici, güç ölçer; zayıf ve tekrar eden parolaları gösteren çevrimdışı parola raporu |
+| **Kartlar ve notlar** | Banka kartları (numara, son kullanma, güvenlik kodu, PIN; marka numaradan anlaşılır) ve güvenli notlar; parolalarla aynı listede, klasörlerde ve çöp kutusunda |
 | **2FA doğrulama** | TOTP ve HOTP kodları, QR ile ekleme, Google Authenticator, Aegis ve 2FAS'tan aktarım, kodları göstermek için isteğe bağlı ek onay |
 | **Otomatik doldurma** | Android uygulamalarında ve Chrome'da parola doldurma ve kaydetme; uygulamalar imza sertifikasıyla eşleşir, şüpheli durumlarda uyarı verilir |
 | **Kilit** | Ana parola, parmak iziyle açma, otomatik kilitlenme, kurtarma anahtarı |
-| **Yedekleme** | Şifreli yedek ve geri yükleme; Bitwarden, Chrome, Firefox ve KeePassXC'den içe aktarma; başka bir parola yöneticisine geçmek için şifresiz dışa aktarma |
+| **Yedekleme** | Şifreli yedek, otomatik yedek ve geri yükleme; Bitwarden (kart ve notlar dahil), Chrome, Firefox ve KeePassXC'den içe aktarma; başka bir parola yöneticisine geçmek için şifresiz dışa aktarma (CSV ya da kartlar dahil JSON) |
 | **Görünüm** | Açık, koyu ya da sistem teması; Türkçe ve İngilizce |
 
 ## Güvenlik yaklaşımı
@@ -61,7 +62,7 @@ Bir güvenlik açığı bulursan lütfen [güvenlik politikasındaki](.github/SE
 
 ## Proje hakkında
 
-KeyKey'in kodunun büyük kısmı bir yapay zekâ kodlama asistanıyla yazıldı; yönü ve kararları proje sahibi belirledi, uygulamayı kendi telefonunda kullanarak denedi. Bu yüzden testlere, belgelenmiş kararlara ve dışarıdan incelemeye ayrıca önem veriliyor: 1200'den fazla birim testi ve Android 11, 14 ve 17 emülatörlerinde çalışan cihaz testleri her değişiklikte koşuyor. İnceleme ve geri bildirim için [issue'lar](https://github.com/aaudraa/KeyKey/issues) açık.
+KeyKey'in kodunun büyük kısmı bir yapay zekâ kodlama asistanıyla yazıldı; yönü ve kararları proje sahibi belirledi, uygulamayı kendi telefonunda kullanarak denedi. Bu yüzden testlere, belgelenmiş kararlara ve dışarıdan incelemeye ayrıca önem veriliyor: 1600'den fazla birim testi ve Android 11, 14 ve 17 emülatörlerinde çalışan cihaz testleri her değişiklikte koşuyor. İnceleme ve geri bildirim için [issue'lar](https://github.com/aaudraa/KeyKey/issues) açık.
 
 | Belge | İçerik |
 |---|---|

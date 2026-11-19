@@ -2,6 +2,27 @@
 
 KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesinde](docs/yayin.md#sürüm-numarası). `v1.0.0`'dan önceki sürümler fazların sonunu işaretler ve hata ayıklama anahtarıyla imzalıdır; kalıcı bir kurulum için kullanılmamalıdır.
 
+## 1.4.0 (2026-11-19): Kartlar ve güvenli notlar
+
+Faz 14 ([tasarım](docs/kart-ve-not.md)).
+
+> [!WARNING]
+> Kartı ya da notu olan bir kasanın yedeği yeni bir içerik sürümüyle yazılır. 1.3.0 ve öncesi bu yedeği "bozuk ya da değiştirilmiş" diye reddeder; geri yüklemek için önce KeyKey'i güncelle. Kartsız ve notsuz yedekler eskisi gibi yazılır, eski sürümler de açar.
+
+### Eklenenler
+
+- Kart kaydı: ad, kart sahibi, numara, son kullanma, güvenlik kodu, PIN, klasör ve not. Numara yazılırken ya da yapıştırılırken gruplanır; marka (Visa, Mastercard, American Express, Troy, Discover, JCB, UnionPay, Maestro, Diners Club) numaradan anlaşılır; Luhn denetimi tutmazsa uyarı çıkar ama kayıt engellenmez. Listede yalnızca son dört hane ve son kullanma görünür; süresi geçen kartta "Süresi doldu" yazar.
+- Güvenli not: ad, en çok 64 KB metin, klasör. Listede metin görünmez. Ayrıntı ekranında metin seçilebilir; seçim menüsünde yalnızca "Kopyala" ve "Tümünü seç" var ve kopyalanan metin 30 saniye sonra panodan silinir.
+- Kasa sekmesi parola, kart ve notları birlikte gösterir; birden fazla tür varsa tür düğmeleri çıkar. Çöp kutusu üç türü birlikte gösterir.
+- Kart ve notlar yedeğe, otomatik yedeğe ve geri yüklemeye giriyor; geri yükleme özeti onları da sayıyor. Daha yeni bir sürümle alınmış yedek "uygulamayı güncelle" diye söyleniyor.
+- Bitwarden'dan içe aktarma kartları ve güvenli notları da alıyor (JSON'da kart ve not, CSV'de not satırları). Karta uymayan değer atılmıyor, etiketiyle kartın notuna yazılıyor; `PIN` adlı özel alan kartın PIN'i oluyor.
+- Şifresiz dışa aktarmada biçim seçimi: CSV (artık notlar dahil) ya da yeni JSON (Bitwarden'ın biçimi, kartlar dahil her şey).
+
+### Değişenler
+
+- "Parolaları içe aktar" artık "İçe aktar".
+- Yedek, 64 MB sınırını aşacaksa yazılmıyor ve sebebi söyleniyor.
+
 ## 1.3.0 (2026-11-18): Yeni kurtarma anahtarı
 
 Faz 13 ([tasarım](docs/kurtarma-anahtari-yenileme.md)).
