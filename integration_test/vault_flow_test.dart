@@ -27,7 +27,8 @@ void main() {
   const secondPassword = 'mavi-Tren-58-Orman-Yolu';
   const thirdPassword = 'sarı-Kalem-69-Dağ-Evi';
   const vaultText =
-      'Henüz parola yok. İlkini kaydetmek için alttaki + düğmesine dokun.';
+      'Henüz kayıt yok. Parola, kart ya da not eklemek için '
+      'alttaki + düğmesine dokun.';
   const lockedTitle = 'KeyKey kilitli';
 
   /// Argon2id ayrı isolate'te çalıştığı için `pumpAndSettle` beklemez.

@@ -32,7 +32,8 @@ void main() {
 
     expect(
       find.text(
-        'Henüz parola yok. İlkini kaydetmek için alttaki + düğmesine dokun.',
+        'Henüz kayıt yok. Parola, kart ya da not eklemek için '
+        'alttaki + düğmesine dokun.',
       ),
       findsOneWidget,
     );

@@ -3,27 +3,23 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:keykey/app/last_saved.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/kk_animated_items.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
-import 'package:keykey/app/ui/kk_card.dart';
-import 'package:keykey/app/ui/kk_copy_icon.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_menu.dart';
-import 'package:keykey/app/ui/kk_snack.dart';
-import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/features/backup/presentation/backup_reminder_banner.dart';
 import 'package:keykey/features/backup/presentation/login_import_screen.dart';
 import 'package:keykey/features/backup/presentation/restore_screen.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/vault/application/login_search.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
-import 'package:keykey/features/vault/data/login_repository.dart';
+import 'package:keykey/features/vault/application/vault_entries.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
+import 'package:keykey/features/vault/presentation/vault_entry_tiles.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Kayıt simge kutusunun Hero etiketi: listeden ayrıntıya geçerken kutu
@@ -84,7 +80,8 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final state = ref.watch(loginsControllerProvider);
+    final state = ref.watch(vaultEntriesProvider);
+    final loginsReady = ref.watch(loginsControllerProvider) is LoginsLoaded;
     final savedSort = ref.watch(
       settingsControllerProvider.select((settings) => settings?.vaultSort),
     );
@@ -119,7 +116,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
                 value: _VaultAction.report,
                 label: l10n.reportTitle,
                 icon: Icons.health_and_safety_outlined,
-                enabled: state is LoginsLoaded,
+                enabled: loginsReady,
               ),
               KkMenuItem(
                 value: _VaultAction.trash,
@@ -131,8 +128,10 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
         ],
       ),
       body: switch (state) {
-        LoginsLoading() => const Center(child: CircularProgressIndicator()),
-        LoginsLoaded() => _loaded(context, l10n, state),
+        VaultEntriesLoading() => const Center(
+          child: CircularProgressIndicator(),
+        ),
+        VaultEntriesLoaded() => _loaded(context, l10n, state),
       },
     );
   }
@@ -140,12 +139,17 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
   Widget _loaded(
     BuildContext context,
     AppLocalizations l10n,
-    LoginsLoaded state,
+    VaultEntriesLoaded state,
   ) {
-    final active = state.items.where((item) => !item.content.isTrashed);
+    final active = state.entries.where((entry) => !entry.isTrashed);
     final count = active.length;
-    final hasFavorites = active.any((item) => item.content.favorite);
-    final folders = foldersOf(state.items);
+    final hasFavorites = active.any((entry) => entry.favorite);
+    final folders = foldersOfEntries(state.entries);
+    final activeKinds = state.activeKinds;
+    final kinds = [
+      for (final kind in VaultKind.values)
+        if (activeKinds.contains(kind)) kind,
+    ];
     // Süzgecin dayanağı kalmadıysa (son favori kalktı, klasör boşaldı)
     // bütün kayıtlar yeniden görünür.
     if (_filter.favoritesOnly && !hasFavorites) {
@@ -154,7 +158,11 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
     if (_filter.folder != null && !folders.contains(_filter.folder)) {
       _filter = _filter.copyWith(clearFolder: true);
     }
-    final visible = filterLogins(state.indexed, _filter);
+    if (_filter.kind != null &&
+        (kinds.length < 2 || !kinds.contains(_filter.kind))) {
+      _filter = _filter.copyWith(clearKind: true);
+    }
+    final visible = filterEntries(state.indexed, _filter);
     final glass = KkGlass.of(context);
 
     final header = Column(
@@ -174,12 +182,29 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
           ),
         ),
         const BackupReminderBanner(),
-        if (hasFavorites || folders.isNotEmpty)
+        if (kinds.length > 1 || hasFavorites || folders.isNotEmpty)
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
             child: Row(
               children: [
+                if (kinds.length > 1)
+                  for (final kind in kinds) ...[
+                    FilterChip(
+                      label: Text(switch (kind) {
+                        VaultKind.login => l10n.vaultKindLogins,
+                        VaultKind.card => l10n.vaultKindCards,
+                        VaultKind.note => l10n.vaultKindNotes,
+                      }),
+                      selected: _filter.kind == kind,
+                      onSelected: (selected) => setState(
+                        () => _filter = selected
+                            ? _filter.copyWith(kind: kind)
+                            : _filter.copyWith(clearKind: true),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                 if (hasFavorites)
                   FilterChip(
                     label: Text(l10n.vaultFavorites),
@@ -229,17 +254,25 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
       ],
     );
 
-    return KkItemsView<LoginItem>(
+    return KkItemsView<VaultEntry>(
       header: header,
       controller: _scroll,
       items: visible,
-      keyOf: (item) => loginIdHex(item.id),
+      keyOf: (entry) => switch (entry) {
+        LoginEntry() => loginIdHex(entry.id),
+        CardEntry() => 'card:${loginIdHex(entry.id)}',
+        NoteEntry() => 'note:${loginIdHex(entry.id)}',
+      },
       // Altta yüzen menü için boşluk.
       padding: EdgeInsets.fromLTRB(16, 4, 16, navClearance(context)),
       empty: count > 0
           ? Text(l10n.vaultNoResults, textAlign: TextAlign.center)
           : const _EmptyVault(),
-      itemBuilder: (context, item, index) => _LoginTile(item: item),
+      itemBuilder: (context, entry, index) => switch (entry) {
+        LoginEntry(:final item) => LoginTile(item: item),
+        CardEntry(:final item) => CardTile(item: item),
+        NoteEntry(:final item) => NoteTile(item: item),
+      },
     );
   }
 }
@@ -275,52 +308,6 @@ class _EmptyVault extends ConsumerWidget {
           ],
         ),
       ],
-    );
-  }
-}
-
-class _LoginTile extends ConsumerWidget {
-  const new({required this.item});
-
-  final LoginItem item;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
-    final glass = KkGlass.of(context);
-    final content = item.content;
-    final name = content.name.trim();
-    final idHex = loginIdHex(item.id);
-    final title = Text(name.isEmpty ? '—' : name);
-    return KkCard(
-      flash: watchLastSaved(ref, savedLoginKey(idHex)),
-      title: content.favorite
-          ? Row(
-              children: [
-                Flexible(child: title),
-                const SizedBox(width: 4),
-                Icon(
-                  Icons.star_rounded,
-                  size: 14,
-                  color: glass.accent,
-                  semanticLabel: l10n.favoriteMark,
-                ),
-              ],
-            )
-          : title,
-      subtitle: content.username.isEmpty ? null : Text(content.username),
-      leading: Hero(
-        tag: loginAvatarHeroTag(idHex),
-        child: RecordAvatar(login: content, name: content.name),
-      ),
-      trailing: content.password.isEmpty
-          ? null
-          : KkCopyIcon(
-              tooltip: l10n.vaultCopyPassword,
-              color: glass.accent,
-              onCopy: () => copySensitive(context, ref, content.password),
-            ),
-      onTap: () => context.push(AppRoutes.vaultItem(idHex)),
     );
   }
 }

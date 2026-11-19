@@ -95,7 +95,7 @@
   "vaultSortRecent": "Son değişene göre sırala",
   "vaultAdd": "Ekle",
   "vaultFavorites": "Favoriler",
-  "vaultEmpty": "Henüz parola yok. İlkini kaydetmek için alttaki + düğmesine dokun.",
+  "vaultEmpty": "Henüz kayıt yok. Parola, kart ya da not eklemek için alttaki + düğmesine dokun.",
   "vaultNoResults": "Eşleşen kayıt yok.",
   "vaultUnreadable": "{count, plural, other{{count} kayıt okunamadı. Bu kayıtlara dokunulmadı.}}",
   "loginNotFound": "Bu kayıt artık yok.",
@@ -525,5 +525,8 @@
   "addNoteHint": "Wi-Fi, kapı kodu, kurtarma kodları",
   "noteNewTitle": "Yeni not",
   "noteText": "Metin",
-  "noteCopy": "Metni kopyala"
+  "noteCopy": "Metni kopyala",
+  "vaultKindLogins": "Parolalar",
+  "vaultKindCards": "Kartlar",
+  "vaultKindNotes": "Notlar"
 }

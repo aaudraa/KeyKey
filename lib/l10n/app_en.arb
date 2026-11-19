@@ -411,7 +411,7 @@
   "@vaultFavorites": {
     "description": "Filter chip."
   },
-  "vaultEmpty": "No passwords yet. Tap + below to save your first one.",
+  "vaultEmpty": "Nothing here yet. Tap + below to add a password, card or note.",
   "@vaultEmpty": {
     "description": "Empty vault message."
   },
@@ -2221,5 +2221,8 @@
   "addNoteHint": "Wi-Fi, door codes, recovery codes",
   "noteNewTitle": "New note",
   "noteText": "Text",
-  "noteCopy": "Copy text"
+  "noteCopy": "Copy text",
+  "vaultKindLogins": "Passwords",
+  "vaultKindCards": "Cards",
+  "vaultKindNotes": "Notes"
 }

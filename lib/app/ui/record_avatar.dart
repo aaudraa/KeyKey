@@ -21,12 +21,16 @@ class RecordAvatar extends ConsumerWidget {
     required this.login,
     required this.name,
     this.size = KkMetrics.avatar,
+    this.icon,
     super.key,
   });
 
   final LoginContent? login;
   final String name;
   final double size;
+
+  /// Baş harf yerine çember içinde gösterilen simge (kart, not).
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -55,18 +59,20 @@ class RecordAvatar extends ConsumerWidget {
           shape: CircleBorder(side: BorderSide(color: ink, width: 1.2)),
         ),
         child: Center(
-          child: Text(
-            avatarInitial(name),
-            maxLines: 1,
-            // Kutu sabit boyda; büyük yazıda harf kutudan taşmasın.
-            textScaler: TextScaler.noScaling,
-            style: TextStyle(
-              color: ink,
-              fontSize: size * 0.42,
-              fontWeight: FontWeight.w700,
-              height: 1,
-            ),
-          ),
+          child: this.icon != null
+              ? Icon(this.icon, color: ink, size: size * 0.5)
+              : Text(
+                  avatarInitial(name),
+                  maxLines: 1,
+                  // Kutu sabit boyda; büyük yazıda harf kutudan taşmasın.
+                  textScaler: TextScaler.noScaling,
+                  style: TextStyle(
+                    color: ink,
+                    fontSize: size * 0.42,
+                    fontWeight: FontWeight.w700,
+                    height: 1,
+                  ),
+                ),
         ),
       );
     }
