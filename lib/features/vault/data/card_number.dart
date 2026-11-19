@@ -102,13 +102,23 @@ String groupCardNumber(String digits) {
   return groups.join(' ');
 }
 
-/// Gruplanmış numaranın son grubu dışındaki rakamları noktayla gizler.
+/// Gruplanmış numaranın son dört hanesi dışındaki rakamları noktayla
+/// gizler; listedeki "•••• 4242" ile aynı haneler görünür.
 String maskCardNumber(String digits) {
-  final groups = groupCardNumber(digits).split(' ');
-  return [
-    for (var i = 0; i < groups.length; i++)
-      if (i == groups.length - 1) groups[i] else '•' * groups[i].length,
-  ].join(' ');
+  final grouped = groupCardNumber(digits);
+  final visibleFrom = digits.length - 4;
+  final out = StringBuffer();
+  var index = 0;
+  for (var i = 0; i < grouped.length; i++) {
+    final char = grouped[i];
+    if (char == ' ') {
+      out.write(char);
+      continue;
+    }
+    out.write(index < visibleFrom ? '•' : char);
+    index++;
+  }
+  return out.toString();
 }
 
 /// Son dört hane; numara daha kısaysa tamamı.

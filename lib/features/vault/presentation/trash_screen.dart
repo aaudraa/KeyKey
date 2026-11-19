@@ -90,10 +90,7 @@ class TrashScreen extends ConsumerWidget {
                       icon: Icons.sticky_note_2_outlined,
                     ),
                   },
-                  title: Text(switch (entry) {
-                    CardEntry(:final item) => cardTitle(item.content),
-                    _ => entry.name.trim().isEmpty ? '—' : entry.name,
-                  }),
+                  title: Text(_title(entry)),
                   subtitle: switch (entry) {
                     LoginEntry(:final item) when item.content.username != '' =>
                       Text(item.content.username),
@@ -132,6 +129,10 @@ class TrashScreen extends ConsumerWidget {
     );
   }
 
+  /// Listede ve silme onayında aynı ad görünür.
+  static String _title(VaultEntry entry) =>
+      entry.title.trim().isEmpty ? '—' : entry.title.trim();
+
   static Future<void> _restore(WidgetRef ref, VaultEntry entry) =>
       switch (entry) {
         LoginEntry(:final item) =>
@@ -161,7 +162,7 @@ class TrashScreen extends ConsumerWidget {
     final confirmed = await showKkConfirm(
       context,
       title: l10n.trashDeleteTitle,
-      message: l10n.trashDeleteMessage(entry.name),
+      message: l10n.trashDeleteMessage(_title(entry)),
       confirmLabel: l10n.trashDelete,
       cancelLabel: l10n.biometricCancel,
       destructive: true,

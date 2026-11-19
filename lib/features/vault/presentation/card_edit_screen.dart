@@ -39,6 +39,11 @@ class _CardEditScreenState extends ConsumerState<CardEditScreen> {
   final _pin = TextEditingController();
   final _folder = TextEditingController();
   final _notes = TextEditingController();
+  final _expiryFocus = FocusNode();
+
+  /// Kullanıcı son kullanma kutusundan çıktı ya da kaydetmeyi denedi: yarım
+  /// tarih artık uyarıyla gösterilir.
+  bool _expiryTouched = false;
 
   CardItem? _original;
   bool _initialized = false;
@@ -60,11 +65,26 @@ class _CardEditScreenState extends ConsumerState<CardEditScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _expiryFocus.addListener(_expiryFocusChanged);
+  }
+
+  @override
   void dispose() {
+    _expiryFocus
+      ..removeListener(_expiryFocusChanged)
+      ..dispose();
     for (final controller in _all) {
       controller.dispose();
     }
     super.dispose();
+  }
+
+  void _expiryFocusChanged() {
+    if (!_expiryFocus.hasFocus && _expiry.text.isNotEmpty && !_expiryTouched) {
+      setState(() => _expiryTouched = true);
+    }
   }
 
   void _fill(CardItem? item) {
@@ -89,8 +109,9 @@ class _CardEditScreenState extends ConsumerState<CardEditScreen> {
   bool get _expiryValid =>
       _expiry.text.isEmpty || CardExpiry.tryParse(_expiry.text) != null;
 
-  bool get _canSave =>
-      (_name.text.trim().isNotEmpty || _digits.isNotEmpty) && _expiryValid;
+  /// Yarım ya da geçersiz son kullanma düğmeyi kapatmaz: basınca uyarı
+  /// çıkar, böylece kullanıcı neden kaydedilmediğini görür.
+  bool get _canSave => _name.text.trim().isNotEmpty || _digits.isNotEmpty;
 
   /// Diğer kayıtlardaki klasörler; düzenlenen kartın kendisi sayılmaz.
   List<String> get _folders => switch (ref.read(vaultEntriesProvider)) {
@@ -126,6 +147,11 @@ class _CardEditScreenState extends ConsumerState<CardEditScreen> {
 
   Future<void> _save() async {
     if (_saving || _done || !_canSave) return;
+    if (!_expiryValid) {
+      setState(() => _expiryTouched = true);
+      _expiryFocus.requestFocus();
+      return;
+    }
     final l10n = AppLocalizations.of(context);
     final snack = kkSnackFor(context);
     final controller = ref.read(cardsControllerProvider.notifier);
@@ -188,7 +214,8 @@ class _CardEditScreenState extends ConsumerState<CardEditScreen> {
     final brand = detectCardBrand(digits);
     final numberSuspicious =
         digits.isNotEmpty && (digits.length < 12 || !passesLuhn(digits));
-    final expiryError = _expiry.text.length == 5 && !_expiryValid;
+    final expiryError =
+        !_expiryValid && (_expiry.text.length == 5 || _expiryTouched);
 
     return PopScope(
       canPop: !_dirty,
@@ -269,6 +296,7 @@ class _CardEditScreenState extends ConsumerState<CardEditScreen> {
                         Expanded(
                           child: SecretField(
                             controller: _expiry,
+                            focusNode: _expiryFocus,
                             label: l10n.cardExpiry,
                             obscure: false,
                             keyboardType: TextInputType.number,

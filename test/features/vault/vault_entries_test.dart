@@ -127,6 +127,18 @@ void main() {
     expect(names(filterEntries(mixed, const LoginFilter())), ['Kalan']);
   });
 
+  test('adsız kart listede görünen adıyla sıralanır', () {
+    final zeytin = login('Zeytin');
+    final nameless = card('', number: '4111111111111111');
+    final banka = login('Banka');
+
+    expect(sortEntries([zeytin, nameless, banka], LoginSort.name), [
+      banka,
+      nameless,
+      zeytin,
+    ]);
+  });
+
   test('foldersOfEntries tekilleştirir ve sıralar', () {
     expect(
       foldersOfEntries([

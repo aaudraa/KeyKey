@@ -49,9 +49,10 @@ void main() {
     expect(groupCardNumber(''), '');
   });
 
-  test('maskCardNumber son grup dışını gizler', () {
+  test('maskCardNumber yalnızca son dört haneyi gösterir', () {
     expect(maskCardNumber('4111111111111111'), '•••• •••• •••• 1111');
-    expect(maskCardNumber('378282246310005'), '•••• •••••• 10005');
+    expect(maskCardNumber('378282246310005'), '•••• •••••• •0005');
+    expect(maskCardNumber('4111111111111111123'), '•••• •••• •••• •••1 123');
     expect(maskCardNumber('1234'), '1234');
     expect(maskCardNumber(''), '');
   });

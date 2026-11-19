@@ -41,6 +41,23 @@ void main() {
       expect(value.text, '4111 1111 1');
       expect(value.selection.extentOffset, 6);
     });
+
+    test('dolu numaranın ortasına yazılan rakam sondakini silmez', () {
+      final full = formatter.formatEditUpdate(
+        TextEditingValue.empty,
+        _typed('4111111111111111123'),
+      );
+      final text = full.text;
+      // İkinci rakamdan sonra bir rakam daha yazılıyor: 20 rakam olurdu.
+      final value = formatter.formatEditUpdate(
+        full,
+        TextEditingValue(
+          text: '${text.substring(0, 2)}9${text.substring(2)}',
+          selection: const TextSelection.collapsed(offset: 3),
+        ),
+      );
+      expect(value.text, text);
+    });
   });
 
   group('ExpiryInputFormatter', () {
@@ -58,6 +75,17 @@ void main() {
     test('dört rakamdan fazlası ve harfler atılır', () {
       expect(apply('12/289'), '12/28');
       expect(apply('1a2'), '12');
+    });
+
+    test('dolu tarihin ortasına yazılan rakam sondakini silmez', () {
+      final value = formatter.formatEditUpdate(
+        _typed('12/30'),
+        const TextEditingValue(
+          text: '152/30',
+          selection: TextSelection.collapsed(offset: 2),
+        ),
+      );
+      expect(value.text, '12/30');
     });
   });
 }

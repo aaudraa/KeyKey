@@ -19,6 +19,23 @@ import 'package:keykey/features/vault/data/card_number.dart';
   return (digits.toString(), before);
 }
 
+int _digitCount(String text) {
+  var count = 0;
+  for (var i = 0; i < text.length; i++) {
+    final unit = text.codeUnitAt(i);
+    if (unit >= 0x30 && unit <= 0x39) count++;
+  }
+  return count;
+}
+
+/// Kutu zaten doluyken yazılan rakam reddedilir; yoksa araya giren rakam
+/// sondakini sessizce silerdi.
+bool _overflowsFull(
+  TextEditingValue oldValue,
+  TextEditingValue newValue,
+  int max,
+) => _digitCount(newValue.text) > max && _digitCount(oldValue.text) >= max;
+
 /// İmleci, önündeki [digits] rakamdan sonraya koyar.
 int _offsetAfterDigits(String formatted, int digits) {
   if (digits == 0) return 0;
@@ -45,6 +62,9 @@ class CardNumberInputFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
+    if (_overflowsFull(oldValue, newValue, maxCardNumberDigits)) {
+      return oldValue;
+    }
     final (digits, before) = _digitsBefore(newValue, maxCardNumberDigits);
     final formatted = groupCardNumber(digits);
     return TextEditingValue(
@@ -66,6 +86,7 @@ class ExpiryInputFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
+    if (_overflowsFull(oldValue, newValue, 4)) return oldValue;
     final (digits, before) = _digitsBefore(newValue, 4);
     final formatted = digits.length > 2
         ? '${digits.substring(0, 2)}/${digits.substring(2)}'

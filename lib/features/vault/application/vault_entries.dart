@@ -19,6 +19,9 @@ sealed class VaultEntry {
   Uint8List get id;
   VaultKind get kind;
   String get name;
+
+  /// Listede görünen ad; sıralama buna göre yapılır.
+  String get title => name;
   bool get favorite;
   String? get folder;
   bool get isTrashed;
@@ -57,6 +60,8 @@ final class CardEntry extends VaultEntry {
   VaultKind get kind => VaultKind.card;
   @override
   String get name => item.content.name;
+  @override
+  String get title => item.content.displayName;
   @override
   bool get favorite => item.content.favorite;
   @override
@@ -139,7 +144,7 @@ List<VaultEntry> sortEntries(List<VaultEntry> entries, LoginSort sort) {
   switch (sort) {
     case LoginSort.name:
       final keys = {
-        for (final entry in sorted) entry: foldForSearch(entry.name),
+        for (final entry in sorted) entry: foldForSearch(entry.title),
       };
       sorted.sort((a, b) => keys[a]!.compareTo(keys[b]!));
     case LoginSort.recentlyUpdated:

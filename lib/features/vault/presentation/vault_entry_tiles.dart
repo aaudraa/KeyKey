@@ -101,13 +101,8 @@ String cardSummary(AppLocalizations l10n, CardContent content, DateTime now) {
 
 /// Kartın listede görünen adı; ad boşsa marka ve son dört hane.
 String cardTitle(CardContent content) {
-  final name = content.name.trim();
-  if (name.isNotEmpty) return name;
-  if (content.number.isEmpty) return '—';
-  return [
-    ?content.cardBrand?.label,
-    '•••• ${lastFour(content.number)}',
-  ].join(' ');
+  final name = content.displayName;
+  return name.isEmpty ? '—' : name;
 }
 
 /// Kasa listesinde kart satırı. Tam numara görünmez, düğme kopyalar.

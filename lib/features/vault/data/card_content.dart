@@ -121,6 +121,15 @@ final class CardContent implements VaultItemContent<CardContent> {
   /// Numaradan çıkarılır, saklanmaz.
   CardBrand? get cardBrand => detectCardBrand(number);
 
+  /// Listede görünen ad: ad boşsa marka ve son dört hane ("Visa •••• 4242"),
+  /// numara da yoksa boş.
+  String get displayName {
+    final trimmed = name.trim();
+    if (trimmed.isNotEmpty) return trimmed;
+    if (number.isEmpty) return '';
+    return [?cardBrand?.label, '•••• ${lastFour(number)}'].join(' ');
+  }
+
   @override
   bool get isTrashed => trashedAt != null;
 

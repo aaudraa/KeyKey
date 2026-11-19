@@ -134,6 +134,31 @@ void main() {
     });
   });
 
+  testWidgets('adsız kartın kalıcı silme onayı listedeki adını söyler', (
+    tester,
+  ) async {
+    cards.items.add(
+      FakeRecordRepository.item(
+        CardContent(
+          name: '',
+          number: '4111111111111111',
+          trashedAt: DateTime.utc(2026, 11, 10),
+        ),
+        id: 3,
+      ),
+    );
+    await pumpApp(tester);
+    await go(tester, AppRoutes.vaultTrash);
+
+    await tester.tap(find.byTooltip('Kalıcı olarak sil'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('"Visa •••• 1111" silinecek ve geri getirilemeyecek.'),
+      findsOneWidget,
+    );
+  });
+
   group('düzenleme', () {
     Future<void> openNew(WidgetTester tester) async {
       await pumpApp(tester);
@@ -190,6 +215,39 @@ void main() {
 
       expect(cards.items, hasLength(2));
       expect(find.byType(CardEditScreen), findsOneWidget);
+    });
+
+    testWidgets('yarım son kullanma kaydetmez ve nedenini söyler', (
+      tester,
+    ) async {
+      await openNew(tester);
+
+      await tester.enterText(field('Ad'), 'Kredi');
+      await tester.enterText(field('Son kullanma (AA/YY)'), '1/2');
+      await tester.pump();
+      // Yazarken henüz uyarı yok.
+      expect(find.text('Ay 01-12, yıl iki haneli olmalı.'), findsNothing);
+
+      await tester.ensureVisible(find.text('Kaydet'));
+      await tester.tap(find.text('Kaydet'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ay 01-12, yıl iki haneli olmalı.'), findsOneWidget);
+      expect(cards.items, hasLength(2));
+      expect(find.byType(CardEditScreen), findsOneWidget);
+    });
+
+    testWidgets('yarım son kullanma kutudan çıkınca uyarır', (tester) async {
+      await openNew(tester);
+
+      await tester.enterText(field('Son kullanma (AA/YY)'), '9/30');
+      await tester.pump();
+      expect(find.text('Ay 01-12, yıl iki haneli olmalı.'), findsNothing);
+
+      await tester.enterText(field('Güvenlik kodu'), '123');
+      await tester.pump();
+
+      expect(find.text('Ay 01-12, yıl iki haneli olmalı.'), findsOneWidget);
     });
 
     testWidgets('Luhn tutmazsa uyarır ama kaydeder', (tester) async {
