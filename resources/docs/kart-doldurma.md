@@ -78,6 +78,8 @@ Sınıflandırma Kotlin'deki `FieldClassifier`'da kalır. Yeni alan türleri: ka
 - Kart numarası (sözcük), "AA/YY" ve gizli rakam kutusu "CVV": ödeme formu. Gizli kutu güvenlik kodudur, parola değil.
 - Yalnızca "CVV" kutusu (kayıtlı kartın kodunu yeniden soran ekran): güçlü kanıt, ödeme formu. Kart önerisi çıkar, giriş önerisi ve parola kaydetme önerisi çıkmaz.
 
+**Kart şifresi.** Ödeme formunda "kart şifresi" ya da "card PIN" diyen kutu kart PIN'i sayılır: hiçbir zaman doldurulmaz, parola sayılmaz ve parola diye kaydedilmez. Kart sahibi gibi o da formu tek başına ödeme formu yapmaz.
+
 **Sıra.** Kart tanıma giriş tanımadan önce yapılır. Kart sayılan alan giriş türü alamaz; böylece gizli rakam kutusu olan güvenlik kodu parola sayılmaz. Giriş tanımanın kendi kuralları ve sözcükleri değişmez; değişen tek şey, kart sayılan alanların giriş tanımaya hiç girmemesidir. "Parola alanından önceki düz metin kutusu kullanıcı adıdır" tahmini kart alanlarını aday saymaz.
 
 **Alan türleri.** Numara, kart sahibi ve güvenlik kodu yalnızca metin kutusu (`AUTOFILL_TYPE_TEXT`) olabilir. Son kullanma alanları metin kutusu, açılır liste (`AUTOFILL_TYPE_LIST`, HTML `select`) ya da tarih (`AUTOFILL_TYPE_DATE`) olabilir. Görünmeyen ve kapalı alanlar bugünkü gibi atlanır.

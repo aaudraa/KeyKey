@@ -50,7 +50,7 @@ Tasarımın açıkça söylemediği ama kullanıcıyı yakabilecek durumlar; her
 
 ---
 
-### Görev 1: Kart alanlarını tanımak
+### Task 1: Kart alanlarını tanımak
 
 **Dosyalar:**
 - Oluştur: `android/app/src/main/kotlin/io/github/aaudraa/keykey/autofill/CardClassifier.kt`
@@ -87,7 +87,7 @@ Tasarımın açıkça söylemediği ama kullanıcıyı yakabilecek durumlar; her
 - [ ] **Adım 4:** aynı komut → PASS; ardından bütün `testDebugUnitTest` → PASS.
 - [ ] **Adım 5:** commit `özellik(doldurma): ödeme formlarında kart alanlarını tanı`.
 
-### Görev 2: Değerleri biçimlemek
+### Task 2: Değerleri biçimlemek
 
 **Dosyalar:**
 - Oluştur: `android/app/src/main/kotlin/io/github/aaudraa/keykey/autofill/CardFill.kt`
@@ -114,7 +114,7 @@ Tasarımın açıkça söylemediği ama kullanıcıyı yakabilecek durumlar; her
 - [ ] **Adım 4:** → PASS, bütün Kotlin testleri PASS.
 - [ ] **Adım 5:** commit `özellik(doldurma): kart değerlerini alan türüne göre biçimle`.
 
-### Görev 3: Servis, ekran ve köprü
+### Task 3: Servis, ekran ve köprü
 
 **Dosyalar:**
 - Değiştir: `StructureParser.kt`, `KeyKeyAutofillService.kt`, `AutofillActivity.kt`, `AutofillRequests.kt`, `res/values/strings.xml`, `res/values-tr/strings.xml`, `pigeons/platform_api.dart`, `lib/features/autofill/application/autofill_bridge.dart`, `test/features/autofill/autofill_screens_test.dart` (sahte köprü)
@@ -135,7 +135,7 @@ Tasarımın açıkça söylemediği ama kullanıcıyı yakabilecek durumlar; her
 - [ ] **Adım 3:** `flutter analyze`, `flutter test test/features/autofill`, `./gradlew :app:testDebugUnitTest :app:compileDebugKotlin` → PASS.
 - [ ] **Adım 4:** commit `özellik(doldurma): kart önerisi ve fillCard köprüsü`.
 
-### Görev 4: Kart seçme ekranı
+### Task 4: Kart seçme ekranı
 
 **Dosyalar:**
 - Oluştur: `lib/features/autofill/presentation/autofill_card_pick_screen.dart`
@@ -168,7 +168,7 @@ Tasarımın açıkça söylemediği ama kullanıcıyı yakabilecek durumlar; her
 - [ ] **Adım 4:** → PASS; bütün `flutter test` PASS; `flutter analyze` temiz.
 - [ ] **Adım 5:** commit `özellik(doldurma): doldurma ekranında kart seçimi`.
 
-### Görev 5: Örnek uygulama ve cihaz denemeleri
+### Task 5: Örnek uygulama ve cihaz denemeleri
 
 **Dosyalar:**
 - Oluştur: `resources/test-apps/ornek-giris/src/main/java/io/github/aaudraa/ornekgiris/CardActivity.java`, `CardWordsActivity.java`, `CardWebActivity.java`
@@ -182,7 +182,7 @@ Tasarımın açıkça söylemediği ama kullanıcıyı yakabilecek durumlar; her
 - [ ] **Adım 3:** Bulunan her hata için önce JVM ya da widget testi, sonra düzeltme.
 - [ ] **Adım 4:** commit `deneme(doldurma): örnek uygulamada kart formları`.
 
-### Görev 6: Belgeler ve sürüm
+### Task 6: Belgeler ve sürüm
 
 **Dosyalar:** `resources/docs/guvenlik-tasarimi.md`, `resources/docs/kullanim.md`, `resources/CHANGELOG.md`, `resources/yol-haritasi.md`, `resources/docs/security-summary.md`, mağaza açıklamaları (`fastlane/metadata/android/*/full_description.txt`, varsa), `pubspec.yaml`
 
@@ -190,7 +190,7 @@ Tasarımın açıkça söylemediği ama kullanıcıyı yakabilecek durumlar; her
 - [ ] **Adım 2:** Kılavuz, değişiklik günlüğü (1.5.0), yol haritası (Faz 15 bölümü ve tablo), mağaza metni, `version: 1.5.0+9`.
 - [ ] **Adım 3:** commit `belge(doldurma): kart doldurma belgeleri, sürüm 1.5.0`.
 
-### Görev 7: Son gözden geçirme ve yayın
+### Task 7: Son gözden geçirme ve yayın
 
 - [ ] **Adım 1:** Taze bir gözden geçiren alt ajan bütün dalı tasarım ve bu planla karşılaştırır; bulgular doğrulanıp test önce düzeltilir.
 - [ ] **Adım 2:** Bütün kontroller ve entegrasyon testleri; PR, CI yeşil, birleştirme (`gh pr merge --merge --author-email …`); `v1.5.0` etiketi, yayın.

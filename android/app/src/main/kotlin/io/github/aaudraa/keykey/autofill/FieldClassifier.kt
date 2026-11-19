@@ -3,7 +3,35 @@ package io.github.aaudraa.keykey.autofill
 import java.util.Locale
 
 /** Doldurulabilir alan türleri. */
-enum class FieldKind { USERNAME, PASSWORD, NEW_PASSWORD, OTP }
+enum class FieldKind {
+    USERNAME,
+    PASSWORD,
+    NEW_PASSWORD,
+    OTP,
+    CARD_NUMBER,
+    CARD_HOLDER,
+    CARD_HOLDER_GIVEN,
+    CARD_HOLDER_FAMILY,
+    CARD_EXPIRY,
+    CARD_EXP_MONTH,
+    CARD_EXP_YEAR,
+    CARD_SECURITY_CODE,
+
+    /** Kart şifresi (PIN). Hiçbir zaman doldurulmaz; parola sanılmasın diye tanınır. */
+    CARD_PIN,
+    ;
+
+    val isCard: Boolean get() = name.startsWith("CARD_")
+
+    /** Ödeme formu kuralındaki grup; kart sahibi ve PIN bir grup sayılmaz. */
+    internal val cardGroup: Int?
+        get() = when (this) {
+            CARD_NUMBER -> 0
+            CARD_EXPIRY, CARD_EXP_MONTH, CARD_EXP_YEAR -> 1
+            CARD_SECURITY_CODE -> 2
+            else -> null
+        }
+}
 
 /**
  * Formdaki bir alanın, Android'in `ViewNode`'undan bağımsız özeti.
@@ -22,6 +50,10 @@ data class FieldInfo(
     val hint: String? = null,
     val isVisible: Boolean = true,
     val isEnabled: Boolean = true,
+    /** Açılır listenin seçenekleri (`AUTOFILL_TYPE_LIST`), görünen metinleriyle. */
+    val options: List<String> = emptyList(),
+    /** Kutunun uzunluk sınırı; 0 bilinmiyor demek. */
+    val maxLength: Int = 0,
 ) {
     companion object {
         const val AUTOFILL_TYPE_TEXT = 1
@@ -166,17 +198,37 @@ data class ParsedForm(val fields: Map<FieldKind, List<Int>>) {
         get() = listOf(FieldKind.USERNAME, FieldKind.PASSWORD, FieldKind.NEW_PASSWORD)
             .any { fields[it].orEmpty().isNotEmpty() }
 
+    /** Doldurulabilir kart alanlarının sırası, artan. PIN alanı girmez. */
+    val cardIndices: List<Int>
+        get() = fields.filterKeys { it.isCard && it != FieldKind.CARD_PIN }.values.flatten().sorted()
+
+    val hasCard: Boolean
+        get() = cardIndices.isNotEmpty()
+
     fun of(kind: FieldKind): List<Int> = fields[kind].orEmpty()
 }
 
 object FormParser {
     /**
-     * Alanları gezinme sırasıyla alır, türlerini bulur. Parola alanı olup
-     * kullanıcı adı bulunamadıysa, ilk parola alanından hemen önceki sıradan
-     * metin kutusu kullanıcı adı sayılır; çoğu giriş formu böyledir.
+     * Alanları gezinme sırasıyla alır, türlerini bulur.
+     *
+     * Önce kart alanları: formda güçlü bir kart kanıtı varsa ya da zayıf
+     * kanıtlar numara, son kullanma ve güvenlik kodundan en az ikisini
+     * kapsıyorsa form ödeme formudur ve kart alanları giriş tanımaya hiç
+     * girmez. Böylece gizli rakam kutusu olan güvenlik kodu parola sayılmaz;
+     * kart numarasıyla giriş yapılan bir banka formu ise giriş formu kalır.
+     *
+     * Parola alanı olup kullanıcı adı bulunamadıysa, ilk parola alanından
+     * hemen önceki sıradan metin kutusu kullanıcı adı sayılır; çoğu giriş
+     * formu böyledir.
      */
     fun parse(fields: List<FieldInfo>): ParsedForm {
-        val kinds = fields.map { FieldClassifier.classify(it) }.toMutableList()
+        val cards = fields.map { CardClassifier.classify(it) }
+        val paymentForm = cards.any { it?.strong == true } ||
+            cards.mapNotNull { it?.kind?.cardGroup }.toSet().size >= 2
+        val kinds = fields.mapIndexed { index, field ->
+            cards[index]?.takeIf { paymentForm }?.kind ?: FieldClassifier.classify(field)
+        }.toMutableList()
         val firstPassword = kinds.indexOfFirst {
             it == FieldKind.PASSWORD || it == FieldKind.NEW_PASSWORD
         }
