@@ -22,6 +22,8 @@ Faz 14 ([tasarım](docs/kart-ve-not.md)).
 
 - "Parolaları içe aktar" artık "İçe aktar".
 - Yedek, 64 MB sınırını aşacaksa yazılmıyor ve sebebi söyleniyor.
+- Metin kutularında uzun basınca açılan menüde **Kopyala** ve **Kes** de hassas panodan geçiyor ve 30 saniye sonra siliniyor (açılmış parola, not metni, kart numarası dahil). Metni başka uygulamalara gönderen düğmeler (paylaş, ara, çevir) bu menüden kalktı.
+- "Kasanın yerine yedeği koy" onayı kartların ve notların da silineceğini söylüyor.
 
 ## 1.3.0 (2026-11-18): Yeni kurtarma anahtarı
 

@@ -99,12 +99,16 @@ Kasa ekranının sağ üstündeki **⋮** menüsünde:
 - Listede kartın yalnızca son dört hanesi ve son kullanma tarihi görünür; süresi geçmişse **Süresi doldu** yazar. Satırın sağındaki düğme numarayı kopyalar.
 - Ayrıntı ekranında numara, güvenlik kodu ve PIN gizli gelir; **Göster**'e dokununca açılır. Kopyalanan değer 30 saniye sonra panodan silinir.
 
-**Güvenli not eklemek için:** **+** → **Güvenli not**. Wi-Fi parolası, kapı kodu, kurtarma kodları gibi bir kayda uymayan sırlar için. Bir not en çok 64 KB metin taşır.
+**Güvenli not eklemek için:** **+** → **Güvenli not**. Wi-Fi parolası, kapı kodu, kurtarma kodları gibi bir kayda uymayan sırlar için. Bir not en çok 64 KB metin taşır; fazlasını yapıştırırsan eklenmez ve bunu söyler.
 
 - Listede notun yalnızca adı görünür, metni görünmez. Arama da yalnızca ada ve klasöre bakar.
 - Ayrıntı ekranında metnin bir kısmını seçip **Kopyala** diyebilir ya da **Metni kopyala** ile hepsini kopyalayabilirsin. Kopyalanan metin de 30 saniye sonra panodan silinir.
 
 Kartlar ve notlar da klasöre konabilir, favorilere eklenebilir; sildiğinde çöp kutusuna gider. Yedeğe, otomatik yedeğe ve şifresiz dışa aktarmaya (JSON) girerler.
+
+Düzenleme ekranlarında bir metni seçip **Kopyala** ya da **Kes** dersen o da 30 saniye sonra panodan silinir.
+
+**Eski sürümle açma:** Kart ya da not içeren bir yedeği KeyKey 1.3.0 ve öncesi açamaz ve "Yedek bozuk ya da değiştirilmiş" der. Yedek bozuk değildir, KeyKey'i güncellemen yeter. Kartın ve notun yoksa yedek eski sürümlerde de açılır.
 
 ## 2FA kodları
 
@@ -172,7 +176,7 @@ KeyKey verilerini hiçbir yere göndermediği için **telefon kaybolursa ya da b
 **Açık bir kasaya geri yüklemek için:** Ayarlar → Yedek ve aktarım → **Yedekten geri yükle**. İki seçenek çıkar:
 
 - **Birleştir:** Yedekteki kayıtlar kasana eklenir. Aynı kayıt iki yerde de varsa daha yeni olan kalır.
-- **Değiştir:** Kasan silinir, yerine yedek gelir. Geri alınamaz, bu yüzden ayrıca onay ister.
+- **Değiştir:** Kasan (parolalar, kartlar, notlar ve 2FA hesapları) silinir, yerine yedek gelir. Geri alınamaz, bu yüzden ayrıca onay ister.
 
 ## Başka uygulamalardan geçiş
 
