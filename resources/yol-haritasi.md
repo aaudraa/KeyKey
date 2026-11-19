@@ -2,7 +2,7 @@
 
 KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. 1.3.0'a kadar tamamen çevrimdışıydı; 2026-11-19'da internet gerektiren özelliklere de açılma kararı alındı ([İnternet](#temel-kararlar)). Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-20 · **Şu anki faz:** 15 (kart doldurma) bitti; sıradaki 16, internete açılma ve sızıntı kontrolü. [1.5.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.5.0) yayında (kart doldurma; 1.4.0'ın kartları ve notlarıyla birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
+**Son güncelleme:** 2026-11-20 · **Şu anki faz:** 16 (internete açılma ve sızıntı kontrolü) sürüyor ([#152](https://github.com/aaudraa/KeyKey/issues/152), tasarım: [internet ve sızıntı](docs/internet-ve-sizinti.md)). [1.5.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.5.0) yayında (kart doldurma; 1.4.0'ın kartları ve notlarıyla birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
 
 > [!IMPORTANT]
 > **KeyKey 1.0 yayında.** Projenin kendi güvenlik denetimi tamamlandı, ama bağımsız bir denetim yapılmadı. Şifreli yedeğini düzenli al ve telefonun dışında da sakla.
@@ -29,7 +29,7 @@ KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uyg
 | 13 | Yeni kurtarma anahtarı | S | 12 | `faz/13-kurtarma-anahtari` | Tamamlandı (1.3.0) |
 | 14 | Kart ve güvenli not kayıtları | L | 13 | `faz/14-kart-ve-not` | Tamamlandı (1.4.0) |
 | 15 | Kart doldurma | M | 14 | `faz/15-kart-doldurma` | Tamamlandı (1.5.0) |
-| 16 | İnternete açılma ve sızıntı kontrolü | M | 14 | `faz/16-internet` | Planlandı |
+| 16 | İnternete açılma ve sızıntı kontrolü | M | 14 | `faz/16-internet` | Sürüyor |
 | 17 | Kilit süresi, klavye, toplu seçim, Steam Guard | M | 14 | `faz/17-kullanim-kolayligi` | Planlandı |
 | 18 | Senkron (WebDAV, Google Drive) | XL | 16 | `faz/18-senkron` | Planlandı |
 | 19 | KeePass (`.kdbx`) içe aktarma | L | 14 | `faz/19-keepass` | Planlandı |
