@@ -1,14 +1,20 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/features/lock/presentation/auto_lock_scope.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Ana parola ve kurtarma anahtarı için metin kutusu.
 ///
 /// Klavye öğrenmesi ve otomatik düzeltme kapalıdır, böylece yazılan metin
-/// klavyenin sözlüğüne girmez.
-class SecretField extends StatefulWidget {
+/// klavyenin sözlüğüne girmez. Seçim menüsünde kes ve kopyala hassas panodan
+/// geçer; metni başka uygulamalara gönderen düğmeler (paylaş, ara, çevir)
+/// yoktur.
+class SecretField extends ConsumerStatefulWidget {
   const new({
     required this.controller,
     required this.label,
@@ -71,11 +77,65 @@ class SecretField extends StatefulWidget {
   final ValueChanged<String>? onChanged;
 
   @override
-  State<SecretField> createState() => _SecretFieldState();
+  ConsumerState<SecretField> createState() => _SecretFieldState();
 }
 
-class _SecretFieldState extends State<SecretField> {
+class _SecretFieldState extends ConsumerState<SecretField> {
   late bool _visible = widget.initiallyVisible;
+
+  /// Menüde kalan düğmeler. Gizli kutuda Flutter kes ve kopyalayı zaten
+  /// göstermez.
+  static const Set<ContextMenuButtonKind> _allowed = {
+    ContextMenuButtonKind.cut,
+    ContextMenuButtonKind.copy,
+    ContextMenuButtonKind.paste,
+    ContextMenuButtonKind.selectAll,
+    ContextMenuButtonKind.delete,
+  };
+
+  /// Sistemin menüsü panoya doğrudan yazar: hassas işareti yoktur, süre
+  /// dolunca silinmez, klavyenin pano geçmişine girer.
+  Widget _contextMenu(BuildContext _, EditableTextState editable) =>
+      AdaptiveTextSelectionToolbar.buttonItems(
+        anchors: editable.contextMenuAnchors,
+        buttonItems: [
+          for (final item in editable.contextMenuButtonItems)
+            if (_allowed.contains(item.kind))
+              switch (item.kind) {
+                ContextMenuButtonKind.copy => item.copyWith(
+                  onPressed: () => _copy(editable, cut: false),
+                ),
+                ContextMenuButtonKind.cut => item.copyWith(
+                  onPressed: () => _copy(editable, cut: true),
+                ),
+                _ => item,
+              },
+        ],
+      );
+
+  void _copy(EditableTextState editable, {required bool cut}) {
+    final value = editable.textEditingValue;
+    final selection = value.selection;
+    if (!selection.isValid || selection.isCollapsed) return;
+    final selected = selection.textInside(value.text);
+    editable
+      ..userUpdateTextEditingValue(
+        cut
+            ? TextEditingValue(
+                text:
+                    selection.textBefore(value.text) +
+                    selection.textAfter(value.text),
+                selection: TextSelection.collapsed(offset: selection.start),
+              )
+            // Android'da kopyaladıktan sonra seçim kapanır.
+            : value.copyWith(
+                selection: TextSelection.collapsed(offset: selection.end),
+              ),
+        SelectionChangedCause.toolbar,
+      )
+      ..hideToolbar();
+    unawaited(copySensitive(context, ref, selected));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,6 +149,7 @@ class _SecretFieldState extends State<SecretField> {
       readOnly: !widget.enabled,
       obscureText: widget.obscure && !_visible,
       inputFormatters: widget.inputFormatters,
+      contextMenuBuilder: _contextMenu,
       style: widget.style,
       // visiblePassword, çoğu klavyede öneri ve öğrenmeyi de kapatır.
       keyboardType:

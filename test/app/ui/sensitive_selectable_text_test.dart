@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -9,8 +11,20 @@ import 'package:keykey/l10n/generated/app_localizations.dart';
 
 import '../../support/fake_vault_service.dart';
 
+/// Gerçek pano gibi bir sonraki kareden sonra biten kopyalama.
+class _SlowClipboard implements SensitiveClipboard {
+  final pending = <Completer<void>>[];
+
+  @override
+  Future<void> copy(String text) {
+    final done = Completer<void>();
+    pending.add(done);
+    return done.future;
+  }
+}
+
 void main() {
-  late RecordingClipboard clipboard;
+  late SensitiveClipboard clipboard;
   late List<MethodCall> platformCalls;
 
   setUp(() {
@@ -80,11 +94,31 @@ void main() {
     await tester.tap(find.text('Kopyala'));
     await tester.pumpAndSettle();
 
-    expect(clipboard.copied, ['kapi kodu 4821']);
+    expect((clipboard as RecordingClipboard).copied, ['kapi kodu 4821']);
     expect(
       platformCalls.where((call) => call.method == 'Clipboard.setData'),
       isEmpty,
     );
     expect(find.byType(TextSelectionToolbarTextButton), findsNothing);
+  });
+
+  testWidgets('kopyalama bitince bildirim çıkar', (tester) async {
+    final slow = clipboard = _SlowClipboard();
+    await pump(tester);
+
+    await tester.longPress(find.byType(SelectableText));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tümünü seç'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Kopyala'));
+    // Menü kapanıyor; pano ancak sonra yanıt veriyor.
+    await tester.pumpAndSettle();
+    slow.pending.single.complete();
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Kopyalandı. Pano 30 saniye sonra temizlenecek.'),
+      findsOneWidget,
+    );
   });
 }

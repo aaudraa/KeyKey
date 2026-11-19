@@ -21,7 +21,9 @@ class SensitiveSelectableText extends ConsumerWidget {
     return SelectableText(
       text,
       style: style,
-      contextMenuBuilder: (context, editable) {
+      // Menünün kendi bağlamı menü kapanınca gider; bildirim, metnin
+      // bağlamıyla gösterilir.
+      contextMenuBuilder: (_, editable) {
         final value = editable.textEditingValue;
         final selected = value.selection.textInside(value.text);
         return AdaptiveTextSelectionToolbar.buttonItems(
