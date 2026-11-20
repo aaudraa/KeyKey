@@ -34,11 +34,16 @@ final class PwnedPasswordsException implements Exception {
 /// tutulmaz, `User-Agent` yalnızca "KeyKey"dir.
 final class PwnedPasswordsClient implements PwnedRangeSource {
   /// [baseUri] yalnızca testlerde değişir (yerel test sunucusu).
+  ///
+  /// Flutter, Android'in şifresiz trafik yasağını (`usesCleartextTraffic`,
+  /// ağ güvenlik yapılandırması) Dart'ın `HttpClient`'ına uygulamıyor. Bu
+  /// yüzden https dışı adres burada reddedilir; yalnızca bu cihazdaki test
+  /// sunucusuna şifresiz bağlanılabilir.
   new({
     Uri? baseUri,
     this.connectTimeout = const Duration(seconds: 10),
     this.requestTimeout = const Duration(seconds: 30),
-  }) : baseUri = baseUri ?? defaultBaseUri;
+  }) : baseUri = _checked(baseUri ?? defaultBaseUri);
 
   static final Uri defaultBaseUri = Uri.parse(
     'https://api.pwnedpasswords.com/range/',
@@ -49,6 +54,17 @@ final class PwnedPasswordsClient implements PwnedRangeSource {
   static const int maxResponseBytes = 1024 * 1024;
 
   static final RegExp _prefix = RegExp(r'^[0-9A-F]{5}$');
+
+  static const Set<String> _loopbackHosts = {'127.0.0.1', 'localhost', '::1'};
+
+  static Uri _checked(Uri uri) {
+    final secure = uri.scheme == 'https';
+    final loopback = uri.scheme == 'http' && _loopbackHosts.contains(uri.host);
+    if (!secure && !loopback) {
+      throw ArgumentError.value(uri, 'baseUri', 'yalnızca https');
+    }
+    return uri;
+  }
 
   final Uri baseUri;
   final Duration connectTimeout;

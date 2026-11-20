@@ -51,7 +51,7 @@ Birincisi seçildi: roadmap'teki "her internet özelliği kullanıcı açınca �
 
 | Yaklaşım | Artı | Eksi |
 |---|---|---|
-| **1. Dart'ın kendi `HttpClient`'ı** (seçilen) | Yeni bağımlılık yok; F-Droid derlemesi ve lisans listesi değişmez; Flutter Android'in şifresiz trafik kuralını uyguluyor | Daha alçak düzey bir arayüz |
+| **1. Dart'ın kendi `HttpClient`'ı** (seçilen) | Yeni bağımlılık yok; F-Droid derlemesi ve lisans listesi değişmez | Daha alçak düzey bir arayüz |
 | 2. `package:http` | Daha rahat arayüz | Yeni bağımlılık, kazancı küçük |
 | 3. Kotlin'de OkHttp, Pigeon köprüsüyle | Android'in ağ güvenliği yapılandırmasının tamamı | Yeni yerel bağımlılık ve köprü kodu |
 
@@ -117,7 +117,8 @@ Raporun bilgi metni değişir: zayıf ve tekrar eden parolaların telefonda hesa
 ### Android
 
 - Manifest: `android.permission.INTERNET`. `ACCESS_NETWORK_STATE` istenmez; bağlantı yoksa istek hata verir.
-- Uygulamada `android:usesCleartextTraffic="false"` ve `res/xml/network_security_config.xml`: şifresiz trafik kapalı, yalnızca sistem sertifika yetkilileri. Flutter'ın `HttpClient`'ı bu kuralı uyguluyor ("Insecure HTTP is not allowed by platform").
+- Uygulamada `android:usesCleartextTraffic="false"` ve `res/xml/network_security_config.xml`: şifresiz trafik kapalı, yalnızca sistem sertifika yetkilileri. Bu ayarlar platform (Kotlin/Java) kodunu korur.
+- **Uygulama sırasında bulundu:** Flutter (3.47) Android'in bu kuralını Dart'ın `HttpClient`'ına uygulamıyor; motor `domainNetworkPolicy` değerini boş geçiyor ve emülatörde `http://` isteği reddedilmedi. Bu yüzden https'i istemci kendisi zorlar: `PwnedPasswordsClient` https dışı adresi kurulurken reddeder (yalnızca bu cihazdaki test sunucusuna, `127.0.0.1`/`localhost`/`::1`, şifresiz bağlanılabilir). Adres zaten sabit ve yönlendirme izlenmediği için https'ten http'ye düşülemez.
 - `check-release-apk.sh`: `INTERNET` izin verilenler listesine gerekçesiyle eklenir; manifestte şifresiz trafiğin kapalı olduğu ve ağ güvenliği yapılandırmasının bağlı olduğu denetlenir.
 - Otomatik doldurma aynı uygulamada çalışır ama ağ koduna dokunmaz; ağ denetimi testi bunu da kapsar.
 
@@ -137,7 +138,7 @@ Raporun bilgi metni değişir: zayıf ve tekrar eden parolaların telefonda hesa
 - Denetim: bilinen özet (`password` → `5BAA6` + `1E4C9…FD8`), dolgu satırlarının atılması, geçersiz satırın hatası, aynı parolanın bir kez sorulması, çöp ve boş parolanın atlanması, eşzamanlılık sınırı, bir kez yeniden deneme, hata, iptal.
 - Ekran: açıklama ve düğme, sonuç listesi ve sayılar, temiz sonuç, hata ve yeniden dene, parolası değişen kaydın düşmesi, kilitte sıfırlanma, erişilebilirlik.
 - Ağ denetimi testi; koşullar sürümü 2.
-- Entegrasyon testi (emülatörde, gerçek API): `password` sızmış çıkar; `http://` adresine Flutter'ın `HttpClient`'ıyla gitmek platform kuralıyla reddedilir.
+- Entegrasyon testi (emülatörde, gerçek API, sistem sertifikalarıyla): `password` sızmış çıkar, rastgele uzun bir parola çıkmaz. https dışı adresin reddi birim testindedir (yukarıdaki bulgu).
 - Cihaz: Android 17 ve 11'de raporda gerçek denetim; kayıt taraması (deneme parolaları, özetler ve önekler kayıtta olmamalı).
 
 ### Belgeler

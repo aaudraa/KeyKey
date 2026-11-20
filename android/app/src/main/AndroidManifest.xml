@@ -17,8 +17,14 @@
          (dokunma korsanlığı koruması, Android 12+). Kullanıcıya sorulmayan
          normal bir izin. -->
     <uses-permission android:name="android.permission.HIDE_OVERLAY_WINDOWS" />
+    <!-- Yalnızca kullanıcının başlattığı denetimler için (Have I Been Pwned
+         sızıntı kontrolü). Parolalar gönderilmez; bkz.
+         resources/docs/internet-ve-sizinti.md. -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:label="KeyKey"
+        android:usesCleartextTraffic="false"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:allowBackup="false"
         android:fullBackupContent="false"
         android:dataExtractionRules="@xml/data_extraction_rules"

@@ -136,6 +136,38 @@ void main() {
     );
   });
 
+  // Flutter, Android'in şifresiz trafik yasağını Dart'ın HttpClient'ına
+  // uygulamıyor; https dışı adresi istemcinin kendisi reddetmeli.
+  test(
+    'https olmayan adres reddedilir, yalnızca yerel test sunucusu hariç',
+    () {
+      for (final address in [
+        'http://api.pwnedpasswords.com/range/',
+        'http://example.com/range/',
+        'ftp://api.pwnedpasswords.com/range/',
+        'http://127.0.0.1.example.com/range/',
+      ]) {
+        expect(
+          () => PwnedPasswordsClient(baseUri: Uri.parse(address)),
+          throwsArgumentError,
+          reason: address,
+        );
+      }
+      for (final address in [
+        'https://api.pwnedpasswords.com/range/',
+        'http://127.0.0.1:8080/range/',
+        'http://localhost:8080/range/',
+        'http://[::1]:8080/range/',
+      ]) {
+        expect(
+          PwnedPasswordsClient(baseUri: Uri.parse(address)).baseUri,
+          Uri.parse(address),
+          reason: address,
+        );
+      }
+    },
+  );
+
   test('uygulamadaki adres Pwned Passwords', () {
     expect(
       PwnedPasswordsClient.defaultBaseUri.toString(),
