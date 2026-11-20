@@ -5,6 +5,12 @@
 # scanignore: sodium paketinin içindeki libsodium kaynak arşivi. Paketin
 # derleme kancası libsodium'u bu kaynaktan NDK ile derler; arşiv silinirse
 # derleme durur. Paket pubspec.lock'taki SHA-256 özetiyle doğrulanır.
+#
+# NonFreeNet (1.6.0): parola raporundaki sızıntı kontrolü, kullanıcı
+# dokununca Have I Been Pwned'a bağlanır; sunucusunun yazılımı özgür değil.
+AntiFeatures:
+  NonFreeNet:
+    en-US: The optional breach check in the password report asks Have I Been Pwned, whose server software is not free. Only the first 5 characters of a password's SHA-1 hash are sent, and only when you tap the button.
 Categories:
   - Password & 2FA
   - Security

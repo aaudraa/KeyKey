@@ -30,7 +30,7 @@ KeyKey bugün yalnızca GitHub Releases'tan elle indiriliyor. Hedef kitle (gizli
 
 - F-Droid'in kendi anahtarıyla imzaladığı ikinci bir KeyKey. Birebir aynı derleme tutturulamazsa bu yola **gidilmez**; durup kullanıcıya sorulur.
 - Yapay zekâ kullanımının başvuruda saklanması. Başvuru metni bunu açıkça yazar.
-- `INTERNET` izni ya da ağ erişimi eklenmesi.
+- ~~`INTERNET` izni ya da ağ erişimi eklenmesi.~~ Proje sahibi 2026-11-19'da "internete çıkmaz" sözünü kaldırdı; 1.6.0'dan beri kullanıcının başlattığı sızıntı kontrolü için `INTERNET` izni var ve tarifte `NonFreeNet` anti-özelliği yazılı ([internet ve sızıntı kontrolü](internet-ve-sizinti.md)).
 - Yayın anahtarının ya da parolalarının yayın ortamı (`yayin`) dışına çıkması.
 
 ## Kısıtlar
@@ -86,7 +86,7 @@ tr-TR/
   (aynı dosyalar, Türkçe)
 ```
 
-- Açıklama: çevrimdışı, `INTERNET` izni yok, açık kaynak, parola + 2FA + otomatik doldurma + şifreli yedek, içe aktarma. Sonunda dürüst iki cümle: kodun büyük kısmı bir yapay zekâ asistanıyla yazıldı; proje kendi güvenlik denetiminden geçti, bağımsız bir denetimden geçmedi.
+- Açıklama: çevrimdışı, `INTERNET` izni yok, açık kaynak, parola + 2FA + otomatik doldurma + şifreli yedek, içe aktarma. Sonunda dürüst iki cümle: kodun büyük kısmı bir yapay zekâ asistanıyla yazıldı; proje kendi güvenlik denetiminden geçti, bağımsız bir denetimden geçmedi. *(1.6.0'dan beri açıklama "hesap yok, sunucu yok" ve isteğe bağlı sızıntı kontrolü diyor; `INTERNET` izni var.)*
 - Ekran görüntüleri `resources/design/kilavuz/*.webp`'den PNG'ye çevrilir (F-Droid PNG/JPG istiyor). Kılavuzdaki 15 görüntüden 6-8'i seçilir. Görüntüler Türkçe arayüzü gösteriyor; İngilizce arayüzden ayrı görüntü almak bu işin parçası değil (benim kararım, sonra eklenebilir).
 - Her sürümde `changelogs/<versionCode>.txt` etiketten **önce** eklenir; F-Droid açıklamaları etiketin olduğu commit'ten okur. Bu kural `yayin.md`'deki sürüm adımlarına yazılır.
 

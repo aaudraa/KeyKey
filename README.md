@@ -1,6 +1,6 @@
 # KeyKey
 
-Android için çevrimdışı, açık kaynak parola yöneticisi ve 2FA doğrulama uygulaması.
+Android için hesapsız, sunucusuz, açık kaynak parola yöneticisi ve 2FA doğrulama uygulaması.
 
 *English: see the [security design summary](resources/docs/security-summary.md), the [privacy policy](resources/docs/privacy.md) and the [security policy](.github/SECURITY.md#security-policy).*
 
@@ -17,7 +17,7 @@ Android için çevrimdışı, açık kaynak parola yöneticisi ve 2FA doğrulama
 ## Neden KeyKey?
 
 - **Verilerin sende kalır.** Sunucu ve hesap yok; her şey telefonunda şifreli olarak durur.
-- **İnternete çıkmaz.** Uygulamanın internet izni yok, yani verini dışarı gönderemez. Bu her derlemede otomatik olarak denetleniyor.
+- **Parolaların telefondan çıkmaz.** İnternete yalnızca senin başlattığın sızıntı kontrolü çıkar ve ona da yalnızca parola özetinin ilk 5 karakteri gider. Ağ kodunun tek bir dosyada kaldığı her derlemede otomatik olarak denetleniyor.
 - **Yedeğin senin kontrolünde.** Şifreli yedek dosyanı istediğin yere kendin kaydedersin.
 - **Kodu açık.** Uygulamanın ne yaptığını herkes inceleyebilir; derleme yeniden üretilebilir.
 
@@ -40,7 +40,7 @@ Eski bir `v0.x` deneme sürümü kullanıyorsan önce [geçiş adımlarını](re
 
 | Alan | Özellikler |
 |---|---|
-| **Parola kasası** | Kayıt ekleme ve düzenleme, arama, klasörler, çöp kutusu, parola üretici, güç ölçer; zayıf ve tekrar eden parolaları gösteren çevrimdışı parola raporu |
+| **Parola kasası** | Kayıt ekleme ve düzenleme, arama, klasörler, çöp kutusu, parola üretici, güç ölçer; zayıf ve tekrar eden parolaları gösteren parola raporu; isteğe bağlı sızıntı kontrolü (Have I Been Pwned) |
 | **Kartlar ve notlar** | Banka kartları (numara, son kullanma, güvenlik kodu, PIN; marka numaradan anlaşılır) ve güvenli notlar; parolalarla aynı listede, klasörlerde ve çöp kutusunda |
 | **2FA doğrulama** | TOTP ve HOTP kodları, QR ile ekleme, Google Authenticator, Aegis ve 2FAS'tan aktarım, kodları göstermek için isteğe bağlı ek onay |
 | **Otomatik doldurma** | Android uygulamalarında ve Chrome'da parola doldurma ve kaydetme, ödeme formlarında kart doldurma; uygulamalar imza sertifikasıyla eşleşir, şüpheli durumlarda uyarı verilir |

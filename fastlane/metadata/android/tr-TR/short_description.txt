@@ -1,1 +1,1 @@
-Çevrimdışı parola yöneticisi ve 2FA doğrulayıcı. İnternet izni yok.
+Hesapsız, sunucusuz parola yöneticisi ve 2FA doğrulayıcı. Kasan telefonda kalır.

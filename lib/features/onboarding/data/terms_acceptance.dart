@@ -2,7 +2,7 @@ import 'dart:io';
 
 /// Kullanım koşullarının sürümü. Koşullar değişince artırılır; daha eski
 /// sürümü kabul etmiş kullanıcıya yenisi bir kez gösterilir.
-const currentTermsVersion = 1;
+const currentTermsVersion = 2;
 
 /// Dosyadaki metni kabul edilen sürüme çevirir. Boş ya da tanınmayan
 /// içerik hiç kabul edilmemiş (0) sayılır.

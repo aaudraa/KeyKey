@@ -14,6 +14,7 @@ KeyKey GPL-3.0 ile yayımlanır. Bu yüzden içine giren her şeyin lisansı GPL
 | Güncellik | Doğrudan bağımlılıkların hepsi son kararlı sürümde, biri hariç: `androidx.biometric`'in 1.1.0'dan yeni kararlı sürümü yok. Bekleyen dolaylı paketler ve nedenleri [Güncellik](#güncellik) bölümünde. |
 | Derlemede indirilen | Uygulamaya giren hazır yerel kütüphane yok. SQLite, Faz 9'dan beri repodaki kaynaktan derleniyor (#99). Ayrıntı: [Derlemede indirilenler](#derlemede-indirilenler). |
 | Lisanslar ekranı | Android kütüphaneleri ve SQLite eksikti, eklendi. Ayrıntı: [Lisanslar ekranı](#lisanslar-ekranı). |
+| Ağ (1.6.0) | Hiçbir bağımlılık ağa çıkmıyor; yeni paket eklenmedi. Tek ağ kodu KeyKey'in kendi `lib/core/network/pwned_passwords_client.dart` dosyası, Dart'ın `dart:io` `HttpClient`'ıyla. Başka yerde ağ kodu olmadığını `test/core/network/network_audit_test.dart` denetler. Pwned Passwords verisi uygulamaya gömülmez; atıfı (CC BY 4.0) parola raporunda. |
 | Bilinen açıklar | Bir tane vardı (Guava), düzeltilmiş sürüme geçildi. Şu an bilinen açık yok. Ayrıntı: [Bilinen açıklar](#bilinen-açıklar). |
 
 ## Doğrudan Dart bağımlılıkları
@@ -23,7 +24,7 @@ KeyKey GPL-3.0 ile yayımlanır. Bu yüzden içine giren her şeyin lisansı GPL
 | `sodium` | 4.1.2+1 | BSD-3-Clause; içindeki libsodium 1.0.22 ISC | Bütün kriptografi: Argon2id, XChaCha20-Poly1305, rastgele sayı, korumalı bellek |
 | `sqlite3` | 3.9.1 | MIT; SQLite kamu malı | Veritabanı motoru |
 | `drift` | 2.35.4 | MIT | Veritabanı şeması, sorgular ve göçler |
-| `crypto` | 3.0.8 | BSD-3-Clause | 2FA kodları için HMAC-SHA1/256/512; içe aktarmada anahtar türetme |
+| `crypto` | 3.0.8 | BSD-3-Clause | 2FA kodları için HMAC-SHA1/256/512; içe aktarmada anahtar türetme; sızıntı kontrolünde parolanın SHA-1 özeti |
 | `flutter_riverpod` | 3.5.0 | MIT | Uygulama durumunun yönetimi |
 | `go_router` | 18.1.4 | BSD-3-Clause | Ekranlar arası geçiş |
 | `intl` | 0.20.3 | BSD-3-Clause | Tarih ve sayı biçimleri, çeviriler (`flutter_localizations` ile) |

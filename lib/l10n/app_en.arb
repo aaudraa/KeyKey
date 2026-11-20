@@ -793,7 +793,7 @@
   "@termsDataTitle": {
     "description": "Terms section title: where data lives."
   },
-  "termsDataBody": "Your passwords, 2FA accounts and notes are kept in the vault on this phone. A backup or export file is only created when you ask for it, and saved where you choose. KeyKey has no internet permission: no account, no server, no ads, no usage data. When you open a link, the page opens in your browser. The developers cannot see, collect or store your data.",
+  "termsDataBody": "Your passwords, 2FA accounts and notes are kept in the vault on this phone. A backup or export file is only created when you ask for it, and saved where you choose. KeyKey has no account and no server, shows no ads and collects no usage data. It goes online only for checks you start yourself; today the only one is the breach check in the password report, and your passwords themselves are never sent. When you open a link, the page opens in your browser. The developers cannot see, collect or store your data.",
   "@termsDataBody": {
     "description": "Terms section body: where data lives."
   },
@@ -905,7 +905,7 @@
   "@introOfflineTitle": {
     "description": "Intro page 2 title."
   },
-  "introOfflineBody": "No internet permission, no account, no server. Your vault stays encrypted on this phone and goes nowhere.",
+  "introOfflineBody": "No account, no server. Your vault stays encrypted on this phone. Only checks you start yourself go online, and your passwords never leave.",
   "@introOfflineBody": {
     "description": "Intro page 2 text."
   },
@@ -957,7 +957,7 @@
   "@introBackupTitle": {
     "description": "Intro page 6 title."
   },
-  "introBackupBody": "KeyKey never goes online, so you make the backups. If you lose your phone, that backup is what saves you.",
+  "introBackupBody": "KeyKey has no server, so you make the backups. If you lose your phone, that backup is what saves you.",
   "@introBackupBody": {
     "description": "Intro page 6 text."
   },
@@ -1101,7 +1101,7 @@
   "@otpClockHelpTitle": {
     "description": "Title of the clock help dialog."
   },
-  "otpClockHelpBody": "Codes are calculated from this device's clock. KeyKey works without the internet, so it cannot check the time itself. If services reject your codes, turn on automatic date and time in the Android settings.",
+  "otpClockHelpBody": "Codes are calculated from this device's clock. KeyKey does not get the time from the internet, so it cannot tell whether the clock is right. If services reject your codes, turn on automatic date and time in the Android settings.",
   "@otpClockHelpBody": {
     "description": "Body of the clock help dialog."
   },
@@ -1772,7 +1772,7 @@
       }
     }
   },
-  "autoBackupIntro": "While your vault is open, KeyKey writes an encrypted backup to the folder you choose whenever an entry changes. It is the same as a backup you make yourself: it opens with the master password or recovery key you had when it was made. The newest 5 backups and the last backup of each of the newest 14 days are kept; older ones are deleted. Backups you make yourself are never touched.\n\nSo that your backups don't disappear with your phone, choose a folder that a sync app such as Syncthing or Nextcloud copies elsewhere. Google Drive may not appear in the folder list. KeyKey itself never goes online.\n\nEvery backup in the folder is another copy on which someone who gets the file could try to guess your master password; use a strong one.",
+  "autoBackupIntro": "While your vault is open, KeyKey writes an encrypted backup to the folder you choose whenever an entry changes. It is the same as a backup you make yourself: it opens with the master password or recovery key you had when it was made. The newest 5 backups and the last backup of each of the newest 14 days are kept; older ones are deleted. Backups you make yourself are never touched.\n\nSo that your backups don't disappear with your phone, choose a folder that a sync app such as Syncthing or Nextcloud copies elsewhere. Google Drive may not appear in the folder list. The sync app moves the backup; KeyKey never sends it anywhere.\n\nEvery backup in the folder is another copy on which someone who gets the file could try to guess your master password; use a strong one.",
   "@autoBackupIntro": {
     "description": "Explanation shown before choosing the automatic backup folder, and behind the (i) button."
   },
