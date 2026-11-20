@@ -85,6 +85,16 @@ final class VaultHeader {
     recoverySlot: slot,
   );
 
+  /// Parola yuvası [other]'dan alınmış kopya. KDF parametreleri ve tuz yuvayla
+  /// bir bütündür (ek doğrulama verisine bağlı), onlar da alınır; kasa kimliği
+  /// ve kurtarma yuvası aynı kalır.
+  VaultHeader withPasswordSlotFrom(VaultHeader other) => VaultHeader(
+    vaultId: vaultId,
+    kdf: other.kdf,
+    passwordSlot: other.passwordSlot,
+    recoverySlot: recoverySlot,
+  );
+
   String toJsonString() => jsonEncode({
     'version': currentVersion,
     'vaultId': base64.encode(vaultId),

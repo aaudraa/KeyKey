@@ -366,6 +366,48 @@ void main() {
     });
   });
 
+  group('kaybeden parolayı kurtarma', () {
+    final old = DateTime.utc(2026);
+    final at = DateTime.utc(2026, 11, 20, 9);
+    final base = LoginContent(
+      name: 'Site',
+      password: 'şimdiki',
+      passwordHistory: [PasswordHistoryEntry(password: 'eski', changedAt: old)],
+    );
+
+    test('parola geçmişin başına giriyor', () {
+      final rescued = base.withRescuedPassword('kaybeden', at)!;
+      expect(rescued.password, 'şimdiki');
+      expect(rescued.passwordHistory, [
+        PasswordHistoryEntry(password: 'kaybeden', changedAt: at),
+        PasswordHistoryEntry(password: 'eski', changedAt: old),
+      ]);
+      expect(rescued.name, 'Site');
+    });
+
+    test('boş, şimdiki ya da geçmişteki parola kurtarılmıyor', () {
+      expect(base.withRescuedPassword('', at), isNull);
+      expect(base.withRescuedPassword('şimdiki', at), isNull);
+      expect(base.withRescuedPassword('eski', at), isNull);
+    });
+
+    test('geçmiş en çok 10 kayıt kalıyor', () {
+      final full = base.copyWith(
+        passwordHistory: [
+          for (var i = 0; i < LoginContent.maxPasswordHistory; i++)
+            PasswordHistoryEntry(password: 'p$i', changedAt: old),
+        ],
+      );
+      final rescued = full.withRescuedPassword('kaybeden', at)!;
+      expect(
+        rescued.passwordHistory,
+        hasLength(LoginContent.maxPasswordHistory),
+      );
+      expect(rescued.passwordHistory.first.password, 'kaybeden');
+      expect(rescued.passwordHistory.last.password, 'p8');
+    });
+  });
+
   group('değiştirme', () {
     test('verilmeyen klasör ve çöp bilgisi korunuyor', () {
       final copy = full.copyWith(name: 'Yeni');

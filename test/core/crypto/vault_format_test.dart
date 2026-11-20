@@ -10,6 +10,8 @@ import 'package:keykey/core/crypto/vault_crypto.dart';
 import 'package:keykey/core/crypto/vault_header.dart';
 import 'package:sodium/sodium_sumo.dart';
 
+import '../storage/test_data.dart';
+
 void main() {
   late SodiumSumo sodium;
   late VaultCrypto crypto;
@@ -35,6 +37,31 @@ void main() {
         VaultHeader.fromJsonString(value is String ? value : jsonEncode(value)),
     throwsA(isA<InvalidVaultHeaderException>()),
   );
+
+  test('parola yuvası parametre ve tuzuyla başka üst bilgiden alınıyor', () {
+    final a = sampleHeader();
+    final other = sampleHeader(fill: 2);
+    final b = VaultHeader(
+      vaultId: other.vaultId,
+      kdf: KdfParams(
+        opsLimit: 4,
+        memLimit: other.kdf.memLimit,
+        salt: other.kdf.salt,
+      ),
+      passwordSlot: other.passwordSlot,
+      recoverySlot: other.recoverySlot,
+    );
+
+    final merged = a.withPasswordSlotFrom(b);
+
+    expect(merged.vaultId, a.vaultId);
+    expect(merged.recoverySlot.cipherText, a.recoverySlot.cipherText);
+    expect(merged.passwordSlot.cipherText, b.passwordSlot.cipherText);
+    expect(merged.passwordSlot.nonce, b.passwordSlot.nonce);
+    expect(merged.kdf.salt, b.kdf.salt);
+    expect(merged.kdf.opsLimit, 4);
+    expect(merged.kdf.memLimit, b.kdf.memLimit);
+  });
 
   group('biçim uyumluluğu (v1)', () {
     // Bu dosya bir kez üretildi ve değiştirilmemeli. Bu testler kırılırsa
