@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/core/platform/platform_api.g.dart';
 
-/// Web sayfasını sistemin tarayıcısında açar. KeyKey internete çıkmaz;
+/// Web sayfasını sistemin tarayıcısında açar. Sayfayı KeyKey indirmez;
 /// adres yalnızca kullanıcı dokununca tarayıcıya devredilir.
 abstract interface class WebLinks {
   /// Açacak uygulama yoksa `false`.

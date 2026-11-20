@@ -90,7 +90,7 @@ Bir parolayı değiştirdiğinde eskisi kaydın geçmişinde kalır.
 Kasa ekranının sağ üstündeki **⋮** menüsünde:
 
 - **Çöp kutusu:** Sildiğin kayıtlar burada 30 gün durur, sonra kalıcı olarak silinir. Yanlışlıkla sildiğini buradan geri yüklersin. Çöp kutusunun **⋮** menüsünde **Tümünü geri yükle** ve onay isteyen **Çöpü boşalt** var.
-- **Parola raporu:** Zayıf ve birden çok kayıtta kullandığın parolaları gösterir. Hesaplama telefonda yapılır, hiçbir yere gönderilmez.
+- **Parola raporu:** Zayıf ve birden çok kayıtta kullandığın parolaları gösterir. Bunlar telefonda hesaplanır, hiçbir yere gönderilmez. İnternete yalnızca aşağıdaki sızıntı kontrolü çıkar, o da sen dokununca.
 - **Sızıntı kontrolü:** Raporun en üstündeki **İnternetten denetle**, parolalarının bilinen veri sızıntılarında görülüp görülmediğini Have I Been Pwned'a sorar. Parolanın kendisi gitmez: yalnızca özetinin ilk 5 karakteri gider, karşılaştırma telefonda yapılır. Have I Been Pwned IP adresini görür. Sızıntılarda görülen parolalar kaç kez görüldükleriyle listelenir; kayda dokunup parolayı değiştir, aynı parolayı kullandığın başka yerler varsa onları da. "Görülmedi" demek "güvenli" demek değildir. Sonuç kaydedilmez; ekrandan çıkınca ya da kasa kilitlenince silinir. Bağlantı yoksa "Denetlenemedi" yazar, **Yeniden dene** ile tekrar denersin.
 
 ## Kartlar ve güvenli notlar

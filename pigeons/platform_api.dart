@@ -195,7 +195,7 @@ abstract class AppPackagesApi {
   String versionName();
 }
 
-/// Web sayfasını sistemin tarayıcısında açar. KeyKey internete çıkmaz;
+/// Web sayfasını sistemin tarayıcısında açar. Sayfayı KeyKey indirmez;
 /// adres yalnızca kullanıcı dokununca tarayıcıya devredilir.
 @HostApi()
 abstract class WebLinkApi {

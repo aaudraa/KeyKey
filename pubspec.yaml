@@ -1,5 +1,5 @@
 name: keykey
-description: "Android için çevrimdışı parola yöneticisi ve 2FA doğrulama uygulaması."
+description: "Android için parola yöneticisi ve 2FA doğrulama uygulaması."
 publish_to: "none"
 version: 1.6.0+10
 

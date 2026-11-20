@@ -646,7 +646,7 @@ class _Import extends AnimatedWidget {
 }
 
 // 6. Yedeğin sende: dosyaya kaydetme simgesi belirir, sonra nefes alır.
-// Bulut simgesi kullanılmaz: KeyKey internete çıkmaz.
+// Bulut simgesi kullanılmaz: yedek buluta gitmez, dosya sende kalır.
 
 class _Backup extends StatelessWidget {
   const new({required this.enter, required this.loop});

@@ -23,7 +23,7 @@ En önemli şikâyet otomatik doldurma: başka bir uygulamada "KeyKey ile doldur
 
 - Ekranların yaptığı işler değişmez. Tek davranış değişikliği doldurmadadır (aşağıda).
 - Yeni izin eklenmez. Özellikle `QUERY_ALL_PACKAGES` ve `INTERNET` istenmez.
-- Site logoları gösterilmez: KeyKey internete çıkmaz, logo indiremez, uygulamaya da logo paketi gömülmez.
+- Site logoları gösterilmez: KeyKey internete çıkmaz, logo indiremez, uygulamaya da logo paketi gömülmez. *(1.6.0'dan beri KeyKey yalnızca kullanıcının başlattığı sızıntı kontrolü için internete çıkar; logo yine indirilmez.)*
 - Yazı tipi indirilmez veya gömülmez; telefonun kendi yazı tipi kullanılır.
 - Tablet ve yatay ekran için ayrı düzen yapılmaz.
 

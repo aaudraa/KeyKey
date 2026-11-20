@@ -1,6 +1,6 @@
 # KeyKey Yol Haritası
 
-KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. 1.3.0'a kadar tamamen çevrimdışıydı; 2026-11-19'da internet gerektiren özelliklere de açılma kararı alındı ([İnternet](#temel-kararlar)). Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
+KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. 1.5.0'a kadar tamamen çevrimdışıydı; 2026-11-19'da internet gerektiren özelliklere de açılma kararı alındı ([İnternet](#temel-kararlar)). Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
 **Son güncelleme:** 2026-11-20 · **Şu anki faz:** 16 (internete açılma ve sızıntı kontrolü) sürüyor ([#152](https://github.com/aaudraa/KeyKey/issues/152), tasarım: [internet ve sızıntı](docs/internet-ve-sizinti.md)). [1.5.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.5.0) yayında (kart doldurma; 1.4.0'ın kartları ve notlarıyla birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
 
