@@ -1,10 +1,10 @@
-KeyKey keeps your passwords and two-factor codes on your phone, encrypted, and nowhere else. There is no account and no server, and the app does not have the internet permission, so it cannot send your data anywhere.
+KeyKey keeps your passwords and two-factor codes on your phone, encrypted, and nowhere else. There is no account and no server, and your vault is never sent anywhere. The only thing that goes online is the breach check you start yourself, and it sends the first 5 characters of a password's hash, never the password.
 
 <b>Passwords</b>
 <ul>
 <li>Add, edit and search logins; folders, trash, custom fields</li>
 <li>Password generator and strength meter</li>
-<li>Offline report of weak and reused passwords</li>
+<li>Report of weak and reused passwords, with an optional breach check (Have I Been Pwned, using k-anonymity)</li>
 <li>Bank cards and secure notes; the list shows only a card's last four digits</li>
 </ul>
 

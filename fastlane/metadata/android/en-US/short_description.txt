@@ -1,1 +1,1 @@
-Offline password manager and 2FA authenticator. No internet permission.
+Passwords and 2FA codes. No account, no server; your vault stays on your phone.

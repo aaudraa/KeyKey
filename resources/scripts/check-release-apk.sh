@@ -18,6 +18,9 @@ allowed_permissions=(
   # QR okuma. Yalnızca tarama ekranında istenir. Kamera ve görsel seçici
   # kütüphanelerinin eklediği öbür izinler manifest'te bilerek kaldırıldı.
   "android.permission.CAMERA"
+  # Yalnızca kullanıcının başlattığı denetimler (Have I Been Pwned sızıntı
+  # kontrolü). Parolalar gönderilmez; bkz. resources/docs/internet-ve-sizinti.md.
+  "android.permission.INTERNET"
 )
 
 sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
@@ -62,6 +65,16 @@ if ! grep -Eq 'allowBackup\([^)]*\)=(false|\(type 0x12\)0x0)' <<< "$manifest"; t
 fi
 if ! grep -q 'android:dataExtractionRules' <<< "$manifest"; then
   fail "dataExtractionRules tanımlı değil."
+fi
+# Şifresiz (http://) trafik kapalı olmalı ve ağ güvenlik yapılandırması
+# yalnızca sistem sertifikalarına güvenmeli. Bu ayarlar platform kodunu
+# korur; Dart'ın HttpClient'ı onlara bağlı değil, https'i istemci kendisi
+# zorlar (pwned_passwords_client.dart).
+if ! grep -Eq 'usesCleartextTraffic\([^)]*\)=(false|\(type 0x12\)0x0)' <<< "$manifest"; then
+  fail "usesCleartextTraffic kapalı değil."
+fi
+if ! grep -q 'android:networkSecurityConfig' <<< "$manifest"; then
+  fail "networkSecurityConfig tanımlı değil."
 fi
 
 # Flutter'ın derin bağlantısı iki etkinlikte de kapalı olmalı; yoksa başka bir

@@ -1,10 +1,10 @@
-KeyKey parolalarını ve iki adımlı doğrulama kodlarını telefonunda, şifreli olarak tutar; başka hiçbir yerde değil. Hesap ve sunucu yok, uygulamanın internet izni de yok; yani verini hiçbir yere gönderemez.
+KeyKey parolalarını ve iki adımlı doğrulama kodlarını telefonunda, şifreli olarak tutar; başka hiçbir yerde değil. Hesap ve sunucu yok; kasan hiçbir yere gönderilmez. İnternete yalnızca senin başlattığın sızıntı kontrolü çıkar ve ona parolanın kendisi değil, özetinin ilk 5 karakteri gider.
 
 <b>Parolalar</b>
 <ul>
 <li>Kayıt ekleme, düzenleme ve arama; klasörler, çöp kutusu, özel alanlar</li>
 <li>Parola üretici ve güç ölçer</li>
-<li>Zayıf ve tekrar eden parolaları gösteren çevrimdışı rapor</li>
+<li>Zayıf ve tekrar eden parolaları gösteren rapor; isteğe bağlı sızıntı kontrolü (Have I Been Pwned, k-anonimlikle)</li>
 <li>Banka kartları ve güvenli notlar; listede kartın yalnızca son dört hanesi görünür</li>
 </ul>
 

@@ -208,7 +208,7 @@ void main() {
       for (final text in [
         // Yedek ve dışa aktarma da var: veriler yalnızca telefonda değil.
         'senin seçtiğin yere',
-        'internet izni yoktur',
+        'senin başlattığın denetimler',
         'Argon2id',
         'kimse verilerini kurtaramaz',
         'şifreli yedek',
@@ -232,7 +232,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(TermsScreen), findsOneWidget);
-      expect(find.textContaining('internet izni yoktur'), findsOneWidget);
+      expect(
+        find.textContaining('senin başlattığın denetimler'),
+        findsOneWidget,
+      );
       expect(continueButton(), findsNothing);
       expect(find.byType(Checkbox), findsNothing);
     });

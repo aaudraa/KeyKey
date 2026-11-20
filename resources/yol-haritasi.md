@@ -1,8 +1,8 @@
 # KeyKey Yol Haritası
 
-KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. 1.3.0'a kadar tamamen çevrimdışıydı; 2026-11-19'da internet gerektiren özelliklere de açılma kararı alındı ([İnternet](#temel-kararlar)). Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
+KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. 1.5.0'a kadar tamamen çevrimdışıydı; 2026-11-19'da internet gerektiren özelliklere de açılma kararı alındı ([İnternet](#temel-kararlar)). Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-20 · **Şu anki faz:** 15 (kart doldurma) bitti; sıradaki 16, internete açılma ve sızıntı kontrolü. [1.5.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.5.0) yayında (kart doldurma; 1.4.0'ın kartları ve notlarıyla birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
+**Son güncelleme:** 2026-11-20 · **Şu anki faz:** 16 (internete açılma ve sızıntı kontrolü) sürüyor ([#152](https://github.com/aaudraa/KeyKey/issues/152), tasarım: [internet ve sızıntı](docs/internet-ve-sizinti.md)). [1.5.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.5.0) yayında (kart doldurma; 1.4.0'ın kartları ve notlarıyla birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
 
 > [!IMPORTANT]
 > **KeyKey 1.0 yayında.** Projenin kendi güvenlik denetimi tamamlandı, ama bağımsız bir denetim yapılmadı. Şifreli yedeğini düzenli al ve telefonun dışında da sakla.
@@ -29,7 +29,7 @@ KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uyg
 | 13 | Yeni kurtarma anahtarı | S | 12 | `faz/13-kurtarma-anahtari` | Tamamlandı (1.3.0) |
 | 14 | Kart ve güvenli not kayıtları | L | 13 | `faz/14-kart-ve-not` | Tamamlandı (1.4.0) |
 | 15 | Kart doldurma | M | 14 | `faz/15-kart-doldurma` | Tamamlandı (1.5.0) |
-| 16 | İnternete açılma ve sızıntı kontrolü | M | 14 | `faz/16-internet` | Planlandı |
+| 16 | İnternete açılma ve sızıntı kontrolü | M | 14 | `faz/16-internet` | Sürüyor |
 | 17 | Kilit süresi, klavye, toplu seçim, Steam Guard | M | 14 | `faz/17-kullanim-kolayligi` | Planlandı |
 | 18 | Senkron (WebDAV, Google Drive) | XL | 16 | `faz/18-senkron` | Planlandı |
 | 19 | KeePass (`.kdbx`) içe aktarma | L | 14 | `faz/19-keepass` | Planlandı |
@@ -661,6 +661,33 @@ Testler: 1667 birim ve arayüz testi, 65 Kotlin testi. Bütün entegrasyon testl
 1.5.0 olarak yayımlandı (2026-11-20, [#150](https://github.com/aaudraa/KeyKey/pull/150)). İmza sertifikası aynı (`66ff7b5c…`), Obtainium 1.4.0'ın üstüne günceller; F-Droid'in kendi derlemesi APK'yla bayt bayt aynı çıktı.
 
 **Bitti sayılması için:** üç örnek formda (ipuçlu, ipucusuz, web) kart listeden seçilip bütün alanlar doğru doluyor; güvenlik kodu parola sanılmıyor ve kaydetme önerisi çıkmıyor; giriş doldurma ve kaydetme eskisi gibi çalışıyor.
+
+### Faz 16 — İnternete açılma ve sızıntı kontrolü
+
+KeyKey'in ilk internet özelliği ([#152](https://github.com/aaudraa/KeyKey/issues/152)). Tasarım: [`internet-ve-sizinti.md`](docs/internet-ve-sizinti.md), plan: [`internet-ve-sizinti-plani.md`](docs/internet-ve-sizinti-plani.md).
+
+- [x] Ağ istemcisi tek dosyada (`lib/core/network/pwned_passwords_client.dart`); başka yerde ağ kodu olmadığını denetleyen test
+- [x] Sızıntı denetimi: SHA-1, önek gruplama, dolgu, en çok 4 eşzamanlı istek, karışık sıra, bir kez yeniden deneme, iptal; biçime uymayan yanıt "temiz" sayılmıyor
+- [x] Parola raporunda "Sızıntı kontrolü": açıklama, Have I Been Pwned atfı, ilerleme, hata ve yeniden dene, görülme sayılarıyla liste
+- [x] Android: `INTERNET` izni, şifresiz trafik kapalı, ağ güvenliği yapılandırması, yayın APK denetimi
+- [x] Metinler: kullanım koşulları sürüm 2 (yeniden soruluyor), tanıtım, gizlilik bildirimi, README, mağaza açıklamaları, F-Droid `NonFreeNet`; metinlerin "internete çıkmaz" demediğini denetleyen test
+- [x] Android 17 ve 11 emülatörlerinde gerçek API'yle deneme, uçak modu, kayıt taraması
+- [x] Güvenlik tasarımı, denetim, İngilizce özet, kılavuz, değişiklik günlüğü, sürüm `1.6.0+10`
+- [x] Son gözden geçirme: taze gözden geçirici kritik bulgu bulmadı. Düzeltilenler: sızan parolalar değiştirilince raporun yanlışlıkla "sızıntı yok" demesi (artık denetlenmeyen parolaları söylüyor), boş yanıtın "temiz" sayılması, ağ denetimi testinin kaçırdığı ağ yolları ve Java dosyaları, kalan "internete çıkmaz" ifadeleri
+
+**Uygulama sırasında verilen kararlar:**
+
+- Sızıntı kontrolü raporun en üstünde ve yalnızca düğmeyle başlıyor; ayar, arka plan denetimi ya da kaydedilen sonuç yok. Sonuç yalnızca bellekte, rapor ekranıyla yaşıyor.
+- Yeni paket eklenmedi: Dart'ın `HttpClient`'ı. Sertifika sabitleme yok (trafikte parola yok; sabitleme hizmetin sertifikası değişince denetimi bozardı).
+- Kartlar ve notlar denetlenmiyor; yalnızca giriş kayıtlarının parolaları.
+
+**Uygulama sırasında bulunan:** Flutter 3.47, Android'in şifresiz trafik yasağını (`usesCleartextTraffic`, ağ güvenliği yapılandırması) Dart'ın `HttpClient`'ına uygulamıyor: motor `domainNetworkPolicy` değerini boş geçiyor ve emülatörde `http://` isteği reddedilmedi. Tasarım bunun tersini varsayıyordu. İstemci artık https dışı adresi kendisi reddediyor (testle); manifest ayarları platform kodu için duruyor. Hata ayıklama derlemesinde Flutter araç bağlantısı için `INTERNET` izni zaten var; yayın derlemesindeki izin `check-release-apk.sh` ile denetlendi.
+
+**Cihazda (2026-11-20):** Android 17 ve Android 11 emülatörlerinde gerçek API'yle denendi: `password` sızmış, rastgele parola temiz çıktı; uçak modunda "Denetlenemedi" çıktı; logcat'te önek, özet ya da parola yok. Koşullar 1'den 2'ye yükselince tanıtım ve koşullar yeniden soruldu. Android 17'de bütün cihaz testleri geçti.
+
+**Bu fazda görülen eski hata:** parmak izi cihaz testi, 1.1.0'da gelen "kilit açılınca kalınan sekmeye dön" davranışından beri kasa listesini bekliyordu; Android 17'deki tam koşuda kırıldı ve düzeltildi.
+
+**Bitti sayılması için:** raporda `password` gibi sızmış bir parola görülme sayısıyla listeleniyor; bağlantı yokken ya da beklenmeyen yanıtta "Denetlenemedi" çıkıyor, yanlış bir "sızıntı yok" çıkmıyor; güncellemeden sonra koşullar bir kez yeniden soruluyor; kayıtta parola, özet ya da önek yok.
 
 ## 1.0 sonrası
 

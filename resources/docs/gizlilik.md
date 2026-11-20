@@ -1,8 +1,8 @@
 # Gizlilik bildirimi
 
-**Geçerlilik:** KeyKey 1.0 ve sonrası · **Son güncelleme:** 2026-11-19 · English: [privacy.md](privacy.md)
+**Geçerlilik:** KeyKey 1.0 ve sonrası · **Son güncelleme:** 2026-11-20 · English: [privacy.md](privacy.md)
 
-KeyKey hiçbir veri toplamaz ve hiçbir yere göndermez. Uygulamanın internet izni yoktur, bu yüzden istese de cihazdan veri çıkaramaz. Bunu kurulu uygulamanın izinlerinden ya da kaynak koddan herkes doğrulayabilir.
+KeyKey hiçbir veri toplamaz. Hesap ve sunucu yoktur; kasan yalnızca bu telefonda, şifreli durur. KeyKey 1.6.0'dan beri internet iznine sahiptir ve internete yalnızca senin başlattığın bir denetim için çıkar: parola raporundaki [sızıntı kontrolü](#sızıntı-kontrolü). Bu denetimde parolaların ve kasan cihazdan çıkmaz. Ağ kodu tek bir dosyadadır ve başka bir yerde ağ kodu olmadığını her derlemede bir test denetler; kaynak koddan herkes doğrulayabilir.
 
 ## Toplanmayanlar
 
@@ -27,8 +27,9 @@ KeyKey hiçbir veri toplamaz ve hiçbir yere göndermez. Uygulamanın internet i
 | Kamera | Yalnızca 2FA QR kodu tararken istenir. Görüntü kaydedilmez, cihazdan çıkmaz. |
 | Biyometri (parmak izi) | Kasayı parmak iziyle açmak için. Parmak izinin kendisi KeyKey'e hiç ulaşmaz; Android yalnızca "doğrulandı" bilgisini verir. |
 | Bindirme pencerelerini gizleme | KeyKey ekrandayken başka uygulamaların üstüne pencere çizip dokunuşları kandırmasını önlemek için. |
+| İnternet | Yalnızca parola raporundaki sızıntı kontrolü için, sen dokununca. Ne gittiği [aşağıda](#sızıntı-kontrolü). |
 
-İnternet, konum, rehber, depolama ve bütün uygulamaları görme (`QUERY_ALL_PACKAGES`) izinleri istenmez.
+Konum, rehber, depolama ve bütün uygulamaları görme (`QUERY_ALL_PACKAGES`) izinleri istenmez.
 
 ## Otomatik doldurma
 
@@ -38,17 +39,28 @@ KeyKey'i doldurma servisi olarak seçersen Android, bir giriş formuna dokunduğ
 
 Kopyaladığın parola, kart bilgisi, not ve 2FA kodları panoda "hassas" olarak işaretlenir (Android 13 ve üstü, klavye önizlemesinde görünmez) ve 30 saniye sonra silinir.
 
+## Sızıntı kontrolü
+
+Parola raporunda **İnternetten denetle**'ye dokunursan KeyKey, parolalarının bilinen veri sızıntılarında görülüp görülmediğini [Have I Been Pwned](https://haveibeenpwned.com/Passwords)'ın Pwned Passwords hizmetine sorar. Sen dokunmadan hiçbir şey gönderilmez; otomatik ya da arka planda denetim yoktur.
+
+- **Ne gider:** Her parolanın SHA-1 özetinin yalnızca ilk 5 karakteri (örneğin `5BAA6`). Parolanın kendisi, özetin geri kalanı, kayıt adı, kullanıcı adı ve site gitmez. Karşılaştırma telefonda yapılır (k-anonimlik).
+- **Kime gider:** `api.pwnedpasswords.com` (Have I Been Pwned; hizmet Cloudflare üzerinden sunuluyor), yalnızca HTTPS ile.
+- **Karşı taraf ne görür:** IP adresin, sorulan önekler ve zamanı. İstekte `User-Agent: KeyKey` dışında tanımlayıcı, çerez ya da hesap yoktur. Bir IP adresinden gelen önek kümesi bir kasanın parmak izi gibi kullanılabilir; tek başına parolayı ele vermez.
+- **Ne saklanır:** Hiçbir şey. Sonuç yalnızca bellekte durur; ekrandan çıkınca ya da kasa kilitlenince silinir.
+
+Veri Have I Been Pwned'ındır ve CC BY 4.0 lisansıyla kullanılır.
+
 ## Dosyalar
 
-Yedek, dışa ve içe aktarma dosyaları yalnızca Android'in dosya seçicisiyle senin seçtiğin yere yazılır ya da oradan okunur. Drive gibi bir konum seçersen dosyayı oraya Android'in kendisi taşır; KeyKey internete çıkmaz. Şifresiz dışa aktarma çift onay ister ve dosyanın şifresiz olduğu açıkça söylenir.
+Yedek, dışa ve içe aktarma dosyaları yalnızca Android'in dosya seçicisiyle senin seçtiğin yere yazılır ya da oradan okunur. Drive gibi bir konum seçersen dosyayı oraya Android'in kendisi taşır; KeyKey dosyayı hiçbir yere göndermez. Şifresiz dışa aktarma çift onay ister ve dosyanın şifresiz olduğu açıkça söylenir.
 
 ## Bağlantılar
 
-Bir kayıtta **Siteyi aç**'a ya da Ayarlar'ın Hakkında bölümündeki bir bağlantıya dokunursan KeyKey yalnızca o adresi tarayıcına verir, sayfayı tarayıcı yükler. Başka hiçbir şey aktarılmaz; KeyKey'in kendisi yine internete çıkmaz.
+Bir kayıtta **Siteyi aç**'a ya da Ayarlar'ın Hakkında bölümündeki bir bağlantıya dokunursan KeyKey yalnızca o adresi tarayıcına verir, sayfayı tarayıcı yükler. Başka hiçbir şey aktarılmaz; sayfayı KeyKey değil tarayıcın yükler.
 
 ## Değişiklikler
 
-Bu bildirim değişirse yeni hali bu dosyada ve [değişiklik günlüğünde](../CHANGELOG.md) yayımlanır. İnternete çıkmak gerektiren bir özellik (örneğin senkron) eklenirse bu ayrı bir karar olur ve bildirimde açıkça yazar ([yol haritası](../yol-haritasi.md#10-sonrası)).
+Bu bildirim değişirse yeni hali bu dosyada ve [değişiklik günlüğünde](../CHANGELOG.md) yayımlanır. İnternete çıkan yeni bir özellik eklenirse bildirimde açıkça yazar ve kullanım koşulları yeniden sorulur.
 
 ## İletişim
 
@@ -60,5 +72,5 @@ Dağıtım kararı (#100, 2026-11-09): 1.0 GitHub Releases'ta, sonra F-Droid. F-
 
 - **GitHub Releases ve Obtainium:** Gizlilik formu istemiyor; bu bildirim yeterli.
 
-- **Play Store veri güvenliği formu:** "Uygulama kullanıcı verisi toplamıyor veya paylaşmıyor." Veri aktarımda şifrelenir sorusu: aktarım yok. Kullanıcı veri silme talebinde bulunabilir: uygulama içinden kayıt silme ve uygulamayı kaldırma.
-- **F-Droid:** Beklenen anti-özellik yok. İnternet yok, izleme yok, özgür olmayan bağımlılık yok. SQLite ve libsodium kaynaktan derleniyor; Flutter motoru F-Droid'in izin verdiği hazır parçalardan. Başvuru Faz 10'da (#119): F-Droid kaynaktan derler, derlemesi bizimkiyle birebir aynı olduğu için bizim imzalı APK'mızı dağıtır.
+- **Play Store veri güvenliği formu:** "Uygulama kullanıcı verisi toplamıyor." Sızıntı kontrolü Play'e gidilirse formda yeniden değerlendirilir: giden yalnızca 5 karakterlik özet öneki, HTTPS ile (aktarımda şifreli), kullanıcı dokununca; kimse saklamaz. Kullanıcı veri silme talebinde bulunabilir: uygulama içinden kayıt silme ve uygulamayı kaldırma.
+- **F-Droid:** `NonFreeNet` anti-özelliği: sızıntı kontrolü özgür olmayan bir ağ hizmetine (Have I Been Pwned) bağlanır. İzleme yok, özgür olmayan bağımlılık yok. SQLite ve libsodium kaynaktan derleniyor; Flutter motoru F-Droid'in izin verdiği hazır parçalardan. Başvuru Faz 10'da (#119): F-Droid kaynaktan derler, derlemesi bizimkiyle birebir aynı olduğu için bizim imzalı APK'mızı dağıtır.

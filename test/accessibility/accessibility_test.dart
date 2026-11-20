@@ -6,6 +6,7 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
+import 'package:keykey/core/network/pwned_passwords_client.dart';
 import 'package:keykey/features/authenticator/application/otp_import.dart';
 import 'package:keykey/features/authenticator/data/import/import_result.dart';
 import 'package:keykey/features/authenticator/data/otp_content.dart';
@@ -13,10 +14,13 @@ import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/backup/data/import/login_import.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
+import 'package:keykey/features/vault/application/breach_check.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
+import 'package:keykey/features/vault/presentation/password_report_screen.dart';
 import 'package:sodium/sodium_sumo.dart';
 
+import '../support/fake_range_source.dart';
 import '../support/fake_vault_service.dart';
 
 /// Ana ekranları Flutter'ın erişilebilirlik kurallarıyla denetler: dokunma
@@ -184,6 +188,73 @@ void main() {
         GoRouter.of(tester.element(find.byType(Scaffold).first)).go(route);
         await settle(tester);
       }
+
+      Finder reportScroll() => find
+          .descendant(
+            of: find.byType(PasswordReportScreen),
+            matching: find.byType(Scrollable),
+          )
+          .first;
+
+      Future<void> openReportCheck(
+        WidgetTester tester,
+        FakeRangeSource source,
+      ) async {
+        final service = await prepare(tester);
+        await pumpKeyKey(
+          tester,
+          status: VaultOpen(service.newSession()),
+          service: service,
+          logins: FakeLoginRepository(items: [login]),
+          otps: FakeOtpRepository(items: [otp]),
+          extraOverrides: [pwnedRangeSourceProvider.overrideWithValue(source)],
+        );
+        GoRouter.of(tester.element(find.byType(Scaffold).first))
+            .go(AppRoutes.vaultReport);
+        await settle(tester);
+        await tester.scrollUntilVisible(
+          find.text('İnternetten denetle'),
+          200,
+          scrollable: reportScroll(),
+        );
+        await tester.ensureVisible(find.text('İnternetten denetle'));
+        await settle(tester);
+        await tester.tap(find.text('İnternetten denetle'));
+        await settle(tester);
+      }
+
+      testWidgets('parola raporu, sızıntı sonucu', (tester) async {
+        final suffix = pwnedHash(login.content.password).substring(5);
+        await openReportCheck(
+          tester,
+          FakeRangeSource((prefix) => '$suffix:1234\r\n'),
+        );
+        await tester.scrollUntilVisible(
+          find.textContaining('kez görüldü'),
+          200,
+          scrollable: reportScroll(),
+        );
+        await tester.ensureVisible(find.textContaining('kez görüldü'));
+        await settle(tester);
+        await checkGuidelines(
+          tester,
+          location: AppRoutes.vaultReport,
+          scale: scale,
+        );
+      });
+
+      testWidgets('parola raporu, sızıntı denetlenemedi', (tester) async {
+        await openReportCheck(
+          tester,
+          FakeRangeSource((prefix) => '<html></html>'),
+        );
+        expect(find.text('Yeniden dene'), findsOneWidget);
+        await checkGuidelines(
+          tester,
+          location: AppRoutes.vaultReport,
+          scale: scale,
+        );
+      });
 
       testWidgets('parola üretici', (tester) async {
         await openAt(tester, AppRoutes.vaultNew);

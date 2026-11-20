@@ -1,0 +1,1 @@
+Sızıntı kontrolü: parola raporunda "İnternetten denetle", parolalarının veri sızıntılarında görülüp görülmediğini Have I Been Pwned'a sorar; parolanın kendisi değil, özetinin ilk 5 karakteri gider. KeyKey artık internet iznine sahip, ama internete yalnızca bu denetim için, sen dokununca çıkar. Kullanım koşulları değişti; ilk açılışta bir kez sorulur.

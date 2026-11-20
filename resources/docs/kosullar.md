@@ -1,6 +1,6 @@
 # Kullanım koşulları
 
-**Sürüm:** 1 · **Tarih:** 2026-11-17 · English: [terms.md](terms.md)
+**Sürüm:** 2 · **Tarih:** 2026-11-20 · English: [terms.md](terms.md)
 
 KeyKey bu koşulları kasa kurulmadan ya da açılmadan önce bir kez gösterir; "Okudum, anladım ve kabul ediyorum." işaretlenmeden devam edilmez. Ayarlar → Hakkında → **Kullanım koşulları**'ndan yeniden okunabilir. Uygulamadaki metinle bu dosya aynıdır; koşullar değişirse sürüm numarası artar ve uygulama yeni metni bir kez daha sorar. Verilerle ilgili ayrıntılar [gizlilik bildiriminde](gizlilik.md), lisansın tamamı [LICENSE](../../LICENSE) dosyasında.
 
@@ -8,7 +8,7 @@ KeyKey'i kullanmaya başlamadan önce lütfen oku. Kısa tuttuk; her madde KeyKe
 
 ## Verilerin bu telefonda
 
-Parolaların, 2FA hesapların ve notların bu telefondaki kasada durur. Yedek ya da dışa aktarma dosyası yalnızca sen istersen oluşur ve senin seçtiğin yere kaydedilir. KeyKey'in internet izni yoktur: hesap açtırmaz, hiçbir sunucuya bağlanmaz, reklam göstermez, kullanım bilgisi toplamaz. Bir bağlantıyı açtığında sayfa tarayıcında açılır. Geliştiriciler verilerini göremez, toplamaz ve saklamaz.
+Parolaların, 2FA hesapların ve notların bu telefondaki kasada durur. Yedek ya da dışa aktarma dosyası yalnızca sen istersen oluşur ve senin seçtiğin yere kaydedilir. KeyKey hesap açtırmaz, sunucusu yoktur, reklam göstermez, kullanım bilgisi toplamaz. İnternete yalnızca senin başlattığın denetimler için çıkar; bugün tek denetim parola raporundaki sızıntı kontrolüdür ve parolalarının kendisi gönderilmez. Bir bağlantıyı açtığında sayfa tarayıcında açılır. Geliştiriciler verilerini göremez, toplamaz ve saklamaz.
 
 ## Kasa nasıl korunur
 
