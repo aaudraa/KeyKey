@@ -23,8 +23,17 @@ class KkCard extends StatefulWidget {
     this.minHeight = KkMetrics.cardHeight,
     this.customSemanticsActions,
     this.flash = false,
+    this.selected,
+    this.longPressHint,
     super.key,
   });
+
+  /// Toplu seçimde satırın durumu; seçim modu dışında `null`. Seçili satır
+  /// hafif vurgulanır, ekran okuyucu "seçili" der.
+  final bool? selected;
+
+  /// Ekran okuyucunun uzun basma için okuduğu eylem adı, örneğin "Seç".
+  final String? longPressHint;
 
   /// Parlama katmanı (testler için).
   static const Key flashKey = ValueKey('kk-card-flash');
@@ -167,13 +176,21 @@ class _KkCardState extends State<KkCard> with SingleTickerProviderStateMixin {
 
     final interactive = widget.onTap != null || widget.onLongPress != null;
     final ink = theme.colorScheme.onSurface;
+    final selectedTint = widget.selected ?? false
+        ? KkGlass.of(context).accent.withValues(alpha: 0.14)
+        : null;
     final Widget card = GlassSurface(
       child: AnimatedBuilder(
         animation: _flash ?? kAlwaysDismissedAnimation,
         builder: (context, child) => DecoratedBox(
           key: KkCard.flashKey,
           decoration: BoxDecoration(
-            color: ink.withValues(alpha: _flashAlpha),
+            color: selectedTint == null
+                ? ink.withValues(alpha: _flashAlpha)
+                : Color.alphaBlend(
+                    ink.withValues(alpha: _flashAlpha),
+                    selectedTint,
+                  ),
             borderRadius: _radius,
           ),
           child: child,
@@ -182,6 +199,7 @@ class _KkCardState extends State<KkCard> with SingleTickerProviderStateMixin {
           type: MaterialType.transparency,
           child: Semantics(
             customSemanticsActions: widget.customSemanticsActions,
+            onLongPressHint: widget.longPressHint,
             child: InkWell(
               borderRadius: _radius,
               onTap: widget.onTap,
@@ -197,7 +215,8 @@ class _KkCardState extends State<KkCard> with SingleTickerProviderStateMixin {
     );
     return Semantics(
       label: widget.semanticLabel,
-      container: widget.semanticLabel != null,
+      container: widget.semanticLabel != null || widget.selected != null,
+      selected: widget.selected,
       child: interactive ? KkPressable(child: card) : card,
     );
   }

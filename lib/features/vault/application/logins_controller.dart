@@ -161,6 +161,16 @@ class LoginsController extends Notifier<LoginsState> {
     );
   }
 
+  /// Klasörü değiştirir; `null` klasörden çıkarır. Geçmişe dokunmaz.
+  Future<void> moveToFolder(LoginItem item, String? folder) async {
+    _swap(
+      await _openRepository.updateMetadata(
+        item,
+        item.content.copyWith(folder: folder),
+      ),
+    );
+  }
+
   Future<void> restore(LoginItem item) async {
     _swap(
       await _openRepository.updateMetadata(

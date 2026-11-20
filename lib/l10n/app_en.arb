@@ -472,6 +472,19 @@
   "@loginUndo": {
     "description": "Snack bar action."
   },
+  "selectedCount": "{count} selected",
+  "@selectedCount": {"placeholders": {"count": {"type": "int"}}},
+  "selectionClose": "Close selection",
+  "selectAll": "Select all",
+  "selectHint": "Select",
+  "moveToFolder": "Move to folder",
+  "folderRemove": "Remove from folder",
+  "folderNew": "New folder",
+  "folderMove": "Move",
+  "bulkMovedToTrash": "{count, plural, =1{1 item moved to trash} other{{count} items moved to trash}}",
+  "@bulkMovedToTrash": {"placeholders": {"count": {"type": "int"}}},
+  "bulkFailed": "{failed} of {total} items could not be moved.",
+  "@bulkFailed": {"placeholders": {"failed": {"type": "int"}, "total": {"type": "int"}}},
   "loginName": "Name",
   "@loginName": {
     "description": "Field label."

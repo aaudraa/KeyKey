@@ -191,6 +191,9 @@ final class CardContent implements VaultItemContent<CardContent> {
   CardContent withTrashedAt(DateTime? trashedAt) =>
       copyWith(trashedAt: trashedAt);
 
+  @override
+  CardContent withFolder(String? folder) => copyWith(folder: folder);
+
   static CardExpiry? _expiry(Object? month, Object? year) {
     final m = StrictJson.nullableInt(month, 'expMonth');
     final y = StrictJson.nullableInt(year, 'expYear');

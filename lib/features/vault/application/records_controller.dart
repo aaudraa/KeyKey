@@ -173,6 +173,11 @@ class RecordsController<C extends VaultItemContent<C>>
     _swap(await _openRepository.update(item, item.content.withTrashedAt(now)));
   }
 
+  /// Klasörü değiştirir; `null` klasörden çıkarır.
+  Future<void> moveToFolder(VaultRecord<C> item, String? folder) async {
+    _swap(await _openRepository.update(item, item.content.withFolder(folder)));
+  }
+
   Future<void> restore(VaultRecord<C> item) async {
     _swap(await _openRepository.update(item, item.content.withTrashedAt(null)));
   }
