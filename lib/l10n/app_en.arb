@@ -2468,5 +2468,298 @@
   "exportFormatJsonHint": "Everything, cards included. Bitwarden's format.",
   "@exportFormatJsonHint": {
     "description": "Explains the JSON export."
+  },
+  "syncTitle": "Sync",
+  "@syncTitle": {
+    "description": "Title of the sync settings row and screen."
+  },
+  "syncRowOff": "Off. Keeps your phones in step through your own WebDAV server.",
+  "@syncRowOff": {
+    "description": "Settings row subtitle while sync is off."
+  },
+  "syncRowNever": "On, not synced yet",
+  "@syncRowNever": {
+    "description": "Settings row subtitle before the first sync."
+  },
+  "syncRowLast": "Last sync {time}",
+  "@syncRowLast": {
+    "description": "Settings row subtitle. {time} is a relative time such as \"2 minutes ago\".",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "syncJustNow": "just now",
+  "@syncJustNow": {
+    "description": "Relative time under a minute."
+  },
+  "syncMinutesAgo": "{count, plural, =1{1 minute ago} other{{count} minutes ago}}",
+  "@syncMinutesAgo": {
+    "description": "Relative time in minutes.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncHoursAgo": "{count, plural, =1{1 hour ago} other{{count} hours ago}}",
+  "@syncHoursAgo": {
+    "description": "Relative time in hours.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncDaysAgo": "{count, plural, =1{1 day ago} other{{count} days ago}}",
+  "@syncDaysAgo": {
+    "description": "Relative time in days.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncIntro": "Your vault is end-to-end encrypted with your master password, written to your own WebDAV folder (Nextcloud, ownCloud or another WebDAV server) and kept in step between the phones that use the same folder. The server cannot see your entries.",
+  "@syncIntro": {
+    "description": "Text above the sync setup form."
+  },
+  "syncFolderLabel": "Folder address",
+  "@syncFolderLabel": {
+    "description": "Label of the WebDAV folder address field."
+  },
+  "syncFolderHelp": "Example: https://cloud.example.com/remote.php/dav/files/name/KeyKey",
+  "@syncFolderHelp": {
+    "description": "Helper under the folder address field."
+  },
+  "syncFolderInvalid": "The address must start with https://.",
+  "@syncFolderInvalid": {
+    "description": "Error when the folder address is not https."
+  },
+  "syncUsernameLabel": "User name",
+  "@syncUsernameLabel": {
+    "description": "Label of the WebDAV user name field."
+  },
+  "syncAppPasswordLabel": "App password",
+  "@syncAppPasswordLabel": {
+    "description": "Label of the WebDAV app password field."
+  },
+  "syncAppPasswordHelp": "Nextcloud: Settings → Security → App password. Give each phone its own app password.",
+  "@syncAppPasswordHelp": {
+    "description": "Helper under the app password field."
+  },
+  "syncConnect": "Connect",
+  "@syncConnect": {
+    "description": "Button that checks the folder and turns sync on."
+  },
+  "syncConfirmTitle": "Turn on sync?",
+  "@syncConfirmTitle": {
+    "description": "Title of the sheet shown before sync is turned on."
+  },
+  "syncConfirmBody": "• Files leave encrypted with your master password; the server cannot see your entries.\n• The server sees file names, sizes, times and your IP address.\n• Someone who gets a file can try to guess your master password offline; use a strong one.\n• Sync is not a backup: an entry deleted on one phone is deleted on the others too. Keep making backups.\n• Give each phone its own app password; if a phone is lost you revoke only its password.",
+  "@syncConfirmBody": {
+    "description": "Body of the sheet shown before sync is turned on."
+  },
+  "syncConfirmOn": "Turn on",
+  "@syncConfirmOn": {
+    "description": "Confirms turning sync on."
+  },
+  "syncCancel": "Cancel",
+  "@syncCancel": {
+    "description": "Cancels a sync sheet."
+  },
+  "syncOk": "OK",
+  "@syncOk": {
+    "description": "Closes an information sheet."
+  },
+  "syncEnabled": "Sync is on",
+  "@syncEnabled": {
+    "description": "Snack after sync is turned on."
+  },
+  "syncOtherVaultTitle": "This folder holds another KeyKey vault.",
+  "@syncOtherVaultTitle": {
+    "description": "Title when the folder belongs to another vault."
+  },
+  "syncOtherVaultBody": "This phone's vault cannot be kept in step with that one. Choose an empty folder.",
+  "@syncOtherVaultBody": {
+    "description": "Body when the folder belongs to another vault."
+  },
+  "syncMixedTitle": "This folder holds more than one vault.",
+  "@syncMixedTitle": {
+    "description": "Title when the folder holds several vaults."
+  },
+  "syncMixedBody": "Choose an empty folder.",
+  "@syncMixedBody": {
+    "description": "Body when the folder holds several vaults."
+  },
+  "syncStatusOn": "On",
+  "@syncStatusOn": {
+    "description": "Sync status value."
+  },
+  "syncLastSync": "Last sync",
+  "@syncLastSync": {
+    "description": "Label before the time of the last sync."
+  },
+  "syncNever": "Not yet",
+  "@syncNever": {
+    "description": "Shown when there was no sync yet."
+  },
+  "syncNow": "Sync now",
+  "@syncNow": {
+    "description": "Button that syncs right away."
+  },
+  "syncRunning": "Syncing…",
+  "@syncRunning": {
+    "description": "Shown while a sync runs."
+  },
+  "syncDone": "Synced",
+  "@syncDone": {
+    "description": "Snack after a manual sync."
+  },
+  "syncDevices": "Devices",
+  "@syncDevices": {
+    "description": "Title of the device list."
+  },
+  "syncThisPhone": "This phone",
+  "@syncThisPhone": {
+    "description": "Name of this phone in the device list."
+  },
+  "syncUnknownPhone": "Phone",
+  "@syncUnknownPhone": {
+    "description": "Name of a phone whose model is unknown."
+  },
+  "syncRemove": "Remove",
+  "@syncRemove": {
+    "description": "Removes a phone from the sync folder."
+  },
+  "syncRemoveTitle": "Remove {device}?",
+  "@syncRemoveTitle": {
+    "description": "Title of the remove-phone sheet.",
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+  "syncRemoveBody": "That phone's file is deleted from the server. If the phone is still in use it uploads its file again at its next sync. To stop a lost or stolen phone, revoke its app password on the server. KeyKey cannot reach copies in the server's file history or trash.",
+  "@syncRemoveBody": {
+    "description": "Body of the remove-phone sheet."
+  },
+  "syncRemoved": "Phone removed",
+  "@syncRemoved": {
+    "description": "Snack after removing a phone."
+  },
+  "syncTurnOff": "Turn off sync",
+  "@syncTurnOff": {
+    "description": "Button that turns sync off."
+  },
+  "syncTurnOffTitle": "Turn off sync?",
+  "@syncTurnOffTitle": {
+    "description": "Title of the turn-off sheet."
+  },
+  "syncTurnOffBody": "This phone stops syncing. The entries in your vault are not touched.",
+  "@syncTurnOffBody": {
+    "description": "Body of the turn-off sheet."
+  },
+  "syncTurnOffDeleteFile": "Also delete this phone's file on the server",
+  "@syncTurnOffDeleteFile": {
+    "description": "Checkbox in the turn-off sheet."
+  },
+  "syncTurnOffConfirm": "Turn off",
+  "@syncTurnOffConfirm": {
+    "description": "Confirms turning sync off."
+  },
+  "syncDisabled": "Sync is off",
+  "@syncDisabled": {
+    "description": "Snack after sync is turned off."
+  },
+  "syncDeleteFailed": "Sync is off; the file on the server could not be deleted.",
+  "@syncDeleteFailed": {
+    "description": "Snack when turning off worked but deleting the file failed."
+  },
+  "syncErrorOffline": "Could not reach the server. Check your connection.",
+  "@syncErrorOffline": {
+    "description": "Sync error: offline or timeout."
+  },
+  "syncErrorUnauthorized": "Wrong user name or app password.",
+  "@syncErrorUnauthorized": {
+    "description": "Sync error: 401 or 403."
+  },
+  "syncErrorCertificate": "The server's certificate is not valid.",
+  "@syncErrorCertificate": {
+    "description": "Sync error: TLS certificate."
+  },
+  "syncErrorRedirect": "The server redirected to another address; check the address.",
+  "@syncErrorRedirect": {
+    "description": "Sync error: redirect."
+  },
+  "syncErrorNotFound": "Folder not found; check the address.",
+  "@syncErrorNotFound": {
+    "description": "Sync error: 404."
+  },
+  "syncErrorServer": "Server error. Try again later.",
+  "@syncErrorServer": {
+    "description": "Sync error: 5xx."
+  },
+  "syncErrorStorage": "The server is out of space.",
+  "@syncErrorStorage": {
+    "description": "Sync error: 507."
+  },
+  "syncErrorTooLarge": "The vault or the server's response is too large.",
+  "@syncErrorTooLarge": {
+    "description": "Sync error: too large."
+  },
+  "syncErrorBadResponse": "The server's response could not be understood.",
+  "@syncErrorBadResponse": {
+    "description": "Sync error: bad response."
+  },
+  "syncIssueClock": "{device}'s clock is ahead; its file was not taken.",
+  "@syncIssueClock": {
+    "description": "Sync issue. {device} is a phone name.",
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+  "syncIssueUnreadable": "{device}'s file could not be read.",
+  "@syncIssueUnreadable": {
+    "description": "Sync issue. {device} is a phone name.",
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+  "syncIssueNewer": "{device} runs a newer KeyKey; its file was not taken. Update KeyKey.",
+  "@syncIssueNewer": {
+    "description": "Sync issue. {device} is a phone name.",
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+  "syncIssueSlots": "This phone and {device} use different master passwords. Set the master password again on the phone with the right one; the others will follow.",
+  "@syncIssueSlots": {
+    "description": "Sync issue. {device} is a phone name.",
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+  "syncNoticePassword": "The master password was changed on another phone. Use the new password the next time you open your vault.",
+  "@syncNoticePassword": {
+    "description": "One-time notice after sync adopted a new password."
+  },
+  "syncNoticeRecovery": "The recovery key was renewed on another phone. Your old recovery key no longer works.",
+  "@syncNoticeRecovery": {
+    "description": "One-time notice after sync adopted a new recovery key."
+  },
+  "settingsGroupSync": "Across phones",
+  "@settingsGroupSync": {
+    "description": "Settings group that holds the sync row."
   }
 }

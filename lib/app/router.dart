@@ -27,6 +27,7 @@ import 'package:keykey/features/settings/presentation/change_password_screen.dar
 import 'package:keykey/features/settings/presentation/licenses_screen.dart';
 import 'package:keykey/features/settings/presentation/new_recovery_key_screen.dart';
 import 'package:keykey/features/settings/presentation/settings_screen.dart';
+import 'package:keykey/features/sync/presentation/sync_screen.dart';
 import 'package:keykey/features/vault/application/vault_entries.dart';
 import 'package:keykey/features/vault/presentation/card_detail_screen.dart';
 import 'package:keykey/features/vault/presentation/card_edit_screen.dart';
@@ -56,6 +57,7 @@ abstract final class AppRoutes {
   static const authenticatorImport = '/2fa/ice-aktar';
   static const settings = '/ayarlar';
   static const changePassword = '/ayarlar/parola';
+  static const sync = '/ayarlar/senkron';
   static const newRecoveryKey = '/ayarlar/kurtarma-anahtari';
   static const loginImport = '/ayarlar/ice-aktar';
   static const licenses = '/ayarlar/lisanslar';
@@ -420,6 +422,11 @@ final routerProvider = Provider<GoRouter>((ref) {
                     parentNavigatorKey: rootNavigatorKey,
                     path: 'kurtarma-anahtari',
                     builder: (context, state) => const NewRecoveryKeyScreen(),
+                  ),
+                  kkRoute(
+                    parentNavigatorKey: rootNavigatorKey,
+                    path: 'senkron',
+                    builder: (context, state) => const SyncScreen(),
                   ),
                   kkRoute(
                     parentNavigatorKey: rootNavigatorKey,
