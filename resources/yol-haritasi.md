@@ -702,7 +702,7 @@ Proje sahibinin 2026-11-20 gecesi isteği ([#153](https://github.com/aaudraa/Key
 - [x] Dar ekranda menünün boşlukları daralıyor (320 dp ve %200 yazıda taşma yok, sekmeler 48 dp)
 - [x] Tanıtımın "Nerede ne var" sayfası, kılavuz, cam tasarım belgesi, değişiklik günlüğü
 - [x] Erişilebilirlik testleri kart ve not listeleri, ayrıntıları ve çöp kutusu için
-- [x] Android 11 emülatöründe bütün cihaz testleri (Android 17'deki koşu bellek yüzünden yarıda kaldı)
+- [x] Android 11 ve 17 emülatörlerinde bütün cihaz testleri (Android 17'deki koşu yayından sonra tamamlandı)
 - [x] Son gözden geçirme
 
 **Uygulama sırasında verilen kararlar:**
@@ -711,11 +711,34 @@ Proje sahibinin 2026-11-20 gecesi isteği ([#153](https://github.com/aaudraa/Key
 - Yedek hatırlatıcısı ve okunamayan kayıt uyarısı bütün kasa için; yalnızca açılıştaki sekmede, Parolalar'da görünür.
 - Her sekmenin çöp kutusu yalnızca kendi türünü gösterir; "Tümünü geri yükle" ve "Çöpü boşalt" da yalnızca o türe dokunur.
 
-**Cihazda (2026-11-20):** Android 11 emülatöründe bütün cihaz testleri geçti; iki eski test (arama etiketi, seçili sekmenin simgesi) düzeltildi ve yeniden koşuda geçti. Android 17'deki tam koşu, bilgisayarın belleği azaldığı için ilk 4 testten sonra durduruldu ve yeniden başlatılmadı; Android 17'de aynı koşu Faz 16 koduyla tam geçmişti.
+**Cihazda (2026-11-20):** Android 11 emülatöründe bütün cihaz testleri geçti; iki eski test (arama etiketi, seçili sekmenin simgesi) düzeltildi ve yeniden koşuda geçti. Android 17'deki tam koşu, bilgisayarın belleği azaldığı için ilk 4 testten sonra durduruldu ve yeniden başlatılmadı; Android 17'de aynı koşu Faz 16 koduyla tam geçmişti. Proje sahibinin isteğiyle yayından sonra (2026-11-20 öğleden sonra) 1.6.0'ın `main`'i Android 17'de baştan sona koşuldu: entegrasyon testlerinden 27'si geçti, 7'si bu emülatörde atlandı; parmak izi (4/4), pano (3/3) ve kamera (izin verilince ve verilmeyince) denemeleri geçti.
 
 1.6.0 olarak yayımlandı (2026-11-20, [#155](https://github.com/aaudraa/KeyKey/pull/155), Faz 16 ile birlikte).
 
 **Bitti sayılması için:** kart ve not alttaki menüden açılıyor; kasa listesinin üstünde tür düğmesi yok; "+" ile eklenen kart Kartlar'da, not Notlar'da görünüyor; her çöp kutusu yalnızca kendi türünü geri yüklüyor; 320 dp ekranda menü taşmıyor.
+
+### Faz 18 — Kullanım kolaylıkları
+
+1.0 sonrası listesinin dört küçük işi ([#157](https://github.com/aaudraa/KeyKey/issues/157)). Proje sahibi 2026-11-20'de yol haritasını onay beklemeden bitirmemi istedi; kararlar bu yüzden benim. Tasarım: [`kullanim-kolayligi.md`](docs/kullanim-kolayligi.md), plan: [`kullanim-kolayligi-plani.md`](docs/kullanim-kolayligi-plani.md).
+
+- [x] Ayarlar sürüm 6: arka plan kilidi süresi ve klavye ayarı; yedeğin içerik sürümü 3
+- [x] Arka planda kilitlenme süresi (Hemen, 30 saniye, 1 dakika), iki saatle ölçülüyor; dönüşte parola listesi yeniden okunuyor
+- [x] Gizli olmayan kutularda normal klavye (isteğe bağlı)
+- [x] Parolalar, Kartlar ve Notlar'da toplu seçim: tümünü seç, klasöre taşı, çöp kutusuna taşı ve geri al
+- [x] Steam Guard kodları: içe aktarma (Aegis, 2FAS, otpauth, Bitwarden `steam://`), elle ekleme, Bitwarden dışa aktarma
+- [ ] Android 17 ve 11 emülatörlerinde bütün cihaz testleri
+- [x] Kılavuz, güvenlik tasarımı, değişiklik günlüğü, mağaza notu
+- [ ] Son gözden geçirme
+
+**Uygulama sırasında verilen kararlar:**
+
+- Kasa ayarları sürüm 6 olunca 1.6.0, 1.7.0'ın yedeğindeki ayar kaydını okuyamaz ve yedeği "bozuk" sanardı; Steam hesabı da öyle. Yedeğin içerik sürümü 3 oldu ve her yedek bu sürümle yazılıyor (kayıtlar şifreli olduğu için içlerine bakılamıyor). Eski sürüm artık "daha yeni bir yedek" diyor; 1.6.0'a geri dönüş için yedek açılamıyor.
+- Bekleme süresini ya da klavye ayarını gevşetmek kimlik doğrulaması istemiyor: ayarı değiştirebilen kişi kasayı zaten açık tutuyor. Bekleme süresinde kasa açık kaldığı için 2FA ek onayı da sürüyor.
+- Kullanıcı adı, özel alan adları ve kart sahibi her ayarda öğrenmeyen klavyede kalıyor; işaretlenmemiş yeni bir kutu da öyle.
+- Bitwarden Steam hesabını yalnızca `steam://ANAHTAR` biçiminde tanıyor; `otpauth://steam/…` verilince 5 haneli sayı, yani yanlış kod üretiyor. Bitwarden biçimli dışa aktarma bu yüzden `steam://` yazıyor, içe aktarma da okuyor.
+- 2FA formunda üç tür dar ekrana sığmadığı için tür seçimi çiplerle.
+
+**Bitti sayılması için:** 30 saniye ayarında 10 saniye sonra dönülünce kasa açık, 31 saniye sonra, telefon uyuyup döndüğünde ya da saat geri alındığında kilitli; normal klavye ayarında parola kutusu yine öğrenmeyen klavyede; aramayla gizlenen seçili kayıt çöpe gitmiyor; Steam kodu Steam uygulamasının kodlarıyla aynı.
 
 ## 1.0 sonrası
 

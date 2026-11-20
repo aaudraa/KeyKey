@@ -1,0 +1,3 @@
+Arka planda kilitlenme süresi: Ayarlar > Güvenlik'te Hemen, 30 saniye ya da 1 dakika. Gizli olmayan kutularda (ad, site, arama) isteğe bağlı normal klavye. Parolalar, Kartlar ve Notlar'da uzun basınca toplu seçim: klasöre taşı, çöp kutusuna taşı. Steam Guard kodları: Aegis, 2FAS ve Bitwarden'dan aktarma ya da elle ekleme.
+
+Bu sürümün yedeklerini 1.6.0 ve öncesi açamaz; eski sürüm "daha yeni bir yedek" der.

@@ -57,7 +57,8 @@ Eski telefonundan bir KeyKey yedeğin varsa kasa oluşturmak yerine **Yedekten g
 
 <img src="../design/kilavuz/03-kilit-ekrani.webp" width="240" alt="Kilit ekranı">
 
-- KeyKey arka plana geçtiği anda ve 5 dakika dokunulmazsa kilitlenir. Ayarlar'daki **Şimdi kilitle** ile hemen kilitleyebilirsin. Kilidi açınca kaldığın yere dönersin: 2FA sekmesindeysen 2FA'ya, bir kaydın, kartın ya da notun ayrıntısındaysan ona.
+- KeyKey arka plana geçtiği anda ve 5 dakika dokunulmazsa kilitlenir. Ayarlar'daki **Şimdi kilitle** ile hemen kilitleyebilirsin.
+- **Arka planda kilitlenme:** Ayarlar → Güvenlik'te **Hemen** yerine **30 saniye** ya da **1 dakika** seçebilirsin. O zaman bir koda bakmak için başka bir uygulamaya geçip bu süre dolmadan döndüğünde kasa açık kalır. Bu sürede telefonu eline alan biri de kasayı açık bulur; telefon uyusa ya da saati değiştirilse bile süre uzamaz. 5 dakika dokunulmayınca kilitlenme ayrıca sürer. Kilidi açınca kaldığın yere dönersin: 2FA sekmesindeysen 2FA'ya, bir kaydın, kartın ya da notun ayrıntısındaysan ona.
 - **Parmak izi:** Ayarlar → Güvenlik → **Parmak iziyle aç**. Telefonunda parmak izi kayıtlı olmalı. Ana parola her zaman geçerlidir. Telefona yeni bir parmak izi eklersen ya da ekran kilidini kaldırırsan güvenlik gereği parmak iziyle açma kapanır; ana parolayla açıp yeniden açabilirsin.
 - **Yanlış parola:** Birkaç hatalı denemeden sonra yeni deneme için kısa bir süre beklemen gerekir; süre denemeler arttıkça uzar.
 - **Parolamı unuttum:** Kilit ekranındaki bu bağlantıyla kurtarma anahtarını girip kasayı açarsın, ardından yeni bir ana parola belirlersin.
@@ -68,7 +69,11 @@ Eski telefonundan bir KeyKey yedeğin varsa kasa oluşturmak yerine **Yedekten g
 
 <img src="../design/kilavuz/04-kasa-listesi.webp" width="240" alt="Kasa listesi"> <img src="../design/kilavuz/05-kayit-ayrintisi.webp" width="240" alt="Kayıt ayrıntısı">
 
-Alttaki menüde **Parolalar**, **Kartlar** ve **Notlar** ayrı sekmelerdir; her biri yalnızca kendi kayıtlarını, kendi klasörlerini ve kendi çöp kutusunu gösterir. Üstteki kutuyla arayabilir, **Favoriler** ve klasör düğmeleriyle süzebilirsin. Sağ üstteki **⋮** menüsünden ada ya da son değişene göre sıralarsın; seçimin kilitten sonra da kalır. Parola satırının sağındaki simge parolayı doğrudan kopyalar. Parolalar boşken başka bir uygulamadan **İçe aktar** ya da **Yedekten geri yükle** kısayollarını da görürsün.
+Alttaki menüde **Parolalar**, **Kartlar** ve **Notlar** ayrı sekmelerdir; her biri yalnızca kendi kayıtlarını, kendi klasörlerini ve kendi çöp kutusunu gösterir. Üstteki kutuyla arayabilir, **Favoriler** ve klasör düğmeleriyle süzebilirsin. Sağ üstteki **⋮** menüsünden ada ya da son değişene göre sıralarsın; seçimin kilitten sonra da kalır. Parola satırının sağındaki simge parolayı doğrudan kopyalar.
+
+**Birden çok kaydı birlikte taşımak ya da silmek için** bir satıra uzun bas: seçim başlar ve üstte seçili sayısı görünür. Başka satırlara dokunarak seçer ya da bırakırsın. Üstteki düğmelerle **Tümünü seç** (yalnızca arama ve süzgeçte görünenler), **Klasöre taşı** (var olan bir klasör, yeni klasör ya da **Klasörden çıkar**) ve **Çöp kutusuna taşı**; çöpe taşıdıktan sonra alttaki **Geri al** hepsini geri getirir. Kartlar ve Notlar sekmelerinde de aynıdır. Geri tuşu ya da soldaki **×** seçimi kapatır.
+
+Parolalar boşken başka bir uygulamadan **İçe aktar** ya da **Yedekten geri yükle** kısayollarını da görürsün.
 
 Bir kayda dokununca ayrıntıları açılır: kullanıcı adı, parola, bağlı 2FA kodu, web adresi ve klasör. Her satırın yanında kopyalama düğmesi var. Parola **Göster**'e dokunana kadar gizli kalır. Web adresinin yanındaki **Siteyi aç** sayfayı tarayıcında açar. Düzenlemek için üstteki kalem simgesine dokun. Kaydı favorilere eklemek ya da çöpe taşımak için ayrıntı ekranının sağ üstündeki **⋮** menüsünü kullan.
 
@@ -128,11 +133,15 @@ KeyKey, Google Authenticator gibi bir doğrulama uygulamasının yerini tutar: g
 
 Henüz hesabın yoksa listedeki **Başka uygulamadan aktar** kısayolu da aynı yere götürür. Aynı gizli anahtarla bir hesap zaten varsa (çöp kutusundakiler de) KeyKey uyarır; istersen yine de eklersin.
 
+**Steam Guard:** Steam hesabını Aegis ya da 2FAS'tan aktarabilir, Steam bağlantısını taratabilir ya da elle eklerken **Gelişmiş** altında **Steam Guard** türünü seçebilirsin. Kod 5 karakterdir (harf ve rakam). Steam'in kendi uygulamasındaki giriş ve takas onayları KeyKey'de yoktur, yalnızca kod üretilir.
+
 **Kullanırken:** Koda dokununca kopyalanır. Sağdaki halka kodun kaç saniye daha geçerli olduğunu gösterir; son saniyelerde atmaya başlar. Karta uzun basınca düzenleme, favori ve silme seçenekleri açılır.
 
 Bir parola kaydıyla aynı siteye ait 2FA hesabı o kayda bağlanabilir. Kodu o zaman kaydın ayrıntısında da görürsün.
 
 **Ek onay (isteğe bağlı):** Ayarlar → Güvenlik → **2FA kodlarını göstermeden önce doğrula** açıksa, kodlar gösterilmeden önce parmak izi ya da ana parola istenir. Kilidi açık telefonun başkasının eline geçmesine karşı ek bir katmandır.
+
+**Eski sürümle açma:** KeyKey 1.7.0'ın aldığı yedekleri 1.6.0 ve öncesi açamaz ve "daha yeni bir yedek" der (1.3.0 ve öncesi "bozuk ya da değiştirilmiş" der). Yedek bozuk değildir, KeyKey'i güncellemen yeter.
 
 ## Otomatik doldurma
 
@@ -200,7 +209,7 @@ KeyKey verilerini hiçbir yere göndermediği için **telefon kaybolursa ya da b
 
 **2FA hesapları:** Ayarlar → Yedek ve aktarım → **2FA hesaplarını içe aktar** (Aegis, 2FAS), ya da **+** → **2FA kodu** → **Başka uygulamadan aktar** (Google Authenticator'ın dışa aktarma QR'ları da). Şifreli dosyalar için o uygulamada belirlediğin parola istenir.
 
-**KeyKey'den ayrılmak istersen:** Ayarlar → Yedek ve aktarım → **Şifresiz dışa aktar**. Önce biçimi seçersin: **CSV** çoğu parola yöneticisinin okuduğu biçimdir ama kartları taşımaz; **JSON** Bitwarden'ın biçimidir ve kartlar dahil her şeyi taşır. Dosya şifresiz olduğu için önce uyarı çıkar ve kimliğini doğrulaman istenir.
+**KeyKey'den ayrılmak istersen:** Ayarlar → Yedek ve aktarım → **Şifresiz dışa aktar**. Önce biçimi seçersin: **CSV** çoğu parola yöneticisinin okuduğu biçimdir ama kartları taşımaz; **JSON** Bitwarden'ın biçimidir ve kartlar dahil her şeyi taşır. Steam hesapları Bitwarden'ın `steam://` biçimiyle yazılır. Dosya şifresiz olduğu için önce uyarı çıkar ve kimliğini doğrulaman istenir.
 
 ## Görünüm
 
@@ -209,6 +218,8 @@ KeyKey verilerini hiçbir yere göndermediği için **telefon kaybolursa ya da b
 Ayarlar → Görünüm → **Tema**: **Sistem** (telefonunun ayarını izler), **Açık** ya da **Koyu**. Seçim kilit ekranında ve otomatik doldurma penceresinde de geçerlidir.
 
 Telefonunda "Animasyonları kaldır" erişilebilirlik ayarı açıksa KeyKey'in hareketleri de kapanır.
+
+**Klavye:** KeyKey bütün kutuları öğrenmeyen bir klavyeyle açar; bu klavyede büyük harf ve adres tuşları yoktur. Ayarlar → Güvenlik → **Gizli olmayan kutularda normal klavye** açıksa kayıt adı, klasör, arama ve 2FA servis adı normal klavyeyle (cümle başı büyük harf), web adresi adres klavyesiyle açılır. Bu kutulara yazdıkların klavyenin sözlüğüne ve bulutuna girebilir. Parola, kullanıcı adı, notlar ve kart bilgileri her zaman öğrenmeyen klavyeyle açılır.
 
 Ayarlar → Hakkında → **Lisanslar**: önce KeyKey'in kendi lisansı (GPL-3.0), sonra KeyKey'in kullandığı parçalar ne işe yaradıklarıyla (şifreleme, veritabanı, QR kod okuma, sözcük listeleri…), en sonda bütün paketlerin lisans metinleri.
 
@@ -219,6 +230,6 @@ Ayarlar → Hakkında → **Lisanslar**: önce KeyKey'in kendi lisansı (GPL-3.0
 - **Chrome'da ayrı bir ayar gerekiyor.** [Otomatik doldurma](#otomatik-doldurma) bölümündeki ikinci adımı atlarsan Chrome kendi parola yöneticisini kullanmaya devam eder.
 - **Eşitleme yok.** KeyKey'in sunucusu olmadığı için iki telefon arasında kendiliğinden eşitlenmez. Kayıtları başka bir telefona yedekle taşırsın.
 - **Ekran görüntüsü alınamaz.** KeyKey ekrandayken ekran görüntüsü ve ekran kaydı engellenir, son uygulamalar listesinde de içeriği görünmez. Bu bilerek yapılır.
-- **Kilidi açık telefon.** KeyKey açıkken telefonu eline alan biri ekrandaki kayıtları görebilir. Arka plana geçince hemen kilitlenmesi ve 2FA için ek onay bu riski azaltır.
+- **Kilidi açık telefon.** KeyKey açıkken telefonu eline alan biri ekrandaki kayıtları görebilir. Arka plana geçince hemen kilitlenmesi ve 2FA için ek onay bu riski azaltır; arka plan kilidine bekleme süresi verdiysen o süre boyunca kasa açık kalır.
 
 Güvenlik tarafındaki sınırlar ve neyin korunduğu [güvenlik tasarımı belgesinde](guvenlik-tasarimi.md#bilinen-sınırlar), verilerinle ne yapıldığı [gizlilik bildiriminde](gizlilik.md) anlatılıyor.
