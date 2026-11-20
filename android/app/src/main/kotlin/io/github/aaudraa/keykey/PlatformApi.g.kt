@@ -1251,7 +1251,7 @@ interface AppPackagesApi {
   }
 }
 /**
- * Web sayfasını sistemin tarayıcısında açar. KeyKey internete çıkmaz;
+ * Web sayfasını sistemin tarayıcısında açar. Sayfayı KeyKey indirmez;
  * adres yalnızca kullanıcı dokununca tarayıcıya devredilir.
  *
  * Generated interface from Pigeon that represents a handler of messages from Flutter.

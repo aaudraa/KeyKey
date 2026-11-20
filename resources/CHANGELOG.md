@@ -2,6 +2,29 @@
 
 KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesinde](docs/yayin.md#sürüm-numarası). `v1.0.0`'dan önceki sürümler fazların sonunu işaretler ve hata ayıklama anahtarıyla imzalıdır; kalıcı bir kurulum için kullanılmamalıdır.
 
+## 1.6.0 (2026-11-20): Sızıntı kontrolü
+
+Faz 16 ([tasarım](docs/internet-ve-sizinti.md)).
+
+### Önemli
+
+- **KeyKey artık `INTERNET` iznine sahip.** İnternete yalnızca senin başlattığın sızıntı kontrolü için çıkar; kasa, yedek, otomatik doldurma ve pano yine hiçbir yere gitmez. Hesap ve sunucu yok. Ağ kodu tek bir dosyada durur ve başka yerde ağ kodu olmadığını her derlemede bir test denetler.
+- **Kullanım koşulları değişti (sürüm 2).** Güncellemeden sonraki ilk açılışta yeni metin bir kez sorulur. Değişen tek madde "Verilerin bu telefonda": "internet izni yoktur" yerine KeyKey'in internete yalnızca senin başlattığın denetimler için çıktığı yazıyor. [Gizlilik bildirimi](docs/gizlilik.md#sızıntı-kontrolü) de güncellendi.
+
+### Eklenenler
+
+- Parola raporunda **Sızıntı kontrolü**: **İnternetten denetle**, parolalarının bilinen veri sızıntılarında görülüp görülmediğini [Have I Been Pwned](https://haveibeenpwned.com/Passwords)'a k-anonimlikle sorar. Parolanın kendisi gitmez, yalnızca SHA-1 özetinin ilk 5 karakteri gider; karşılaştırma telefonda yapılır. Sızıntılarda görülen parolalar kaç kez görüldükleriyle listelenir; kayda dokununca parolası değiştirilir ve kayıt listeden düşer. Sonuç kaydedilmez; ekrandan çıkınca ya da kasa kilitlenince silinir.
+- Bağlantı yoksa ya da bir otelin giriş sayfası gibi beklenmeyen bir yanıt gelirse "Denetlenemedi" yazar ve **Yeniden dene** çıkar; yarım sonuç ya da yanlış bir "sızıntı yok" gösterilmez.
+
+### Değişenler
+
+- Tanıtım, yedek, 2FA saat yardımı ve otomatik yedek metinleri, README, mağaza açıklamaları ve kılavuz "internete çıkmaz" demiyor; yerine "hesap yok, sunucu yok" ve isteğe bağlı sızıntı kontrolü.
+- Uygulamada şifresiz (`http`) trafik kapalı ve yalnızca sistem sertifikalarına güveniliyor; yayın APK'sı denetimi izin listesini ve bu ayarları denetliyor. F-Droid tarifinde `NonFreeNet` anti-özelliği.
+
+### Güvenlik
+
+- Uygulama sırasında bulundu: Flutter, Android'in şifresiz trafik yasağını Dart'ın `HttpClient`'ına uygulamıyor. Sızıntı kontrolünün istemcisi https dışı adresi kendisi reddediyor, yönlendirme izlemiyor; ayrıntılar [güvenlik tasarımında](docs/guvenlik-tasarimi.md#sızıntı-kontrolü).
+
 ## 1.5.0 (2026-11-19): Kart doldurma
 
 Faz 15 ([tasarım](docs/kart-doldurma.md)).

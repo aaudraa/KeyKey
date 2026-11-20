@@ -1,6 +1,6 @@
 # KeyKey Security Design: Summary in English
 
-KeyKey is an offline, open-source password manager and TOTP/HOTP authenticator for Android, written in Flutter with small Kotlin parts. It needs Android 11 (API 30) or newer.
+KeyKey is an open-source password manager and TOTP/HOTP authenticator for Android with no account and no server, written in Flutter with small Kotlin parts. It needs Android 11 (API 30) or newer.
 
 This page summarises the security design for reviewers who don't read Turkish. The full and authoritative design is the Turkish [security design document](guvenlik-tasarimi.md); the [self-audit against OWASP MASVS](guvenlik-denetimi.md) is also in Turkish. Section links below point into those documents. If this summary and the Turkish document disagree, the Turkish document wins, and the disagreement is a bug worth reporting.
 
@@ -22,7 +22,7 @@ KeyKey does not protect against:
 
 **Principle:** we don't implement our own vault cryptography. All vault primitives come from [libsodium](https://libsodium.org) 1.0.22; KeyKey only composes them.
 
-**No network:** the app has no `INTERNET` permission, so it has no network attack surface and can't send data anywhere. CI fails if a dependency adds the permission.
+**Network:** versions 1.0-1.5 had no `INTERNET` permission. Since 1.6.0 the only network traffic is the breach check the user starts in the password report: k-anonymity against Have I Been Pwned's Pwned Passwords API, sending only the first 5 hex characters of each password's SHA-1 hash, over HTTPS only. The vault, backups, autofill and the clipboard never go online. All network code lives in one file (`lib/core/network/pwned_passwords_client.dart`), and a test fails the build if network APIs appear anywhere else in the Dart or Kotlin sources; CI also checks the release APK's permission list. [Sızıntı kontrolü](guvenlik-tasarimi.md#sızıntı-kontrolü).
 
 ## Threat model (condensed)
 
@@ -36,6 +36,8 @@ Full table: [Tehdit modeli](guvenlik-tasarimi.md#tehdit-modeli).
 | Obtains a backup file (e.g. a compromised cloud account) | Protected if the password is strong; old backups open with the old password |
 | Can write to the vault file on disk | Can't read it, and modified records don't decrypt; but rollback and deletion aren't detected |
 | Malicious app on the device without special permissions | Protected by app sandboxing; only the launcher activity and the system-bound autofill service are exported |
+| Network attacker (same Wi-Fi, captive portal, ISP) on the breach check | Protected: no password in the traffic, only 5-character hash prefixes; HTTPS with system CAs only (Dart's client reads Android's system CA store itself and does not load user-added CAs), non-HTTPS addresses refused, redirects not followed; a malformed response such as a captive portal's HTML fails the check instead of reporting "not seen". The attacker can block the check |
+| Have I Been Pwned or Cloudflare in front of it | Partly: sees the IP address, the prefixes asked for and the time; the set of prefixes can fingerprint a vault; a false "not seen" answer can't be detected |
 | Malicious autofill target (fake app, fake site, app with a WebView) | Largely protected: signing-certificate check, trusted-browser list, warnings |
 | App with overlay permission (tapjacking) | Protected: overlays hidden on Android 12+, obscured touches dropped on Android 11 |
 | App with accessibility permission | Protected on Android 14+; **not protected on Android 11-13** |
@@ -171,6 +173,7 @@ Details: [Otomatik doldurma](guvenlik-tasarimi.md#otomatik-doldurma), [Kart dold
 - **Clipboard.** Copies are marked sensitive (Android 13+) and cleared after 30 seconds, by a timer or an alarm. The clipboard is cleared only if it still holds KeyKey's value, compared by SHA-256. [Pano](guvenlik-tasarimi.md#pano).
 - **Optional extra check for 2FA codes.** Codes are shown only after a fingerprint or master password check. That check really unwraps the vault key, and it counts towards the wrong-password delay.
 - **Imports.** Imports from Google Authenticator, Aegis, 2FAS, Bitwarden, Chrome, Firefox and KeePassXC treat files as untrusted: size and KDF limits apply, and the parsers are fuzzed with randomly corrupted input. scrypt and PBKDF2 are our own Dart code, used only to open other apps' exports and verified against RFC vectors.
+- **Breach check.** Starts only when the user taps **Check online**; nothing is sent when the report or the vault opens. Prefixes are shuffled, at most 4 requests run at once, responses are padded (`Add-Padding`), the client sends `User-Agent: KeyKey` and no cookies, and responses over 1 MiB are refused. Every response line must match `^[0-9A-F]{35}:[0-9]+$`; one bad line fails the whole check and no partial result is shown. The result is kept in memory only and is dropped when the screen closes or the vault locks. Finding: Flutter 3.47 does not apply Android's cleartext policy to Dart's `HttpClient`, so the client enforces HTTPS itself; the manifest still sets `usesCleartextTraffic="false"` and a network security config for platform code. [Sızıntı kontrolü](guvenlik-tasarimi.md#sızıntı-kontrolü).
 - **Logging.** The app writes nothing to logcat. A scan of the whole device log during all tests found none of the test secrets, with one exception outside KeyKey: on Android 11, after a card number was copied, Gboard passed the clipboard text to the system text classifier, which wrote the number into an exception message (`NumberFormatException`). Android 13+ (sensitive clipboard flag) showed nothing. Logcat is readable only by the system and over adb. [Kayıtlar](guvenlik-denetimi.md#kayıtlar-logcat).
 
 ## Known limitations
@@ -184,6 +187,8 @@ These are accepted risks, numbered as in the [Turkish list](guvenlik-tasarimi.md
 5. **The wrapped key doesn't rotate.** After a password change, someone holding the old password and an old header can still reach the vault key, and old backups still open with the old password.
 6. **The wrong-password delay is only the app's rule.** It doesn't limit guessing against a copied file.
 7. **Strings stay in memory after lock.** The typed master password and values shown on screen can stay in Dart heap strings after locking; the audit still found them 2.5 minutes later. Keys, the recovery key and 2FA secrets were not found. Reading this memory requires root or code execution in the process.
+8. **The fill notification is outside the secure window.** After a fill, a notification with the entry's name appears outside KeyKey's `FLAG_SECURE` window, so screen recording and accessibility services can see it. Usernames and passwords are not in it.
+9. **The breach check trusts the service and leaves a trace.** Have I Been Pwned (and Cloudflare) see the IP address, the prefixes and the time. The set of prefixes from one IP can act as a fingerprint of a vault; it does not reveal a password on its own. A random password's 5-character prefix gives away 20 bits and leaves 140; a weak password's prefix narrows a dictionary search (weak passwords are already flagged in the report). "Not seen in breaches" does not mean "safe".
 
 Also: Android 11-13 offer no way to hide the app from accessibility services, and a malicious keyboard sees everything that is typed.
 
@@ -196,7 +201,7 @@ The project audited itself against OWASP MASVS v2 with release builds ([summary 
   - no secrets in logcat;
   - exported components protected;
   - no WebView;
-  - no network permission;
+  - network code confined to one file and checked by a test (since 1.6.0 the app has the `INTERNET` permission for the breach check);
   - dependency scan with OSV.
 - **Fixed during the audit:** Flutter's deep linking was enabled by default, so any app could open KeyKey on a chosen screen while the vault was unlocked. It is now disabled, and CI checks that it stays disabled.
 - **Out of scope on purpose:** anti-tampering, root detection and obfuscation. The project is open source, and its security rests on cryptography rather than on hiding code.

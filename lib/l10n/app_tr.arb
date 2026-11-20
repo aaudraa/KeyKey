@@ -474,6 +474,7 @@
   "breachFailed": "Denetlenemedi. İnternet bağlantını kontrol et.",
   "breachRetry": "Yeniden dene",
   "breachClean": "Sızıntılarda görülen parola yok.",
+  "breachUnchecked": "{count, plural, other{{count} parola denetimden sonra eklendi ya da değişti; bunlar denetlenmedi.}}",
   "breachRecheck": "Yeniden denetle",
   "breachFoundTitle": "{count, plural, other{Sızıntılarda görülen parolalar ({count})}}",
   "breachSeen": "{count, plural, other{Sızıntılarda {count} kez görüldü}}",

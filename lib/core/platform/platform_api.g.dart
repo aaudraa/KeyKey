@@ -1130,7 +1130,7 @@ class AppPackagesApi {
   }
 }
 
-/// Web sayfasını sistemin tarayıcısında açar. KeyKey internete çıkmaz;
+/// Web sayfasını sistemin tarayıcısında açar. Sayfayı KeyKey indirmez;
 /// adres yalnızca kullanıcı dokununca tarayıcıya devredilir.
 class WebLinkApi {
   /// Constructor for [WebLinkApi]. The [binaryMessenger] named argument is

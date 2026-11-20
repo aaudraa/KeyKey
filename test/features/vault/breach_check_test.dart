@@ -42,7 +42,16 @@ void main() {
       ),
       {'1E4C9B93F3F0682250B6CF8331B7EE68FD8': 9659365},
     );
-    expect(parsePwnedRange(''), isEmpty);
+    // Yalnızca dolgu: geçerli, hiçbir sonek görülmemiş.
+    expect(parsePwnedRange('$pwnedPadding:0\r\n'), isEmpty);
+  });
+
+  test('yanıt okuma: boş yanıt geçersiz', () {
+    // Gerçek yanıtta (dolguyla) her zaman satır vardır; boş gövde ancak
+    // arada bozan bir şeyden gelir ve "temiz" sayılmamalı.
+    for (final body in ['', '\r\n', '\n\n']) {
+      expect(() => parsePwnedRange(body), throwsFormatException, reason: body);
+    }
   });
 
   test('yanıt okuma: geçersiz satır', () {
@@ -195,6 +204,25 @@ void main() {
       throwsA(isA<BreachCheckCancelled>()),
     );
     expect(source.calls, hasLength(1));
+  });
+
+  test('denetimden sonra eklenen ya da değişen parolalar sayılır', () {
+    final items = [
+      _login(1, 'eski-sizan'),
+      _login(2, 'yeni-parola'),
+      _login(3, 'yeni-parola'),
+      _login(4, 'baska-yeni'),
+      _login(5, 'cöpteki-yeni', trashed: true),
+      _login(6, ''),
+      _login(7, 'temiz'),
+    ];
+    final result = BreachResult(
+      counts: {pwnedHash('eski-sizan'): 7},
+      checked: {pwnedHash('eski-sizan'), pwnedHash('temiz')},
+    );
+
+    expect(uncheckedLoginCount(items, result), 3);
+    expect(uncheckedLoginCount([_login(7, 'temiz'), _login(6, '')], result), 0);
   });
 
   test('sızanlar: çok görülen önce, eşitse ada göre', () async {

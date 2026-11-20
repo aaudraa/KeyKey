@@ -8,7 +8,7 @@ import android.net.Uri
 /**
  * Kayıttaki siteyi ve Hakkında bağlantılarını sistemin tarayıcısında açar.
  *
- * KeyKey'in `INTERNET` izni yok; adres yalnızca kullanıcı dokununca
+ * Sayfayı KeyKey indirmez; adres yalnızca kullanıcı dokununca
  * tarayıcıya devredilir. Dart tarafı da denetlese de burada yalnızca http ve
  * https kabul edilir: `intent:`, `javascript:` ya da `file:` bir bağlantı
  * başka bir uygulamanın bileşenini başlatamasın.

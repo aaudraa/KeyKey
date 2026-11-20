@@ -123,6 +123,10 @@ class _BreachSection extends ConsumerWidget {
     final leaked = state is BreachDone
         ? leakedLogins(items, state.result)
         : const <(LoginItem, int)>[];
+    // Denetimden sonra değişen parolalar denetlenmedi; "temiz" denmez.
+    final unchecked = state is BreachDone
+        ? uncheckedLoginCount(items, state.result)
+        : 0;
 
     Widget action(String label) => Align(
       alignment: AlignmentDirectional.centerEnd,
@@ -176,7 +180,20 @@ class _BreachSection extends ConsumerWidget {
                       action(l10n.breachRetry),
                     ],
                     BreachDone() => [
-                      if (leaked.isEmpty)
+                      if (unchecked > 0)
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.info_outline_rounded,
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(l10n.breachUnchecked(unchecked)),
+                            ),
+                          ],
+                        )
+                      else if (leaked.isEmpty)
                         Row(
                           children: [
                             Icon(

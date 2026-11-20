@@ -28,7 +28,7 @@ Bu belge [ilk tasarım belgesinin](tasarim-yenileme.md) "Görsel dil" ve "Ekranl
 
 - Uygulamanın yaptığı işler değişmez. Bilinçli davranış değişiklikleri "Davranış değişiklikleri" bölümünde sayılmıştır; onların dışında bir şey değişirse hatadır.
 - Yeni izin eklenmez. Özellikle `QUERY_ALL_PACKAGES` ve `INTERNET` istenmez.
-- Site logoları gösterilmez: KeyKey internete çıkmaz, logo indiremez, uygulamaya logo paketi de gömülmez.
+- Site logoları gösterilmez: KeyKey internete çıkmaz, logo indiremez, uygulamaya logo paketi de gömülmez. *(1.6.0'dan beri KeyKey yalnızca kullanıcının başlattığı sızıntı kontrolü için internete çıkar; logo yine indirilmez.)*
 - Yazı tipi indirilmez veya gömülmez; telefonun kendi yazı tipi kullanılır.
 - Tablet ve yatay ekran için ayrı düzen yapılmaz.
 - Uygulama simgesi değişmez (beyaz zeminde turuncu K).
