@@ -2,7 +2,7 @@
 
 KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. 1.5.0'a kadar tamamen çevrimdışıydı; 2026-11-19'da internet gerektiren özelliklere de açılma kararı alındı ([İnternet](#temel-kararlar)). Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-20 · **Şu anki faz:** 16 (internete açılma ve sızıntı kontrolü) sürüyor ([#152](https://github.com/aaudraa/KeyKey/issues/152), tasarım: [internet ve sızıntı](docs/internet-ve-sizinti.md)). [1.5.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.5.0) yayında (kart doldurma; 1.4.0'ın kartları ve notlarıyla birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
+**Son güncelleme:** 2026-11-20 · **Şu anki faz:** 16 (internete açılma ve sızıntı kontrolü, [#152](https://github.com/aaudraa/KeyKey/issues/152)) ve 17 (kartlar ve notlar menüde, [#153](https://github.com/aaudraa/KeyKey/issues/153)) birlikte 1.6.0 olarak çıkıyor. [1.5.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.5.0) yayında (kart doldurma; 1.4.0'ın kartları ve notlarıyla birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
 
 > [!IMPORTANT]
 > **KeyKey 1.0 yayında.** Projenin kendi güvenlik denetimi tamamlandı, ama bağımsız bir denetim yapılmadı. Şifreli yedeğini düzenli al ve telefonun dışında da sakla.
@@ -29,14 +29,15 @@ KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uyg
 | 13 | Yeni kurtarma anahtarı | S | 12 | `faz/13-kurtarma-anahtari` | Tamamlandı (1.3.0) |
 | 14 | Kart ve güvenli not kayıtları | L | 13 | `faz/14-kart-ve-not` | Tamamlandı (1.4.0) |
 | 15 | Kart doldurma | M | 14 | `faz/15-kart-doldurma` | Tamamlandı (1.5.0) |
-| 16 | İnternete açılma ve sızıntı kontrolü | M | 14 | `faz/16-internet` | Sürüyor |
-| 17 | Kilit süresi, klavye, toplu seçim, Steam Guard | M | 14 | `faz/17-kullanim-kolayligi` | Planlandı |
-| 18 | Senkron (WebDAV, Google Drive) | XL | 16 | `faz/18-senkron` | Planlandı |
-| 19 | KeePass (`.kdbx`) içe aktarma | L | 14 | `faz/19-keepass` | Planlandı |
-| 20 | Passkey sağlayıcısı | XL | 15 | `faz/20-passkey` | Planlandı |
-| 21 | İşlemciye göre APK ve kendi F-Droid deposu | M | — | `faz/21-dagitim` | Planlandı |
-| 22 | KeyKey klavyesi | XL | 15 | `faz/22-klavye` | Planlandı |
-| 23 | Windows sürümü | XL | 18 | `faz/23-windows` | Planlandı |
+| 16 | İnternete açılma ve sızıntı kontrolü | M | 14 | `faz/16-internet` | Tamamlandı (1.6.0) |
+| 17 | Kartlar ve notlar için gezinme | S | 14 | `faz/17-gezinme` | Tamamlandı (1.6.0) |
+| 18 | Kilit süresi, klavye, toplu seçim, Steam Guard | M | 14 | `faz/18-kullanim-kolayligi` | Planlandı |
+| 19 | Senkron (WebDAV, Google Drive) | XL | 16 | `faz/19-senkron` | Planlandı |
+| 20 | KeePass (`.kdbx`) içe aktarma | L | 14 | `faz/20-keepass` | Planlandı |
+| 21 | Passkey sağlayıcısı | XL | 15 | `faz/21-passkey` | Planlandı |
+| 22 | İşlemciye göre APK ve kendi F-Droid deposu | M | — | `faz/22-dagitim` | Planlandı |
+| 23 | KeyKey klavyesi | XL | 15 | `faz/23-klavye` | Planlandı |
+| 24 | Windows sürümü | XL | 19 | `faz/24-windows` | Planlandı |
 
 Büyüklük göreli iş miktarını gösterir, takvim sözü değildir. Faz 4 ve 5 aynı anda ilerleyebilir. Faz 14'ten sonraki sıra ve gerekçesi [1.0 sonrası](#10-sonrası) bölümünde; dal adları faz başlayınca kesinleşir. İlerlemeyi [milestone'lardan](https://github.com/aaudraa/KeyKey/milestones) da izleyebilirsin.
 
@@ -48,7 +49,7 @@ Büyüklük göreli iş miktarını gösterir, takvim sözü değildir. Faz 4 ve
 | En düşük sürüm | Android 11 (API 30) | Elimizdeki en eski emülatör bu ve test edemediğimiz sürümü desteklemek istemiyoruz. Satır içi otomatik doldurma önerileri de bu sürümle geldi. |
 | Veri | Cihazda ve kullanıcının seçtiği yerde; bizim sunucumuz ve hesabımız yok | Saldırı yüzeyi küçülür, sunucu maliyeti olmaz, başkasının verisini koruma yükü doğmaz. Senkron gelince (Faz 18) veri kullanıcının kendi WebDAV sunucusuna ya da Drive'ına, uçtan uca şifreli gider. |
 | İnternet | **2026-11-19'da değişti.** İnternet gerektiren özellikler eklenecek. Her biri kullanıcı açınca çalışır, varsayılan kapalıdır; kasadan çıkan veri uçtan uca şifrelidir ya da parolayı göndermeyen bir yöntemle (k-anonimlik) gider. `INTERNET` izni ilk böyle özellikle (Faz 16) gelir; o zamana kadar yayın sürümünde izin yok ve CI bunu denetliyor. | 1.3.0'a kadarki karar "izin yoksa uygulama veriyi dışarı gönderemez" idi. F-Droid başvurusu "benzersiz özellik yok" gerekçesiyle reddedildi; proje sahibi çevrimdışı nişin dışına çıkıp senkron ve sızıntı kontrolü gibi özellikleri istedi ("internete açalım ... kaldıralım sloganımızdan"). Varsayılanın kapalı olması, interneti istemeyen kullanıcıya bugünkü davranışı korur. README'deki "İnternete çıkmaz" sözü, gizlilik bildirimi, koşullar ve uygulama içi metinler izinle aynı fazda değişir; arada yanlış bir metin kalmaz. |
-| Cihazlar arası geçiş | Kullanıcının kaydettiği şifreli yedek dosyası; Faz 18'den sonra isteyen için senkron | Android dosya seçicisiyle Drive'a bile kaydedilebilir ve internet izni gerektirmez. Otomatik yedek (1.2.0) aynı dosyayı seçilen klasöre kendiliğinden yazıyor. |
+| Cihazlar arası geçiş | Kullanıcının kaydettiği şifreli yedek dosyası; Faz 19'dan sonra isteyen için senkron | Android dosya seçicisiyle Drive'a bile kaydedilebilir ve internet izni gerektirmez. Otomatik yedek (1.2.0) aynı dosyayı seçilen klasöre kendiliğinden yazıyor. |
 | Lisans | GPL-3.0 | Değiştirip dağıtan herkes kaynak kodunu da açmak zorunda. Aegis ve KeePassDX de aynı lisansı kullanıyor. |
 | Dil | Repo Türkçe, koddaki adlar İngilizce, arayüz Türkçe ve İngilizce | Proje Türkçe yürüyor; kodda İngilizce ad kullanmak Dart ve Flutter dünyasının standardı. |
 | Paket kimliği | `io.github.aaudraa.keykey` | Alan adı gerektirmez ve GitHub hesabına bağlıdır. **Play Store'a çıktıktan sonra değiştirilemez.** |
@@ -689,16 +690,39 @@ KeyKey'in ilk internet özelliği ([#152](https://github.com/aaudraa/KeyKey/issu
 
 **Bitti sayılması için:** raporda `password` gibi sızmış bir parola görülme sayısıyla listeleniyor; bağlantı yokken ya da beklenmeyen yanıtta "Denetlenemedi" çıkıyor, yanlış bir "sızıntı yok" çıkmıyor; güncellemeden sonra koşullar bir kez yeniden soruluyor; kayıtta parola, özet ya da önek yok.
 
+### Faz 17 — Kartlar ve notlar için gezinme
+
+Proje sahibinin 2026-11-20 gecesi isteği ([#153](https://github.com/aaudraa/KeyKey/issues/153)): kartlar ve notlar, kasa listesinin üstünde sekme gibi duran düğmelerle değil, alttaki menüde kendi sekmeleriyle açılsın. Tasarım: [`gezinme.md`](docs/gezinme.md), plan: [`gezinme-plani.md`](docs/gezinme-plani.md). Faz 16 ile aynı sürümde (1.6.0) çıkar; planlanan 17-23 numaralı fazlar 18-24 oldu.
+
+- [x] Alt menüde beş sekme: Parolalar, Kartlar, Notlar, 2FA, Ayarlar; kasa listesindeki tür düğmeleri kalktı
+- [x] Her sekme kendi türünü, klasörlerini ve çöp kutusunu gösteriyor; parola raporu ve yedek hatırlatıcısı Parolalar'da
+- [x] Yollar `/kartlar` ve `/notlar` altında; "+" ile eklenen kayıt kendi sekmesinde, kilitten dönüş kart ve notun ayrıntısına
+- [x] Dar ekranda menünün boşlukları daralıyor (320 dp ve %200 yazıda taşma yok, sekmeler 48 dp)
+- [x] Tanıtımın "Nerede ne var" sayfası, kılavuz, cam tasarım belgesi, değişiklik günlüğü
+- [x] Erişilebilirlik testleri kart ve not listeleri, ayrıntıları ve çöp kutusu için
+- [x] Android 11 emülatöründe bütün cihaz testleri (Android 17'deki koşu bellek yüzünden yarıda kaldı)
+- [x] Son gözden geçirme
+
+**Uygulama sırasında verilen kararlar:**
+
+- Telefonda beş sekme ve "+" şeride sığıyor ama seçili sekmenin adı sığmıyor; sekmeler yalnızca simgeyle görünür, seçili olan kapsülde. Geniş ekranda ad yine görünür. Simgeler: anahtar, kart, not.
+- Yedek hatırlatıcısı ve okunamayan kayıt uyarısı bütün kasa için; yalnızca açılıştaki sekmede, Parolalar'da görünür.
+- Her sekmenin çöp kutusu yalnızca kendi türünü gösterir; "Tümünü geri yükle" ve "Çöpü boşalt" da yalnızca o türe dokunur.
+
+**Cihazda (2026-11-20):** Android 11 emülatöründe bütün cihaz testleri geçti; iki eski test (arama etiketi, seçili sekmenin simgesi) düzeltildi ve yeniden koşuda geçti. Android 17'deki tam koşu, bilgisayarın belleği azaldığı için ilk 4 testten sonra durduruldu ve yeniden başlatılmadı; Android 17'de aynı koşu Faz 16 koduyla tam geçmişti.
+
+**Bitti sayılması için:** kart ve not alttaki menüden açılıyor; kasa listesinin üstünde tür düğmesi yok; "+" ile eklenen kart Kartlar'da, not Notlar'da görünüyor; her çöp kutusu yalnızca kendi türünü geri yüklüyor; 320 dp ekranda menü taşmıyor.
+
 ## 1.0 sonrası
 
 **2026-11-19:** Proje sahibi bu bölümdeki fikirlerin, kendi kararını bekleyenler dahil hepsini onayladı ve internete açılmaya karar verdi ([İnternet](#temel-kararlar)). Sıra benim kararım ve [Durum](#durum) tablosunda faz olarak duruyor. Gerekçesi:
 
 1. **Kart ve güvenli not (Faz 14), sonra kart doldurma (Faz 15).** Proje sahibinin en çok ihtiyaç duyduğu şey bu. Kayıt modeli türlere açık kurulduğu için internet kararına bağlı değil.
 2. **İnternete açılma ve sızıntı kontrolü (Faz 16).** Misyon değişikliği tek bir fazda yapılır: izin, CI denetimi, gizlilik bildirimi, koşullar, güvenlik tasarımı ve uygulama içi metinler. Have I Been Pwned denetimi küçük ve kendi içinde kapalı olduğu için ağ altyapısını ilk o sınar.
-3. **Kullanım kolaylıkları (Faz 17):** arka plan kilidinde bekleme süresi, gizli olmayan alanlarda normal klavye, toplu seçim, Steam Guard kodları. Küçük işler, hepsi kasada.
-4. **Senkron (Faz 18).** En büyük internet işi, ağ altyapısı Faz 16'da sınanmış olur. Önce WebDAV; Google Drive için proje sahibinin Google Cloud hesabında bir OAuth istemcisi gerekir, o adım ona kalır.
-5. **KeePass içe aktarma (Faz 19), passkey (Faz 20).** Biri geçişi kolaylaştırır, diğeri F-Droid'in "benzersiz özellik yok" itirazına verilebilecek en güçlü cevap.
-6. **Dağıtım (Faz 21), klavye (Faz 22), Windows (Faz 23).** Büyük ya da kullanıcıya dolaylı dokunan işler sona kaldı.
+3. **Kullanım kolaylıkları (Faz 18):** arka plan kilidinde bekleme süresi, gizli olmayan alanlarda normal klavye, toplu seçim, Steam Guard kodları. Küçük işler, hepsi kasada.
+4. **Senkron (Faz 19).** En büyük internet işi, ağ altyapısı Faz 16'da sınanmış olur. Önce WebDAV; Google Drive için proje sahibinin Google Cloud hesabında bir OAuth istemcisi gerekir, o adım ona kalır.
+5. **KeePass içe aktarma (Faz 20), passkey (Faz 21).** Biri geçişi kolaylaştırır, diğeri F-Droid'in "benzersiz özellik yok" itirazına verilebilecek en güçlü cevap.
+6. **Dağıtım (Faz 22), klavye (Faz 23), Windows (Faz 24).** Büyük ya da kullanıcıya dolaylı dokunan işler sona kaldı.
 
 | Fikir | Faz | Not |
 |---|---|---|
