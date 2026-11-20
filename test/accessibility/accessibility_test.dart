@@ -12,6 +12,7 @@ import 'package:keykey/features/authenticator/data/import/import_result.dart';
 import 'package:keykey/features/authenticator/data/otp_content.dart';
 import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/backup/data/import/login_import.dart';
+import 'package:keykey/features/backup/presentation/restore_screen.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:keykey/features/sync/application/sync_controller.dart';
@@ -279,6 +280,37 @@ void main() {
         await settle(tester);
         expect(find.text('Şimdi eşitle'), findsOneWidget);
         await checkGuidelines(tester, location: AppRoutes.sync, scale: scale);
+      });
+
+      testWidgets('başka kasaya katılma', (tester) async {
+        final service = await prepare(tester);
+        final restores = FakeRestoreService(sodium);
+        final bytes = await tester.runAsync(
+          () => restores.backupBytes(service.header),
+        );
+        await pumpKeyKey(
+          tester,
+          status: VaultOpen(service.newSession()),
+          service: service,
+        );
+        GoRouter.of(tester.element(find.byType(Scaffold).first)).go(
+          AppRoutes.syncJoin,
+          extra: SyncRestoreRequest(
+            file: restores.parse(Uint8List.fromList(bytes!)),
+            sync: SyncSettings(
+              folder: Uri.parse('https://bulut.example.com/dav/'),
+              username: 'ayse',
+              appPassword: 'p',
+            ),
+          ),
+        );
+        await settle(tester);
+        expect(find.text('Kasaya katıl'), findsOneWidget);
+        await checkGuidelines(
+          tester,
+          location: AppRoutes.syncJoin,
+          scale: scale,
+        );
       });
 
       testWidgets('parola raporu, sızıntı sonucu', (tester) async {

@@ -2581,7 +2581,7 @@
   "@syncOtherVaultTitle": {
     "description": "Title when the folder belongs to another vault."
   },
-  "syncOtherVaultBody": "This phone's vault cannot be kept in step with that one. Choose an empty folder.",
+  "syncOtherVaultBody": "You can join this phone to that vault: you need that vault's master password, and this phone's records are added to it. Otherwise choose an empty folder.",
   "@syncOtherVaultBody": {
     "description": "Body when the folder belongs to another vault."
   },
@@ -2797,5 +2797,49 @@
   "restoreSyncOnNote": "Sync is on: the records in the backup return to their backed-up state on every phone; records that are not in the backup are not deleted.",
   "@restoreSyncOnNote": {
     "description": "Note on the restore summary while sync is on."
+  },
+  "syncJoinButton": "Join this phone to that vault",
+  "@syncJoinButton": {
+    "description": "Button on the other-vault sheet."
+  },
+  "syncJoinWarnTitle": "Your master password will change",
+  "@syncJoinWarnTitle": {
+    "description": "Title of the warning before joining another vault."
+  },
+  "syncJoinWarnBody": "This phone's master password and recovery key will stop working; the sync vault's will work instead.",
+  "@syncJoinWarnBody": {
+    "description": "Warning before joining another vault."
+  },
+  "syncJoinConfirm": "Join",
+  "@syncJoinConfirm": {
+    "description": "Confirm button of the join warning."
+  },
+  "syncJoinTitle": "Join that vault",
+  "@syncJoinTitle": {
+    "description": "Title of the join screen."
+  },
+  "syncJoinIntro": "Enter the master password or the recovery key of the vault in the folder. This phone's records are added to that vault.",
+  "@syncJoinIntro": {
+    "description": "Intro of the join screen."
+  },
+  "syncJoinSubmit": "Join the vault",
+  "@syncJoinSubmit": {
+    "description": "Submit button of the join screen."
+  },
+  "syncJoinWrongPassword": "This password does not open that vault.",
+  "@syncJoinWrongPassword": {
+    "description": "Wrong password on the join screen."
+  },
+  "syncJoinWrongRecoveryKey": "This recovery key does not belong to that vault.",
+  "@syncJoinWrongRecoveryKey": {
+    "description": "Wrong recovery key on the join screen."
+  },
+  "syncJoinFailed": "Could not join; this phone's vault has not changed.",
+  "@syncJoinFailed": {
+    "description": "Join failed."
+  },
+  "syncJoinDone": "The sync vault's master password now works on this phone. Turn fingerprint unlock on again.",
+  "@syncJoinDone": {
+    "description": "Snack after joining."
   }
 }

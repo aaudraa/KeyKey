@@ -319,6 +319,101 @@ class RestoreService {
     return await _store.mergeRecords(records, stampAt: stampAt);
   }
 
+  /// Bu telefonun kasasını [remote] senkron dosyasının kasasına katar.
+  ///
+  /// Bu telefonun kayıtları [current]'ın anahtarıyla çözülür, dosyanın
+  /// anahtarıyla şifrelenir ve dosyanın kayıtlarına birleştirilir: aynı
+  /// kimlikte yeni olan kalır (türü farklıysa dosyanınki); dosyanın silme
+  /// kaydı kayıttan yeniyse ya da aynı andaysa kayıt gelmez, değilse silme
+  /// kaydı düşer. Ayar kaydı bu telefonunkidir, [sync] eklenir. Tek işlemde
+  /// yazılır: kasa dosyanın üst bilgisi, silme kayıtları ve yuva
+  /// zamanlarıyla değişir; parmak izi yuvası ve bu telefonun eski silme
+  /// kayıtları gider. Bir kayıt açılmazsa hiçbir şey yazılmaz.
+  Future<void> join(
+    OpenedBackup remote,
+    VaultSession current,
+    SyncSettings sync,
+  ) async {
+    final info = remote.sync;
+    const settingsType = SettingsRepository.recordType;
+    final byId = <String, StoredRecord>{
+      for (final record in remote.records)
+        if (record.type != settingsType) base64.encode(record.id): record,
+    };
+    final tombstones = <String, StoredTombstone>{
+      for (final tombstone in info?.deleted ?? const <StoredTombstone>[])
+        base64.encode(tombstone.id): tombstone,
+    };
+    final local = await _store.allRecords();
+    final target = _cipherFor(remote);
+    final List<StoredRecord> records;
+    try {
+      StoredRecord? settingsRecord;
+      AppSettings? settings;
+      for (final record in local) {
+        final plain = current.records.decrypt(
+          recordId: record.id,
+          type: record.type,
+          blob: record.blob,
+        );
+        try {
+          if (record.type == settingsType) {
+            settingsRecord = record;
+            settings = AppSettings.tryParse(plain);
+            continue;
+          }
+          final key = base64.encode(record.id);
+          final existing = byId[key];
+          if (existing != null &&
+              (existing.type != record.type ||
+                  !record.updatedAt.isAfter(existing.updatedAt))) {
+            continue;
+          }
+          final tombstone = tombstones[key];
+          if (tombstone != null &&
+              !tombstone.deletedAt.isBefore(record.updatedAt)) {
+            continue;
+          }
+          tombstones.remove(key);
+          byId[key] = StoredRecord(
+            id: record.id,
+            type: record.type,
+            blob: target.encrypt(
+              recordId: record.id,
+              type: record.type,
+              plainText: plain,
+            ),
+            createdAt: record.createdAt,
+            updatedAt: record.updatedAt,
+          );
+        } finally {
+          plain.fillRange(0, plain.length, 0);
+        }
+      }
+      records = [
+        ...byId.values,
+        _settingsRecord(
+          target,
+          (settings ?? AppSettings.defaults).withSync(sync),
+          id: SettingsRepository.recordId,
+          createdAt: settingsRecord?.createdAt ?? remote.createdAt,
+          updatedAt: settingsRecord?.updatedAt ?? remote.createdAt,
+        ),
+      ];
+    } finally {
+      target.dispose();
+    }
+    await _store.replaceVault(
+      remote.header,
+      records,
+      tombstones: tombstones.values.toList(),
+      times: HeaderTimes(
+        passwordChangedAt: info?.passwordChangedAt,
+        recoveryChangedAt: info?.recoveryChangedAt,
+      ),
+    );
+  }
+
   RecordCipher _cipherFor(OpenedBackup backup) {
     final key = backup.copyKey();
     final cipher = RecordCipher(_sodium, key, backup.header.vaultId);

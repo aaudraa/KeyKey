@@ -12,6 +12,7 @@ import 'package:keykey/app/ui/kk_form.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
+import 'package:keykey/core/backup/backup_codec.dart';
 import 'package:keykey/core/network/secure_url.dart';
 import 'package:keykey/core/network/sync_transport.dart';
 import 'package:keykey/core/vault/vault_session.dart';
@@ -111,13 +112,8 @@ class _SyncSetupFormState extends ConsumerState<SyncSetupForm> {
     switch (folder) {
       case FolderEmpty() || FolderSameVault():
         await _confirmAndEnable(settings);
-      case FolderOtherVault():
-        await showSyncInfo(
-          context,
-          title: l10n.syncOtherVaultTitle,
-          message: l10n.syncOtherVaultBody,
-          button: l10n.syncCancel,
-        );
+      case FolderOtherVault(:final newest):
+        await _offerJoin(newest, settings);
       case FolderMixedVaults():
         await showSyncInfo(
           context,
@@ -125,6 +121,34 @@ class _SyncSetupFormState extends ConsumerState<SyncSetupForm> {
           message: l10n.syncMixedBody,
         );
     }
+  }
+
+  /// Klasörde başka kasa var: bu telefon o kasaya katılabilir. Önce
+  /// seçenek, sonra ana parolanın değişeceği uyarısı; vazgeçilirse bir şey
+  /// yazılmaz.
+  Future<void> _offerJoin(BackupFile newest, SyncSettings settings) async {
+    final l10n = AppLocalizations.of(context);
+    final join = await showKkConfirm(
+      context,
+      title: l10n.syncOtherVaultTitle,
+      message: l10n.syncOtherVaultBody,
+      confirmLabel: l10n.syncJoinButton,
+      cancelLabel: l10n.syncCancel,
+    );
+    if (!join || !mounted) return;
+    final confirmed = await showKkConfirm(
+      context,
+      title: l10n.syncJoinWarnTitle,
+      message: l10n.syncJoinWarnBody,
+      confirmLabel: l10n.syncJoinConfirm,
+      cancelLabel: l10n.syncCancel,
+      destructive: true,
+    );
+    if (!confirmed || !mounted) return;
+    await context.push(
+      AppRoutes.syncJoin,
+      extra: SyncRestoreRequest(file: newest, sync: settings),
+    );
   }
 
   Future<void> _setUpFrom(FolderState folder, SyncSettings settings) async {

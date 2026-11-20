@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:keykey/core/backup/backup_codec.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
+import 'package:keykey/features/sync/application/sync_join.dart';
 import 'package:keykey/features/sync/application/sync_merger.dart';
 import 'package:keykey/features/sync/application/sync_service.dart';
 
@@ -66,5 +68,36 @@ final class FakeSyncService implements SyncService {
     final failure = removeError;
     if (failure != null) throw failure;
     removed.add(device);
+  }
+}
+
+/// Sahte katılma: verilenleri tutar, [next] ile yeni oturum döner.
+final class FakeSyncJoin implements SyncJoin {
+  VaultSession Function()? next;
+  Exception? error;
+
+  /// Katılırken kasaya yazılıyormuş gibi çağrılır.
+  void Function()? onJoin;
+  int joins = 0;
+  String? secret;
+  bool? isRecoveryKey;
+  SyncSettings? settings;
+
+  @override
+  Future<VaultSession> join({
+    required VaultSession current,
+    required BackupFile remote,
+    required String secret,
+    required bool isRecoveryKey,
+    required SyncSettings settings,
+  }) async {
+    this.secret = secret;
+    this.isRecoveryKey = isRecoveryKey;
+    this.settings = settings;
+    final failure = error;
+    if (failure != null) throw failure;
+    joins++;
+    onJoin?.call();
+    return next!();
   }
 }

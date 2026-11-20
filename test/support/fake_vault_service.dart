@@ -750,6 +750,13 @@ class FakeRestoreService implements RestoreService {
   }
 
   @override
+  Future<void> join(
+    OpenedBackup remote,
+    VaultSession current,
+    SyncSettings sync,
+  ) async => throw UnimplementedError('Katılma bu sahte serviste yok.');
+
+  @override
   Future<MergeCounts> merge(
     OpenedBackup backup,
     VaultSession session, {

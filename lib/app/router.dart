@@ -27,6 +27,7 @@ import 'package:keykey/features/settings/presentation/change_password_screen.dar
 import 'package:keykey/features/settings/presentation/licenses_screen.dart';
 import 'package:keykey/features/settings/presentation/new_recovery_key_screen.dart';
 import 'package:keykey/features/settings/presentation/settings_screen.dart';
+import 'package:keykey/features/sync/presentation/sync_join_screen.dart';
 import 'package:keykey/features/sync/presentation/sync_screen.dart';
 import 'package:keykey/features/sync/presentation/sync_setup_form.dart';
 import 'package:keykey/features/vault/application/vault_entries.dart';
@@ -59,6 +60,7 @@ abstract final class AppRoutes {
   static const settings = '/ayarlar';
   static const changePassword = '/ayarlar/parola';
   static const sync = '/ayarlar/senkron';
+  static const syncJoin = '/ayarlar/senkron-kat';
   static const newRecoveryKey = '/ayarlar/kurtarma-anahtari';
   static const loginImport = '/ayarlar/ice-aktar';
   static const licenses = '/ayarlar/lisanslar';
@@ -443,6 +445,22 @@ final routerProvider = Provider<GoRouter>((ref) {
                     parentNavigatorKey: rootNavigatorKey,
                     path: 'senkron',
                     builder: (context, state) => const SyncScreen(),
+                  ),
+                  kkRoute(
+                    parentNavigatorKey: rootNavigatorKey,
+                    path: 'senkron-kat',
+                    // Dosya yalnızca senkron formundan gelir.
+                    redirect: (context, state) =>
+                        state.extra is SyncRestoreRequest
+                        ? null
+                        : AppRoutes.sync,
+                    builder: (context, state) {
+                      final request = state.extra! as SyncRestoreRequest;
+                      return SyncJoinScreen(
+                        file: request.file,
+                        sync: request.sync,
+                      );
+                    },
                   ),
                   kkRoute(
                     parentNavigatorKey: rootNavigatorKey,

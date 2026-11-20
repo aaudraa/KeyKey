@@ -4,10 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/backup/backup_codec.dart';
+import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/network/sync_transport.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:keykey/features/sync/application/sync_controller.dart';
+import 'package:keykey/features/sync/application/sync_join.dart';
 import 'package:keykey/features/sync/application/sync_merger.dart';
 import 'package:keykey/features/sync/application/sync_service.dart';
 import 'package:sodium/sodium_sumo.dart';
@@ -19,6 +21,7 @@ void main() {
   late SodiumSumo sodium;
   late FakeSyncService sync;
   late FakeSettingsRepository settings;
+  late FakeSyncJoin join;
 
   final enabled = SyncSettings(
     folder: Uri.parse('https://bulut.example.com/dav/KeyKey/'),
@@ -33,6 +36,7 @@ void main() {
   setUp(() {
     sync = FakeSyncService();
     settings = FakeSettingsRepository();
+    join = FakeSyncJoin();
   });
 
   Future<FakeVaultService> openSync(
@@ -47,11 +51,13 @@ void main() {
       settings: settings,
       extraOverrides: [
         syncServiceProvider.overrideWithValue(sync),
+        syncJoinProvider.overrideWithValue(join),
         syncClockProvider.overrideWithValue(
           () => DateTime.utc(2026, 11, 20, 12, 2),
         ),
       ],
     );
+    join.next = service.newSession;
     GoRouter.of(tester.element(find.byType(Scaffold).first)).go(route);
     await tester.pumpAndSettle();
     return service;
@@ -192,6 +198,88 @@ void main() {
       await tester.tap(find.text('Tamam'));
       await tester.pumpAndSettle();
       expect(settings.settings.sync, isNull);
+    });
+  });
+
+  group('başka kasaya katılma', () {
+    const warning =
+        'Bu telefonun ana parolası ve kurtarma anahtarı artık geçmez; '
+        'senkron kasasınınkiler geçer.';
+
+    Future<void> toJoin(WidgetTester tester) async {
+      final codec = BackupCodec(sodium);
+      final key = sodium.secureRandom(32);
+      final bytes = await tester.runAsync(
+        () => codec.encode(
+          header: FakeVaultService(sodium).header,
+          vaultKey: key,
+          records: const [],
+          createdAt: DateTime.utc(2026),
+          sync: const SyncInfo(device: 'd4e5f6'),
+        ),
+      );
+      key.dispose();
+      sync.folder = FolderOtherVault(codec.parse(bytes!));
+      await openSync(tester);
+      await fill(tester);
+      await connect(tester);
+      await tester.tap(find.text('Bu telefonu o kasaya kat'));
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> submit(WidgetTester tester, String secret) async {
+      await tester.enterText(find.byType(TextField), secret);
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Kasaya katıl'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('uyarıdan sonra o kasanın parolasıyla katılıyor', (
+      tester,
+    ) async {
+      join.onJoin = () =>
+          settings.settings = AppSettings.defaults.withSync(enabled);
+      await toJoin(tester);
+      expect(find.text(warning), findsOneWidget);
+      await tester.tap(find.text('Kat'));
+      await tester.pumpAndSettle();
+
+      await submit(tester, 'O-Kasanin-Parolasi-1');
+
+      expect(join.joins, 1);
+      expect(join.secret, 'O-Kasanin-Parolasi-1');
+      expect(join.isRecoveryKey, isFalse);
+      expect(join.settings!.folder, enabled.folder);
+      expect(
+        find.text(
+          'Bu telefonda artık senkron kasasının ana parolası geçerli. '
+          'Parmak iziyle açmayı yeniden aç.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Şimdi eşitle'), findsOneWidget);
+      expect(sync.calls, greaterThanOrEqualTo(1));
+    });
+
+    testWidgets('yanlış parola söyleniyor, bir şey değişmiyor', (tester) async {
+      join.error = const WrongSecretException();
+      await toJoin(tester);
+      await tester.tap(find.text('Kat'));
+      await tester.pumpAndSettle();
+      await submit(tester, 'yanlis-Parola-99');
+
+      expect(find.text('Bu parola o kasayı açmadı.'), findsOneWidget);
+      expect(join.joins, 0);
+      expect(settings.settings.sync, isNull);
+    });
+
+    testWidgets('uyarıda vazgeçilince katılmıyor', (tester) async {
+      await toJoin(tester);
+      await tester.tap(find.text('Vazgeç'));
+      await tester.pumpAndSettle();
+      expect(find.text('Kasaya katıl'), findsNothing);
+      expect(find.text('Bağlan'), findsOneWidget);
+      expect(join.joins, 0);
     });
   });
 

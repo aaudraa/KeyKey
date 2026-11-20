@@ -342,6 +342,25 @@ class VaultController extends Notifier<VaultStatus> {
     state = VaultOpen(session);
   }
 
+  /// Senkron kasasına katılınca kasa anahtarı değişir: süren işler kilit
+  /// dinleyicileriyle bırakılır, eski oturum kapanır ve kasa [session] ile
+  /// açık kalır (kilit ekranına gidilmez). Kasa açık değilse oturumu siler
+  /// ve [StateError] fırlatır.
+  void replaceSession(VaultSession session) {
+    final old = _session;
+    if (state is! VaultOpen || old == null) {
+      session.dispose();
+      throw StateError('Kasa açık değil.');
+    }
+    _lockGeneration++;
+    for (final listener in _lockListeners.toList()) {
+      listener();
+    }
+    _session = session;
+    state = VaultOpen(session);
+    old.dispose();
+  }
+
   /// Kasa yedekle değiştirildikten sonra kilitler. Kasa artık yedeğin üst
   /// bilgisiyle, yani yedeğin ana parolasıyla açılır.
   void lockReplaced(VaultHeader header) {

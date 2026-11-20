@@ -612,7 +612,7 @@
   "syncOk": "Tamam",
   "syncEnabled": "Senkron açıldı",
   "syncOtherVaultTitle": "Bu klasörde başka bir KeyKey kasası var.",
-  "syncOtherVaultBody": "Bu telefonun kasası o kasayla eşitlenemez. Boş bir klasör seç.",
+  "syncOtherVaultBody": "Bu telefonu o kasaya katabilirsin: o kasanın ana parolası gerekir, bu telefonun kayıtları o kasaya eklenir. İstemiyorsan boş bir klasör seç.",
   "syncMixedTitle": "Bu klasörde birden çok kasa var.",
   "syncMixedBody": "Boş bir klasör seç.",
   "syncStatusOn": "Açık",
@@ -659,5 +659,16 @@
   "restoreSyncWrongPassword": "Bu parola kasayı açmadı. Öteki telefonundaki ana parolayı dene.",
   "restoreSyncWrongRecoveryKey": "Bu kurtarma anahtarı klasördeki kasaya ait değil.",
   "restoreSyncDone": "Kasa kuruldu, senkron açık.",
-  "restoreSyncOnNote": "Senkron açık: yedekteki kayıtlar bütün telefonlarda yedekteki haline döner; yedekte olmayan kayıtlar silinmez."
+  "restoreSyncOnNote": "Senkron açık: yedekteki kayıtlar bütün telefonlarda yedekteki haline döner; yedekte olmayan kayıtlar silinmez.",
+  "syncJoinButton": "Bu telefonu o kasaya kat",
+  "syncJoinWarnTitle": "Ana parolan değişecek",
+  "syncJoinWarnBody": "Bu telefonun ana parolası ve kurtarma anahtarı artık geçmez; senkron kasasınınkiler geçer.",
+  "syncJoinConfirm": "Kat",
+  "syncJoinTitle": "O kasaya kat",
+  "syncJoinIntro": "Klasördeki kasanın ana parolasını ya da kurtarma anahtarını yaz. Bu telefonun kayıtları o kasaya eklenir.",
+  "syncJoinSubmit": "Kasaya katıl",
+  "syncJoinWrongPassword": "Bu parola o kasayı açmadı.",
+  "syncJoinWrongRecoveryKey": "Bu kurtarma anahtarı o kasaya ait değil.",
+  "syncJoinFailed": "Katılamadı; bu telefonun kasası değişmedi.",
+  "syncJoinDone": "Bu telefonda artık senkron kasasının ana parolası geçerli. Parmak iziyle açmayı yeniden aç."
 }
