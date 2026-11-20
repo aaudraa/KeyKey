@@ -182,12 +182,14 @@ void main() {
     test('ara dosyaya yazıp geri okuyor, sonra taşıyor', () async {
       await client().write(name, bytes(1000));
 
+      // Nextcloud ve ownCloud `.part` uzantısını yarım yükleme sayıp dosya
+      // önbelleğine almıyor; ara ad bu yüzden `.tmp`.
       expect(
         [for (final r in dav.requests) (r.method, r.path)],
         [
-          ('PUT', '${_FakeDav.folderPath}$name.part'),
-          ('GET', '${_FakeDav.folderPath}$name.part'),
-          ('MOVE', '${_FakeDav.folderPath}$name.part'),
+          ('PUT', '${_FakeDav.folderPath}$name.tmp'),
+          ('GET', '${_FakeDav.folderPath}$name.tmp'),
+          ('MOVE', '${_FakeDav.folderPath}$name.tmp'),
         ],
       );
       final move = dav.requests.last.headers;

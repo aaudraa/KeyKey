@@ -268,7 +268,7 @@ void main() {
     final b = await second(a, 'b2c3d4');
     // Kesilmiş bir yazmanın ara dosyası klasörde kalmış.
     dav.put(
-      'keykey-sync-a1b2c3.keykey.part',
+      'keykey-sync-a1b2c3.keykey.tmp',
       Uint8List.fromList(List.filled(64, 7)),
     );
 

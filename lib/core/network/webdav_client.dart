@@ -39,7 +39,10 @@ final class WebDavClient implements SyncTransport {
 
   static const _filePrefix = 'keykey-sync-';
   static const _fileSuffix = '.keykey';
-  static const _partSuffix = '.part';
+  /// Ara dosyanın eki. `.part` olamaz: Nextcloud ve ownCloud o uzantıyı
+  /// yarım yükleme sayıp dosya önbelleğine almıyor (geri okuma ve taşıma
+  /// bulamıyor).
+  static const _partSuffix = '.tmp';
   static const _dav = 'DAV:';
   static const _propfindBody = '''
 <?xml version="1.0" encoding="utf-8"?>
@@ -119,7 +122,7 @@ final class WebDavClient implements SyncTransport {
     )).body!,
   );
 
-  /// Önce `<ad>.part` yazılır, geri okunup bayt bayt karşılaştırılır, sonra
+  /// Önce `<ad>.tmp` yazılır, geri okunup bayt bayt karşılaştırılır, sonra
   /// son adına taşınır. Sunucu taşımayı desteklemiyorsa (405, 501) son adla
   /// doğrudan yazılır ve ara dosya silinir.
   @override

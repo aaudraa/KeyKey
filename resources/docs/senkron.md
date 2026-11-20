@@ -134,7 +134,7 @@ Kasa anahtarı değişmez; parola değişince yalnızca üst bilgideki sarmalama
 - `User-Agent: KeyKey`, çerez yok. Bağlanma 10, istek 60 saniyede zaman aşımı.
 - Yanıt sınırları: klasör listesi 1 MiB, dosya 64 MiB ve kapsayıcı payı. Aşan yanıt hata olur.
 - Kullanılan istekler: `PROPFIND` (Depth 1; `getetag`, `getcontentlength`, `getlastmodified`, `resourcetype`), `GET`, `PUT`, `MOVE` (`Overwrite: T`), `DELETE`, `MKCOL`.
-- **Yazma:** Dosya önce `keykey-sync-<cihaz>.keykey.part` adıyla `PUT` edilir, geri okunup bayt bayt karşılaştırılır, sonra `MOVE` ile son adına taşınır. Böylece öteki telefonlar yarım dosya görmez. Sunucu `MOVE` desteklemiyorsa (405, 501) son adla doğrudan yazılır ve ara dosya silinir.
+- **Yazma:** Dosya önce `keykey-sync-<cihaz>.keykey.tmp` adıyla `PUT` edilir (`.part` olamaz: Nextcloud ve ownCloud o uzantıyı yarım yükleme sayıp dosya önbelleğine almıyor), geri okunup bayt bayt karşılaştırılır, sonra `MOVE` ile son adına taşınır. Böylece öteki telefonlar yarım dosya görmez. Sunucu `MOVE` desteklemiyorsa (405, 501) son adla doğrudan yazılır ve ara dosya silinir.
 - Hata mesajları ve günlükler adres yolunu, kullanıcı adını ve parolayı taşımaz.
 - Sunucuyla konuşan kod yalnızca bu dosyadadır; birleştirme, dosya biçimi ve arayüz ağ bilmez (taşıyıcı bir arayüzün arkasındadır; testler bellekte bir sahte taşıyıcı ve yerel bir WebDAV test sunucusu kullanır).
 
