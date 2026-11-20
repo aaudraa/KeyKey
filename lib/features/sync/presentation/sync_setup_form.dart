@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:keykey/app/router.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
@@ -12,6 +15,7 @@ import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/network/secure_url.dart';
 import 'package:keykey/core/network/sync_transport.dart';
 import 'package:keykey/core/vault/vault_session.dart';
+import 'package:keykey/features/backup/presentation/restore_screen.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
@@ -24,8 +28,13 @@ import 'package:keykey/l10n/generated/app_localizations.dart';
 /// **Bağlan** klasörü denetler; ancak boşsa ya da bu kasanınsa, açıklama
 /// penceresinden sonra senkron açılır. Tasarım: `resources/docs/senkron.md`,
 /// "Senkronu açmak".
+///
+/// [newPhone] ise kasası olmayan telefondadır ("Yeni telefon"): klasörde tek
+/// kasa varsa en yeni dosyası geri yükleme ekranında açılır.
 class SyncSetupForm extends ConsumerStatefulWidget {
-  const new({super.key});
+  const new({this.newPhone = false, super.key});
+
+  final bool newPhone;
 
   @override
   ConsumerState<SyncSetupForm> createState() => _SyncSetupFormState();
@@ -65,7 +74,15 @@ class _SyncSetupFormState extends ConsumerState<SyncSetupForm> {
       return;
     }
     final vault = ref.read(vaultControllerProvider);
-    if (vault is! VaultOpen) return;
+    final Uint8List? vaultId;
+    switch (vault) {
+      case VaultOpen(:final session) when !widget.newPhone:
+        vaultId = session.header.vaultId;
+      case VaultNotSetUp() when widget.newPhone:
+        vaultId = null;
+      default:
+        return;
+    }
     final settings = SyncSettings(
       folder: uri,
       username: _username.text,
@@ -78,9 +95,7 @@ class _SyncSetupFormState extends ConsumerState<SyncSetupForm> {
     });
     final FolderState folder;
     try {
-      folder = await ref
-          .read(syncServiceProvider)
-          .inspect(settings, vault.session.header.vaultId);
+      folder = await ref.read(syncServiceProvider).inspect(settings, vaultId);
     } on SyncTransportException catch (error) {
       if (mounted) {
         setState(() {
@@ -92,6 +107,7 @@ class _SyncSetupFormState extends ConsumerState<SyncSetupForm> {
     }
     if (!mounted) return;
     setState(() => _busy = false);
+    if (widget.newPhone) return await _setUpFrom(folder, settings);
     switch (folder) {
       case FolderEmpty() || FolderSameVault():
         await _confirmAndEnable(settings);
@@ -107,6 +123,25 @@ class _SyncSetupFormState extends ConsumerState<SyncSetupForm> {
           context,
           title: l10n.syncMixedTitle,
           message: l10n.syncMixedBody,
+        );
+    }
+  }
+
+  Future<void> _setUpFrom(FolderState folder, SyncSettings settings) async {
+    final l10n = AppLocalizations.of(context);
+    switch (folder) {
+      case FolderEmpty() || FolderSameVault():
+        setState(() => _error = l10n.syncNoFiles);
+      case FolderOtherVault(:final newest):
+        await context.push(
+          AppRoutes.restore,
+          extra: SyncRestoreRequest(file: newest, sync: settings),
+        );
+      case FolderMixedVaults():
+        await showSyncInfo(
+          context,
+          title: l10n.syncMixedTitle,
+          message: l10n.syncMixedSetupBody,
         );
     }
   }
@@ -140,7 +175,10 @@ class _SyncSetupFormState extends ConsumerState<SyncSetupForm> {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     return KkScaffold(
-      appBar: kkAppBar(context, title: l10n.syncTitle),
+      appBar: kkAppBar(
+        context,
+        title: widget.newPhone ? l10n.setupFromSync : l10n.syncTitle,
+      ),
       bottomNavigationBar: ListenableBuilder(
         listenable: Listenable.merge([_folder, _username, _password]),
         builder: (context, _) => KkBottomAction(
@@ -156,7 +194,10 @@ class _SyncSetupFormState extends ConsumerState<SyncSetupForm> {
           children: [
             GlassSurface(
               padding: const EdgeInsets.all(16),
-              child: Text(l10n.syncIntro, style: theme.textTheme.bodyMedium),
+              child: Text(
+                widget.newPhone ? l10n.syncSetupIntro : l10n.syncIntro,
+                style: theme.textTheme.bodyMedium,
+              ),
             ),
             const SizedBox(height: 12),
             KkFieldCard(

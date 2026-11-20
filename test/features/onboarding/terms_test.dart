@@ -86,6 +86,7 @@ void main() {
       expect(go(const VaultNotSetUp(), AppRoutes.terms), isNull);
       expect(go(const VaultNotSetUp(), AppRoutes.setup), AppRoutes.terms);
       expect(go(const VaultNotSetUp(), AppRoutes.restore), AppRoutes.terms);
+      expect(go(const VaultNotSetUp(), AppRoutes.syncSetup), AppRoutes.terms);
       expect(go(VaultLocked(header), AppRoutes.lock), AppRoutes.terms);
       expect(go(VaultLocked(header), AppRoutes.terms), isNull);
       expect(go(VaultOpen(session), AppRoutes.vault), AppRoutes.terms);

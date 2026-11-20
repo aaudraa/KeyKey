@@ -7,10 +7,13 @@ import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
+import 'package:keykey/features/sync/application/sync_controller.dart';
+import 'package:keykey/features/sync/application/sync_service.dart';
 import 'package:keykey/features/vault/application/records_controller.dart';
 import 'package:keykey/features/vault/data/card_content.dart';
 import 'package:sodium/sodium_sumo.dart';
 
+import '../../support/fake_sync_service.dart';
 import '../../support/fake_vault_service.dart';
 
 void main() {
@@ -38,6 +41,7 @@ void main() {
     FakeSettingsRepository? settings,
     FakeBackupFolders? folders,
     FakeRecordRepository<CardContent>? cards,
+    FakeSyncService? sync,
   }) async {
     await pumpKeyKey(
       tester,
@@ -48,6 +52,9 @@ void main() {
       settings: settings,
       folders: folders,
       cards: cards,
+      extraOverrides: [
+        if (sync != null) syncServiceProvider.overrideWithValue(sync),
+      ],
     );
     if (status is VaultNotSetUp) await skipIntro(tester);
   }
@@ -58,6 +65,99 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Yedeği aç'));
     await tester.pumpAndSettle();
   }
+
+  group('senkrondan kurulum', () {
+    late FakeSyncService sync;
+    late FakeSettingsRepository settings;
+    final folder = Uri.parse('https://bulut.example.com/dav/KeyKey/');
+
+    setUp(() {
+      sync = FakeSyncService();
+      settings = FakeSettingsRepository();
+    });
+
+    Future<void> connect(WidgetTester tester) async {
+      await pump(tester, const VaultNotSetUp(), settings: settings, sync: sync);
+      await tester.ensureVisible(find.text('Senkrondan kur'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Senkrondan kur'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Klasörün adresi'),
+        folder.toString(),
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Kullanıcı adı'),
+        'ayse',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Uygulama parolası'),
+        'uygulama-parolasi',
+      );
+      await tester.pump();
+      await tester.tap(find.text('Bağlan'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('klasörde dosya yoksa söyleniyor', (tester) async {
+      await connect(tester);
+      expect(sync.inspected.single.folder, folder);
+      expect(sync.inspectedVaults.single, isNull);
+      expect(
+        find.text('Bu klasörde KeyKey senkron dosyası yok.'),
+        findsOneWidget,
+      );
+      expect(find.text('Yedeği aç'), findsNothing);
+    });
+
+    testWidgets('birden çok kasa varsa kurulmuyor', (tester) async {
+      sync.folder = const FolderMixedVaults();
+      await connect(tester);
+      expect(find.text('Bu klasörde birden çok kasa var.'), findsOneWidget);
+      expect(find.text('Yedeği aç'), findsNothing);
+    });
+
+    testWidgets('en yeni dosyadan kuruluyor, senkron açık', (tester) async {
+      sync.folder = FolderOtherVault(restores.parse(backup));
+      restores.onReplace = () => settings.settings = AppSettings.defaults
+          .withSync(restores.replacedSync);
+      await connect(tester);
+      expect(
+        find.text(
+          'Kasa, öteki telefonundaki ana parolanla ya da kurtarma '
+          'anahtarınla açılır.',
+        ),
+        findsOneWidget,
+      );
+
+      await typeSecret(tester, FakeRestoreService.password);
+      await tester.tap(find.widgetWithText(FilledButton, 'Geri yükle'));
+      await tester.pumpAndSettle();
+
+      expect(restores.replaces, 1);
+      final replaced = restores.replacedSync!;
+      expect(replaced.folder, folder);
+      expect(replaced.username, 'ayse');
+      expect(replaced.appPassword, 'uygulama-parolasi');
+      expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
+      // Kasa açılınca ilk eşitleme.
+      expect(sync.calls, 1);
+    });
+
+    testWidgets('yanlış parolada bir şey yazılmıyor', (tester) async {
+      sync.folder = FolderOtherVault(restores.parse(backup));
+      await connect(tester);
+      await typeSecret(tester, 'yanlis-Parola-99');
+      expect(
+        find.text(
+          'Bu parola kasayı açmadı. Öteki telefonundaki ana parolayı dene.',
+        ),
+        findsOneWidget,
+      );
+      expect(restores.replaces, 0);
+      expect(settings.settings.sync, isNull);
+    });
+  });
 
   group('yeni telefonda', () {
     Future<void> openFromSetup(WidgetTester tester) async {

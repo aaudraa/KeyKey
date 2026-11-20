@@ -650,5 +650,13 @@
   "syncIssueSlots": "Bu telefonla {device} farklı ana parola kullanıyor. Doğru parolanın olduğu telefonda ana parolayı yeniden belirle; öteki telefonlar ona geçer.",
   "syncNoticePassword": "Ana parola başka bir telefonda değiştirildi. Kasayı bir sonraki açışında yeni parolayı kullan.",
   "syncNoticeRecovery": "Kurtarma anahtarı başka bir telefonda yenilendi. Eski kurtarma anahtarın artık geçmez.",
-  "settingsGroupSync": "Telefonlar arası"
+  "settingsGroupSync": "Telefonlar arası",
+  "setupFromSync": "Senkrondan kur",
+  "syncSetupIntro": "Öteki telefonundaki senkron klasörünün adresini, kullanıcı adını ve uygulama parolasını yaz. Kasa klasördeki en yeni dosyadan kurulur ve o kasanın ana parolasıyla açılır.",
+  "syncNoFiles": "Bu klasörde KeyKey senkron dosyası yok.",
+  "syncMixedSetupBody": "Hangi kasanın kurulacağı bilinemiyor. Klasörü öteki telefondan denetle ya da kasayı yedekten kur.",
+  "restoreSyncIntro": "Kasa, öteki telefonundaki ana parolanla ya da kurtarma anahtarınla açılır.",
+  "restoreSyncWrongPassword": "Bu parola kasayı açmadı. Öteki telefonundaki ana parolayı dene.",
+  "restoreSyncWrongRecoveryKey": "Bu kurtarma anahtarı klasördeki kasaya ait değil.",
+  "restoreSyncDone": "Kasa kuruldu, senkron açık."
 }

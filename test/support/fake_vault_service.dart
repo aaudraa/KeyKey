@@ -724,13 +724,22 @@ class FakeRestoreService implements RestoreService {
   /// Son değiştirmede verilen, bu cihazın otomatik yedek klasörü.
   AutoBackupFolder? replacedFolder;
 
+  /// Son değiştirmede verilen senkron bilgisi.
+  SyncSettings? replacedSync;
+
+  /// Değiştirme sırasında kasaya yazılıyormuş gibi çağrılır.
+  void Function()? onReplace;
+
   @override
   Future<void> replace(
     OpenedBackup backup, {
     AutoBackupFolder? autoBackupFolder,
+    SyncSettings? sync,
   }) async {
     replaces++;
     replacedFolder = autoBackupFolder;
+    replacedSync = sync;
+    onReplace?.call();
   }
 
   @override

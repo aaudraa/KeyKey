@@ -2761,5 +2761,37 @@
   "settingsGroupSync": "Across phones",
   "@settingsGroupSync": {
     "description": "Settings group that holds the sync row."
+  },
+  "setupFromSync": "Set up from sync",
+  "@setupFromSync": {
+    "description": "Setup screen button that sets the vault up from a sync folder."
+  },
+  "syncSetupIntro": "Enter the address of the sync folder your other phone uses, the username and the app password. The vault is set up from the newest file in the folder and opens with that vault's master password.",
+  "@syncSetupIntro": {
+    "description": "Intro on the set-up-from-sync form."
+  },
+  "syncNoFiles": "There is no KeyKey sync file in this folder.",
+  "@syncNoFiles": {
+    "description": "Shown when the folder has no sync file to set up from."
+  },
+  "syncMixedSetupBody": "It is not clear which vault to set up. Check the folder from your other phone or set the vault up from a backup.",
+  "@syncMixedSetupBody": {
+    "description": "Body when the folder holds files of several vaults on a new phone."
+  },
+  "restoreSyncIntro": "The vault opens with the master password on your other phone, or with your recovery key.",
+  "@restoreSyncIntro": {
+    "description": "Intro on the unlock step when setting up from sync."
+  },
+  "restoreSyncWrongPassword": "This password does not open the vault. Try the master password on your other phone.",
+  "@restoreSyncWrongPassword": {
+    "description": "Wrong password when setting up from sync."
+  },
+  "restoreSyncWrongRecoveryKey": "This recovery key does not belong to the vault in the folder.",
+  "@restoreSyncWrongRecoveryKey": {
+    "description": "Wrong recovery key when setting up from sync."
+  },
+  "restoreSyncDone": "Vault set up, sync is on.",
+  "@restoreSyncDone": {
+    "description": "Snack after the vault was set up from sync."
   }
 }

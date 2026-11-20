@@ -327,6 +327,29 @@ void main() {
       folder.files['keykey-sync-a1b2c3.keykey'] = mine;
       expect(await inspect(), isA<FolderMixedVaults>());
     });
+
+    test('kasa yokken tek kasanın en yeni dosyası dönüyor', () async {
+      final a = await first('a1b2c3');
+      final c = await first('c0c0c0');
+      Future<FolderState> inspect() => c.service.inspect(c.settings, null);
+
+      expect(await inspect(), isA<FolderEmpty>());
+      await a.sync();
+      final others = folder.files.remove('keykey-sync-a1b2c3.keykey')!;
+      await c.sync();
+      folder.clock = folder.clock.add(const Duration(hours: 1));
+      final d = await second(c, 'd0d0d0');
+      await d.sync();
+
+      final state = await inspect();
+      final newest = (state as FolderOtherVault).newest;
+      final contents = await BackupCodec(sodium)
+          .open(newest, c.session.vaultKey);
+      expect(contents.sync!.device, 'd0d0d0');
+
+      folder.files['keykey-sync-a1b2c3.keykey'] = others;
+      expect(await inspect(), isA<FolderMixedVaults>());
+    });
   });
 
   test('bozuk ve daha yeni dosyalar düşüyor, ötekiler birleşiyor', () async {

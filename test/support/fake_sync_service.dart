@@ -22,6 +22,9 @@ final class FakeSyncService implements SyncService {
   Exception? inspectError;
   final inspected = <SyncSettings>[];
 
+  /// Denetlemede verilen kasa kimlikleri; yeni telefonda `null`.
+  final inspectedVaults = <Uint8List?>[];
+
   /// Kaldırılan telefonlar; [removeError] verilirse kaldırma hata verir.
   final removed = <String>[];
   Exception? removeError;
@@ -50,8 +53,9 @@ final class FakeSyncService implements SyncService {
   }
 
   @override
-  Future<FolderState> inspect(SyncSettings settings, Uint8List vaultId) async {
+  Future<FolderState> inspect(SyncSettings settings, Uint8List? vaultId) async {
     inspected.add(settings);
+    inspectedVaults.add(vaultId);
     final failure = inspectError;
     if (failure != null) throw failure;
     return folder;

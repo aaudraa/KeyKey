@@ -411,6 +411,27 @@ void main() {
           scale: scale,
         );
       });
+
+      testWidgets('senkrondan kurulum', (tester) async {
+        final service = await prepare(tester);
+        await pumpKeyKey(
+          tester,
+          status: const VaultNotSetUp(),
+          service: service,
+          extraOverrides: [
+            syncServiceProvider.overrideWithValue(FakeSyncService()),
+          ],
+        );
+        GoRouter.of(tester.element(find.byType(Scaffold).first))
+            .go(AppRoutes.syncSetup);
+        await tester.pumpAndSettle();
+        expect(find.text('Bağlan'), findsOneWidget);
+        await checkGuidelines(
+          tester,
+          location: AppRoutes.syncSetup,
+          scale: scale,
+        );
+      });
     });
   }
 

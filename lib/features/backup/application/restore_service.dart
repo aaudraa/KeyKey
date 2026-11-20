@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/core/backup/backup_codec.dart';
@@ -26,6 +28,7 @@ final class OpenedBackup {
     required this.otpCount,
     this.cardCount = 0,
     this.noteCount = 0,
+    this.sync,
   });
 
   /// Ekran testleri için; kayıt içermez.
@@ -59,6 +62,9 @@ final class OpenedBackup {
   final int otpCount;
   final int cardCount;
   final int noteCount;
+
+  /// Senkron dosyasıysa silme kayıtları ve yuva zamanları; yedekte `null`.
+  final SyncInfo? sync;
 
   /// Yedekte kart ya da not var mı; özet metni buna göre seçilir.
   bool get hasCardsOrNotes => cardCount > 0 || noteCount > 0;
@@ -123,10 +129,18 @@ class RestoreService {
   /// [autoBackupFolder] bu cihazda seçili otomatik yedek klasörüdür. Klasörün
   /// izni cihaza bağlı olduğu için, verilirse yedekteki klasörün yerine geçer;
   /// `null` ise yedekteki değer kalır.
+  ///
+  /// [sync] bu telefonun senkron bilgisidir ve her zaman yedektekinin yerine
+  /// geçer (`null` kapalı): yedek başka bir telefonda, başka bir klasörle
+  /// alınmış olabilir. Senkron dosyasından kurulumda (yeni telefon) silme
+  /// kayıtları ve yuva zamanları dosyadan yazılır; senkron dosyası yedek
+  /// olmadığı için son yedek zamanı yazılmaz.
   Future<void> replace(
     OpenedBackup backup, {
     AutoBackupFolder? autoBackupFolder,
+    SyncSettings? sync,
   }) async {
+    final info = backup.sync;
     final cipher = _cipherFor(backup);
     final List<StoredRecord> records;
     try {
@@ -139,6 +153,7 @@ class RestoreService {
               cipher,
               backup.createdAt,
               autoBackupFolder,
+              sync,
             )
           else
             record,
@@ -146,8 +161,9 @@ class RestoreService {
           _settingsRecord(
             cipher,
             AppSettings.defaults
-                .copyWith(lastBackupAt: backup.createdAt)
-                .withAutoBackupFolder(autoBackupFolder),
+                .copyWith(lastBackupAt: info == null ? backup.createdAt : null)
+                .withAutoBackupFolder(autoBackupFolder)
+                .withSync(sync),
             id: settingsId,
             createdAt: backup.createdAt,
             updatedAt: backup.createdAt,
@@ -156,7 +172,15 @@ class RestoreService {
     } finally {
       cipher.dispose();
     }
-    await _store.replaceVault(backup.header, records);
+    await _store.replaceVault(
+      backup.header,
+      records,
+      tombstones: info?.deleted ?? const [],
+      times: HeaderTimes(
+        passwordChangedAt: info?.passwordChangedAt,
+        recoveryChangedAt: info?.recoveryChangedAt,
+      ),
+    );
   }
 
   StoredRecord _withDeviceSettings(
@@ -164,6 +188,7 @@ class RestoreService {
     RecordCipher cipher,
     DateTime createdAt,
     AutoBackupFolder? autoBackupFolder,
+    SyncSettings? sync,
   ) {
     final plain = cipher.decrypt(
       recordId: record.id,
@@ -183,11 +208,13 @@ class RestoreService {
     final keepFolder =
         autoBackupFolder == null ||
         autoBackupFolder.uri == settings.autoBackupFolder?.uri;
-    if (keepTime && keepFolder) return record;
+    final keepSync = _sameSync(settings.sync, sync);
+    if (keepTime && keepFolder && keepSync) return record;
     var patched = keepTime
         ? settings
         : settings.copyWith(lastBackupAt: createdAt);
     if (!keepFolder) patched = patched.withAutoBackupFolder(autoBackupFolder);
+    if (!keepSync) patched = patched.withSync(sync);
     return _settingsRecord(
       cipher,
       patched,
@@ -196,6 +223,12 @@ class RestoreService {
       updatedAt: record.updatedAt,
     );
   }
+
+  static bool _sameSync(SyncSettings? a, SyncSettings? b) =>
+      (a == null && b == null) ||
+      (a != null &&
+          b != null &&
+          jsonEncode(a.toJson()) == jsonEncode(b.toJson()));
 
   StoredRecord _settingsRecord(
     RecordCipher cipher,
@@ -313,6 +346,7 @@ class RestoreService {
         otpCount: otps,
         cardCount: cards,
         noteCount: notes,
+        sync: contents.sync,
       );
     } on Object {
       key.dispose();

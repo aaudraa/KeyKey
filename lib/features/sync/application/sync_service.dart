@@ -134,7 +134,10 @@ class SyncService {
 
   /// Klasörü (yoksa oluşturup) okur ve dosyaların yalnızca şifresiz üst
   /// bilgisine bakar. Okunamayan dosyalar sayılmaz.
-  Future<FolderState> inspect(SyncSettings settings, Uint8List vaultId) async {
+  ///
+  /// [vaultId] `null` ise (kasası olmayan yeni telefon) tek kasalı bir klasör
+  /// [FolderOtherVault] olarak, en yeni dosyasıyla döner.
+  Future<FolderState> inspect(SyncSettings settings, Uint8List? vaultId) async {
     final transport = _transport(settings);
     await transport.ensureFolder();
     final files = [
@@ -150,7 +153,7 @@ class SyncService {
       } on InvalidBackupException {
         continue;
       }
-      if (_sameBytes(file.header.vaultId, vaultId)) {
+      if (vaultId != null && _sameBytes(file.header.vaultId, vaultId)) {
         ours.add(file);
       } else {
         others.add((remote, file));

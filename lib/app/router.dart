@@ -28,6 +28,7 @@ import 'package:keykey/features/settings/presentation/licenses_screen.dart';
 import 'package:keykey/features/settings/presentation/new_recovery_key_screen.dart';
 import 'package:keykey/features/settings/presentation/settings_screen.dart';
 import 'package:keykey/features/sync/presentation/sync_screen.dart';
+import 'package:keykey/features/sync/presentation/sync_setup_form.dart';
 import 'package:keykey/features/vault/application/vault_entries.dart';
 import 'package:keykey/features/vault/presentation/card_detail_screen.dart';
 import 'package:keykey/features/vault/presentation/card_edit_screen.dart';
@@ -67,6 +68,7 @@ abstract final class AppRoutes {
   static const intro = '/tanitim';
   static const terms = '/kosullar';
   static const restore = '/geri-yukle';
+  static const syncSetup = '/senkrondan-kur';
   static const lock = '/kilit';
   static const recovery = '/kilit/kurtarma';
   static const newPassword = '/yeni-parola';
@@ -124,7 +126,9 @@ String? vaultRedirect(
     if (status is VaultNotSetUp) {
       // Önce tanıtım; kuruluma ya da yedekten dönüşe geçerken koşullar.
       if (location == AppRoutes.intro) return null;
-      return location == AppRoutes.setup || location == AppRoutes.restore
+      return location == AppRoutes.setup ||
+              location == AppRoutes.restore ||
+              location == AppRoutes.syncSetup
           ? AppRoutes.terms
           : AppRoutes.intro;
     }
@@ -140,7 +144,8 @@ String? vaultRedirect(
     VaultNotSetUp() =>
       location == AppRoutes.intro ||
               location == AppRoutes.setup ||
-              location == AppRoutes.restore
+              location == AppRoutes.restore ||
+              location == AppRoutes.syncSetup
           ? null
           : AppRoutes.intro,
     VaultLocked() =>
@@ -226,9 +231,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         // Yedek yalnızca seçiciden gelir; uygulama yeniden kurulurken
         // yol kalırsa kuruluma dönülür.
         redirect: (context, state) =>
-            state.extra is BackupFile ? null : AppRoutes.setup,
-        builder: (context, state) =>
-            RestoreScreen(file: state.extra! as BackupFile),
+            state.extra is BackupFile || state.extra is SyncRestoreRequest
+            ? null
+            : AppRoutes.setup,
+        builder: (context, state) => switch (state.extra) {
+          final SyncRestoreRequest request => RestoreScreen(
+            file: request.file,
+            sync: request.sync,
+          ),
+          final extra => RestoreScreen(file: extra! as BackupFile),
+        },
+      ),
+      kkRoute(
+        path: AppRoutes.syncSetup,
+        builder: (context, state) => const SyncSetupForm(newPhone: true),
       ),
       kkRoute(
         path: AppRoutes.lock,

@@ -23,6 +23,7 @@ import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/recovery_key_formatter.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
+import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/application/records_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
@@ -65,14 +66,27 @@ Future<void> pickBackupToRestore(BuildContext context, WidgetRef ref) async {
   }
 }
 
+/// Senkron klasöründen yeni telefona kurulum: klasördeki en yeni dosya ve
+/// bu telefonun senkron bilgisi.
+final class SyncRestoreRequest {
+  const new({required this.file, required this.sync});
+
+  final BackupFile file;
+  final SyncSettings sync;
+}
+
 /// Seçilen yedeği açar, özetini gösterir ve kasaya alır.
 ///
 /// Kasa kurulu değilse yedekten yeni kasa kurulur. Açık bir kasada yedek
 /// birleştirilir ya da ek onayla kasanın yerine konur.
 class RestoreScreen extends ConsumerStatefulWidget {
-  const new({required this.file, super.key});
+  const new({required this.file, this.sync, super.key});
 
   final BackupFile file;
+
+  /// Senkrondan kurulumda bu telefonun senkron bilgisi; kasa kurulunca
+  /// senkron açık olur ve ilk eşitleme kilit açılınca yapılır.
+  final SyncSettings? sync;
 
   @override
   ConsumerState<RestoreScreen> createState() => _RestoreScreenState();
@@ -113,11 +127,13 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
     } on InvalidRecoveryKeyException {
       _fail(l10n.recoveryKeyInvalid);
     } on WrongSecretException {
-      _fail(
-        _useRecoveryKey
-            ? l10n.restoreWrongRecoveryKey
-            : l10n.restoreWrongPassword,
-      );
+      final fromSync = widget.sync != null;
+      _fail(switch ((_useRecoveryKey, fromSync)) {
+        (true, true) => l10n.restoreSyncWrongRecoveryKey,
+        (true, false) => l10n.restoreWrongRecoveryKey,
+        (false, true) => l10n.restoreSyncWrongPassword,
+        (false, false) => l10n.restoreWrongPassword,
+      });
     } on CorruptedDataException {
       _fail(l10n.restoreCorrupted);
     } on NewerBackupException {
@@ -140,13 +156,13 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
     final controller = ref.read(vaultControllerProvider.notifier);
     setState(() => _busy = true);
     try {
-      await ref.read(restoreServiceProvider).replace(backup);
+      await ref.read(restoreServiceProvider).replace(backup, sync: widget.sync);
       final session = ref
           .read(vaultServiceProvider)
           .openRestoredSession(backup.header, backup.copyKey());
       controller.openRestored(session);
       if (mounted) context.go(AppRoutes.vault);
-      snack(l10n.restoreDone);
+      snack(widget.sync == null ? l10n.restoreDone : l10n.restoreSyncDone);
     } on Exception {
       _fail(l10n.restoreFailed);
       if (mounted) setState(() => _busy = false);
@@ -214,7 +230,10 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
     final l10n = AppLocalizations.of(context);
     final opened = _opened;
     return KkScaffold(
-      appBar: kkAppBar(context, title: l10n.restoreTitle),
+      appBar: kkAppBar(
+        context,
+        title: widget.sync == null ? l10n.restoreTitle : l10n.setupFromSync,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -231,7 +250,9 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
 
   List<Widget> _unlockStep(AppLocalizations l10n) {
     return [
-      Text(l10n.restoreUnlockIntro),
+      Text(
+        widget.sync == null ? l10n.restoreUnlockIntro : l10n.restoreSyncIntro,
+      ),
       const SizedBox(height: 16),
       GlassSurface(
         padding: const EdgeInsets.all(4),
