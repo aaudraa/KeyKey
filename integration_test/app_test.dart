@@ -64,7 +64,15 @@ void main() {
   ) async {
     await tester.pumpWidget(openApp());
     await tester.pumpAndSettle();
-    expect(find.byIcon(Icons.lock), findsOneWidget);
+    expect(find.byIcon(Icons.key), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.credit_card_outlined));
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.credit_card), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.sticky_note_2_outlined));
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.sticky_note_2), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.shield_outlined));
     await tester.pumpAndSettle();

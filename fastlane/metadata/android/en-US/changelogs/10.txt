@@ -1,1 +1,3 @@
 Breach check: "Check online" in the password report asks Have I Been Pwned whether your passwords appear in data breaches; only the first 5 characters of a password's hash are sent, never the password. KeyKey now has the internet permission, but goes online only for this check, when you tap it. The terms of use changed and are asked once on first launch.
+
+Cards and notes now have their own tabs in the bottom menu.

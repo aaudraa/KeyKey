@@ -183,35 +183,49 @@ void main() {
     await tester.enterText(field('Metin'), 'ağ: Ev\nparola: kirmizi-kapi');
     await tester.pump();
     await save(tester);
+    // Not, Notlar sekmesinde açıldı; kart orada görünmez.
     await pumpUntilFound(tester, find.text('Ev Wi-Fi'));
     expect(find.textContaining('kirmizi-kapi'), findsNothing);
-    expect(find.widgetWithText(FilterChip, 'Kartlar'), findsOneWidget);
+    expect(find.text('Maaş kartı'), findsNothing);
 
-    // İkisini çöpe at, çöp kutusundan geri al.
+    // Her biri kendi sekmesinde çöpe atılır, kendi çöp kutusundan geri
+    // alınır.
     debugPrint('KKADIM Çöpe at ve geri al.');
-    for (final name in ['Maaş kartı', 'Ev Wi-Fi']) {
+    for (final (icon, name) in [
+      (Icons.sticky_note_2_outlined, 'Ev Wi-Fi'),
+      (Icons.credit_card_outlined, 'Maaş kartı'),
+    ]) {
+      await tester.tap(find.byIcon(icon));
+      await pumpUntilFound(tester, find.text(name));
       await tapText(tester, name);
       await pumpUntilFound(tester, find.byTooltip('Diğer işlemler'));
       await tester.tap(find.byTooltip('Diğer işlemler'));
       await pumpUntilFound(tester, find.text('Çöp kutusuna taşı'));
       await tapText(tester, 'Çöp kutusuna taşı');
       await pumpUntilFound(tester, find.byKey(GlassNavBar.addKey));
+      expect(find.text(name), findsNothing);
     }
-    expect(find.text('Maaş kartı'), findsNothing);
-    expect(find.text('Ev Wi-Fi'), findsNothing);
 
-    await tester.tap(find.byTooltip('Diğer işlemler'));
-    await pumpUntilFound(tester, find.text('Çöp kutusu'));
-    await tapText(tester, 'Çöp kutusu');
-    await pumpUntilFound(tester, find.text('Maaş kartı'));
-    expect(find.text('Ev Wi-Fi'), findsOneWidget);
-    await tester.tap(find.byTooltip('Diğer işlemler'));
-    await pumpUntilFound(tester, find.text('Tümünü geri yükle'));
-    await tapText(tester, 'Tümünü geri yükle');
-    await pumpUntilFound(tester, find.text('Çöp kutusu boş.'));
-    await back(tester);
-    await pumpUntilFound(tester, find.text('Maaş kartı'));
-    expect(find.text('Ev Wi-Fi'), findsOneWidget);
+    // Kartlar sekmesindeyiz; önce Notlar'a geçilir ki dokunulan simge
+    // seçili olmayan sekmenin simgesi olsun.
+    for (final (icon, name, other) in [
+      (Icons.sticky_note_2_outlined, 'Ev Wi-Fi', 'Maaş kartı'),
+      (Icons.credit_card_outlined, 'Maaş kartı', 'Ev Wi-Fi'),
+    ]) {
+      await tester.tap(find.byIcon(icon));
+      await pumpUntilFound(tester, find.byTooltip('Diğer işlemler'));
+      await tester.tap(find.byTooltip('Diğer işlemler'));
+      await pumpUntilFound(tester, find.text('Çöp kutusu'));
+      await tapText(tester, 'Çöp kutusu');
+      await pumpUntilFound(tester, find.text(name));
+      expect(find.text(other), findsNothing);
+      await tester.tap(find.byTooltip('Diğer işlemler'));
+      await pumpUntilFound(tester, find.text('Tümünü geri yükle'));
+      await tapText(tester, 'Tümünü geri yükle');
+      await pumpUntilFound(tester, find.text('Çöp kutusu boş.'));
+      await back(tester);
+      await pumpUntilFound(tester, find.text(name));
+    }
 
     // Yedek al, yeni bir kasaya kur, kart ve not oradan okunur.
     debugPrint('KKADIM Yedekten yeni kasaya.');

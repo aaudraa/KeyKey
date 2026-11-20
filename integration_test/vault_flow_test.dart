@@ -28,9 +28,7 @@ void main() {
   const firstPassword = 'kırmızı-Bisiklet-47-Deniz';
   const secondPassword = 'mavi-Tren-58-Orman-Yolu';
   const thirdPassword = 'sarı-Kalem-69-Dağ-Evi';
-  const vaultText =
-      'Henüz kayıt yok. Parola, kart ya da not eklemek için '
-      'alttaki + düğmesine dokun.';
+  const vaultText = 'Henüz parola yok. Eklemek için alttaki + düğmesine dokun.';
   const lockedTitle = 'KeyKey kilitli';
 
   /// Argon2id ayrı isolate'te çalıştığı için `pumpAndSettle` beklemez.
@@ -255,7 +253,7 @@ void main() {
       secondPassword,
       expecting: find.text('Ana parolayı değiştir'),
     );
-    await tester.tap(find.byIcon(Icons.lock_outline));
+    await tester.tap(find.byIcon(Icons.key_outlined));
     await pumpUntilFound(tester, find.text(vaultText));
 
     // Parola unutuldu: kurtarma anahtarıyla yeni parola.

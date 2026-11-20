@@ -148,7 +148,7 @@ void main() {
       ),
     );
     await pumpApp(tester);
-    await go(tester, AppRoutes.vaultTrash);
+    await go(tester, AppRoutes.cardsTrash);
 
     await tester.tap(find.byTooltip('Kalıcı olarak sil'));
     await tester.pumpAndSettle();

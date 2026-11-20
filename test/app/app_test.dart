@@ -31,10 +31,7 @@ void main() {
     await pumpApp(tester, locale: const Locale('tr'));
 
     expect(
-      find.text(
-        'Henüz kayıt yok. Parola, kart ya da not eklemek için '
-        'alttaki + düğmesine dokun.',
-      ),
+      find.text('Henüz parola yok. Eklemek için alttaki + düğmesine dokun.'),
       findsOneWidget,
     );
   });
@@ -42,7 +39,7 @@ void main() {
   testWidgets('kilitlenince açık bildirim kapanır', (tester) async {
     await pumpApp(tester, locale: const Locale('tr'));
     final context = tester.element(find.byType(KeyKeyApp));
-    showKkSnack(tester.element(find.text('KASA').first), 'Çöpe taşındı');
+    showKkSnack(tester.element(find.text('PAROLALAR').first), 'Çöpe taşındı');
     await tester.pumpAndSettle();
     expect(find.byType(KkSnack), findsOneWidget);
 
@@ -69,7 +66,15 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Ana parolayı değiştir'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.lock_outline).last);
+    await tester.tap(find.byIcon(Icons.credit_card_outlined));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Henüz kart yok'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.sticky_note_2_outlined));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Henüz not yok'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.key_outlined).last);
     await tester.pumpAndSettle();
   });
 
@@ -102,19 +107,19 @@ void main() {
     testWidgets('Türkçe', (tester) async {
       await pumpApp(tester, locale: const Locale('tr', 'TR'));
 
-      expect(find.text('Kasa'), findsWidgets);
+      expect(find.text('Parolalar'), findsWidgets);
     });
 
     testWidgets('İngilizce', (tester) async {
       await pumpApp(tester, locale: const Locale('en', 'US'));
 
-      expect(find.text('Vault'), findsWidgets);
+      expect(find.text('Passwords'), findsWidgets);
     });
 
     testWidgets('desteklenmeyen dilde İngilizceye düşüyor', (tester) async {
       await pumpApp(tester, locale: const Locale('de', 'DE'));
 
-      expect(find.text('Vault'), findsWidgets);
+      expect(find.text('Passwords'), findsWidgets);
     });
   });
 }

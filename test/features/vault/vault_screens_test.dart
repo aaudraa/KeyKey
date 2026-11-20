@@ -132,7 +132,7 @@ void main() {
       logins = FakeLoginRepository();
       await pumpVault(tester);
 
-      expect(find.textContaining('Henüz kayıt yok'), findsOneWidget);
+      expect(find.textContaining('Henüz parola yok'), findsOneWidget);
     });
 
     testWidgets('Türkçe harflerle arama', (tester) async {
@@ -154,7 +154,7 @@ void main() {
       expect(
         find.descendant(
           of: searchField(),
-          matching: find.text('3 kayıtta ara'),
+          matching: find.text('3 parolada ara'),
         ),
         findsOneWidget,
       );
@@ -407,7 +407,7 @@ void main() {
       await pumpVault(tester);
       final bar = find.descendant(
         of: find.byType(AppBar),
-        matching: find.text('KASA'),
+        matching: find.text('PAROLALAR'),
       );
       final searchIcon = find.descendant(
         of: find.byType(VaultScreen),
@@ -1409,42 +1409,147 @@ void main() {
       }
     });
 
-    testWidgets('yalnızca parolalı kasada tür çipi yok', (tester) async {
-      await pumpVault(tester);
+    /// Alttaki menüden sekmeye geçer.
+    Future<void> openTab(WidgetTester tester, IconData icon) async {
+      await tester.tap(find.byIcon(icon));
+      await tester.pumpAndSettle();
+    }
 
-      expect(chip('Parolalar'), findsNothing);
-      expect(chip('Kartlar'), findsNothing);
-    });
+    Future<void> openCards(WidgetTester tester) =>
+        openTab(tester, Icons.credit_card_outlined);
 
-    testWidgets('üç tür birlikte listelenir, "Kartlar" yalnızca kartları '
-        'bırakır', (tester) async {
+    Future<void> openNotes(WidgetTester tester) =>
+        openTab(tester, Icons.sticky_note_2_outlined);
+
+    testWidgets('tür çipi yok; Parolalar yalnızca parolaları gösterir', (
+      tester,
+    ) async {
       await pumpMixed(tester);
 
-      expect(visibleNames(tester), [
-        'Eski',
-        'Ev Wi-Fi',
-        'İş Bankası',
-        'Maaş kartı',
-        'Posta',
-        'Zeka Oyunu',
-      ]);
-      expect(chip('Parolalar'), findsOneWidget);
-      expect(chip('Notlar'), findsOneWidget);
+      expect(find.byType(FilterChip).hitTestable(), findsNWidgets(3));
+      expect(chip('Parolalar'), findsNothing);
+      expect(chip('Kartlar'), findsNothing);
+      expect(chip('Notlar'), findsNothing);
+      expect(visibleNames(tester), ['İş Bankası', 'Posta', 'Zeka Oyunu']);
+      expect(find.text('3 parolada ara'), findsOneWidget);
+    });
 
-      await tester.tap(chip('Kartlar'));
-      await tester.pumpAndSettle();
+    testWidgets('Kartlar sekmesi yalnızca kartları gösterir', (tester) async {
+      await pumpMixed(tester);
+      await openCards(tester);
 
       expect(visibleNames(tester), ['Eski', 'Maaş kartı']);
+      expect(find.text('2 kartta ara'), findsOneWidget);
+      // Parola klasörleri ve favorileri kart sekmesinde yok.
+      expect(find.byType(FilterChip), findsNothing);
+    });
 
-      await tester.tap(chip('Kartlar'));
+    testWidgets('Notlar sekmesi yalnızca notları gösterir', (tester) async {
+      await pumpMixed(tester);
+      await openNotes(tester);
+
+      expect(visibleNames(tester), ['Ev Wi-Fi']);
+      expect(find.text('1 notta ara'), findsOneWidget);
+    });
+
+    testWidgets('sıralama üç sekmede aynı ayarı kullanır', (tester) async {
+      await pumpMixed(tester);
+      final byName = visibleNames(tester);
+      await openMenu(tester);
+      await tester.tap(find.text('Son değişene göre sırala'));
       await tester.pumpAndSettle();
-      expect(visibleNames(tester), hasLength(6));
+      expect(visibleNames(tester), isNot(byName));
+
+      await openCards(tester);
+      await openMenu(tester);
+      await tester.tap(find.text('Ada göre sırala'));
+      await tester.pumpAndSettle();
+
+      await openTab(tester, Icons.key_outlined);
+      expect(visibleNames(tester), byName);
+    });
+
+    testWidgets("Kartlar'da klasörün son kartı çöpe gidince süzgeç kalkar", (
+      tester,
+    ) async {
+      cardRepo.items.add(
+        FakeRecordRepository.item(
+          CardContent(name: 'Yol', folder: 'Cüzdan'),
+          id: 4,
+        ),
+      );
+      await pumpMixed(tester);
+      await openCards(tester);
+      await tester.tap(chip('Cüzdan'));
+      await tester.pumpAndSettle();
+      expect(visibleNames(tester), ['Yol']);
+
+      await tester.tap(find.text('Yol'));
+      await tester.pumpAndSettle();
+      await openMenu(tester);
+      await tester.tap(find.text('Çöp kutusuna taşı'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CardDetailScreen), findsNothing);
+      expect(chip('Cüzdan'), findsNothing);
+      expect(visibleNames(tester), ['Eski', 'Maaş kartı']);
+    });
+
+    testWidgets('parola raporu yalnızca Parolalar menüsünde', (tester) async {
+      await pumpMixed(tester);
+      await openMenu(tester);
+      expect(find.text('Parola raporu'), findsOneWidget);
+      await tester.tapAt(Offset.zero);
+      await tester.pumpAndSettle();
+
+      await openCards(tester);
+      await openMenu(tester);
+      expect(find.text('Parola raporu'), findsNothing);
+      expect(find.text('Çöp kutusu'), findsOneWidget);
+      expect(find.text('Ada göre sırala'), findsOneWidget);
+    });
+
+    testWidgets('klasör çipleri sekmenin türünden', (tester) async {
+      cardRepo.items.add(
+        FakeRecordRepository.item(
+          CardContent(name: 'Yol', folder: 'Cüzdan', favorite: true),
+          id: 4,
+        ),
+      );
+      await pumpMixed(tester);
+      expect(chip('Cüzdan'), findsNothing);
+
+      await openCards(tester);
+      expect(chip('Cüzdan'), findsOneWidget);
+      expect(chip('Favoriler'), findsOneWidget);
+      expect(chip('Banka'), findsNothing);
+
+      await tester.tap(chip('Cüzdan'));
+      await tester.pumpAndSettle();
+      expect(visibleNames(tester), ['Yol']);
+    });
+
+    testWidgets('boş Kartlar ve Notlar sekmeleri ne yapılacağını söylüyor', (
+      tester,
+    ) async {
+      cardRepo.items.clear();
+      noteRepo.items.clear();
+      await pumpMixed(tester);
+
+      await openCards(tester);
+      expect(find.textContaining('Henüz kart yok'), findsOneWidget);
+      // İçe aktarma ve geri yükleme kısayolları yalnızca Parolalar'da.
+      expect(find.text('Geri yükle'), findsNothing);
+
+      await openNotes(tester);
+      expect(find.textContaining('Henüz not yok'), findsOneWidget);
     });
 
     testWidgets('kart satırında son dört hane ve son kullanma görünür', (
       tester,
     ) async {
       await pumpMixed(tester);
+      await openCards(tester);
 
       expect(find.text('Visa •••• 1111 · 12/99'), findsOneWidget);
       expect(find.text('Mastercard •••• 4444 · Süresi doldu'), findsOneWidget);
@@ -1454,6 +1559,7 @@ void main() {
 
     testWidgets('kart satırındaki düğme numarayı kopyalar', (tester) async {
       await pumpMixed(tester);
+      await openCards(tester);
 
       await tester.tap(find.byTooltip('Kart numarasını kopyala').first);
       await tester.pump();
@@ -1466,6 +1572,7 @@ void main() {
 
     testWidgets('not satırında metin görünmez', (tester) async {
       await pumpMixed(tester);
+      await openNotes(tester);
 
       expect(find.text('Ev Wi-Fi'), findsOneWidget);
       expect(find.textContaining('gizli-metin'), findsNothing);
@@ -1475,6 +1582,7 @@ void main() {
       tester,
     ) async {
       await pumpMixed(tester);
+      await openCards(tester);
 
       await tester.tap(find.text('Maaş kartı'));
       await tester.pumpAndSettle();
@@ -1482,6 +1590,7 @@ void main() {
 
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
+      await openNotes(tester);
       await tester.tap(find.text('Ev Wi-Fi'));
       await tester.pumpAndSettle();
       expect(find.byType(NoteDetailScreen), findsOneWidget);
@@ -1489,6 +1598,7 @@ void main() {
 
     testWidgets('aramada kart sahibi değil numara aranmaz', (tester) async {
       await pumpMixed(tester);
+      await openCards(tester);
 
       await search(tester, '4111');
       expect(visibleNames(tester), isEmpty);
@@ -1497,7 +1607,38 @@ void main() {
       expect(visibleNames(tester), ['Maaş kartı']);
     });
 
-    testWidgets('çöpteki kart ve not çöp ekranında görünür, geri alınır', (
+    testWidgets('"+" ile eklenen kart ve not kendi sekmesinde görünür', (
+      tester,
+    ) async {
+      await pumpMixed(tester);
+
+      await tester.tap(find.byKey(GlassNavBar.addKey));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Kart'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.widgetWithText(TextField, 'Ad'), 'Yol kartı');
+      await tester.pump();
+      await tester.tap(find.text('Kaydet'));
+      await tester.pumpAndSettle();
+
+      expect(visibleNames(tester), ['Eski', 'Maaş kartı', 'Yol kartı']);
+      expect(find.byIcon(Icons.credit_card), findsOneWidget);
+
+      await tester.tap(find.byKey(GlassNavBar.addKey));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Güvenli not'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.widgetWithText(TextField, 'Ad'), 'Kapı kodu');
+      await tester.enterText(find.widgetWithText(TextField, 'Metin'), '1234');
+      await tester.pump();
+      await tester.tap(find.text('Kaydet'));
+      await tester.pumpAndSettle();
+
+      expect(visibleNames(tester), ['Ev Wi-Fi', 'Kapı kodu']);
+      expect(find.byIcon(Icons.sticky_note_2), findsOneWidget);
+    });
+
+    testWidgets('kart çöp kutusu yalnızca kartları gösterir ve geri alır', (
       tester,
     ) async {
       cardRepo.items[0] = FakeRecordRepository.item(
@@ -1508,14 +1649,20 @@ void main() {
         noteRepo.items[0].content.withTrashedAt(DateTime.utc(2026, 11, 5)),
         id: 3,
       );
+      logins.items[0] = FakeLoginRepository.item(
+        logins.items[0].content.copyWith(trashedAt: DateTime.utc(2026, 11, 5)),
+        id: 1,
+      );
       await pumpMixed(tester);
-      expect(visibleNames(tester), isNot(contains('Maaş kartı')));
+      await openCards(tester);
+      expect(visibleNames(tester), ['Eski']);
 
       await openMenu(tester);
       await tester.tap(find.text('Çöp kutusu'));
       await tester.pumpAndSettle();
       expect(find.text('Maaş kartı'), findsOneWidget);
-      expect(find.text('Ev Wi-Fi'), findsOneWidget);
+      expect(find.text('Ev Wi-Fi'), findsNothing);
+      expect(find.text('Posta'), findsNothing);
 
       await openMenu(tester);
       await tester.tap(find.text('Tümünü geri yükle'));
@@ -1523,7 +1670,28 @@ void main() {
 
       expect(find.text('Çöp kutusu boş.'), findsOneWidget);
       expect(cardRepo.items[0].content.isTrashed, isFalse);
-      expect(noteRepo.items[0].content.isTrashed, isFalse);
+      // Başka türün çöpüne dokunulmadı.
+      expect(noteRepo.items[0].content.isTrashed, isTrue);
+      expect(logins.items[0].content.isTrashed, isTrue);
+    });
+
+    testWidgets('not çöp kutusu yalnızca notları gösterir', (tester) async {
+      noteRepo.items[0] = FakeRecordRepository.item(
+        noteRepo.items[0].content.withTrashedAt(DateTime.utc(2026, 11, 5)),
+        id: 3,
+      );
+      cardRepo.items[0] = FakeRecordRepository.item(
+        cardRepo.items[0].content.withTrashedAt(DateTime.utc(2026, 11, 5)),
+        id: 1,
+      );
+      await pumpMixed(tester);
+      await openNotes(tester);
+      await openMenu(tester);
+      await tester.tap(find.text('Çöp kutusu'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ev Wi-Fi'), findsOneWidget);
+      expect(find.text('Maaş kartı'), findsNothing);
     });
 
     testWidgets('kalıcı silinen kart depodan çıkar', (tester) async {
@@ -1532,6 +1700,7 @@ void main() {
         id: 1,
       );
       await pumpMixed(tester);
+      await openCards(tester);
       await openMenu(tester);
       await tester.tap(find.text('Çöp kutusu'));
       await tester.pumpAndSettle();

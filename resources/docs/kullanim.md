@@ -57,7 +57,7 @@ Eski telefonundan bir KeyKey yedeğin varsa kasa oluşturmak yerine **Yedekten g
 
 <img src="../design/kilavuz/03-kilit-ekrani.webp" width="240" alt="Kilit ekranı">
 
-- KeyKey arka plana geçtiği anda ve 5 dakika dokunulmazsa kilitlenir. Ayarlar'daki **Şimdi kilitle** ile hemen kilitleyebilirsin. Kilidi açınca kaldığın yere dönersin: 2FA sekmesindeysen 2FA'ya, bir kaydın ayrıntısındaysan o kayda.
+- KeyKey arka plana geçtiği anda ve 5 dakika dokunulmazsa kilitlenir. Ayarlar'daki **Şimdi kilitle** ile hemen kilitleyebilirsin. Kilidi açınca kaldığın yere dönersin: 2FA sekmesindeysen 2FA'ya, bir kaydın, kartın ya da notun ayrıntısındaysan ona.
 - **Parmak izi:** Ayarlar → Güvenlik → **Parmak iziyle aç**. Telefonunda parmak izi kayıtlı olmalı. Ana parola her zaman geçerlidir. Telefona yeni bir parmak izi eklersen ya da ekran kilidini kaldırırsan güvenlik gereği parmak iziyle açma kapanır; ana parolayla açıp yeniden açabilirsin.
 - **Yanlış parola:** Birkaç hatalı denemeden sonra yeni deneme için kısa bir süre beklemen gerekir; süre denemeler arttıkça uzar.
 - **Parolamı unuttum:** Kilit ekranındaki bu bağlantıyla kurtarma anahtarını girip kasayı açarsın, ardından yeni bir ana parola belirlersin.
@@ -68,7 +68,7 @@ Eski telefonundan bir KeyKey yedeğin varsa kasa oluşturmak yerine **Yedekten g
 
 <img src="../design/kilavuz/04-kasa-listesi.webp" width="240" alt="Kasa listesi"> <img src="../design/kilavuz/05-kayit-ayrintisi.webp" width="240" alt="Kayıt ayrıntısı">
 
-**Kasa** sekmesi bütün kayıtlarını gösterir: parolalar, kartlar ve güvenli notlar bir arada. Üstteki kutuyla arayabilir, **Favoriler** ve klasör düğmeleriyle süzebilirsin. Birden fazla türde kaydın varsa **Parolalar**, **Kartlar** ve **Notlar** düğmeleri de çıkar. Sağ üstteki **⋮** menüsünden ada ya da son değişene göre sıralarsın; seçimin kilitten sonra da kalır. Kartın sağındaki simge parolayı doğrudan kopyalar. Kasa boşken başka bir uygulamadan **İçe aktar** ya da **Yedekten geri yükle** kısayollarını da görürsün.
+Alttaki menüde **Parolalar**, **Kartlar** ve **Notlar** ayrı sekmelerdir; her biri yalnızca kendi kayıtlarını, kendi klasörlerini ve kendi çöp kutusunu gösterir. Üstteki kutuyla arayabilir, **Favoriler** ve klasör düğmeleriyle süzebilirsin. Sağ üstteki **⋮** menüsünden ada ya da son değişene göre sıralarsın; seçimin kilitten sonra da kalır. Parola satırının sağındaki simge parolayı doğrudan kopyalar. Parolalar boşken başka bir uygulamadan **İçe aktar** ya da **Yedekten geri yükle** kısayollarını da görürsün.
 
 Bir kayda dokununca ayrıntıları açılır: kullanıcı adı, parola, bağlı 2FA kodu, web adresi ve klasör. Her satırın yanında kopyalama düğmesi var. Parola **Göster**'e dokunana kadar gizli kalır. Web adresinin yanındaki **Siteyi aç** sayfayı tarayıcında açar. Düzenlemek için üstteki kalem simgesine dokun. Kaydı favorilere eklemek ya da çöpe taşımak için ayrıntı ekranının sağ üstündeki **⋮** menüsünü kullan.
 
@@ -87,13 +87,15 @@ Bir parolayı değiştirdiğinde eskisi kaydın geçmişinde kalır.
 
 ### Çöp kutusu ve parola raporu
 
-Kasa ekranının sağ üstündeki **⋮** menüsünde:
+Parolalar ekranının sağ üstündeki **⋮** menüsünde:
 
-- **Çöp kutusu:** Sildiğin kayıtlar burada 30 gün durur, sonra kalıcı olarak silinir. Yanlışlıkla sildiğini buradan geri yüklersin. Çöp kutusunun **⋮** menüsünde **Tümünü geri yükle** ve onay isteyen **Çöpü boşalt** var.
+- **Çöp kutusu:** Sildiğin parolalar burada 30 gün durur, sonra kalıcı olarak silinir. Yanlışlıkla sildiğini buradan geri yüklersin. Çöp kutusunun **⋮** menüsünde **Tümünü geri yükle** ve onay isteyen **Çöpü boşalt** var.
 - **Parola raporu:** Zayıf ve birden çok kayıtta kullandığın parolaları gösterir. Bunlar telefonda hesaplanır, hiçbir yere gönderilmez. İnternete yalnızca aşağıdaki sızıntı kontrolü çıkar, o da sen dokununca.
 - **Sızıntı kontrolü:** Raporun en üstündeki **İnternetten denetle**, parolalarının bilinen veri sızıntılarında görülüp görülmediğini Have I Been Pwned'a sorar. Parolanın kendisi gitmez: yalnızca özetinin ilk 5 karakteri gider, karşılaştırma telefonda yapılır. Have I Been Pwned IP adresini görür. Sızıntılarda görülen parolalar kaç kez görüldükleriyle listelenir; kayda dokunup parolayı değiştir, aynı parolayı kullandığın başka yerler varsa onları da. "Görülmedi" demek "güvenli" demek değildir. Sonuç kaydedilmez; ekrandan çıkınca ya da kasa kilitlenince silinir. Bağlantı yoksa "Denetlenemedi" yazar, **Yeniden dene** ile tekrar denersin.
 
 ## Kartlar ve güvenli notlar
+
+Kartlar alttaki menünün **Kartlar** sekmesinde, notlar **Notlar** sekmesinde durur. Her sekmenin **⋮** menüsünde kendi çöp kutusu vardır.
 
 **Kart eklemek için:** **+** → **Kart**. Kartın adını (örneğin "Maaş kartı"), kart sahibini, numarayı, son kullanma tarihini (AA/YY), güvenlik kodunu ve istersen PIN'i yaz. Numarayı yazarken ya da yapıştırırken boşluk ve tireler kendiliğinden düzelir; marka (Visa, Mastercard, Troy…) numaradan anlaşılır. Numara bir kart numarasına benzemiyorsa altında uyarı çıkar ama yine kaydedebilirsin.
 

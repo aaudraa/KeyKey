@@ -151,12 +151,40 @@ void main() {
     Finder inArt(Finder finder) =>
         find.descendant(of: find.byType(IntroArt), matching: finder);
 
+    for (final (width, scale) in [
+      (320.0, 1.0),
+      (360.0, 1.0),
+      (360.0, 2.0),
+      (411.0, 2.0),
+    ]) {
+      testWidgets('Nerede ne var: ${width.toInt()} dp, '
+          '%${(scale * 100).toInt()} yazıda taşma yok', (tester) async {
+        tester.view
+          ..physicalSize = Size(width * 3, 2400)
+          ..devicePixelRatio = 3;
+        tester.platformDispatcher.textScaleFactorTestValue = scale;
+        addTearDown(tester.view.reset);
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+        await goToPage(tester, 2);
+
+        expect(tester.takeException(), isNull);
+        final add = tester.getRect(inArt(find.byIcon(Icons.add_rounded).first));
+        expect(add.right, lessThanOrEqualTo(width));
+        // Ad ve açıklama yine okunur.
+        expect(inArt(find.text('Parolalar')), findsOneWidget);
+        expect(inArt(find.text('Site ve uygulama girişlerin')), findsOneWidget);
+      });
+    }
+
     testWidgets('Nerede ne var: menünün simgeleri ve ne oldukları', (
       tester,
     ) async {
       await goToPage(tester, 2);
       for (final icon in [
-        Icons.lock_outline,
+        Icons.key_outlined,
+        Icons.credit_card_outlined,
+        Icons.sticky_note_2_outlined,
         Icons.shield_outlined,
         Icons.settings_outlined,
         Icons.add_rounded,
@@ -164,16 +192,25 @@ void main() {
         expect(inArt(find.byIcon(icon)), findsWidgets);
       }
       // Sekme adları açıklamalardan büyük ve kalın.
-      for (final name in ['Kasa', '2FA', 'Ayarlar', 'Ekle']) {
+      for (final name in [
+        'Parolalar',
+        'Kartlar',
+        'Notlar',
+        '2FA',
+        'Ayarlar',
+        'Ekle',
+      ]) {
         final style = tester.widget<Text>(inArt(find.text(name))).style;
         expect(style?.fontSize, 18, reason: name);
         expect(style?.fontWeight, FontWeight.w800, reason: name);
       }
       for (final caption in [
-        'Parolaların',
+        'Site ve uygulama girişlerin',
+        'Banka kartların',
+        'Güvenli notların',
         'Doğrulama kodların',
         'Yedek, doldurma ve tema',
-        'Yeni parola ya da 2FA kodu',
+        'Yeni parola, kart, not ya da 2FA kodu',
       ]) {
         expect(inArt(find.text(caption)), findsOneWidget);
       }

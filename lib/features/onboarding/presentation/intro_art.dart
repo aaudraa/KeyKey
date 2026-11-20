@@ -52,7 +52,7 @@ class _IntroArtState extends State<IntroArt> with TickerProviderStateMixin {
   late final AnimationController _loop = AnimationController(
     vsync: this,
     duration: widget.page == 2
-        ? KkMotion.introTourStep * (4 * IntroArt._tourRounds)
+        ? KkMotion.introTourStep * (_Tour._icons.length * IntroArt._tourRounds)
         : KkMotion.breath * IntroArt._breaths,
   );
 
@@ -299,17 +299,24 @@ class _Tour extends StatelessWidget {
   final bool reduced;
 
   static const List<IconData> _icons = [
-    Icons.lock_outline,
+    Icons.key_outlined,
+    Icons.credit_card_outlined,
+    Icons.sticky_note_2_outlined,
     Icons.shield_outlined,
     Icons.settings_outlined,
     Icons.add_rounded,
   ];
 
+  /// Menüdeki sekme sayısı; sonuncu simge "+".
+  static const int _tabs = 5;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final rows = [
-      (l10n.navVault, l10n.introTourVault),
+      (l10n.navPasswords, l10n.introTourVault),
+      (l10n.navCards, l10n.introTourCards),
+      (l10n.navNotes, l10n.introTourNotes),
       (l10n.navAuthenticator, l10n.introTourOtp),
       (l10n.navSettings, l10n.introTourSettings),
       (l10n.vaultAdd, l10n.introTourAdd),
@@ -319,8 +326,9 @@ class _Tour extends StatelessWidget {
       builder: (context, _) {
         final t = enter.value;
         // Animasyonlar kapalıyken hiçbir simge vurgulanmaz, hepsi okunur.
-        final step = (loop.value * 4 * IntroArt._tourRounds).floor();
-        final current = reduced || t < 1 || loop.value >= 1 ? -1 : step % 4;
+        final count = _icons.length;
+        final step = (loop.value * count * IntroArt._tourRounds).floor();
+        final current = reduced || t < 1 || loop.value >= 1 ? -1 : step % count;
         return ConstrainedBox(
           constraints: const BoxConstraints(
             minHeight: KkMetrics.introArtHeight,
@@ -330,7 +338,13 @@ class _Tour extends StatelessWidget {
             children: [
               _Rise(
                 progress: _span(t, 0, 0.3),
-                child: ExcludeSemantics(child: _TourPill(current: current)),
+                // Beş sekme ve "+" 321 dp; dar telefonda çizim küçülür.
+                child: ExcludeSemantics(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: _TourPill(current: current),
+                  ),
+                ),
               ),
               const SizedBox(height: 20),
               for (final (i, (name, caption)) in rows.indexed)
@@ -384,7 +398,7 @@ class _TourPill extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            for (var i = 0; i < 3; i++) tab(i),
+            for (var i = 0; i < _Tour._tabs; i++) tab(i),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: SizedBox(
@@ -394,7 +408,7 @@ class _TourPill extends StatelessWidget {
               ),
             ),
             AnimatedScale(
-              scale: current == 3 ? 1.18 : 1,
+              scale: current == _Tour._tabs ? 1.18 : 1,
               duration: KkMotion.of(context, KkMotion.base),
               curve: KkMotion.spring,
               child: Container(
@@ -439,32 +453,64 @@ class _TourRow extends StatelessWidget {
         color: highlighted ? glass.tint : Colors.transparent,
         borderRadius: const BorderRadius.all(Radius.circular(14)),
       ),
-      child: Row(
-        children: [
-          ExcludeSemantics(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final nameStyle = theme.textTheme.bodyLarge?.copyWith(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+          );
+          final iconWidget = ExcludeSemantics(
             child: Icon(icon, size: 22, color: theme.colorScheme.onSurface),
-          ),
-          const SizedBox(width: 14),
-          Text(
-            name,
+          );
+          final nameText = Text(name, style: nameStyle);
+          final captionText = Text(
+            caption,
             style: theme.textTheme.bodyLarge?.copyWith(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
+              color: theme.colorScheme.onSurfaceVariant,
             ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              caption,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+          );
+          final painter = TextPainter(
+            text: TextSpan(text: name, style: nameStyle),
+            textDirection: Directionality.of(context),
+            textScaler: MediaQuery.textScalerOf(context),
+            maxLines: 1,
+          )..layout();
+          final nameWidth = painter.width;
+          painter.dispose();
+          // Dar ekranda ya da büyük yazıda açıklama adın altına geçer.
+          final sideBySide =
+              22 + 14 + nameWidth + 10 + _minCaption <= constraints.maxWidth;
+          if (sideBySide) {
+            return Row(
+              children: [
+                iconWidget,
+                const SizedBox(width: 14),
+                nameText,
+                const SizedBox(width: 10),
+                Expanded(child: captionText),
+              ],
+            );
+          }
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              iconWidget,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [nameText, captionText],
+                ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
+
+  /// Açıklamanın adın yanında kalması için gereken en az genişlik.
+  static const double _minCaption = 120;
 }
 
 // 4. Otomatik doldurma: öneri belirir, kutular dolar.

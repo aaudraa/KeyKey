@@ -2,9 +2,9 @@
 
 KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesinde](docs/yayin.md#sürüm-numarası). `v1.0.0`'dan önceki sürümler fazların sonunu işaretler ve hata ayıklama anahtarıyla imzalıdır; kalıcı bir kurulum için kullanılmamalıdır.
 
-## 1.6.0 (2026-11-20): Sızıntı kontrolü
+## 1.6.0 (2026-11-20): Sızıntı kontrolü, kartlar ve notlar menüde
 
-Faz 16 ([tasarım](docs/internet-ve-sizinti.md)).
+Faz 16 ([tasarım](docs/internet-ve-sizinti.md)) ve Faz 17 ([tasarım](docs/gezinme.md)).
 
 ### Önemli
 
@@ -13,11 +13,12 @@ Faz 16 ([tasarım](docs/internet-ve-sizinti.md)).
 
 ### Eklenenler
 
-- Parola raporunda **Sızıntı kontrolü**: **İnternetten denetle**, parolalarının bilinen veri sızıntılarında görülüp görülmediğini [Have I Been Pwned](https://haveibeenpwned.com/Passwords)'a k-anonimlikle sorar. Parolanın kendisi gitmez, yalnızca SHA-1 özetinin ilk 5 karakteri gider; karşılaştırma telefonda yapılır. Sızıntılarda görülen parolalar kaç kez görüldükleriyle listelenir; kayda dokununca parolası değiştirilir ve kayıt listeden düşer. Sonuç kaydedilmez; ekrandan çıkınca ya da kasa kilitlenince silinir.
+- Parola raporunda **Sızıntı kontrolü**: **İnternetten denetle**, parolalarının bilinen veri sızıntılarında görülüp görülmediğini [Have I Been Pwned](https://haveibeenpwned.com/Passwords)'a k-anonimlikle sorar. Parolanın kendisi gitmez, yalnızca SHA-1 özetinin ilk 5 karakteri gider; karşılaştırma telefonda yapılır. Sızıntılarda görülen parolalar kaç kez görüldükleriyle listelenir; kayda dokununca parolası değiştirilir ve kayıt listeden düşer. Sonuç kaydedilmez; ekrandan çıkınca ya da kasa kilitlenince silinir. Denetimden sonra eklenen ya da değişen parolalar için "denetlenmedi" yazar.
 - Bağlantı yoksa ya da bir otelin giriş sayfası gibi beklenmeyen bir yanıt gelirse "Denetlenemedi" yazar ve **Yeniden dene** çıkar; yarım sonuç ya da yanlış bir "sızıntı yok" gösterilmez.
 
 ### Değişenler
 
+- **Kartlar ve notlar alttaki menüde.** Menüde beş sekme var: Parolalar, Kartlar, Notlar, 2FA, Ayarlar. Kasa listesinin üstündeki Parolalar / Kartlar / Notlar düğmeleri kalktı. Her sekme yalnızca kendi kayıtlarını, klasörlerini ve çöp kutusunu gösterir; "+" ile eklenen kart ve not kendi sekmesinde açılır, kilitten sonra kart ya da notun ayrıntısına dönülür. Telefonda seçili sekme kapsülde yalnızca simgeyle görünür; dar ekranda menünün boşlukları daralır, sekmeler yine 48 dp. Tanıtımın "Nerede ne var" sayfası beş sekmeyi anlatır.
 - Tanıtım, yedek, 2FA saat yardımı ve otomatik yedek metinleri, README, mağaza açıklamaları ve kılavuz "internete çıkmaz" demiyor; yerine "hesap yok, sunucu yok" ve isteğe bağlı sızıntı kontrolü.
 - Uygulamada şifresiz (`http`) trafik kapalı ve yalnızca sistem sertifikalarına güveniliyor; yayın APK'sı denetimi izin listesini ve bu ayarları denetliyor. F-Droid tarifinde `NonFreeNet` anti-özelliği.
 

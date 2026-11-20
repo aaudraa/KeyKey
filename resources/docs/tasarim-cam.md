@@ -103,7 +103,7 @@ Arayüz simgeleri yuvarlak hatlı çizgi simgelerdir (Flutter'ın Material simge
 
 ## Alt menü ve "+"
 
-- Ekranın altında, kenarlardan ayrık, tam yuvarlak uçlu tek bir cam şerit. İçinde üç sekme (Kasa, 2FA, Ayarlar), ince bir ayraç ve en uçta yuvarlak turuncu "+" düğmesi vardır (proje sahibinin kararı).
+- Ekranın altında, kenarlardan ayrık, tam yuvarlak uçlu tek bir cam şerit. İçinde üç sekme (Kasa, 2FA, Ayarlar), ince bir ayraç ve en uçta yuvarlak turuncu "+" düğmesi vardır (proje sahibinin kararı). *(Faz 17, 1.6.0: beş sekme: Parolalar, Kartlar, Notlar, 2FA, Ayarlar. Proje sahibi kart ve notları menüde istedi; kasa listesinin üstündeki tür çipleri kalktı. Telefonda seçili sekmenin adı şeride sığmadığı için sekmeler yalnızca simgeyle görünür, seçili sekme kapsülde; geniş ekranda ad yine görünür. Bkz. [gezinme](gezinme.md).)*
 - Seçili sekme simgesi ve adıyla birlikte, daha parlak bir cam kapsülün içinde görünür; diğer sekmeler yalnızca simgedir. Sekme değişince kapsül yeni sekmeye kayar.
 - "+" her sekmede ve menünün göründüğü her ekranda aynıdır (proje sahibinin kararı). Dokununca:
   1. "+" dönerek çarpıya dönüşür, arkadaki ekran hafifçe kararıp bulanır, menünün hemen üstünde bir cam kutu yaylanarak açılır.
@@ -111,7 +111,7 @@ Arayüz simgeleri yuvarlak hatlı çizgi simgelerdir (Flutter'ın Material simge
   3. **Parola** yeni parola ekranını açar.
   4. **2FA kodu** aynı kutunun içeriğini kaydırarak dört satıra çevirir: QR tara, Resimden oku, Elle gir, İçe aktar. Bunlar bugünkü dört yolun aynısıdır. Kutunun başlığındaki ok ilk iki satıra döner. *(Aynı kutuda açılması benim kararım, proje sahibi örnekte gördü.)*
   5. Çarpıya, karartılmış alana ya da geri tuşuna basmak kutuyu kapatır.
-- Seçim başka bir sekmeden yapıldıysa önce ilgili sekmeye geçilir (Parola için Kasa, 2FA için 2FA), ekleme ekranı orada açılır; kaydedince ya da vazgeçince o sekmenin listesine dönülür. *(Benim kararım.)*
+- Seçim başka bir sekmeden yapıldıysa önce ilgili sekmeye geçilir (Parola için Kasa, 2FA için 2FA; 1.6.0'dan beri kart için Kartlar, not için Notlar), ekleme ekranı orada açılır; kaydedince ya da vazgeçince o sekmenin listesine dönülür. *(Benim kararım.)*
 - Kasa henüz yüklenmemişken satırlar bugünkü "Ekle" düğmesi gibi etkisizdir.
 - Menü form ekranlarında görünmez (aşağıda). Diğer bütün ekranlarda bugünkü davranış korunur: etkin sekmeye dokunmak bir üst ekrana döner.
 - TalkBack: sekme adları bugünkü gibi okunur; "+" düğmesi "Ekle", açıkken "Kapat" olarak okunur; kutu açıkken odak kutunun içinde kalır.
