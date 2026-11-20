@@ -232,7 +232,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(TermsScreen), findsOneWidget);
-      expect(find.textContaining('senin başlattığın denetimler'), findsOneWidget);
+      expect(
+        find.textContaining('senin başlattığın denetimler'),
+        findsOneWidget,
+      );
       expect(continueButton(), findsNothing);
       expect(find.byType(Checkbox), findsNothing);
     });

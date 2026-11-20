@@ -298,9 +298,10 @@ void main() {
       expect(session.isDisposed, isTrue);
 
       // Kilit ekranı pencereyi kendiliğinden açar, betik parmağı dokundurur.
+      // Kilit açılınca kilitlenmeden önceki sekmeye, Ayarlar'a dönülür.
       await pumpUntil(
         tester,
-        () => find.text(vaultText).evaluate().isNotEmpty,
+        () => find.text('Ana parolayı değiştir').evaluate().isNotEmpty,
         'parmak iziyle açılan kasa',
       );
 
