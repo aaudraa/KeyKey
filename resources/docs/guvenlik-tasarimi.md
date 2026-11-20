@@ -47,7 +47,7 @@ Bu belge KeyKey'in verileri nasıl şifrelediğini bayt düzeyinde anlatır. Kod
 | Ekran görüntüsü, ekran kaydı, son uygulamalar önizlemesi | Ekranı kaydeder | `FLAG_SECURE`; son uygulamalarda önizleme kapalı | Korunur |
 | Bindirme (overlay) izni olan uygulama | Saydam pencereyle kullanıcıya istemediği bir şeye dokundurur (tapjacking) | Android 12+: KeyKey ekrandayken bindirmeler gizlenir. Android 11: örtülü noktadaki dokunuş düşürülür ([Arayüz koruması](#arayüz-koruması)) | Korunur |
 | Erişilebilirlik izni olan zararlı uygulama | Ekrandaki metni okur, dokunuş üretir; `FLAG_SECURE` bunu engellemez | Android 14+: pencere hassas işaretli, yalnızca erişilebilirlik araçları okuyabilir ([Arayüz koruması](#arayüz-koruması)) | Android 14+ korunur; **11-13 korunmaz** |
-| Kötü niyetli klavye | Yazılan her şeyi, ana parola dahil, görür | Gizli alanlarda öneri ve öğrenme kapalı; bu yalnızca dürüst klavyeleri etkiler | **Korunmuyor** |
+| Kötü niyetli klavye | Yazılan her şeyi, ana parola dahil, görür | Gizli alanlarda öneri ve öğrenme kapalı; bu yalnızca dürüst klavyeleri etkiler. "Normal klavye" ayarı açıksa adlar ve siteler dürüst klavyenin sözlüğüne de girebilir ([Klavye](#klavye)) | **Korunmuyor** |
 | Root yetkili veya zararlı yazılım bulaşmış cihaz, kasa açık | Belleği okur | Anahtarlar korumalı bellekte, ama çözülmüş kayıtlar Dart belleğinde ([Bellek](#bellek)) | **Korunmuyor** |
 | Ana parola ve kurtarma anahtarı birlikte kayboldu | — | Bilinçli olarak arka kapı yok | Veri geri gelmez |
 | Bağımlılık veya derleme ortamı ele geçmiş (tedarik zinciri) | Uygulamaya kötü kod sokar | Kilitli bağımlılık sürümleri; `sqlite3` hazır kütüphanesi sabit özetle denetlenir; CI'da gizli bilgi taraması; denetim [#86](https://github.com/aaudraa/KeyKey/issues/86), yeniden üretilebilir derleme Faz 9 | Kısmen |
@@ -425,6 +425,14 @@ Ana uygulama ve doldurma ekranı aynı korumayı kullanır (`WindowProtection`).
 1. Android 11-13'te erişilebilirlik izni verilmiş zararlı bir uygulama ekrandaki metni okuyabilir. Bu sürümlerde bunu önleyecek bir platform özelliği yok.
 2. Kendini erişilebilirlik aracı olarak bildiren bir servis Android 14+'ta da okuyabilir. Google Play bu bildirimi gerçek erişilebilirlik araçlarına sınırlar; başka kaynaktan kurulan uygulamalar için böyle bir denetim yok.
 3. Erişilebilirlik izni ve bindirme izni kullanıcının kendisinin vermesi gereken izinlerdir; KeyKey bu izinleri kimin aldığını göremez.
+
+### Klavye
+
+Bütün metin kutuları öneri, otomatik düzeltme ve kişisel öğrenme isteği kapalı açılır (`enableSuggestions`, `autocorrect`, `enableIMEPersonalizedLearning: false`). Bu son istek yalnızca bir istektir, birçok klavye onu yok sayar. Bu yüzden kutular varsayılan olarak `visiblePassword` klavyesiyle açılır; neredeyse her klavye bu türde öneriyi ve öğrenmeyi gerçekten kapatır. Bedeli: büyük harf ve adres tuşları yok.
+
+**Normal klavye ayarı (1.7.0, varsayılan kapalı):** Açıksa gizli olmayan kutular normal klavyeyle açılır: kayıt adı, klasör, kasa ve 2FA araması, 2FA servis adı ve yeni klasör adı normal klavye ve cümle başı büyük harfle (`TextInputType.text`), web adresi adres klavyesiyle (`TextInputType.url`). Öneri, düzeltme ve öğrenme isteği yine kapalıdır, ama klavye bunlara uymayabilir: bu kutulara yazılanlar (hangi bankayı, hangi siteyi kullandığın) klavyenin sözlüğüne ve bulut eşitlemesine girebilir. Açıklama ayarın yanında yazar.
+
+Gizli kutular her ayarda `visiblePassword` (ya da kendi rakam klavyeleri) kalır: kullanıcı adı, parola, notlar, not metni, kart sahibi, numara, son kullanma, güvenlik kodu, PIN, 2FA hesap adı ve anahtarı, özel alanlar, ana parola ve kurtarma ekranları. Bir kutu ancak kodda açıkça "gizli değil" diye işaretlenirse normal klavyeyle açılabilir; işaretlenmemiş yeni bir kutu güvenli tarafta kalır. Doldurma ekranları ayarı okumaz.
 
 **Deneme:** [`tapjacking-device-test.sh`](../scripts/tapjacking-device-test.sh), [`resources/test-apps/saldirgan`](../test-apps/saldirgan) uygulamasıyla dener: ekranı kaplayan, dokunuşları geçiren 0,5 opaklıkta bir bindirme penceresi (Android 12'nin kendi engelinden geçen en zor durum) ve kendini araç olarak bildirmeyen bir erişilebilirlik servisi. Korumadan önceki sürümde bindirme KeyKey'in üstünde görünüyordu ve servis kilit ekranındaki metinleri okuyabiliyordu. Sonuçlar [denetim belgesinde](guvenlik-denetimi.md#arayüz-koruması).
 

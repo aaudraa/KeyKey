@@ -250,6 +250,7 @@ class _CardEditScreenState extends ConsumerState<CardEditScreen> {
               KkFieldCard(
                 child: SecretField(
                   controller: _name,
+                  plain: PlainKeyboard.text,
                   label: l10n.loginName,
                   obscure: false,
                   autofocus: _isNew,
@@ -349,6 +350,7 @@ class _CardEditScreenState extends ConsumerState<CardEditScreen> {
                   children: [
                     SecretField(
                       controller: _folder,
+                      plain: PlainKeyboard.text,
                       label: l10n.loginFolder,
                       obscure: false,
                       textInputAction: TextInputAction.next,

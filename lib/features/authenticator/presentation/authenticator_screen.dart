@@ -178,6 +178,7 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
             child: SecretField(
               controller: _search,
+              plain: PlainKeyboard.text,
               focusNode: _searchFocus,
               label: l10n.vaultSearch,
               obscure: false,

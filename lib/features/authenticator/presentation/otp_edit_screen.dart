@@ -428,6 +428,7 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
                 child: KkFieldCard(
                   child: SecretField(
                     controller: _issuer,
+                    plain: PlainKeyboard.text,
                     label: l10n.otpIssuer,
                     obscure: false,
                     autofocus: _isNew && widget.initial == null,

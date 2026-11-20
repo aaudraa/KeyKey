@@ -190,6 +190,7 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
               KkFieldCard(
                 child: SecretField(
                   controller: _name,
+                  plain: PlainKeyboard.text,
                   label: l10n.loginName,
                   obscure: false,
                   autofocus: _isNew,
@@ -215,6 +216,7 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
                   children: [
                     SecretField(
                       controller: _folder,
+                      plain: PlainKeyboard.text,
                       label: l10n.loginFolder,
                       obscure: false,
                       onChanged: _changed,

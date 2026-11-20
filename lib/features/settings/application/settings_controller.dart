@@ -14,6 +14,11 @@ final settingsRepositoryFactoryProvider =
     );
 
 /// Kasadaki ayarlar. Kasa kilitliyken veya ayarlar okunurken `null`.
+/// Gizli olmayan kutularda normal klavye; ayarlar yüklenmemişse kapalı.
+final plainKeyboardProvider = Provider<bool>(
+  (ref) => ref.watch(settingsControllerProvider)?.plainKeyboard ?? false,
+);
+
 final settingsControllerProvider =
     NotifierProvider<SettingsController, AppSettings?>(SettingsController.new);
 

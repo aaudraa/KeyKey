@@ -176,6 +176,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
           padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
           child: SecretField(
             controller: _search,
+            plain: PlainKeyboard.text,
             focusNode: _searchFocus,
             label: count == 0
                 ? l10n.vaultSearch

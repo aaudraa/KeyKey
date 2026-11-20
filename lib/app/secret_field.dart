@@ -6,7 +6,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/features/lock/presentation/auto_lock_scope.dart';
+import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
+
+/// Gizli olmayan bir kutunun, ayar açıkken kullanacağı klavye.
+enum PlainKeyboard {
+  /// Normal klavye, cümle başı büyük harf: kayıt adı, klasör, arama.
+  text,
+
+  /// Adres klavyesi (`/`, `.com`): web adresi.
+  url,
+}
 
 /// Ana parola ve kurtarma anahtarı için metin kutusu.
 ///
@@ -35,8 +45,15 @@ class SecretField extends ConsumerStatefulWidget {
     this.search = false,
     this.focusNode,
     this.keyboardType,
+    this.plain,
     super.key,
   });
+
+  /// Gizli olmayan kutu: ayarlarda "normal klavye" açıksa bu klavye açılır.
+  /// Verilmezse, kutu gizliyse ya da [keyboardType] verildiyse her zaman
+  /// öğrenmesiz klavye. Öneri, düzeltme ve öğrenme isteği iki durumda da
+  /// kapalıdır.
+  final PlainKeyboard? plain;
 
   final FocusNode? focusNode;
 
@@ -140,6 +157,10 @@ class _SecretFieldState extends ConsumerState<SecretField> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final plain = widget.obscure || widget.keyboardType != null
+        ? null
+        : widget.plain;
+    final usePlain = plain != null && ref.watch(plainKeyboardProvider);
     return TextField(
       controller: widget.controller,
       focusNode: widget.focusNode,
@@ -154,9 +175,15 @@ class _SecretFieldState extends ConsumerState<SecretField> {
       // visiblePassword, çoğu klavyede öneri ve öğrenmeyi de kapatır.
       keyboardType:
           widget.keyboardType ??
-          (widget.multiline
-              ? TextInputType.multiline
-              : TextInputType.visiblePassword),
+          switch ((usePlain, plain)) {
+            (true, PlainKeyboard.text) => TextInputType.text,
+            (true, PlainKeyboard.url) => TextInputType.url,
+            _ when widget.multiline => TextInputType.multiline,
+            _ => TextInputType.visiblePassword,
+          },
+      textCapitalization: usePlain && plain == PlainKeyboard.text
+          ? TextCapitalization.sentences
+          : TextCapitalization.none,
       maxLines: widget.obscure ? 1 : widget.maxLines,
       minLines: 1,
       textInputAction: widget.textInputAction,

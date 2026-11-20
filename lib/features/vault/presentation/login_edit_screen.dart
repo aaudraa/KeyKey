@@ -309,6 +309,7 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
               KkFieldCard(
                 child: SecretField(
                   controller: _name,
+                  plain: PlainKeyboard.text,
                   label: l10n.loginName,
                   obscure: false,
                   autofocus: _isNew,
@@ -384,6 +385,7 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
                   removeTooltip: l10n.loginRemoveUrl,
                   child: SecretField(
                     controller: url,
+                    plain: PlainKeyboard.url,
                     label: l10n.loginUrl,
                     obscure: false,
                     focusNode: _focusFor('url-$index'),
@@ -424,6 +426,7 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
                     children: [
                       SecretField(
                         controller: _folder,
+                        plain: PlainKeyboard.text,
                         label: l10n.loginFolder,
                         obscure: false,
                         focusNode: _focusFor('folder'),
