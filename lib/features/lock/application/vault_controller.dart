@@ -66,6 +66,7 @@ class VaultController extends Notifier<VaultStatus> {
   VaultSession? _session;
 
   final Set<void Function()> _lockListeners = {};
+  final Set<void Function()> _headerListeners = {};
 
   VaultService get _service => ref.read(vaultServiceProvider);
 
@@ -79,6 +80,21 @@ class VaultController extends Notifier<VaultStatus> {
 
   void removeLockListener(void Function() listener) =>
       _lockListeners.remove(listener);
+
+  /// Kasa açıkken ana parola ya da kurtarma anahtarı değişip üst bilgi
+  /// diske yazılınca çağrılır (senkron hemen yükler; eski parolayla açılan
+  /// dosya sunucuda beklemesin).
+  void addHeaderListener(void Function() listener) =>
+      _headerListeners.add(listener);
+
+  void removeHeaderListener(void Function() listener) =>
+      _headerListeners.remove(listener);
+
+  void _headerChanged() {
+    for (final listener in _headerListeners.toList()) {
+      listener();
+    }
+  }
 
   @override
   VaultStatus build() {
@@ -190,11 +206,15 @@ class VaultController extends Notifier<VaultStatus> {
     if (status is! VaultOpen) throw StateError('Kasa açık değil.');
     final generation = _lockGeneration;
     try {
-      return await _service.changePassword(
+      final attempt = await _service.changePassword(
         status.session,
         currentPassword: currentPassword,
         newPassword: newPassword,
       );
+      if (attempt is PasswordAccepted && generation == _lockGeneration) {
+        _headerChanged();
+      }
+      return attempt;
     } on Object {
       if (generation == _lockGeneration) rethrow;
       return const PasswordInterrupted();
@@ -242,6 +262,7 @@ class VaultController extends Notifier<VaultStatus> {
         pending,
         typedRecoveryKey,
       );
+      if (generation == _lockGeneration) _headerChanged();
     } finally {
       if (generation != _lockGeneration) _syncLockedHeader(status.session);
     }

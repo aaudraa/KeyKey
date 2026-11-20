@@ -206,6 +206,49 @@ void main() {
       if (r.type == 'login') r.id[15],
   ]..sort();
 
+  group('ana parola değişince', () {
+    Future<String> uploadedHeader(String device) async =>
+        BackupCodec(sodium)
+            .parse(folder.files['keykey-sync-$device.keykey']!.bytes)
+            .header
+            .toJsonString();
+
+    for (final fresh in [false, true]) {
+      test('yüklenen dosya yeni yuvayı taşıyor'
+          '${fresh ? ' (önbelleksiz)' : ''}', () async {
+        final a = await first('a1b2c3');
+        await addLogin(a, 1);
+        await a.sync();
+        final b = await second(a, 'b2c3d4');
+        await b.sync();
+        await a.sync();
+        await b.sync();
+        final before = await uploadedHeader('b2c3d4');
+
+        now = now.add(const Duration(minutes: 5));
+        final attempt =
+            await VaultService(
+              sodium: sodium,
+              store: b.store,
+              clock: () => now,
+            ).changePassword(
+              b.session,
+              currentPassword: 'Ana-Parola-2026',
+              newPassword: 'Yeni-Ana-Parola-2027',
+            );
+        expect(attempt, isA<PasswordAccepted>());
+        expect(b.session.header.toJsonString(), isNot(before));
+
+        if (fresh) {
+          await b.service.sync(b.session, b.settings, cache: SyncCache());
+        } else {
+          await b.sync();
+        }
+        expect(await uploadedHeader('b2c3d4'), b.session.header.toJsonString());
+      });
+    }
+  });
+
   group('senkron açıkken geri yükleme', () {
     const password = 'Ana-Parola-2026';
 

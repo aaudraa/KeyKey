@@ -106,10 +106,13 @@ class SyncController extends Notifier<SyncStatus> {
   @override
   SyncStatus build() {
     final vault = ref.read(vaultControllerProvider.notifier)
-      ..addLockListener(_onLock);
+      ..addLockListener(_onLock)
+      ..addHeaderListener(_onHeaderChanged);
     ref
       ..onDispose(() {
-        vault.removeLockListener(_onLock);
+        vault
+          ..removeLockListener(_onLock)
+          ..removeHeaderListener(_onHeaderChanged);
         _timer?.cancel();
         _generation++;
       })
@@ -175,6 +178,11 @@ class SyncController extends Notifier<SyncStatus> {
 
   /// Gösterilmemiş ilk bildirimi verir ve listeden çıkarır.
   SyncIssue? consumeNotice() => _notices.isEmpty ? null : _notices.removeAt(0);
+
+  /// Ana parola ya da kurtarma anahtarı değişti: beklemeden eşitlenir.
+  void _onHeaderChanged() {
+    if (_enabled) unawaited(_request());
+  }
 
   void _onLock() {
     _generation++;

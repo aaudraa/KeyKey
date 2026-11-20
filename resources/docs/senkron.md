@@ -146,6 +146,7 @@ Yalnızca ana uygulamada ve kasa açıkken; aynı anda tek eşitleme. Biri süre
 - Parola, 2FA, kart ya da not kaydı değişince 5 saniye sonra (peş peşe değişiklikler tek eşitlemede; otomatik yedekteki gibi).
 - Uygulama öne gelince, son eşitlemeden 60 saniye geçtiyse.
 - Ayarlardaki **Şimdi eşitle** ile.
+- Ana parola değişince ya da kurtarma anahtarı yenilenince hemen (eski parolayla açılan dosya sunucuda bir sonraki tetiği beklemesin).
 - Kasa kilitlenince süren eşitleme bırakılır; yanıtı atılır (otomatik yedeğin dönem sayacıyla aynı yol). Tek SQLite işlemi kilitten önce başladıysa tamamlanır.
 - **Yükleme yalnızca gerektiğinde:** Birleşmiş halin özeti (kimlik, tür, `updatedAt`, şifreli verinin BLAKE2b özeti, silme kayıtları, üst bilgi ve yuva zamanları, sıralı) ayar kaydında tutulan son yüklenen özetle aynıysa yüklenmez.
 - **İndirme yalnızca gerektiğinde:** Öteki dosyaların `ETag` değeri bu oturumda bellekte tutulur; değişmeyen dosya yeniden indirilmez. Kasa açılınca ilk eşitleme hepsini indirir.

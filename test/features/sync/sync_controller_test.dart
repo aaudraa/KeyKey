@@ -4,6 +4,7 @@ import 'package:fake_async/fake_async.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/core/network/sync_transport.dart';
+import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
@@ -188,11 +189,63 @@ void main() {
     });
   });
 
+  test('ana parola ya da kurtarma anahtarı değişince hemen eşitleniyor', () {
+    fakeAsync((async) {
+      final container = open();
+      async.elapse(const Duration(seconds: 1));
+      expect(sync.calls, 1);
+      final vault = container.read(vaultControllerProvider.notifier);
+
+      // Eski parolayla açılan dosya sunucuda beklemesin.
+      unawaited(
+        vault.changePassword(
+          currentPassword: FakeVaultService.correctPassword,
+          newPassword: 'yepyeni-Ana-Parola-58',
+        ),
+      );
+      async.elapse(const Duration(seconds: 1));
+      expect(sync.calls, 2);
+
+      // Yanlış parolada üst bilgi değişmez.
+      unawaited(
+        vault.changePassword(
+          currentPassword: 'yanlis-Ana-Parola-1',
+          newPassword: 'yepyeni-Ana-Parola-58',
+        ),
+      );
+      async.elapse(const Duration(seconds: 1));
+      expect(sync.calls, 2);
+
+      PendingRecoveryKey? pending;
+      unawaited(
+        vault
+            .prepareNewRecoveryKey(FakeVaultService.correctPassword)
+            .then((result) => pending = result.$2),
+      );
+      async.elapse(const Duration(seconds: 1));
+      // Hazırlamak diske yazmaz.
+      expect(sync.calls, 2);
+      unawaited(
+        vault.confirmNewRecoveryKey(pending!, FakeVaultService.newRecoveryKey),
+      );
+      async.elapse(const Duration(seconds: 1));
+      expect(sync.calls, 3);
+    });
+  });
+
   test('senkron kapalıyken hiçbir tetik eşitlemiyor', () {
     fakeAsync((async) {
       settings.settings = AppSettings.defaults;
       final container = open();
       async.elapse(const Duration(seconds: 1));
+      unawaited(
+        container
+            .read(vaultControllerProvider.notifier)
+            .changePassword(
+              currentPassword: FakeVaultService.correctPassword,
+              newPassword: 'yepyeni-Ana-Parola-58',
+            ),
+      );
       controller(container)
         ..onRecordsChanged()
         ..onResumed();
