@@ -14,6 +14,7 @@ import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:keykey/features/sync/application/sync_merger.dart';
 import 'package:keykey/features/sync/application/sync_service.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
+import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 /// Bellekte bir senkron klasörü. Her yazma yeni bir ETag verir.
@@ -205,6 +206,45 @@ void main() {
     for (final r in await phone.store.allRecords())
       if (r.type == 'login') r.id[15],
   ]..sort();
+
+  group('çöp kutusunun süresi', () {
+    test('eşitlenmemiş telefonun süresi dolan çöpü, ötekinde çöpten '
+        'çıkarılan kaydı silmiyor', () async {
+      LoginRepository logins(_Phone phone) => LoginRepository(
+        store: phone.store,
+        session: phone.session,
+        sodium: sodium,
+        clock: () => now,
+      );
+      final a = await first('a1b2c3');
+      final added = await logins(a).add(const LoginContent(name: 'Site'));
+      await logins(a)
+          .updateMetadata(added, added.content.copyWith(trashedAt: now));
+      await a.sync();
+      final b = await second(a, 'b2c3d4');
+      await b.sync();
+
+      // 29. gün: B kaydı çöpten çıkarıyor; A o arada eşitlenmiyor.
+      now = now.add(const Duration(days: 29));
+      final onB = (await logins(b).loadAll()).items.single;
+      await logins(b)
+          .updateMetadata(onB, onB.content.copyWith(trashedAt: null));
+      await b.sync();
+
+      // 31. gün: A açılıyor; liste yüklenince süresi dolan çöp siliniyor.
+      now = now.add(const Duration(days: 2));
+      await logins(a).purgeExpiredTrash((await logins(a).loadAll()).items);
+      expect(await a.store.getRecord(added.id), isNull);
+      await a.sync();
+      await b.sync();
+      await a.sync();
+
+      for (final phone in [a, b]) {
+        final items = (await logins(phone).loadAll()).items;
+        expect(items.single.content.isTrashed, isFalse);
+      }
+    });
+  });
 
   group('ana parola değişince', () {
     Future<String> uploadedHeader(String device) async =>

@@ -189,12 +189,16 @@ void main() {
             .copyWith(trashedAt: now.subtract(const Duration(days: 29))),
       );
 
+      now = now.add(const Duration(hours: 1));
+
       final kept = await repository.purgeExpiredTrash(
         (await repository.loadAll()).items,
       );
 
       expect(kept.single.id, recent.id);
       expect(await store.getRecord(old.id), isNull);
+      // Silme kaydı çöpe atılan sürümün zamanını taşıyor.
+      expect((await store.allTombstones()).single.deletedAt, old.updatedAt);
     });
 
     test('kilitlenince depo anahtara dokunamıyor, çökmüyor', () async {

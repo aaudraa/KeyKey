@@ -220,12 +220,19 @@ void main() {
             .copyWith(trashedAt: now.subtract(const Duration(days: 29))),
       );
       final live = await repository.add(const LoginContent(name: 'Canlı'));
+      now = now.add(const Duration(days: 2));
 
       final kept = await repository.purgeExpiredTrash([old, recent, live]);
 
-      expect(kept.map((item) => item.content.name), ['Yeni', 'Canlı']);
+      expect(kept.map((item) => item.content.name), ['Canlı']);
       expect(await store.getRecord(old.id), isNull);
-      expect(await store.getRecord(recent.id), isNotNull);
+      expect(await store.getRecord(live.id), isNotNull);
+      // Silme kaydı çöpe atılan sürümün zamanını taşıyor: başka telefonda
+      // daha sonra çöpten çıkarılan ya da değişen kayıt ona yeniliyor.
+      expect(
+        {for (final t in await store.allTombstones()) t.deletedAt},
+        {old.updatedAt, recent.updatedAt},
+      );
     });
 
     test('kilitlenince depo anahtara dokunamıyor, çökmüyor', () async {

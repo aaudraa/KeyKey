@@ -119,7 +119,10 @@ class LoginRepository {
     for (final item in items) {
       final trashedAt = item.content.trashedAt;
       if (trashedAt != null && now.difference(trashedAt) >= trashRetention) {
-        await deletePermanently(item);
+        // Silme kaydı çöpe atılan sürümün zamanını taşır, şimdiyi değil:
+        // uzun süre eşitlenmemiş bir telefonun süresi dolan çöpü, başka
+        // telefonda sonradan çöpten çıkarılan ya da değişen kaydı silmesin.
+        await _store.deleteRecord(item.id, deletedAt: item.updatedAt);
       } else {
         kept.add(item);
       }
