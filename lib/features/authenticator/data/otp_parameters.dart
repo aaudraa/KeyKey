@@ -2,10 +2,12 @@ import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show immutable;
 
-/// Zamana (TOTP, RFC 6238) veya sayaca (HOTP, RFC 4226) dayalı kod.
+/// Zamana (TOTP, RFC 6238) veya sayaca (HOTP, RFC 4226) dayalı kod ya da
+/// Steam Guard (TOTP'nin Steam alfabesiyle 5 karakterlik hali).
 enum OtpKind {
   totp('totp'),
-  hotp('hotp');
+  hotp('hotp'),
+  steam('steam');
 
   new(this.label);
 
@@ -70,7 +72,20 @@ final class OtpParameters {
     _checkCommon();
   }
 
+  /// Steam Guard: SHA1, 30 saniye, Steam'in alfabesiyle 5 karakter.
+  /// Değerler sabittir, değiştirilemez.
+  new steam({required List<int> secret})
+    : kind = OtpKind.steam,
+      algorithm = OtpAlgorithm.sha1,
+      digits = steamDigits,
+      period = defaultPeriod,
+      counter = null,
+      secret = _copySecret(secret) {
+    _checkCommon();
+  }
+
   static const defaultDigits = 6;
+  static const steamDigits = 5;
   static const defaultPeriod = 30;
   static const minDigits = 6;
   static const maxDigits = 8;
@@ -84,11 +99,14 @@ final class OtpParameters {
   final OtpAlgorithm algorithm;
   final int digits;
 
-  /// Yalnızca TOTP'de var, saniye cinsinden.
+  /// TOTP'de ve Steam'de var, saniye cinsinden.
   final int? period;
 
   /// Yalnızca HOTP'de var: sıradaki kodu üretecek sayaç değeri.
   final int? counter;
+
+  /// Kod zamana göre değişir (TOTP ve Steam); HOTP'de sayaca göre.
+  bool get isTimeBased => kind != OtpKind.hotp;
 
   static bool isValidSecretLength(int length) =>
       length >= 1 && length <= maxSecretLength;
@@ -128,7 +146,7 @@ final class OtpParameters {
         'Geçersiz anahtar uzunluğu',
       );
     }
-    if (!isValidDigits(digits)) {
+    if (kind != OtpKind.steam && !isValidDigits(digits)) {
       throw ArgumentError.value(digits, 'digits', 'Geçersiz hane sayısı');
     }
   }

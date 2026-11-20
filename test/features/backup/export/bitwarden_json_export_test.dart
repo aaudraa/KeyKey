@@ -125,6 +125,40 @@ void main() {
     ]);
   });
 
+  test("Steam hesabı Bitwarden'ın steam:// biçiminde, geri okunuyor", () {
+    final steamSecret = Base32.decodeCanonical(
+      '63BEDWCQZKTQWPESARIERL5DTTQFCJTK',
+    );
+    final steam = FakeOtpRepository.item(
+      OtpContent(
+        parameters: OtpParameters.steam(secret: steamSecret),
+        issuer: 'Steam',
+        account: 'oyuncu',
+      ),
+      id: 3,
+    );
+    final text = BitwardenJsonExport.build(
+      logins: const [],
+      otps: [steam],
+      cards: const [],
+      notes: const [],
+    );
+    final items =
+        (jsonDecode(text) as Map<String, Object?>)['items']! as List<Object?>;
+    final login =
+        (items.single! as Map<String, Object?>)['login']!
+            as Map<String, Object?>;
+    // Bitwarden otpauth://steam bağlantısını tanımaz, 5 haneli sayı üretir.
+    expect(login['totp'], 'steam://63BEDWCQZKTQWPESARIERL5DTTQFCJTK');
+    final read = LoginExportReader.read(Uint8List.fromList(utf8.encode(text)));
+    final otp = otpFromImport(
+      read.logins.single.totp!,
+      issuer: 'Steam',
+      account: 'oyuncu',
+    )!;
+    expect(otp.parameters, OtpParameters.steam(secret: steamSecret));
+  });
+
   test('içe aktarmayla gidiş-dönüş: parolalar ve 2FA', () {
     final export = roundTrip();
     expect(export.source, LoginExportSource.bitwardenJson);

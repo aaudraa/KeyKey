@@ -38,7 +38,7 @@ void main() {
         ),
       );
       expect(
-        ScannedCode.classify('OTPAUTH://steam/x?secret=JBSWY3DP'),
+        ScannedCode.classify('OTPAUTH://yandex/x?secret=JBSWY3DP'),
         isA<InvalidOtpauthCode>().having(
           (code) => code.error,
           'error',

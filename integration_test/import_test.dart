@@ -83,7 +83,8 @@ void main() {
     // Ölçüm için: scrypt N=2^15, r=8, p=1 bu cihazda ne kadar sürüyor.
     // ignore: avoid_print
     print('KKOLCUM aegis_scrypt_ms=${watch.elapsedMilliseconds}');
-    expect(batch.accounts, hasLength(6));
+    // Steam hesabı da geliyor (1.7.0).
+    expect(batch.accounts, hasLength(7));
     await expectLater(
       file.decrypt('yanlis', aes),
       throwsA(isA<WrongImportPasswordException>()),
@@ -94,6 +95,7 @@ void main() {
     final batch = await TwoFasFile.parse(utf8.encode(twoFasEncrypted))
         .decrypt('test', aes);
 
-    expect(batch.accounts, hasLength(4));
+    // Steam hesabı da geliyor (1.7.0).
+    expect(batch.accounts, hasLength(5));
   });
 }

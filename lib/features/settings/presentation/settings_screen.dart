@@ -26,6 +26,7 @@ import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/recovery_renewal_notice.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/settings/application/theme_controller.dart';
+import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -142,6 +143,106 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  Future<void> _setPlainKeyboard({required bool value}) async {
+    final l10n = AppLocalizations.of(context);
+    final snack = kkSnackFor(context);
+    try {
+      await ref
+          .read(settingsControllerProvider.notifier)
+          .setPlainKeyboard(value: value);
+    } on VaultLockedException {
+      // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.
+    } on Exception {
+      snack(l10n.loginSaveFailed);
+    }
+  }
+
+  static String _backgroundLockName(
+    AppLocalizations l10n,
+    BackgroundLock lock,
+  ) => switch (lock) {
+    BackgroundLock.immediately => l10n.backgroundLockImmediately,
+    BackgroundLock.seconds30 => l10n.backgroundLockSeconds30,
+    BackgroundLock.minute1 => l10n.backgroundLockMinute1,
+  };
+
+  /// Alttan açılan pencerede Hemen / 30 saniye / 1 dakika; seçilmeden
+  /// kapatılırsa süre değişmez.
+  Future<void> _chooseBackgroundLock(BackgroundLock current) async {
+    final l10n = AppLocalizations.of(context);
+    final snack = kkSnackFor(context);
+    final chosen = await _choose<BackgroundLock>(
+      title: l10n.settingsBackgroundLock,
+      note: l10n.settingsBackgroundLockHelp,
+      options: BackgroundLock.values,
+      current: current,
+      label: (lock) => _backgroundLockName(l10n, lock),
+    );
+    if (!mounted || chosen == null || chosen == current) return;
+    try {
+      await ref
+          .read(settingsControllerProvider.notifier)
+          .setBackgroundLock(chosen);
+    } on VaultLockedException {
+      // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.
+    } on Exception {
+      snack(l10n.loginSaveFailed);
+    }
+  }
+
+  /// Alttan açılan seçim penceresi; seçilmeden kapatılırsa `null`.
+  Future<T?> _choose<T>({
+    required String title,
+    required List<T> options,
+    required T current,
+    required String Function(T) label,
+    String? note,
+  }) => showKkSheet<T>(
+    context,
+    builder: (context) {
+      final accent = KkGlass.of(context).accent;
+      final textTheme = Theme.of(context).textTheme;
+      return SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: Semantics(
+                  header: true,
+                  child: Text(
+                    title,
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+              if (note != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Text(note, style: textTheme.bodyMedium),
+                ),
+              for (final option in options)
+                ListTile(
+                  title: Text(label(option)),
+                  selected: option == current,
+                  trailing: option == current
+                      ? Icon(Icons.check_rounded, color: accent)
+                      : null,
+                  onTap: () => Navigator.pop(context, option),
+                ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+
   static String _themeName(AppLocalizations l10n, ThemeMode mode) =>
       switch (mode) {
         ThemeMode.system => l10n.themeSystem,
@@ -153,42 +254,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   /// tema değişmez.
   Future<void> _chooseTheme(ThemeMode current) async {
     final l10n = AppLocalizations.of(context);
-    final chosen = await showKkSheet<ThemeMode>(
-      context,
-      builder: (context) {
-        final accent = KkGlass.of(context).accent;
-        return SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                  child: Semantics(
-                    header: true,
-                    child: Text(
-                      l10n.settingsTheme,
-                      style: Theme.of(context).textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ),
-                for (final mode in ThemeMode.values)
-                  ListTile(
-                    title: Text(_themeName(l10n, mode)),
-                    selected: mode == current,
-                    trailing: mode == current
-                        ? Icon(Icons.check_rounded, color: accent)
-                        : null,
-                    onTap: () => Navigator.pop(context, mode),
-                  ),
-              ],
-            ),
-          ),
-        );
-      },
+    final chosen = await _choose<ThemeMode>(
+      title: l10n.settingsTheme,
+      options: ThemeMode.values,
+      current: current,
+      label: (mode) => _themeName(l10n, mode),
     );
     // Pencere açıkken ekran kapanmış olabilir (ör. kasa kilitlendi).
     if (!mounted || chosen == null) return;
@@ -260,6 +330,39 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     onChanged: settings == null
                         ? null
                         : (value) => _setOtpRequireAuth(value: value),
+                  ),
+                  ListTile(
+                    leading: const KkIconBox(icon: Icons.timer_rounded),
+                    title: Text(l10n.settingsBackgroundLock),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _backgroundLockName(
+                            l10n,
+                            settings?.backgroundLock ??
+                                BackgroundLock.immediately,
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right_rounded),
+                      ],
+                    ),
+                    enabled: settings != null,
+                    onTap: settings == null
+                        ? null
+                        : () => unawaited(
+                            _chooseBackgroundLock(settings.backgroundLock),
+                          ),
+                  ),
+                  KkSwitchTile(
+                    infoTitle: l10n.settingsPlainKeyboard,
+                    info: l10n.settingsPlainKeyboardHelp,
+                    secondary: const KkIconBox(icon: Icons.keyboard_rounded),
+                    title: Text(l10n.settingsPlainKeyboard),
+                    value: settings?.plainKeyboard ?? false,
+                    onChanged: settings == null
+                        ? null
+                        : (value) => unawaited(_setPlainKeyboard(value: value)),
                   ),
                   ListTile(
                     leading: const KkIconBox(icon: Icons.lock_rounded),

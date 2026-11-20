@@ -1,5 +1,6 @@
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/data/otp_content.dart';
+import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
@@ -20,6 +21,8 @@ String? otpSubtitle(OtpContent content) {
 
 /// Kodu okunması kolay iki gruba böler: `123 456`, `1234 567`, `1234 5678`.
 String formatOtpCode(String code) {
+  // Steam kodu 5 karakter, gruplanmaz (öteki türler en az 6 hane).
+  if (code.length <= OtpParameters.steamDigits) return code;
   final split = (code.length + 1) ~/ 2;
   return '${code.substring(0, split)} ${code.substring(split)}';
 }

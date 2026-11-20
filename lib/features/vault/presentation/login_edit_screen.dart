@@ -189,9 +189,19 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
     try {
       final content = _collect();
       final original = _original;
-      final saved = original == null
-          ? await controller.add(content)
-          : await controller.update(original, content);
+      final LoginItem saved;
+      if (original == null) {
+        saved = await controller.add(content);
+      } else {
+        // Form açıkken kayıt değişmiş olabilir (arka planda bekleme
+        // süresinde doldurma ekranı yeni parola kaydetti); dokunulmayan
+        // alanlar onun yazdığı gibi kalır.
+        final latest = controller.latest(original);
+        saved = await controller.update(
+          latest,
+          content.rebase(original: original.content, latest: latest.content),
+        );
+      }
       _dirty = false;
       ref
           .read(lastSavedProvider.notifier)
@@ -309,6 +319,7 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
               KkFieldCard(
                 child: SecretField(
                   controller: _name,
+                  plain: PlainKeyboard.text,
                   label: l10n.loginName,
                   obscure: false,
                   autofocus: _isNew,
@@ -384,6 +395,7 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
                   removeTooltip: l10n.loginRemoveUrl,
                   child: SecretField(
                     controller: url,
+                    plain: PlainKeyboard.url,
                     label: l10n.loginUrl,
                     obscure: false,
                     focusNode: _focusFor('url-$index'),
@@ -424,6 +436,7 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
                     children: [
                       SecretField(
                         controller: _folder,
+                        plain: PlainKeyboard.text,
                         label: l10n.loginFolder,
                         obscure: false,
                         focusNode: _focusFor('folder'),

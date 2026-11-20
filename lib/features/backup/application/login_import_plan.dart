@@ -73,7 +73,7 @@ final class LoginImportPlan {
   /// Desteklenmeyen veya bozuk satırlar.
   final int skipped;
 
-  /// Okunamayan veya desteklenmeyen (örneğin Steam) 2FA anahtarları. Kaydın
+  /// Okunamayan veya desteklenmeyen (örneğin Yandex) 2FA anahtarları. Kaydın
   /// kendisi yine eklenir.
   final int skippedOtps;
 }
@@ -164,8 +164,9 @@ LoginImportPlan planLoginImport(
   );
 }
 
-/// `otpauth://` bağlantısını veya çıplak Base32 anahtarı 2FA hesabına
-/// çevirir. Okunamıyorsa veya desteklenmiyorsa (Steam) `null`.
+/// `otpauth://` bağlantısını, Bitwarden'ın `steam://` Steam anahtarını veya
+/// çıplak Base32 anahtarı 2FA hesabına çevirir. Okunamıyorsa veya
+/// desteklenmiyorsa `null`.
 @visibleForTesting
 OtpContent? otpFromImport(
   String text, {
@@ -185,16 +186,22 @@ OtpContent? otpFromImport(
       return null;
     }
   }
+  const steamPrefix = 'steam://';
+  final steam = trimmed.toLowerCase().startsWith(steamPrefix);
   final List<int> secret;
   try {
-    secret = Base32.decodeLenient(trimmed);
+    secret = Base32.decodeLenient(
+      steam ? trimmed.substring(steamPrefix.length) : trimmed,
+    );
   } on FormatException {
-    // steam:// ve diğer biçimler de buraya düşer.
+    // Tanınmayan biçimler de buraya düşer.
     return null;
   }
   if (!OtpParameters.isValidSecretLength(secret.length)) return null;
   return OtpContent(
-    parameters: OtpParameters.totp(secret: secret),
+    parameters: steam
+        ? OtpParameters.steam(secret: secret)
+        : OtpParameters.totp(secret: secret),
     issuer: issuer,
     account: account,
   );

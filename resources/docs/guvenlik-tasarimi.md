@@ -36,7 +36,7 @@ Bu belge KeyKey'in verileri nasıl şifrelediğini bayt düzeyinde anlatır. Kod
 |---|---|---|---|
 | Kilitli telefonu bulan veya çalan | Ekran kilidini aşamaz; adli araçlarla diski kopyalayabilir | Android dosya şifrelemesinin üstüne kasa şifrelemesi; anahtar ana paroladan türetilir, diskte durmaz | Korunur |
 | Kilidi açık telefonu kısa süre eline geçiren, KeyKey kilitli | Uygulamayı açar, parola dener, yeni parmak izi ekleyebilir | Ana parola veya parmak izi gerekir; hatalı denemede artan bekleme; yeni parmak izi eklenince parmak iziyle açma kapanır | Korunur, parola güçlüyse |
-| Kilidi açık telefonu eline geçiren, KeyKey açık | Ekrandaki kayıtları ve parolaları görür, kopyalar | Arka plana geçince hemen, 5 dakika dokunulmazsa kilitlenir. Ana parolayı değiştirmek mevcut parolayı, şifresiz dışa aktarma kimlik doğrulamayı ister; 2FA kodları için ek onay isteğe bağlıdır | Kısmen: açık kasadaki parolalar görülebilir |
+| Kilidi açık telefonu eline geçiren, KeyKey açık | Ekrandaki kayıtları ve parolaları görür, kopyalar | Arka plana geçince hemen (kullanıcı seçtiyse 30 saniye ya da 1 dakika sonra), 5 dakika dokunulmazsa kilitlenir. Ana parolayı değiştirmek mevcut parolayı, şifresiz dışa aktarma kimlik doğrulamayı ister; 2FA kodları için ek onay isteğe bağlıdır | Kısmen: açık kasadaki parolalar görülebilir |
 | Yedek dosyasını ele geçiren (ör. Drive hesabı ele geçmiş) | Dosyayı kendi bilgisayarında sınırsız deneyebilir | Argon2id; kayıtlar dosyanın içinde de ayrıca şifreli; kayıt sayısı ve türleri gizli | Korunur, parola güçlüyse. Eski yedekler eski parolayla açılır |
 | Diskteki kasa dosyasına yazabilen | Dosyayı okur, değiştirir, eskisiyle değiştirir | Her kayıt kimliğine ve türüne bağlı şifreli; değiştirilen kayıt açılmaz | Okuyamaz; ama geri alma ve silme fark edilmez ([bilinen sınırlar](#bilinen-sınırlar)) |
 | Cihazdaki izinsiz zararlı uygulama | Kendi alanında çalışır, araya girmeye çalışır | Android uygulama yalıtımı; kasa dosyası uygulamanın özel klasöründe; dışa açık bileşen yalnızca ana ekran ve sistemin bağlandığı doldurma servisi | Korunur |
@@ -47,7 +47,7 @@ Bu belge KeyKey'in verileri nasıl şifrelediğini bayt düzeyinde anlatır. Kod
 | Ekran görüntüsü, ekran kaydı, son uygulamalar önizlemesi | Ekranı kaydeder | `FLAG_SECURE`; son uygulamalarda önizleme kapalı | Korunur |
 | Bindirme (overlay) izni olan uygulama | Saydam pencereyle kullanıcıya istemediği bir şeye dokundurur (tapjacking) | Android 12+: KeyKey ekrandayken bindirmeler gizlenir. Android 11: örtülü noktadaki dokunuş düşürülür ([Arayüz koruması](#arayüz-koruması)) | Korunur |
 | Erişilebilirlik izni olan zararlı uygulama | Ekrandaki metni okur, dokunuş üretir; `FLAG_SECURE` bunu engellemez | Android 14+: pencere hassas işaretli, yalnızca erişilebilirlik araçları okuyabilir ([Arayüz koruması](#arayüz-koruması)) | Android 14+ korunur; **11-13 korunmaz** |
-| Kötü niyetli klavye | Yazılan her şeyi, ana parola dahil, görür | Gizli alanlarda öneri ve öğrenme kapalı; bu yalnızca dürüst klavyeleri etkiler | **Korunmuyor** |
+| Kötü niyetli klavye | Yazılan her şeyi, ana parola dahil, görür | Gizli alanlarda öneri ve öğrenme kapalı; bu yalnızca dürüst klavyeleri etkiler. "Normal klavye" ayarı açıksa adlar ve siteler dürüst klavyenin sözlüğüne de girebilir ([Klavye](#klavye)) | **Korunmuyor** |
 | Root yetkili veya zararlı yazılım bulaşmış cihaz, kasa açık | Belleği okur | Anahtarlar korumalı bellekte, ama çözülmüş kayıtlar Dart belleğinde ([Bellek](#bellek)) | **Korunmuyor** |
 | Ana parola ve kurtarma anahtarı birlikte kayboldu | — | Bilinçli olarak arka kapı yok | Veri geri gelmez |
 | Bağımlılık veya derleme ortamı ele geçmiş (tedarik zinciri) | Uygulamaya kötü kod sokar | Kilitli bağımlılık sürümleri; `sqlite3` hazır kütüphanesi sabit özetle denetlenir; CI'da gizli bilgi taraması; denetim [#86](https://github.com/aaudraa/KeyKey/issues/86), yeniden üretilebilir derleme Faz 9 | Kısmen |
@@ -244,17 +244,19 @@ Tür `otp` olan kayıtlar 2FA anahtarıyla şifrelenir. Düz metin şu JSON'dur:
 
 | Alan | Kural |
 |---|---|
-| `kind` | `totp` veya `hotp`. |
+| `kind` | `totp`, `hotp` veya `steam` (1.7.0). |
 | `secret` | Gizli anahtar, RFC 4648 Base32, büyük harf ve dolgusuz. 1-256 bayt. |
 | `algorithm` | `SHA1`, `SHA256` veya `SHA512`. |
-| `digits` | 6, 7 veya 8. |
-| `period` | `totp` için 1-3600 saniye, `hotp` için `null`. |
-| `counter` | `hotp` için sıradaki sayaç değeri (0 veya daha büyük), `totp` için `null`. |
+| `digits` | 6, 7 veya 8; `steam` için tam olarak 5. |
+| `period` | `totp` için 1-3600 saniye, `steam` için tam olarak 30, `hotp` için `null`. |
+| `counter` | `hotp` için sıradaki sayaç değeri (0 veya daha büyük), `totp` ve `steam` için `null`. |
+| `algorithm` (`steam`) | Tam olarak `SHA1`. Steam'in değerleri sabittir; farklı bir değer kaydı okunamaz yapar. |
 | `loginId` | Eşleştirilen parola kaydının kimliği (32 karakter, küçük harf onaltılık) veya `null`. |
 
 - Okurken doğrulama parola kaydındaki kadar katıdır. Ayrıca Base32 metni yazdığımız biçimde olmalıdır: küçük harf, dolgu, boşluk veya fazladan bit reddedilir.
 - Çöp kutusu ve okunamayan kayıt kuralları parola kaydıyla aynıdır. Yanlışlıkla silinen 2FA hesabı servise girişi engelleyebileceği için hemen silinmez.
 - `loginId`'nin gösterdiği kayıt silinmişse eşleşme yok sayılır.
+- **Uyumluluk:** `steam` kaydını 1.6.0 ve öncesi tanımaz. 1.7.0 yedekleri [içerik sürümü 3](#yedek-biçimi) ile yazıldığı için eski sürüm onları "daha yeni yedek" diye açmaz, kullanıcıya güncellemesini söyler. Kasadaki kaydı ise okunamayan kayıt sayar ve dokunmaz. Kılavuz ve değişiklik günlüğü bunu söyler.
 
 ### Kart kaydının içeriği
 
@@ -368,7 +370,11 @@ Kasa üç durumdan birindedir: **kurulmamış**, **kilitli** veya **açık**. Ka
 
 ### Otomatik kilit
 
-- Uygulama arka plana geçince (`hidden` veya `paused`) hemen kilitlenir. `inactive` kilitlemez, çünkü parmak izi penceresi ve sistem diyalogları da onu tetikler.
+- Uygulama arka plana geçince (`hidden` veya `paused`) varsayılan olarak hemen kilitlenir. `inactive` kilitlemez, çünkü parmak izi penceresi ve sistem diyalogları da onu tetikler.
+- **Bekleme süresi (1.7.0):** Ayarlar → Güvenlik'te "Arka planda kilitlenme" Hemen (varsayılan), 30 saniye ya da 1 dakika olabilir. Ayar şifreli kasa ayarlarında durur; okunamazsa "Hemen" sayılır. Süre seçiliyse arka plana geçiş anı iki saatle kaydedilir: duvar saati (`DateTime.now`) ve telefonun açılışından beri geçen süre (`CLOCK_BOOTTIME`, libc'nin `clock_gettime`'ı FFI ile okunur). Arka planda bir zamanlayıcı süre dolunca kilitler. Android önbellekteki uygulamayı dondurabilir ve telefon uyurken zamanlayıcılar işlemez; bu yüzden dönüşte (`resumed`) süre yeniden denetlenir: iki saatten biri süreyi geçtiyse ya da duvar saati geri gittiyse kasa önce kilitlenir. `CLOCK_BOOTTIME` telefon uyurken de ilerler ve ayarlanamaz; duvar saati ek bir denetimdir. Dart'ın `Stopwatch`'ı kullanılmaz: o `CLOCK_MONOTONIC`'tir ve uykuda durur, uyku ile saati geri almak bir araya gelince süre uzardı (son gözden geçirmenin bulgusu). Bir cihaz testi saatin açılıştan beri saydığını `/proc/uptime` ile karşılaştırır.
+- Dönüşte dokunmama süresi de aynı iki saatle son dokunuştan beri denetlenir; bekleme süresi dokunmama kilidini uzatmaz. Kurtarma akışı (`VaultRecovering`) ve dosya seçicisi istisnası bekleme süresini kullanmaz. `detached` her zaman hemen kilitler.
+- Bekleme süresinde kasa açık kaldığı için, dönüşte parola listesi diskten yeniden okunur: bu arada doldurma ekranı bir parola eklemiş ya da değiştirmiş olabilir. Ekranlarda açık kalan eski kopyalar da onu ezmez: favori, çöp kutusu, klasör ve geri yükleme kaydın listedeki en son hâline yazılır; açık kalan düzenleme formu kaydedilince yalnızca kullanıcının formda değiştirdiği alanlar en son hâle taşınır, ötekiler (örneğin doldurmanın kaydettiği yeni parola) kalır. Kullanıcı parolayı da değiştirdiyse doldurmanınki geçmişe girer.
+- **Bedeli:** Süre boyunca telefonu eline alan biri KeyKey'i açık bulur. Varsayılan bu yüzden "Hemen"; açıklama ayarın yanında yazar.
 - **İstisna:** KeyKey'in kendi açtığı belge seçici, belge oluşturma ekranı ve fotoğraf seçici ayrı birer etkinliktir ve uygulamayı arka plana alır. Bunlar açıkken arka plan kilidi en fazla 3 dakika ertelenir; yoksa kullanıcı dosyayı seçip döndüğünde kasa kilitli olur ve işlem sonuçsuz kalır. Süre dolunca kasa, seçici hâlâ açık olsa bile kilitlenir. Dokunmama kilidi bu sırada da çalışır. Bedeli: seçici açıkken kullanıcı telefonu bırakırsa kasa en fazla 3 dakika açık kalır. Sistem ayarlarına giden bağlantılar bu istisnaya girmez.
 - Ekrana 5 dakika dokunulmazsa kilitlenir.
 - Kilitlenince kasa ve alt anahtarlar `dispose` edilir, çözülmüş veri tutan durumlar sıfırlanır, yönlendirme kilit ekranına gider ve önceki ekranlar yığından çıkarılır.
@@ -421,6 +427,14 @@ Ana uygulama ve doldurma ekranı aynı korumayı kullanır (`WindowProtection`).
 1. Android 11-13'te erişilebilirlik izni verilmiş zararlı bir uygulama ekrandaki metni okuyabilir. Bu sürümlerde bunu önleyecek bir platform özelliği yok.
 2. Kendini erişilebilirlik aracı olarak bildiren bir servis Android 14+'ta da okuyabilir. Google Play bu bildirimi gerçek erişilebilirlik araçlarına sınırlar; başka kaynaktan kurulan uygulamalar için böyle bir denetim yok.
 3. Erişilebilirlik izni ve bindirme izni kullanıcının kendisinin vermesi gereken izinlerdir; KeyKey bu izinleri kimin aldığını göremez.
+
+### Klavye
+
+Bütün metin kutuları öneri, otomatik düzeltme ve kişisel öğrenme isteği kapalı açılır (`enableSuggestions`, `autocorrect`, `enableIMEPersonalizedLearning: false`). Bu son istek yalnızca bir istektir, birçok klavye onu yok sayar. Bu yüzden kutular varsayılan olarak `visiblePassword` klavyesiyle açılır; neredeyse her klavye bu türde öneriyi ve öğrenmeyi gerçekten kapatır. Bedeli: büyük harf ve adres tuşları yok.
+
+**Normal klavye ayarı (1.7.0, varsayılan kapalı):** Açıksa gizli olmayan kutular normal klavyeyle açılır: kayıt adı, klasör, kasa ve 2FA araması, 2FA servis adı ve yeni klasör adı normal klavye ve kelime başı büyük harfle (`TextInputType.text`), web adresi adres klavyesiyle (`TextInputType.url`). Otomatik düzeltme ve öğrenme isteği yine kapalıdır, ama **öneri açıktır**: Flutter Android'de öneriyi kapatan her kutuya `TYPE_TEXT_VARIATION_VISIBLE_PASSWORD` ekliyor (motorun `TextInputPlugin`'i), o zaman ne büyük harf ne adres tuşları gelir. Bu cihaz denemesinde `dumpsys input_method` ile görüldü: öneri kapalıyken ad kutusu `0x82091`, web adresi `0x80091` (görünür parola) aldı; öneri açıkken `0x2001` (metin, kelime başı büyük harf) ve `0x11` (adres). Klavye öneri şeridini gösterir; öğrenme isteğine uymayabilir: bu kutulara yazılanlar (hangi bankayı, hangi siteyi kullandığın) klavyenin sözlüğüne ve bulut eşitlemesine girebilir. Açıklama ayarın yanında yazar.
+
+Gizli kutular her ayarda `visiblePassword` (ya da kendi rakam klavyeleri) kalır: kullanıcı adı, parola, notlar, not metni, kart sahibi, numara, son kullanma, güvenlik kodu, PIN, 2FA hesap adı ve anahtarı, özel alanlar, ana parola ve kurtarma ekranları. Bir kutu ancak kodda açıkça "gizli değil" diye işaretlenirse normal klavyeyle açılabilir; işaretlenmemiş yeni bir kutu güvenli tarafta kalır. Doldurma ekranları ayarı okumaz.
 
 **Deneme:** [`tapjacking-device-test.sh`](../scripts/tapjacking-device-test.sh), [`resources/test-apps/saldirgan`](../test-apps/saldirgan) uygulamasıyla dener: ekranı kaplayan, dokunuşları geçiren 0,5 opaklıkta bir bindirme penceresi (Android 12'nin kendi engelinden geçen en zor durum) ve kendini araç olarak bildirmeyen bir erişilebilirlik servisi. Korumadan önceki sürümde bindirme KeyKey'in üstünde görünüyordu ve servis kilit ekranındaki metinleri okuyabiliyordu. Sonuçlar [denetim belgesinde](guvenlik-denetimi.md#arayüz-koruması).
 
@@ -490,6 +504,7 @@ Kasa ekranındaki "Parola raporu" zayıf ve birden çok kayıtta kullanılan par
 
 - **HOTP** (RFC 4226): `HMAC(gizli anahtar, sayaç)` hesaplanır, sayaç 8 baytlık büyük uçlu yazılır. Son baytın düşük 4 biti bir konum gösterir, o konumdaki 4 bayttan en üst bit atılır ve sonuç `10^hane`'ye göre kalanı alınarak önüne sıfır eklenir.
 - **TOTP** (RFC 6238): Sayaç `floor(unix zamanı / period)`'dur, başlangıç zamanı 0'dır. SHA-256 ve SHA-512 için de aynı kesme yöntemi kullanılır.
+- **Steam Guard** (1.7.0): TOTP'nin SHA1 ve 30 saniyeyle bulunan 31 bitlik sayısı, `23456789BCDFGHJKMNPQRTVWXY` alfabesiyle 5 kez `sayı mod 26` karakterine çevrilir ve her adımda `sayı = sayı div 26` yapılır. Kod gruplanmadan gösterilir. Test değerleri Steam'in kendi uygulamasının ürettiği kodlardır (KeePassXC'nin testlerinden; bağımsız bir Python hesabıyla da doğrulandı).
 - HMAC için `package:crypto` kullanılır. libsodium'da SHA-1 yok, HMAC-SHA256 ve HMAC-SHA512'si ise yalnızca 32 baytlık anahtar alıyor.
 - **HOTP sayacı:** Kod, kullanıcı istediğinde üretilir. Sayaç önce bir artırılıp diske yazılır, kod ondan sonra gösterilir. Böylece uygulama yarıda kapansa da aynı kod iki kez görünmez. Gösterilen kod kayıttaki eski sayaç değeriyle hesaplanır, yani `counter` her zaman sıradaki kullanılacak değerdir. Bu RFC 4226'daki tanıma uyar.
 - **Sıradaki kod:** TOTP süresinin bitmesine az kaldığında bir sonraki kod da gösterilir. Kullanıcı yazarken süre dolarsa kodu yeniden okumak zorunda kalmaz.
@@ -500,12 +515,13 @@ Kasa ekranındaki "Parola raporu" zayıf ve birden çok kayıtta kullanılan par
 
 Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/google/google-authenticator/wiki/Key-Uri-Format): `otpauth://totp/Servis:hesap?secret=...&issuer=Servis`.
 
-- Şema ve tür büyük küçük harf ayırmaz. `totp` ve `hotp` dışındaki türler, örneğin `steam`, desteklenmiyor diye reddedilir.
+- Şema ve tür büyük küçük harf ayırmaz. `totp`, `hotp` ve `steam` dışındaki türler, örneğin `yandex`, desteklenmiyor diye reddedilir.
+- **Steam:** `otpauth://steam/…` ya da `otpauth://totp/…?encoder=steam` Steam hesabıdır. `algorithm`, `digits` ve `period` yazılmışsa (Aegis yazar) SHA1, 5 ve 30 olmalıdır. Başka bir `encoder` değeri yanlış kod üreteceği için reddedilir; 1.7.0'dan önce `encoder` parametresi yok sayılıyordu. KeyKey Steam hesabını `otpauth://steam/…` olarak, bütün değerleri açıkça yazarak dışa verir; yalnızca [Bitwarden biçimli dışa aktarma](#düz-metin-dışa-aktarma) `steam://ANAHTAR` yazar.
 - `secret` zorunludur. Kullanıcıların elle yazdığı veya kopyaladığı metinlere uymak için Base32 okunurken küçük harf, boşluk, tire ve dolgu kabul edilir; Türkçe klavyenin `ı` ve `İ` harfleri `I` sayılır. Artan bitler atılır.
 - `issuer` parametresi varsa etiketteki `Servis:` önekinden önce gelir. Etiketteki iki noktadan sonraki boşluklar atılır. Servis adında da iki nokta olabileceği için, `issuer` etiketin başında geçiyorsa etiket tam oradan bölünür.
 - Servis ve hesap adlarından denetim karakterleri ve metnin yönünü değiştiren karakterler (örneğin U+202E) atılır. Bunlar bir adı ekranda başka bir servisin adı gibi gösterebilir.
 - Yüzde kodlaması kendi çözücümüzle açılır. Sorgu kısmında `+` boşluktur, etikette değildir.
-- `algorithm`, `digits` ve `period` verilmezse SHA1, 6 ve 30 kullanılır. `hotp` için `counter` zorunludur.
+- `algorithm`, `digits` ve `period` verilmezse SHA1, 6 ve 30 kullanılır (Steam'de 5 hane). `hotp` için `counter` zorunludur.
 - Bilinen bir parametre iki kez geçerse veya değeri kurallara uymazsa bağlantı reddedilir. Bilinmeyen parametreler, örneğin `image`, yok sayılır. `image` adresine bağlanılmaz.
 - 4096 karakterden uzun metin okunmaz.
 - Ayrıştırıcı yalnızca kendi hata türünü fırlatır. Hata mesajı hangi kuralın bozulduğunu söyler, gizli anahtarı içermez. Bozuk girdi testleri rastgele metinlerle de çalıştırılır.
@@ -530,13 +546,13 @@ Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/googl
 - **Sınırlar:** Kötü niyetli bir dosya cihazı belleksiz bırakmasın diye scrypt en fazla 128 MiB bellek (N ve p bloklarının toplamı), p ≤ 16 ve Aegis varsayılanının 32 katı iş (128·r·N·p ≤ 1 GiB) ile çalışır, dosya en fazla 10 MB olabilir. Türetme ayrı isolate'te yapılır, ekran donmaz.
 - Dosya Android'in belge seçicisiyle seçilir, depolama izni gerekmez. `file_selector` dosyayı önbelleğe kopyalar; kopya okunur okunmaz silinir.
 - Dosyalar güvenilmeyen veri sayılır. Başka uygulamaların biçimi oldukları için bilinmeyen alanlar yok sayılır, ama bozuk bir hesap atlanır ve bozuk dosya uygulamayı düşürmez. Bozuk girdi testleri rastgele değiştirilmiş dosyalarla da çalıştırılır.
-- Desteklenmeyen hesaplar, örneğin Steam veya 5 haneli kodlar, atlanır ve kullanıcıya sayısı söylenir. Gizli anahtarı zaten kayıtlı olan hesap, çöp kutusunda bile olsa, işaretlenir ve tekrar eklenmez.
+- Steam hesapları (Aegis `steam`, 2FAS `STEAM`) 1.7.0'dan beri içe aktarılır; değerleri SHA1, 5 ve 30 değilse hesap bozuk sayılır. Desteklenmeyen hesaplar, örneğin Yandex veya Steam dışındaki 5 haneli kodlar, atlanır ve kullanıcıya sayısı söylenir. Gizli anahtarı zaten kayıtlı olan hesap, çöp kutusunda bile olsa, işaretlenir ve tekrar eklenmez.
 - Hesaplar kaydedilmeden önce liste halinde gösterilir, kullanıcı hangilerinin ekleneceğini seçer.
 - Aegis'in 2019'dan eski, `repaired` işareti olmayan parola yuvaları farklı bir parola kodlamasıyla türetilmişti. Bu yuvalar desteklenmez; parola yanlış görünür.
 
 ### Kodları görmek için ek onay
 
-İsteğe bağlı bir ayardır. Açıksa 2FA ekranı ve parola kaydındaki eşleşmiş kod, kasa açık olsa bile kodları göstermeden önce parmak izi, parmak izi kapalıysa ya da vazgeçilirse ana parola ister. Onay, kasa kilitlenene kadar geçerlidir; uygulama arka plana geçince kasa zaten kilitlenir.
+İsteğe bağlı bir ayardır. Açıksa 2FA ekranı ve parola kaydındaki eşleşmiş kod, kasa açık olsa bile kodları göstermeden önce parmak izi, parmak izi kapalıysa ya da vazgeçilirse ana parola ister. Onay, kasa kilitlenene kadar geçerlidir. Uygulama arka plana geçince kasa kilitlenir; kullanıcı bir [bekleme süresi](#otomatik-kilit) seçtiyse ve süre dolmadan dönerse kasa da onay da açık kalır. O sürede telefonu eline alan biri parolaları da görür; onayı ayrıca sıfırlamak bir şey kazandırmaz.
 
 - **Doğrulama gerçekten kasayı açar.** Parmak izi, Keystore anahtarının kasa anahtarını açabildiğiyle; ana parola, parola yuvasının açılabildiğiyle doğrulanır. Açılan kopya hemen silinir. Ana parolada hatalı denemeler kilit ekranındaki sayaca eklenir ve aynı bekleme uygulanır, yani bu pencere parola denemek için kullanılamaz.
 - **Kapatmak doğrulama ister,** açmak istemez. Yoksa kilidi açık telefonu eline alan biri önce ayarı kapatabilirdi.
@@ -546,7 +562,7 @@ Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/googl
 
 ```json
 {
-  "version": 5,
+  "version": 6,
   "otpRequireAuth": false,
   "autofillCopyOtp": true,
   "lastBackupAt": 1730000000000,
@@ -564,7 +580,9 @@ Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/googl
   "autoBackupFolder": {
     "uri": "content://com.android.externalstorage.documents/tree/primary%3AKeyKey",
     "name": "KeyKey"
-  }
+  },
+  "backgroundLockSeconds": 0,
+  "plainKeyboard": false
 }
 ```
 
@@ -572,6 +590,7 @@ Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/googl
 - `lastBackupAt` ve `backupReminderSnoozedUntil` sürüm 3 ile geldi: son yedeğin zamanı ve [yedek hatırlatıcısının](#yedek-hatırlatıcısı) susturulduğu son an, 1970'ten beri geçen milisaniye ya da `null`. Daha eski kayıtlarda ikisi de `null` sayılır.
 - `vaultSort` (`name` ya da `recent`) ve `generator` sürüm 4 ile geldi: kasa listesinin sıralaması ve parola üreticisinin son **kullanılan** seçenekleri (uzunluk 8–64, en az bir karakter türü, cümlede 4–12 sözcük). Üretilen parola yazılmaz. Daha eski kayıtlarda ada göre sıralama ve varsayılan üretici kullanılır. Sınır dışı bir değer kaydın tamamını okunamaz yapar (aşağıdaki kural). Sürüm 4 kaydını içeren bir yedek KeyKey'in eski bir sürümünde açılırsa ayar kaydı okunamaz sayılır, ek onay açık gelir.
 - `autoBackupFolder` sürüm 5 ile geldi: [otomatik yedeğin](#otomatik-yedek) klasörü ya da `null`. Tam iki alan taşır; `uri` `content://` ile başlar, `name` boş olamaz. Daha eski kayıtlarda otomatik yedek kapalı sayılır. Sürüm 5 kaydını içeren bir yedek eski bir sürümde açılırsa yine ayar kaydı okunamaz sayılır.
+- `backgroundLockSeconds` (0, 30 ya da 60) ve `plainKeyboard` sürüm 6 (1.7.0) ile geldi: [arka planda kilitlenmeden önceki bekleme](#otomatik-kilit) ve gizli olmayan kutularda normal klavye. Başka bir saniye değeri ya da yanlış tür kaydın tamamını okunamaz yapar. Daha eski kayıtlarda "Hemen" ve öğrenmesiz klavye kullanılır. 1.7.0 yedekleri [içerik sürümü 3](#yedek-biçimi) ile yazılır, eski sürümler onları "daha yeni yedek" diye reddeder.
 - Kayıt yoksa ek onay kapalıdır. Kayıt var ama okunamıyorsa, biçime uymuyorsa veya türü farklıysa ek onay **açık** sayılır: dosyayı değiştiren biri ayarı böyle kapatamasın. Kod kopyalama ise kapalı sayılır. Kullanıcı doğrulayıp ek onayı kapatabilir. Kaydın tamamen silinmesi ise [kayıt silme sınırına](#bilinen-sınırlar) girer.
 
 **Sınır:** Bu, kasa anahtarını değiştirmez. 2FA anahtarı yine kasa anahtarından türetilir, çünkü ana parola ve kurtarma anahtarı da 2FA kayıtlarını açabilmelidir. Ayar, kilidi açık telefonu eline alan birine karşı koruma sağlar, cihazdaki zararlı yazılıma karşı korumaz.
@@ -679,7 +698,7 @@ Bu ekranlarda kullanıcı adı ve parola KeyKey'den kopyalanarak girilir; pano k
 
 ### Eşzamanlılık
 
-Ana uygulama ve doldurma ekranı aynı süreçte, aynı veritabanı dosyasına iki ayrı bağlantıyla erişebilir. SQLite dosya kilidini kullanır. Aynı anda yazma olursa bağlantı hemen hata vermesin diye `busy_timeout` beş saniyedir. Ana uygulamanın bellekteki listesi, doldurma ekranının yaptığı değişikliği kasa yeniden açılınca görür; ana uygulama arka plana geçince zaten kilitlenir.
+Ana uygulama ve doldurma ekranı aynı süreçte, aynı veritabanı dosyasına iki ayrı bağlantıyla erişebilir. SQLite dosya kilidini kullanır. Aynı anda yazma olursa bağlantı hemen hata vermesin diye `busy_timeout` beş saniyedir. Ana uygulama arka plana geçince kilitlenir; kullanıcı bir bekleme süresi seçtiyse kasa açık kalabilir, o zaman dönüşte parola listesi yeniden okunur ([Otomatik kilit](#otomatik-kilit)). Kilitlendiyse liste kasa yeniden açılınca okunur.
 
 ### Sınırlar
 
@@ -730,7 +749,7 @@ parça   = uzunluk (4 bayt, büyük uçlu) || şifreli parça
 ```
 
 - Kayıtlar veritabanındaki halleriyle, yani [kayıt biçiminde](#kayıt-biçimi) şifreli olarak taşınır. Yedek bu yüzden iki katmanlıdır: dosyayı açan biri bile kayıtları ayrıca kasa anahtarının alt anahtarlarıyla çözmek zorundadır. Kayıt sayısı, türleri ve zaman damgaları da dış katmanda gizli kalır; veritabanı dosyasından farklı olarak yedek bunları ele vermez.
-- **İçerik sürümü.** Sürüm 1'de `type` yalnızca `login`, `otp` veya `settings` olabilir. Sürüm 2 (1.4.0) `card` ve `note` türlerini ekledi. Yedekte kart ya da not yoksa içerik yine sürüm 1 olarak yazılır; böylece kartsız yedekler 1.4.0 öncesi sürümlerle de açılır. 1.3.0 ve öncesi, sürüm 2 bir yedeği "bozuk ya da değiştirilmiş" diye reddeder. 1.4.0'dan sonra daha yeni bir dosya ya da içerik sürümü ayrı bir hatayla (`NewerBackupException`) ayrılır ve kullanıcıya uygulamayı güncellemesi söylenir. İçerik sürümü, JSON'un alanları denetlenmeden önce okunur; sonraki bir sürüm kök alanlarını değiştirse de "daha yeni" diye bildirilir. Sürüm 1 içerikte `card` ya da `note` türü reddedilir.
+- **İçerik sürümü.** Sürüm 1'de `type` yalnızca `login`, `otp` veya `settings` olabilir. Sürüm 2 (1.4.0) `card` ve `note` türlerini ekledi. 1.4.0-1.6.0, kart ya da not yoksa içeriği yine sürüm 1 olarak yazar; böylece kartsız yedekler 1.4.0 öncesi sürümlerle de açılır. 1.3.0 ve öncesi, sürüm 2 bir yedeği "bozuk ya da değiştirilmiş" diye reddeder. Sürüm 3 (1.7.0) yeni tür eklemez; ayar kaydının sürüm 6'sı ve Steam hesapları (`kind: steam`) için gelir. Kayıtlar şifreli olduğundan yedek yazılırken içleri görünmez; bu yüzden 1.7.0'dan itibaren her yedek sürüm 3 ile yazılır. Sürüm 1, 2 ve 3 okunmaya devam eder. 1.4.0'dan sonra daha yeni bir dosya ya da içerik sürümü ayrı bir hatayla (`NewerBackupException`) ayrılır ve kullanıcıya uygulamayı güncellemesi söylenir. İçerik sürümü, JSON'un alanları denetlenmeden önce okunur; sonraki bir sürüm kök alanlarını değiştirse de "daha yeni" diye bildirilir. Sürüm 1 içerikte `card` ya da `note` türü reddedilir.
 - **Kayıt içeriği sürümü değişirse yedeğin içerik sürümü de artar.** Eski bir sürüm tanımadığı kayıt içeriğini "bozuk" diye reddeder; içerik sürümü artarsa "daha yeni yedek" der. 1.4.0 öncesinde parola (sürüm 2) ve ayar (sürüm 5) kayıtları bu kural olmadan değişti; o dönemin eski sürümleri yeni yedekleri "bozuk" diye reddediyor. Bir test, kayıt içerik sürümlerini yedeğin içerik sürümüyle birlikte sabitliyor; biri değişince test kırılır ve bu adım hatırlanır.
 - İkili alanlar Base64'tür.
 - Parmak izi yuvası ve hatalı deneme sayacı yedeğe girmez. Parmak izi yalnızca o cihazın Keystore anahtarıyla açılır, sayaç da cihaza aittir.
@@ -784,7 +803,7 @@ Son yedek zamanı dosya kaydedildikten sonra yazıldığı için yedeğin içind
 
 | Kaynak | Biçim | Not |
 |---|---|---|
-| Bitwarden | Şifresiz JSON ve CSV dışa aktarma | Giriş, kart ve güvenli not kayıtları alınır (aşağıda). `totp` alanı 2FA hesabı olarak eklenir ve kayda bağlanır. Metin ve gizli özel alanlar alınır. CSV'deki `login_uri` alanı, Bitwarden'ın okuyucusundaki gibi kendi içinde bir CSV satırıdır. Parola korumalı veya hesaba bağlı şifreli JSON desteklenmez; kullanıcıya şifresiz dışa aktarması söylenir. Örneklerden biri 2026-11'de alınmış gerçek bir JSON dışa aktarmasıdır; kişisel değerleri sahteleriyle değiştirildi. |
+| Bitwarden | Şifresiz JSON ve CSV dışa aktarma | Giriş, kart ve güvenli not kayıtları alınır (aşağıda). `totp` alanı 2FA hesabı olarak eklenir ve kayda bağlanır; `steam://ANAHTAR` (1.7.0) Steam hesabı olur. Metin ve gizli özel alanlar alınır. CSV'deki `login_uri` alanı, Bitwarden'ın okuyucusundaki gibi kendi içinde bir CSV satırıdır. Parola korumalı veya hesaba bağlı şifreli JSON desteklenmez; kullanıcıya şifresiz dışa aktarması söylenir. Örneklerden biri 2026-11'de alınmış gerçek bir JSON dışa aktarmasıdır; kişisel değerleri sahteleriyle değiştirildi. |
 | Chrome | Parolalar CSV'si (`name,url,username,password,note`) | Android'de Chrome'un parola yöneticisi `name` sütununa kayıt adı yerine alan adını yazar. Örneklerden biri Android Chrome 145'in gerçek dışa aktarmasıdır. |
 | Firefox | Parolalar CSV'si (`url,username,password,httpRealm,formActionOrigin,guid,timeCreated,timeLastUsed,timePasswordChanged`) | Kayıt adı yoktur, ad adresin alan adından gelir. Yalnızca adres, kullanıcı adı ve parola alınır; `httpRealm`, `formActionOrigin`, `guid` ve zaman sütunları yok sayılır. Biçim, Chrome'dan ayrılması için `httpRealm` ve `formActionOrigin` sütunlarından tanınır. |
 | KeePassXC | CSV dışa aktarma | `TOTP` sütunu 2FA hesabı olarak eklenir. Grubun yolu, kök grup atılarak klasör olur; kök grubun adı KeePassXC'in arayüz diline göre değişir. Örnek, KeePassXC 2.8.0'ın kendi komut satırı aracıyla alınmış gerçek bir dışa aktarmadır. |
@@ -809,7 +828,7 @@ Son yedek zamanı dosya kaydedildikten sonra yazıldığı için yedeğin içind
 Başka bir parola yöneticisine geçmek için. Dosya **şifresizdir**; bu yüzden iki adımlı onay ister.
 
 - Önce biçim seçilir (CSV ya da JSON), sonra dosyanın şifresiz olduğu ve kimlerin okuyabileceği açıkça anlatılır. Ardından ana parola veya parmak iziyle [kimlik doğrulanır](#kodları-görmek-için-ek-onay).
-- **CSV:** Bitwarden'ın CSV sütunları (`folder,favorite,type,name,notes,fields,reprompt,login_uri,login_username,login_password,login_totp`); çoğu parola yöneticisi bu biçimi okur. Bağlı 2FA hesabı `login_totp` sütununa `otpauth://` bağlantısı olarak yazılır. Bir kayda bağlı olmayan 2FA hesapları ayrı satırlara yazılır. Bağlı uygulamalar `androidapp://` adresi olarak eklenir. Notlar `type=note` satırlarıdır. Bitwarden CSV kart taşıyamadığı için kartlar yazılmaz; kasada kart varsa biçim penceresi bunu söyler.
+- **CSV:** Bitwarden'ın CSV sütunları (`folder,favorite,type,name,notes,fields,reprompt,login_uri,login_username,login_password,login_totp`); çoğu parola yöneticisi bu biçimi okur. Bağlı 2FA hesabı `login_totp` sütununa `otpauth://` bağlantısı olarak yazılır. Steam hesabı (1.7.0) Bitwarden'ın tanıdığı `steam://ANAHTAR` biçimiyle yazılır; Bitwarden `otpauth://steam/…` bağlantısında 5 haneli sayı, yani yanlış kod üretir. Bir kayda bağlı olmayan 2FA hesapları ayrı satırlara yazılır. Bağlı uygulamalar `androidapp://` adresi olarak eklenir. Notlar `type=note` satırlarıdır. Bitwarden CSV kart taşıyamadığı için kartlar yazılmaz; kasada kart varsa biçim penceresi bunu söyler.
 - **JSON (1.4.0):** Bitwarden'ın şifresiz JSON biçimi (`encrypted: false`, `folders`, `items`; tür 1 giriş, 2 güvenli not, 3 kart). Kartlar dahil her şeyi taşır; Bitwarden, KeePassXC ve Proton Pass içe alabiliyor. Öğe kimliği kayıt kimliğinin UUID biçimidir, klasör kimlikleri sırayla üretilir. 2FA hesapları CSV'deki kuralla yazılır. Kartın PIN'i `PIN` adlı gizli bir özel alandır; marka Bitwarden'ın adlarıyla yazılır (Troy onda olmadığı için `Other`). Boş alanlar `null` olur. Dosya `.json` uzantısıyla, `application/json` türüyle kaydedilir.
 - Çöp kutusundaki kayıtlar ve parola geçmişi dışa aktarılmaz.
 - Dosya `ACTION_CREATE_DOCUMENT` ile kaydedilir, uygulamanın klasöründe kopya kalmaz. Kaydedilen baytlar bellekte sıfırlanır.

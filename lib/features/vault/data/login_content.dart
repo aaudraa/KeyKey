@@ -267,6 +267,27 @@ final class LoginContent {
     );
   }
 
+  /// Düzenleme formu açıkken kayıt başka yerden değiştiyse, örneğin arka
+  /// planda bekleme süresinde doldurma ekranı yeni parolayı kaydettiyse:
+  /// formda [original]'e göre değişen alanlar [latest]'e yazılır, ötekiler
+  /// [latest]'teki gibi kalır. Böylece kullanıcının dokunmadığı yeni parola
+  /// eski formla ezilmez.
+  LoginContent rebase({
+    required LoginContent original,
+    required LoginContent latest,
+  }) => latest.copyWith(
+    name: name == original.name ? latest.name : name,
+    username: username == original.username ? latest.username : username,
+    password: password == original.password ? latest.password : password,
+    urls: listEquals(urls, original.urls) ? latest.urls : urls,
+    apps: listEquals(apps, original.apps) ? latest.apps : apps,
+    notes: notes == original.notes ? latest.notes : notes,
+    folder: folder == original.folder ? latest.folder : folder,
+    customFields: listEquals(customFields, original.customFields)
+        ? latest.customFields
+        : customFields,
+  );
+
   /// [edited] içeriğini alır. Parola değiştiyse eskisini geçmişe ekler.
   LoginContent applyEdit(LoginContent edited, DateTime now) {
     if (edited.password == password || password.isEmpty) {

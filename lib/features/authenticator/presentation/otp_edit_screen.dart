@@ -123,7 +123,11 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
     _secret.text = SecretKeyFormatter.group(Base32.encode(parameters.secret));
     _kind = parameters.kind;
     _algorithm = parameters.algorithm;
-    _digits = parameters.digits;
+    // Steam'in 5 karakteri öteki türlerde geçersiz; tür değişirse 6'dan
+    // başlanır.
+    _digits = parameters.kind == OtpKind.steam
+        ? OtpParameters.defaultDigits
+        : parameters.digits;
     _period.text = '${parameters.period ?? OtpParameters.defaultPeriod}';
     _counter.text = '${parameters.counter ?? 0}';
     _showAdvanced =
@@ -238,6 +242,8 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
     if (secret == null || !_hasName || _linkError != null) return null;
     final OtpParameters parameters;
     switch (_kind) {
+      case OtpKind.steam:
+        parameters = OtpParameters.steam(secret: secret);
       case OtpKind.totp:
         final period = _parsedPeriod();
         if (period == null) return null;
@@ -428,6 +434,7 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
                 child: KkFieldCard(
                   child: SecretField(
                     controller: _issuer,
+                    plain: PlainKeyboard.text,
                     label: l10n.otpIssuer,
                     obscure: false,
                     autofocus: _isNew && widget.initial == null,
@@ -591,67 +598,80 @@ class _OtpEditScreenState extends ConsumerState<OtpEditScreen> {
     return [
       Text(l10n.otpType, style: Theme.of(context).textTheme.labelLarge),
       const SizedBox(height: 8),
-      SegmentedButton<OtpKind>(
-        segments: [
-          ButtonSegment(value: OtpKind.totp, label: Text(l10n.otpTypeTotp)),
-          ButtonSegment(value: OtpKind.hotp, label: Text(l10n.otpTypeHotp)),
+      // Üç uzun ad dar ekranda tek satıra sığmaz; çipler alt satıra geçer.
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final (kind, label) in [
+            (OtpKind.totp, l10n.otpTypeTotp),
+            (OtpKind.hotp, l10n.otpTypeHotp),
+            (OtpKind.steam, l10n.otpTypeSteam),
+          ])
+            ChoiceChip(
+              label: Text(label),
+              selected: _kind == kind,
+              onSelected: (_) => setState(() {
+                _kind = kind;
+                _dirty = true;
+              }),
+            ),
         ],
-        selected: {_kind},
-        onSelectionChanged: (selection) => setState(() {
-          _kind = selection.single;
-          _dirty = true;
-        }),
       ),
       const SizedBox(height: 16),
-      Text(l10n.otpAlgorithm, style: Theme.of(context).textTheme.labelLarge),
-      const SizedBox(height: 8),
-      SegmentedButton<OtpAlgorithm>(
-        segments: [
-          for (final algorithm in OtpAlgorithm.values)
-            ButtonSegment(value: algorithm, label: Text(algorithm.label)),
-        ],
-        selected: {_algorithm},
-        onSelectionChanged: (selection) => setState(() {
-          _algorithm = selection.single;
-          _dirty = true;
-        }),
-      ),
-      const SizedBox(height: 16),
-      Text(l10n.otpDigits, style: Theme.of(context).textTheme.labelLarge),
-      const SizedBox(height: 8),
-      SegmentedButton<int>(
-        segments: [
-          for (
-            var digits = OtpParameters.minDigits;
-            digits <= OtpParameters.maxDigits;
-            digits++
-          )
-            ButtonSegment(value: digits, label: Text('$digits')),
-        ],
-        selected: {_digits},
-        onSelectionChanged: (selection) => setState(() {
-          _digits = selection.single;
-          _dirty = true;
-        }),
-      ),
-      const SizedBox(height: 16),
-      KkShake(
-        controller: _shake,
-        enabled: (periodError ?? counterError) != null,
-        child: _kind == OtpKind.totp
-            ? _NumberField(
-                controller: _period,
-                label: l10n.otpPeriod,
-                errorText: periodError,
-                onChanged: _changed,
-              )
-            : _NumberField(
-                controller: _counter,
-                label: l10n.otpCounter,
-                errorText: counterError,
-                onChanged: _changed,
-              ),
-      ),
+      if (_kind == OtpKind.steam)
+        Text(l10n.otpSteamHint, style: Theme.of(context).textTheme.bodyMedium)
+      else ...[
+        Text(l10n.otpAlgorithm, style: Theme.of(context).textTheme.labelLarge),
+        const SizedBox(height: 8),
+        SegmentedButton<OtpAlgorithm>(
+          segments: [
+            for (final algorithm in OtpAlgorithm.values)
+              ButtonSegment(value: algorithm, label: Text(algorithm.label)),
+          ],
+          selected: {_algorithm},
+          onSelectionChanged: (selection) => setState(() {
+            _algorithm = selection.single;
+            _dirty = true;
+          }),
+        ),
+        const SizedBox(height: 16),
+        Text(l10n.otpDigits, style: Theme.of(context).textTheme.labelLarge),
+        const SizedBox(height: 8),
+        SegmentedButton<int>(
+          segments: [
+            for (
+              var digits = OtpParameters.minDigits;
+              digits <= OtpParameters.maxDigits;
+              digits++
+            )
+              ButtonSegment(value: digits, label: Text('$digits')),
+          ],
+          selected: {_digits},
+          onSelectionChanged: (selection) => setState(() {
+            _digits = selection.single;
+            _dirty = true;
+          }),
+        ),
+        const SizedBox(height: 16),
+        KkShake(
+          controller: _shake,
+          enabled: (periodError ?? counterError) != null,
+          child: _kind == OtpKind.totp
+              ? _NumberField(
+                  controller: _period,
+                  label: l10n.otpPeriod,
+                  errorText: periodError,
+                  onChanged: _changed,
+                )
+              : _NumberField(
+                  controller: _counter,
+                  label: l10n.otpCounter,
+                  errorText: counterError,
+                  onChanged: _changed,
+                ),
+        ),
+      ],
     ];
   }
 }

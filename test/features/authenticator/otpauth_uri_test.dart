@@ -158,12 +158,63 @@ void main() {
     });
   });
 
+  group('Steam', () {
+    test('steam türü', () {
+      final account = OtpauthUri.parse(
+        'otpauth://steam/Steam:oyuncu?secret=$secret&issuer=Steam',
+      );
+      expect(account.parameters, OtpParameters.steam(secret: secretBytes));
+      expect(account.issuer, 'Steam');
+      expect(account.account, 'oyuncu');
+    });
+
+    test("Aegis'in yazdığı açık değerler kabul ediliyor", () {
+      final account = OtpauthUri.parse(
+        'otpauth://steam/Steam:oyuncu?secret=$secret&issuer=Steam'
+        '&algorithm=SHA1&digits=5&period=30',
+      );
+      expect(account.parameters.kind, OtpKind.steam);
+    });
+
+    test('encoder=steam olan TOTP bağlantısı', () {
+      final account = OtpauthUri.parse(
+        'otpauth://totp/Steam:oyuncu?secret=$secret&ENCODER=Steam&digits=5',
+      );
+      expect(account.parameters, OtpParameters.steam(secret: secretBytes));
+    });
+
+    test('yazılan bağlantı Steam olarak geri okunuyor', () {
+      final uri = OtpauthUri.format(
+        parameters: OtpParameters.steam(secret: secretBytes),
+        issuer: 'Steam',
+        account: 'oyuncu',
+      );
+      expect(
+        uri,
+        'otpauth://steam/Steam:oyuncu?secret=$secret'
+        '&issuer=Steam&algorithm=SHA1&digits=5&period=30',
+      );
+      expect(
+        OtpauthUri.parse(uri).parameters,
+        OtpParameters.steam(secret: secretBytes),
+      );
+    });
+  });
+
   group('reddedilen bağlantılar', () {
     final cases = <String, OtpauthError>{
       'https://example.com': OtpauthError.notOtpauth,
       'otpauth:/totp/x?secret=$secret': OtpauthError.notOtpauth,
       '': OtpauthError.notOtpauth,
-      'otpauth://steam/x?secret=$secret': OtpauthError.unsupportedType,
+      'otpauth://yandex/x?secret=$secret': OtpauthError.unsupportedType,
+      'otpauth://totp/x?secret=$secret&encoder=yandex':
+          OtpauthError.unsupportedType,
+      'otpauth://steam/x?secret=$secret&digits=6': OtpauthError.invalidDigits,
+      'otpauth://steam/x?secret=$secret&period=60': OtpauthError.invalidPeriod,
+      'otpauth://steam/x?secret=$secret&algorithm=SHA256':
+          OtpauthError.invalidAlgorithm,
+      'otpauth://hotp/x?secret=$secret&counter=1&encoder=steam':
+          OtpauthError.unsupportedType,
       'otpauth://motp/x?secret=$secret': OtpauthError.unsupportedType,
       'otpauth:///x?secret=$secret': OtpauthError.unsupportedType,
       'otpauth-migration://offline?data=abc': OtpauthError.notOtpauth,

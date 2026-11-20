@@ -81,6 +81,7 @@ class _LoginPickerDialogState extends ConsumerState<_LoginPickerDialog> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: SecretField(
                 controller: _search,
+                plain: PlainKeyboard.text,
                 label: l10n.vaultSearch,
                 obscure: false,
                 textInputAction: TextInputAction.search,

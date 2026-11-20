@@ -3,13 +3,17 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
+import 'package:keykey/features/lock/application/lock_clock.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/settings/application/settings_controller.dart';
+import 'package:keykey/features/vault/application/logins_controller.dart';
 
 /// Kasayı arka plana geçince ve kullanılmadığında kilitler.
 ///
 /// Kurallar güvenlik tasarımı belgesinin Otomatik kilit bölümündedir.
 /// `inactive` kilitlemez, çünkü parmak izi penceresi ve sistem diyalogları da
-/// onu tetikler.
+/// onu tetikler. Ayarlarda bir bekleme süresi seçiliyse arka plan kilidi o
+/// kadar bekler; süre iki saatle ([LockClock]) ölçülür.
 class AutoLockScope extends ConsumerStatefulWidget {
   const new({
     required this.child,
@@ -35,6 +39,16 @@ class AutoLockScope extends ConsumerStatefulWidget {
 class _AutoLockScopeState extends ConsumerState<AutoLockScope>
     with WidgetsBindingObserver {
   Timer? _idleTimer;
+  Timer? _backgroundTimer;
+
+  /// Son dokunma ya da yazma; dönüşte dokunmama süresi buna göre denetlenir.
+  LockInstant? _lastActivity;
+
+  /// Arka plana geçiş anı ve o anki bekleme süresi. Kasa arka planda
+  /// kilitlenmeden bekliyorsa dolu.
+  ({LockInstant at, Duration delay})? _background;
+
+  LockClock get _clock => ref.read(lockClockProvider);
 
   @override
   void initState() {
@@ -46,6 +60,7 @@ class _AutoLockScopeState extends ConsumerState<AutoLockScope>
   @override
   void dispose() {
     _idleTimer?.cancel();
+    _backgroundTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -57,11 +72,53 @@ class _AutoLockScopeState extends ConsumerState<AutoLockScope>
         // KeyKey'in açtığı bir dosya seçicisi sürüyorsa kilit, seçicinin
         // kendi süre sınırına bırakılır.
         if (ref.read(externalActivityGateProvider)) return;
-        ref.read(vaultControllerProvider.notifier).lock();
+        // Dönerken de paused'dan hidden'a geçilir; bekleme zaten kurulu.
+        if (_background != null) return;
+        final delay =
+            ref.read(settingsControllerProvider)?.backgroundLock.delay ??
+            Duration.zero;
+        if (delay <= Duration.zero ||
+            ref.read(vaultControllerProvider) is! VaultOpen) {
+          _lock();
+          return;
+        }
+        _background = (at: _clock.read(), delay: delay);
+        _backgroundTimer = Timer(delay, _lock);
       case AppLifecycleState.detached:
-        ref.read(vaultControllerProvider.notifier).lock();
-      case AppLifecycleState.resumed || AppLifecycleState.inactive:
+        _lock();
+      case AppLifecycleState.resumed:
+        _returnFromBackground();
+      case AppLifecycleState.inactive:
         break;
+    }
+  }
+
+  void _lock() {
+    _backgroundTimer?.cancel();
+    _backgroundTimer = null;
+    _background = null;
+    ref.read(vaultControllerProvider.notifier).lock();
+  }
+
+  /// Uygulama donmuşsa ya da telefon uyuduysa zamanlayıcılar geç kalır;
+  /// süreler burada iki saatle yeniden denetlenir.
+  void _returnFromBackground() {
+    final background = _background;
+    _background = null;
+    _backgroundTimer?.cancel();
+    _backgroundTimer = null;
+    if (background == null) return;
+    final clock = _clock;
+    final lastActivity = _lastActivity;
+    if (clock.hasPassed(background.at, background.delay) ||
+        (lastActivity != null &&
+            clock.hasPassed(lastActivity, widget.idleTimeout))) {
+      _lock();
+      return;
+    }
+    // Bu arada doldurma ekranı bir parola eklemiş ya da değiştirmiş olabilir.
+    if (ref.read(loginsControllerProvider.exists)) {
+      unawaited(ref.read(loginsControllerProvider.notifier).reload());
     }
   }
 
@@ -69,6 +126,7 @@ class _AutoLockScopeState extends ConsumerState<AutoLockScope>
 
   void _syncTimer(VaultStatus status) {
     _idleTimer?.cancel();
+    _lastActivity = _clock.read();
     _idleTimer = switch (status) {
       VaultOpen() || VaultRecovering() => Timer(
         widget.idleTimeout,
@@ -81,6 +139,9 @@ class _AutoLockScopeState extends ConsumerState<AutoLockScope>
   @override
   Widget build(BuildContext context) {
     ref.listen(vaultControllerProvider, (_, status) => _syncTimer(status));
+    // Bekleme süresi arka plana geçerken hazır olsun: ayarlar kasa açılır
+    // açılmaz yüklenir.
+    ref.listen(settingsControllerProvider, (_, _) {});
     return Listener(
       behavior: HitTestBehavior.translucent,
       onPointerDown: (_) => _restart(),

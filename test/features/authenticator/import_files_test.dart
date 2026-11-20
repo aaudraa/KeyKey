@@ -66,9 +66,13 @@ void main() {
         ),
       );
     }
-    // Steam desteklenmiyor.
-    expect(byIssuer.containsKey('Boeing'), isFalse);
-    expect(batch.unsupported, 1);
+    // Steam hesabı da geliyor.
+    expect(byIssuer['Boeing']!.account, 'Sophia');
+    expect(
+      byIssuer['Boeing']!.parameters,
+      OtpParameters.steam(secret: _secret('JRZCL47CMXVOQMNPZR2F7J4RGI')),
+    );
+    expect(batch.unsupported, 0);
   }
 
   group('Aegis', () {
@@ -78,7 +82,7 @@ void main() {
 
       final batch = file.accounts();
 
-      expect(batch.accounts, hasLength(6));
+      expect(batch.accounts, hasLength(7));
       expectSampleAccounts(batch, withTotpVariants: true);
     });
 
@@ -89,7 +93,7 @@ void main() {
 
       final batch = await file.decrypt('test', aes);
 
-      expect(batch.accounts, hasLength(6));
+      expect(batch.accounts, hasLength(7));
       expectSampleAccounts(batch, withTotpVariants: true);
     }, timeout: const Timeout(Duration(minutes: 2)));
 
@@ -125,7 +129,7 @@ void main() {
 
       final batch = file.accounts();
 
-      expect(batch.accounts, hasLength(4));
+      expect(batch.accounts, hasLength(5));
       expectSampleAccounts(batch, withTotpVariants: false);
     });
 
@@ -135,7 +139,7 @@ void main() {
 
       final batch = await file.decrypt('test', aes);
 
-      expect(batch.accounts, hasLength(4));
+      expect(batch.accounts, hasLength(5));
       expectSampleAccounts(batch, withTotpVariants: false);
     });
 

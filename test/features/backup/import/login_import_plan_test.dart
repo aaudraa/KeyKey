@@ -215,10 +215,27 @@ void main() {
       expect(plan.candidates.map((c) => c.otpAlreadySaved), [false, true]);
     });
 
+    test("Bitwarden'ın steam:// anahtarı Steam hesabı oluyor", () {
+      final otp = otpFromImport(
+        ' steam://63bedwcqzktqwpesarierl5dttqfcjtk ',
+        issuer: 'Steam',
+        account: 'oyuncu',
+      )!;
+      expect(
+        otp.parameters,
+        OtpParameters.steam(
+          secret: Base32.decodeCanonical('63BEDWCQZKTQWPESARIERL5DTTQFCJTK'),
+        ),
+      );
+      expect(otp.issuer, 'Steam');
+      expect(otp.account, 'oyuncu');
+    });
+
     test('okunamayan anahtar sayılıyor, kayıt yine geliyor', () {
       final plan = planLoginImport(
         exportOf([
-          const ImportedLogin(name: 'Steam', totp: 'steam://ABCDEFGH'),
+          // Tanınmayan biçim (Steam 1.7.0'dan beri okunuyor).
+          const ImportedLogin(name: 'Yandex', totp: 'yandex://ABCDEFGH'),
           const ImportedLogin(name: 'Geçersiz', totp: 'ABC!!'),
           const ImportedLogin(name: 'Bozuk', totp: 'otpauth://totp/?x=1'),
         ]),

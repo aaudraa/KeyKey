@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/features/authenticator/application/otp_generator.dart';
+import 'package:keykey/features/authenticator/data/base32.dart';
 import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 
 import '../../core/crypto/hex.dart';
@@ -203,5 +204,34 @@ void main() {
     }
     expect(() => OtpGenerator.totpCounter(_at(0), 0), throwsArgumentError);
     expect(() => OtpGenerator.remaining(_at(0), 3601), throwsArgumentError);
+  });
+
+  group('Steam Guard', () {
+    // Steam uygulamasının ürettiği kodlar (KeePassXC'nin test değerleri).
+    final secret = Base32.decodeCanonical('63BEDWCQZKTQWPESARIERL5DTTQFCJTK');
+
+    test('bilinen anlarda Steam uygulamasıyla aynı kod', () {
+      expect(
+        OtpGenerator.steam(secret: secret, time: _at(1511200518)),
+        'FR8RV',
+      );
+      expect(
+        OtpGenerator.steam(secret: secret, time: _at(1511200714)),
+        '9P3VP',
+      );
+    });
+
+    test('codeFor Steam hesabında 5 karakter üretiyor', () {
+      final parameters = OtpParameters.steam(secret: secret);
+      expect(OtpGenerator.codeFor(parameters, _at(1511200518)), 'FR8RV');
+      final code = OtpGenerator.codeFor(parameters, _at(1700000000));
+      expect(code, hasLength(5));
+      expect(code, matches(RegExp(r'^[23456789BCDFGHJKMNPQRTVWXY]{5}$')));
+    });
+
+    test('sıradaki kod 30 saniye sonrasının kodu', () {
+      final parameters = OtpParameters.steam(secret: secret);
+      expect(OtpGenerator.nextTotp(parameters, _at(1511200518 - 30)), 'FR8RV');
+    });
   });
 }

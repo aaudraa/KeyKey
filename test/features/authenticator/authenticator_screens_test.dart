@@ -248,6 +248,33 @@ void main() {
       expect(find.text('287 082'), findsOneWidget);
     });
 
+    testWidgets('Steam kodu 5 harf, gruplanmadan, dokununca kopyalanıyor', (
+      tester,
+    ) async {
+      // KeePassXC'nin test değeri: bu anahtar bu anda FR8RV üretir.
+      now = DateTime.fromMillisecondsSinceEpoch(1511200518000, isUtc: true);
+      otps.items.add(
+        FakeOtpRepository.item(
+          OtpContent(
+            parameters: OtpParameters.steam(
+              secret: Base32.decodeCanonical(
+                '63BEDWCQZKTQWPESARIERL5DTTQFCJTK',
+              ),
+            ),
+            issuer: 'Steam',
+            account: 'oyuncu',
+          ),
+          id: 4,
+        ),
+      );
+      await openAuthenticator(tester);
+
+      expect(find.text('FR8RV'), findsOneWidget);
+      await tester.tap(find.text('FR8RV'));
+      await settle(tester);
+      expect(clipboard.copied, ['FR8RV']);
+    });
+
     testWidgets('dokununca kod boşluksuz kopyalanıyor', (tester) async {
       await openAuthenticator(tester);
 
@@ -918,7 +945,7 @@ void main() {
 
       await tester.enterText(
         find.widgetWithText(TextField, 'Gizli anahtar'),
-        'otpauth://steam/x?secret=JBSWY3DPEHPK3PXP',
+        'otpauth://yandex/x?secret=JBSWY3DPEHPK3PXP',
       );
       await settle(tester);
 
@@ -958,6 +985,46 @@ void main() {
       expect(parameters.algorithm, OtpAlgorithm.sha512);
       expect(parameters.digits, 8);
       expect(parameters.period, 60);
+    });
+
+    testWidgets('Steam türü seçilince hane ve süre gizleniyor', (tester) async {
+      await openForm(tester);
+
+      await tester.enterText(find.widgetWithText(TextField, 'Servis'), 'Steam');
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Gizli anahtar'),
+        '63BEDWCQZKTQWPESARIERL5DTTQFCJTK',
+      );
+      await tapVisible(tester, find.text('Daha fazla seçenek'));
+      await tapVisible(tester, find.widgetWithText(ActionChip, 'Gelişmiş'));
+      await tapVisible(tester, find.text('Steam Guard'));
+
+      expect(find.text('SHA512'), findsNothing);
+      expect(find.widgetWithText(TextField, '30'), findsNothing);
+      await tester.tap(find.text('Kaydet'));
+      await settle(tester);
+
+      final parameters = otps.items.last.content.parameters;
+      expect(parameters.kind, OtpKind.steam);
+      expect(parameters.digits, 5);
+    });
+
+    testWidgets('Steam bağlantısı yapıştırılınca tür Steam oluyor', (
+      tester,
+    ) async {
+      await openForm(tester);
+
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Gizli anahtar'),
+        'otpauth://steam/Steam:oyuncu?secret=JBSWY3DPEHPK3PXP&issuer=Steam',
+      );
+      await settle(tester);
+      await tester.tap(find.text('Kaydet'));
+      await settle(tester);
+
+      final added = otps.items.last.content;
+      expect(added.parameters.kind, OtpKind.steam);
+      expect(added.issuer, 'Steam');
     });
 
     testWidgets('geçersiz süre gelişmiş bölümde gösteriliyor', (tester) async {

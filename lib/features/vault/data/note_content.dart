@@ -111,4 +111,7 @@ final class NoteContent implements VaultItemContent<NoteContent> {
   @override
   NoteContent withTrashedAt(DateTime? trashedAt) =>
       copyWith(trashedAt: trashedAt);
+
+  @override
+  NoteContent withFolder(String? folder) => copyWith(folder: folder);
 }

@@ -169,12 +169,28 @@ class RecordsController<C extends VaultItemContent<C>>
   }
 
   /// Çöp kutusuna taşır.
-  Future<void> moveToTrash(VaultRecord<C> item, DateTime now) async {
-    _swap(await _openRepository.update(item, item.content.withTrashedAt(now)));
-  }
+  Future<void> moveToTrash(VaultRecord<C> item, DateTime now) =>
+      _updateLatest(item, (content) => content.withTrashedAt(now));
 
-  Future<void> restore(VaultRecord<C> item) async {
-    _swap(await _openRepository.update(item, item.content.withTrashedAt(null)));
+  /// Klasörü değiştirir; `null` klasörden çıkarır.
+  Future<void> moveToFolder(VaultRecord<C> item, String? folder) =>
+      _updateLatest(item, (content) => content.withFolder(folder));
+
+  Future<void> restore(VaultRecord<C> item) =>
+      _updateLatest(item, (content) => content.withTrashedAt(null));
+
+  /// Yalnızca [change]'in dokunduğu alanı yazar; içeriğin geri kalanı
+  /// kaydın durumdaki en son halinden gelir (ekranın kopyası eskimiş
+  /// olabilir).
+  Future<void> _updateLatest(VaultRecord<C> item, C Function(C) change) async {
+    var current = item;
+    if (state case RecordsLoaded<C>(:final items)) {
+      final idHex = loginIdHex(item.id);
+      for (final other in items) {
+        if (loginIdHex(other.id) == idHex) current = other;
+      }
+    }
+    _swap(await _openRepository.update(current, change(current.content)));
   }
 
   /// Geri al düğmesi için: kaydın en son halini kendi durumunda bulur.

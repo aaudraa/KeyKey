@@ -47,6 +47,21 @@ void main() {
       expectSame(OtpContent.fromJsonBytes(full.toJsonBytes()), full);
     });
 
+    test('Steam aynen okunuyor, sabit değerler yazılıyor', () {
+      final steam = OtpContent(
+        parameters: OtpParameters.steam(secret: secret),
+        issuer: 'Steam',
+        account: 'oyuncu',
+      );
+      final read = OtpContent.fromJsonBytes(steam.toJsonBytes());
+      expectSame(read, steam);
+      expect(json(steam)['kind'], 'steam');
+      expect(json(steam)['algorithm'], 'SHA1');
+      expect(json(steam)['digits'], 5);
+      expect(json(steam)['period'], 30);
+      expect(json(steam)['counter'], isNull);
+    });
+
     test('HOTP aynen okunuyor', () {
       final hotp = OtpContent(
         parameters: OtpParameters.hotp(secret: secret, counter: 12),
@@ -154,7 +169,7 @@ void main() {
 
     test('yanlış türler', () {
       const wrong = <String, Object?>{
-        'kind': 'steam',
+        'kind': 'yandex',
         'issuer': 1,
         'account': null,
         'algorithm': 'MD5',
@@ -198,6 +213,27 @@ void main() {
       rejects({...hotp, 'period': 30}, 'HOTP süresi');
       rejects({...hotp, 'counter': null}, 'HOTP sayaçsız');
       rejects({...hotp, 'counter': -1}, 'eksi sayaç');
+    });
+
+    test('Steam yalnızca sabit değerleriyle okunuyor', () {
+      final steam = {
+        ...valid,
+        'kind': 'steam',
+        'algorithm': 'SHA1',
+        'digits': 5,
+        'period': 30,
+      };
+      expect(
+        OtpContent.fromJsonBytes(bytes(steam)).parameters.kind,
+        OtpKind.steam,
+      );
+      rejects({...steam, 'digits': 6}, 'Steam 6 hane');
+      rejects({...steam, 'period': 60}, 'Steam 60 saniye');
+      rejects({...steam, 'period': null}, 'Steam süresiz');
+      rejects({...steam, 'algorithm': 'SHA256'}, 'Steam SHA256');
+      rejects({...steam, 'counter': 0}, 'Steam sayacı');
+      // Steam dışında 5 hane yine geçersiz.
+      rejects({...valid, 'digits': 5}, 'TOTP 5 hane');
     });
 
     test('parola kaydı kimliği 32 küçük harf onaltılık', () {

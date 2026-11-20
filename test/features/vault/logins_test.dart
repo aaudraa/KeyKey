@@ -329,6 +329,29 @@ void main() {
       expect(state.items.single.content.name, 'A');
     });
 
+    test('eski kopyayla yapılan yazmalar güncel kaydın üstüne', () async {
+      await loaded();
+      final stale = await controller().add(
+        const LoginContent(name: 'A', password: 'eski'),
+      );
+      // Arka planda bekleme süresinde doldurma ekranı parolayı güncelledi;
+      // dönüşte liste yeniden okundu.
+      await repositoryFor(session)
+          .update(stale, stale.content.copyWith(password: 'yeni'));
+      await controller().reload();
+
+      await controller().moveToFolder(stale, 'İş');
+      await controller().setFavorite(stale, favorite: true);
+      await controller().moveToTrash(stale, now);
+
+      final saved = (await repositoryFor(session).loadAll()).items.single;
+      expect(saved.content.password, 'yeni');
+      expect(saved.content.passwordHistory.single.password, 'eski');
+      expect(saved.content.folder, 'İş');
+      expect(saved.content.favorite, isTrue);
+      expect(saved.content.isTrashed, isTrue);
+    });
+
     test('ekleme, düzenleme ve silme durumu güncelliyor', () async {
       await loaded();
 

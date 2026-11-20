@@ -16,11 +16,49 @@ import 'package:keykey/features/vault/presentation/login_ids.dart';
 import 'package:keykey/features/vault/presentation/vault_screen.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
+/// Toplu seçimde bir satırın durumu ve seçimi değiştiren dokunuş.
+final class TileSelection {
+  const new({required this.selected, required this.onToggle});
+
+  final bool selected;
+  final VoidCallback onToggle;
+}
+
+/// Seçim modunda kayıt simgesinin yerine geçen daire.
+class _SelectMark extends StatelessWidget {
+  const new({required this.selected});
+
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SizedBox.square(
+      dimension: 40,
+      child: Icon(
+        selected
+            ? Icons.check_circle_rounded
+            : Icons.radio_button_unchecked_rounded,
+        size: 28,
+        color: selected
+            ? KkGlass.of(context).accent
+            : theme.colorScheme.onSurfaceVariant,
+      ),
+    );
+  }
+}
+
 /// Kasa listesinde parola satırı.
 class LoginTile extends ConsumerWidget {
-  const new({required this.item, super.key});
+  const new({required this.item, this.selection, this.onLongPress, super.key});
 
   final LoginItem item;
+
+  /// Toplu seçim açıkken dolu: dokunma seçer, kopyalama düğmesi yok.
+  final TileSelection? selection;
+
+  /// Seçimi başlatır.
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,8 +68,12 @@ class LoginTile extends ConsumerWidget {
     final name = content.name.trim();
     final idHex = loginIdHex(item.id);
     final title = Text(name.isEmpty ? '—' : name);
+    final selection = this.selection;
     return KkCard(
       flash: watchLastSaved(ref, savedLoginKey(idHex)),
+      selected: selection?.selected,
+      onLongPress: onLongPress,
+      longPressHint: onLongPress == null ? null : l10n.selectHint,
       title: content.favorite
           ? Row(
               children: [
@@ -47,18 +89,22 @@ class LoginTile extends ConsumerWidget {
             )
           : title,
       subtitle: content.username.isEmpty ? null : Text(content.username),
-      leading: Hero(
-        tag: loginAvatarHeroTag(idHex),
-        child: RecordAvatar(login: content, name: content.name),
-      ),
-      trailing: content.password.isEmpty
+      leading: selection != null
+          ? _SelectMark(selected: selection.selected)
+          : Hero(
+              tag: loginAvatarHeroTag(idHex),
+              child: RecordAvatar(login: content, name: content.name),
+            ),
+      trailing: content.password.isEmpty || selection != null
           ? null
           : KkCopyIcon(
               tooltip: l10n.vaultCopyPassword,
               color: glass.accent,
               onCopy: () => copySensitive(context, ref, content.password),
             ),
-      onTap: () => context.push(AppRoutes.vaultItem(idHex)),
+      onTap: selection != null
+          ? selection.onToggle
+          : () => context.push(AppRoutes.vaultItem(idHex)),
     );
   }
 }
@@ -107,9 +153,11 @@ String cardTitle(CardContent content) {
 
 /// Kasa listesinde kart satırı. Tam numara görünmez, düğme kopyalar.
 class CardTile extends ConsumerWidget {
-  const new({required this.item, super.key});
+  const new({required this.item, this.selection, this.onLongPress, super.key});
 
   final CardItem item;
+  final TileSelection? selection;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -118,27 +166,35 @@ class CardTile extends ConsumerWidget {
     final content = item.content;
     final idHex = loginIdHex(item.id);
     final summary = cardSummary(l10n, content, DateTime.now());
+    final selection = this.selection;
     return KkCard(
       flash: watchLastSaved(ref, savedCardKey(idHex)),
+      selected: selection?.selected,
+      onLongPress: onLongPress,
+      longPressHint: onLongPress == null ? null : l10n.selectHint,
       title: _titleWithStar(
         context,
         cardTitle(content),
         favorite: content.favorite,
       ),
       subtitle: summary.isEmpty ? null : Text(summary),
-      leading: RecordAvatar(
-        login: null,
-        name: content.name,
-        icon: Icons.credit_card_rounded,
-      ),
-      trailing: content.number.isEmpty
+      leading: selection != null
+          ? _SelectMark(selected: selection.selected)
+          : RecordAvatar(
+              login: null,
+              name: content.name,
+              icon: Icons.credit_card_rounded,
+            ),
+      trailing: content.number.isEmpty || selection != null
           ? null
           : KkCopyIcon(
               tooltip: l10n.cardCopyNumber,
               color: glass.accent,
               onCopy: () => copySensitive(context, ref, content.number),
             ),
-      onTap: () => context.push(AppRoutes.cardItem(idHex)),
+      onTap: selection != null
+          ? selection.onToggle
+          : () => context.push(AppRoutes.cardItem(idHex)),
     );
   }
 }
@@ -146,28 +202,40 @@ class CardTile extends ConsumerWidget {
 /// Kasa listesinde not satırı. Metin listede gösterilmez: not çoğu zaman
 /// sırrın kendisidir.
 class NoteTile extends ConsumerWidget {
-  const new({required this.item, super.key});
+  const new({required this.item, this.selection, this.onLongPress, super.key});
 
   final NoteItem item;
+  final TileSelection? selection;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final content = item.content;
     final idHex = loginIdHex(item.id);
     final name = content.name.trim();
+    final selection = this.selection;
     return KkCard(
       flash: watchLastSaved(ref, savedNoteKey(idHex)),
+      selected: selection?.selected,
+      onLongPress: onLongPress,
+      longPressHint: onLongPress == null
+          ? null
+          : AppLocalizations.of(context).selectHint,
       title: _titleWithStar(
         context,
         name.isEmpty ? '—' : name,
         favorite: content.favorite,
       ),
-      leading: RecordAvatar(
-        login: null,
-        name: content.name,
-        icon: Icons.sticky_note_2_outlined,
-      ),
-      onTap: () => context.push(AppRoutes.noteItem(idHex)),
+      leading: selection != null
+          ? _SelectMark(selected: selection.selected)
+          : RecordAvatar(
+              login: null,
+              name: content.name,
+              icon: Icons.sticky_note_2_outlined,
+            ),
+      onTap: selection != null
+          ? selection.onToggle
+          : () => context.push(AppRoutes.noteItem(idHex)),
     );
   }
 }

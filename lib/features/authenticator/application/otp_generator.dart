@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 
-/// HOTP (RFC 4226) ve TOTP (RFC 6238) kodlarını hesaplar.
+/// HOTP (RFC 4226), TOTP (RFC 6238) ve Steam Guard kodlarını hesaplar.
 ///
 /// Saat her zaman dışarıdan verilir, böylece testler gerçek saate bağlı
 /// kalmaz. Ayrıntılar güvenlik tasarımı belgesinin 2FA bölümünde.
@@ -15,26 +15,45 @@ abstract final class OtpGenerator {
     OtpAlgorithm algorithm = OtpAlgorithm.sha1,
     int digits = OtpParameters.defaultDigits,
   }) {
-    if (secret.isEmpty) {
-      throw ArgumentError.value(secret.length, 'secret', 'Boş anahtar');
-    }
     if (!OtpParameters.isValidDigits(digits)) {
       throw ArgumentError.value(digits, 'digits', 'Geçersiz hane sayısı');
+    }
+    final code = _truncated(secret, counter, algorithm) % _powersOfTen[digits];
+    return code.toString().padLeft(digits, '0');
+  }
+
+  /// Steam Guard kodu: [time] anının TOTP sayısı (SHA1, 30 saniye) Steam'in
+  /// 26 karakterlik alfabesiyle 5 karaktere çevrilir.
+  static String steam({required List<int> secret, required DateTime time}) {
+    var value = _truncated(
+      secret,
+      totpCounter(time, OtpParameters.defaultPeriod),
+      OtpAlgorithm.sha1,
+    );
+    final code = StringBuffer();
+    for (var i = 0; i < OtpParameters.steamDigits; i++) {
+      code.write(_steamAlphabet[value % _steamAlphabet.length]);
+      value ~/= _steamAlphabet.length;
+    }
+    return code.toString();
+  }
+
+  static const _steamAlphabet = '23456789BCDFGHJKMNPQRTVWXY';
+
+  /// HMAC'in dinamik kesmesi: son baytın düşük 4 biti konumu verir, o
+  /// konumdaki 4 bayttan işaret biti atılır. Bütün algoritmalar için aynıdır.
+  static int _truncated(List<int> secret, int counter, OtpAlgorithm algorithm) {
+    if (secret.isEmpty) {
+      throw ArgumentError.value(secret.length, 'secret', 'Boş anahtar');
     }
     final message = Uint8List(8);
     ByteData.sublistView(message).setInt64(0, counter);
     final hash = Hmac(_hashFor(algorithm), secret).convert(message).bytes;
-
-    // Dinamik kesme: son baytın düşük 4 biti konumu verir, o konumdaki
-    // 4 bayttan işaret biti atılır. Bütün algoritmalar için aynıdır.
     final offset = hash[hash.length - 1] & 0x0f;
-    final binary =
-        ((hash[offset] & 0x7f) << 24) |
+    return ((hash[offset] & 0x7f) << 24) |
         (hash[offset + 1] << 16) |
         (hash[offset + 2] << 8) |
         hash[offset + 3];
-    final code = binary % _powersOfTen[digits];
-    return code.toString().padLeft(digits, '0');
   }
 
   /// [time] anındaki TOTP sayacı: `floor(unix saniyesi / period)`.
@@ -86,10 +105,11 @@ abstract final class OtpGenerator {
         algorithm: parameters.algorithm,
         digits: parameters.digits,
       ),
+      OtpKind.steam => steam(secret: parameters.secret, time: time),
     };
   }
 
-  /// TOTP'de bir sonraki sürenin kodu. HOTP'de anlamı yoktur.
+  /// TOTP'de ve Steam'de bir sonraki sürenin kodu. HOTP'de anlamı yoktur.
   static String nextTotp(OtpParameters parameters, DateTime time) {
     final period = parameters.period;
     if (period == null) throw StateError('HOTP için sıradaki kod yok.');

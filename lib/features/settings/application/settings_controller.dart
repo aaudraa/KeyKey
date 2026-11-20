@@ -14,6 +14,11 @@ final settingsRepositoryFactoryProvider =
     );
 
 /// Kasadaki ayarlar. Kasa kilitliyken veya ayarlar okunurken `null`.
+/// Gizli olmayan kutularda normal klavye; ayarlar yüklenmemişse kapalı.
+final plainKeyboardProvider = Provider<bool>(
+  (ref) => ref.watch(settingsControllerProvider)?.plainKeyboard ?? false,
+);
+
 final settingsControllerProvider =
     NotifierProvider<SettingsController, AppSettings?>(SettingsController.new);
 
@@ -84,6 +89,12 @@ class SettingsController extends Notifier<AppSettings?> {
   /// Üreticinin son kullanılan seçenekleri; üretilen parola değil.
   Future<void> setGenerator(GeneratorPreferences generator) =>
       _update((current) => current.copyWith(generator: generator));
+
+  Future<void> setBackgroundLock(BackgroundLock lock) =>
+      _update((current) => current.copyWith(backgroundLock: lock));
+
+  Future<void> setPlainKeyboard({required bool value}) =>
+      _update((current) => current.copyWith(plainKeyboard: value));
 
   /// Otomatik yedeğin klasörü; `null` kapatır.
   Future<void> setAutoBackupFolder(AutoBackupFolder? folder) =>

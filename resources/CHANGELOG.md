@@ -2,6 +2,26 @@
 
 KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesinde](docs/yayin.md#sürüm-numarası). `v1.0.0`'dan önceki sürümler fazların sonunu işaretler ve hata ayıklama anahtarıyla imzalıdır; kalıcı bir kurulum için kullanılmamalıdır.
 
+## 1.7.0 (2026-11-20): Kullanım kolaylıkları
+
+Faz 18 ([tasarım](docs/kullanim-kolayligi.md)).
+
+### Önemli
+
+- **1.7.0'ın yedeklerini 1.6.0 ve öncesi açamaz.** Yedeğin içerik sürümü 3 oldu: yeni ayarlar ve Steam hesapları eski sürümde okunamazdı. Eski sürüm artık "bozuk" değil "daha yeni bir yedek" der (1.3.0 ve öncesi yine "bozuk ya da değiştirilmiş" der). Yedek bozuk değildir; KeyKey'i güncellemek yeter.
+
+### Eklenenler
+
+- **Arka planda kilitlenme süresi:** Ayarlar → Güvenlik'te Hemen (varsayılan), 30 saniye ya da 1 dakika. Süre dolmadan dönülürse kasa açık kalır. Süre iki saatle ölçülür: telefon uyusa ya da saati geri alınsa bile uzamaz. 5 dakika dokunmama kilidi ayrıca sürer. Dönüşte parola listesi yeniden okunur (otomatik doldurma bu arada bir parola eklemiş olabilir).
+- **Gizli olmayan kutularda normal klavye** (varsayılan kapalı): kayıt adı, klasör, arama ve 2FA servis adı normal klavye ve kelime başı büyük harfle, web adresi adres klavyesiyle açılır; bu kutularda klavye öneri gösterir, öğrenme isteği kapalı kalır. Parola, kullanıcı adı, notlar ve kart bilgileri her zaman öğrenmeyen klavyeyle açılır.
+- **Toplu seçim:** Parolalar, Kartlar ve Notlar listelerinde uzun basınca seçim başlar; tümünü seç, klasöre taşı (yeni klasör ya da klasörden çıkar dahil) ve çöp kutusuna taşı (Geri al ile). Seçim yalnızca görünen kayıtlarla çalışır; arama daralınca gizlenen seçimler düşer.
+- **Steam Guard kodları:** 5 karakterlik Steam kodları. Aegis (`steam`), 2FAS (`STEAM`), `otpauth://steam/…`, `encoder=steam` bağlantıları ve Bitwarden'ın `steam://` anahtarı içe aktarılır; elle eklemede **Gelişmiş** altında **Steam Guard** türü. Bitwarden biçimli dışa aktarma Steam hesabını `steam://` ile yazar.
+
+### Değişenler
+
+- 2FA formunda tür seçimi düğme yerine çiplerle (üç tür dar ekrana sığsın diye).
+- Desteklenmeyen 2FA hesabı metni örnek olarak Steam yerine Yandex diyor.
+
 ## 1.6.0 (2026-11-20): Sızıntı kontrolü, kartlar ve notlar menüde
 
 Faz 16 ([tasarım](docs/internet-ve-sizinti.md)) ve Faz 17 ([tasarım](docs/gezinme.md)).

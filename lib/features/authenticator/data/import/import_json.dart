@@ -96,6 +96,16 @@ abstract final class ImportJson {
         : null;
     if (algorithmValue == null) return null;
 
+    if (type.toLowerCase() == 'steam') {
+      // Steam'in değerleri sabittir; dosyada farklıysa hesap bozuk sayılır.
+      if (algorithmValue != OtpAlgorithm.sha1 ||
+          (digits != null && integer(digits) != OtpParameters.steamDigits) ||
+          (period != null && integer(period) != OtpParameters.defaultPeriod)) {
+        return null;
+      }
+      return OtpParameters.steam(secret: secretBytes);
+    }
+
     final digitsValue = digits == null
         ? OtpParameters.defaultDigits
         : integer(digits);

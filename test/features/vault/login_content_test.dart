@@ -270,6 +270,46 @@ void main() {
     });
   });
 
+  group('başka yerden değişen kayda düzenleme', () {
+    const original = LoginContent(
+      name: 'Posta',
+      username: 'ali',
+      password: 'eski',
+      urls: ['https://posta.example.com'],
+      folder: 'Kişisel',
+    );
+    // Form açıkken doldurma ekranı parolayı güncelledi ve bir uygulama bağladı.
+    final latest = original.copyWith(
+      password: 'yeni',
+      apps: [
+        LoginApp(packageName: 'com.example.posta', certsSha256: ['ab' * 32]),
+      ],
+      favorite: true,
+    );
+
+    test('formda değişmeyen alanlar güncel kayıttaki gibi kalıyor', () {
+      final edited = original.copyWith(name: 'Posta kutusu');
+
+      final rebased = edited.rebase(original: original, latest: latest);
+
+      expect(rebased.name, 'Posta kutusu');
+      expect(rebased.password, 'yeni');
+      expect(rebased.apps, latest.apps);
+      expect(rebased.favorite, isTrue);
+      expect(rebased.folder, 'Kişisel');
+    });
+
+    test('formda değişen parola ve klasör kazanıyor', () {
+      final edited = original.copyWith(password: 'benim', folder: null);
+
+      final rebased = edited.rebase(original: original, latest: latest);
+
+      expect(rebased.password, 'benim');
+      expect(rebased.folder, isNull);
+      expect(rebased.apps, latest.apps);
+    });
+  });
+
   group('parola geçmişi', () {
     final now = DateTime.utc(2026, 11, 5);
     const original = LoginContent(name: 'A', password: 'eski');

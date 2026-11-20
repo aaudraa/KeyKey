@@ -36,6 +36,7 @@ import 'package:keykey/features/backup/application/auto_backup_controller.dart';
 import 'package:keykey/features/backup/application/backup_service.dart';
 import 'package:keykey/features/backup/application/restore_service.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
+import 'package:keykey/features/lock/application/lock_clock.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
@@ -859,6 +860,25 @@ final Set<String> _commonPasswords = Wordlists.parseCommon(
 Future<void> skipIntro(WidgetTester tester) async {
   await tester.tap(find.text('Atla'));
   await tester.pumpAndSettle();
+}
+
+/// Arka plan kilidinin saatleri; testler ikisini ayrı ayrı ilerletir.
+class FakeLockClock implements LockClock {
+  DateTime _wall = DateTime.utc(2026, 11, 20, 12);
+  Duration _elapsed = Duration.zero;
+
+  @override
+  DateTime now() => _wall;
+
+  @override
+  Duration elapsed() => _elapsed;
+
+  /// Tekdüze saati [monotonic] kadar, duvar saatini [wall] (verilmezse
+  /// aynı) kadar ilerletir.
+  void advance(Duration monotonic, {Duration? wall}) {
+    _elapsed += monotonic;
+    _wall = _wall.add(wall ?? monotonic);
+  }
 }
 
 /// Uygulamayı verilen kasa durumuyla açar.

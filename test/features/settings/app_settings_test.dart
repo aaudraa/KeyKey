@@ -335,6 +335,104 @@ void main() {
     });
   });
 
+  group('sürüm 6: arka plan kilidi ve klavye', () {
+    const v5 =
+        '{"version":5,"otpRequireAuth":false,"autofillCopyOtp":true,'
+        '"lastBackupAt":null,"backupReminderSnoozedUntil":null,'
+        '"vaultSort":"name","generator":{"passphrase":false,"length":20,'
+        '"lowercase":true,"uppercase":true,"digits":true,"symbols":true,'
+        '"words":6},"autoBackupFolder":null}';
+    String v6(String seconds, String plain) => v5
+        .replaceFirst('"version":5', '"version":6')
+        .replaceFirst(
+          '"autoBackupFolder"',
+          '"backgroundLockSeconds":$seconds,"plainKeyboard":$plain,'
+              '"autoBackupFolder"',
+        );
+
+    test('varsayılanlar: hemen kilit, gizli klavye', () {
+      expect(AppSettings.defaults.backgroundLock, BackgroundLock.immediately);
+      expect(AppSettings.defaults.plainKeyboard, isFalse);
+      expect(
+        AppSettings.requireAuth.backgroundLock,
+        BackgroundLock.immediately,
+      );
+      expect(AppSettings.requireAuth.plainKeyboard, isFalse);
+    });
+
+    test('süreler: hemen 0, 30 saniye, 1 dakika', () {
+      expect(BackgroundLock.immediately.delay, Duration.zero);
+      expect(BackgroundLock.seconds30.delay, const Duration(seconds: 30));
+      expect(BackgroundLock.minute1.delay, const Duration(minutes: 1));
+    });
+
+    test('sürüm 5 kaydı okunuyor, hemen kilit ve gizli klavye', () async {
+      await putRaw(encrypt(v5));
+      final settings = await repository.load();
+      expect(settings.otpRequireAuth, isFalse);
+      expect(settings.backgroundLock, BackgroundLock.immediately);
+      expect(settings.plainKeyboard, isFalse);
+    });
+
+    test('yazılan sürüm 6 kaydı aynen okunuyor', () async {
+      await repository.save(
+        AppSettings.defaults.copyWith(
+          backgroundLock: BackgroundLock.minute1,
+          plainKeyboard: true,
+        ),
+      );
+      final settings = await repository.load();
+      expect(settings.backgroundLock, BackgroundLock.minute1);
+      expect(settings.plainKeyboard, isTrue);
+      expect(settings.otpRequireAuth, isFalse);
+      final json = jsonDecode(
+        utf8.decode(settings.toJsonBytes()),
+      ) as Map<String, Object?>;
+      expect(json['version'], 6);
+      expect(json['backgroundLockSeconds'], 60);
+      expect(json['plainKeyboard'], isTrue);
+    });
+
+    test('elle yazılmış sürüm 6 kaydı okunuyor', () async {
+      await putRaw(encrypt(v6('30', 'true')));
+      final settings = await repository.load();
+      expect(settings.backgroundLock, BackgroundLock.seconds30);
+      expect(settings.plainKeyboard, isTrue);
+    });
+
+    test('copyWith ve withAutoBackupFolder yeni alanları koruyor', () {
+      final settings = AppSettings.defaults
+          .copyWith(
+            backgroundLock: BackgroundLock.seconds30,
+            plainKeyboard: true,
+          )
+          .withAutoBackupFolder(null)
+          .copyWith(otpRequireAuth: true);
+      expect(settings.backgroundLock, BackgroundLock.seconds30);
+      expect(settings.plainKeyboard, isTrue);
+    });
+
+    test('geçersiz süre ya da klavye alanı kaydı okunamaz yapıyor', () async {
+      for (final json in [
+        v6('45', 'false'),
+        v6('-30', 'false'),
+        v6('"30"', 'false'),
+        v6('30.0', 'false'),
+        v6('null', 'false'),
+        v6('30', '1'),
+        v6('30', 'null'),
+        v6('30', '"true"'),
+        v5.replaceFirst('"version":5', '"version":6'),
+      ]) {
+        await putRaw(encrypt(json));
+        final settings = await repository.load();
+        expect(settings.otpRequireAuth, isTrue, reason: json);
+        expect(settings.backgroundLock, BackgroundLock.immediately);
+        expect(settings.plainKeyboard, isFalse);
+      }
+    });
+  });
+
   test('aynı kimlikte başka türden kayıt okunamaz sayılıyor', () async {
     await putRaw(Uint8List(64), type: 'login');
     expect((await repository.load()).otpRequireAuth, isTrue);

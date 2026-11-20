@@ -452,6 +452,71 @@ void main() {
     expect(find.text('Ana parolayı değiştir'), findsOneWidget);
   });
 
+  group('arka plan kilidi ve klavye', () {
+    Future<FakeSettingsRepository> pumpWith(WidgetTester tester) async {
+      final settings = FakeSettingsRepository();
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        settings: settings,
+      );
+      await tester.tap(find.byIcon(Icons.settings_outlined));
+      await tester.pumpAndSettle();
+      return settings;
+    }
+
+    testWidgets('arka planda kilitlenme süresi seçiliyor', (tester) async {
+      final settings = await pumpWith(tester);
+      final row = find.widgetWithText(ListTile, 'Arka planda kilitlenme');
+      await tester.scrollUntilVisible(row, 100);
+      expect(
+        find.descendant(of: row, matching: find.text('Hemen')),
+        findsOneWidget,
+      );
+
+      await tester.tap(row);
+      await tester.pumpAndSettle();
+      for (final option in ['Hemen', '30 saniye', '1 dakika']) {
+        expect(find.widgetWithText(ListTile, option), findsWidgets);
+      }
+      await tester.tap(find.widgetWithText(ListTile, '30 saniye').last);
+      await tester.pumpAndSettle();
+
+      expect(settings.settings.backgroundLock, BackgroundLock.seconds30);
+      expect(
+        find.descendant(of: row, matching: find.text('30 saniye')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('pencere seçilmeden kapanırsa süre değişmiyor', (tester) async {
+      final settings = await pumpWith(tester);
+      final row = find.widgetWithText(ListTile, 'Arka planda kilitlenme');
+      await tester.scrollUntilVisible(row, 100);
+      await tester.tap(row);
+      await tester.pumpAndSettle();
+      await tester.tapAt(const Offset(20, 20));
+      await tester.pumpAndSettle();
+      expect(settings.settings.backgroundLock, BackgroundLock.immediately);
+    });
+
+    testWidgets('normal klavye anahtarı kaydediliyor', (tester) async {
+      final settings = await pumpWith(tester);
+      final tile = find.widgetWithText(
+        KkSwitchTile,
+        'Gizli olmayan kutularda normal klavye',
+      );
+      await tester.scrollUntilVisible(tile, 100);
+      expect(tester.widget<KkSwitchTile>(tile).value, isFalse);
+
+      await tester.tap(tile);
+      await tester.pumpAndSettle();
+      expect(settings.settings.plainKeyboard, isTrue);
+      expect(tester.widget<KkSwitchTile>(tile).value, isTrue);
+    });
+  });
+
   testWidgets('parola değişince otomatik yedek klasörüne de yazılıyor', (
     tester,
   ) async {
@@ -558,6 +623,11 @@ void main() {
       await tester.pumpAndSettle();
       // Bölüm yedekleme girişlerinin altında; ekrana kaydırılır.
       await tester.scrollUntilVisible(find.text('Doldurma servisi'), 300);
+      // Satır cam başlığın altında kalmasın diye ortaya getirilir.
+      await Scrollable.ensureVisible(
+        tester.element(find.text('Doldurma servisi')),
+        alignment: 0.5,
+      );
       await tester.pumpAndSettle();
       return setup;
     }
@@ -631,6 +701,11 @@ void main() {
       await tester.tap(find.byIcon(Icons.settings_outlined));
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(find.text('Doldurma servisi'), 300);
+      // Satır cam başlığın altında kalmasın diye ortaya getirilir.
+      await Scrollable.ensureVisible(
+        tester.element(find.text('Doldurma servisi')),
+        alignment: 0.5,
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Doldurma servisi'));

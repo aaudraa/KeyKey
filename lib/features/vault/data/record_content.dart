@@ -30,6 +30,9 @@ abstract interface class VaultItemContent<Self extends VaultItemContent<Self>> {
 
   /// `null` kaydı çöp kutusundan çıkarır.
   Self withTrashedAt(DateTime? trashedAt);
+
+  /// `null` kaydı klasörden çıkarır.
+  Self withFolder(String? folder);
 }
 
 /// `copyWith` içinde "verilmedi" ile `null`'ı ayırmak için.

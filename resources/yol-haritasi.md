@@ -2,7 +2,7 @@
 
 KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. 1.5.0'a kadar tamamen çevrimdışıydı; 2026-11-19'da internet gerektiren özelliklere de açılma kararı alındı ([İnternet](#temel-kararlar)). Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-20 · **Şu anki faz:** 16 ve 17 bitti; sıradaki 18, kullanım kolaylıkları. [1.6.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.6.0) yayında (sızıntı kontrolü, kartlar ve notlar alttaki menüde; 1.4.0'dan beri gelenlerle birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
+**Son güncelleme:** 2026-11-20 · **Şu anki faz:** 18 (kullanım kolaylıkları) bitti, 1.7.0 olarak çıkıyor ([#157](https://github.com/aaudraa/KeyKey/issues/157), tasarım: [kullanım kolaylıkları](docs/kullanim-kolayligi.md)); sıradaki 19 (senkron). [1.6.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.6.0) yayında (sızıntı kontrolü, kartlar ve notlar alttaki menüde; 1.4.0'dan beri gelenlerle birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
 
 > [!IMPORTANT]
 > **KeyKey 1.0 yayında.** Projenin kendi güvenlik denetimi tamamlandı, ama bağımsız bir denetim yapılmadı. Şifreli yedeğini düzenli al ve telefonun dışında da sakla.
@@ -31,7 +31,7 @@ KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uyg
 | 15 | Kart doldurma | M | 14 | `faz/15-kart-doldurma` | Tamamlandı (1.5.0) |
 | 16 | İnternete açılma ve sızıntı kontrolü | M | 14 | `faz/16-internet` | Tamamlandı (1.6.0) |
 | 17 | Kartlar ve notlar için gezinme | S | 14 | `faz/17-gezinme` | Tamamlandı (1.6.0) |
-| 18 | Kilit süresi, klavye, toplu seçim, Steam Guard | M | 14 | `faz/18-kullanim-kolayligi` | Planlandı |
+| 18 | Kilit süresi, klavye, toplu seçim, Steam Guard | M | 14 | `faz/18-kullanim-kolayligi` | Tamamlandı (1.7.0) |
 | 19 | Senkron (WebDAV, Google Drive) | XL | 16 | `faz/19-senkron` | Planlandı |
 | 20 | KeePass (`.kdbx`) içe aktarma | L | 14 | `faz/20-keepass` | Planlandı |
 | 21 | Passkey sağlayıcısı | XL | 15 | `faz/21-passkey` | Planlandı |
@@ -702,7 +702,7 @@ Proje sahibinin 2026-11-20 gecesi isteği ([#153](https://github.com/aaudraa/Key
 - [x] Dar ekranda menünün boşlukları daralıyor (320 dp ve %200 yazıda taşma yok, sekmeler 48 dp)
 - [x] Tanıtımın "Nerede ne var" sayfası, kılavuz, cam tasarım belgesi, değişiklik günlüğü
 - [x] Erişilebilirlik testleri kart ve not listeleri, ayrıntıları ve çöp kutusu için
-- [x] Android 11 emülatöründe bütün cihaz testleri (Android 17'deki koşu bellek yüzünden yarıda kaldı)
+- [x] Android 11 ve 17 emülatörlerinde bütün cihaz testleri (Android 17'deki koşu yayından sonra tamamlandı)
 - [x] Son gözden geçirme
 
 **Uygulama sırasında verilen kararlar:**
@@ -711,11 +711,39 @@ Proje sahibinin 2026-11-20 gecesi isteği ([#153](https://github.com/aaudraa/Key
 - Yedek hatırlatıcısı ve okunamayan kayıt uyarısı bütün kasa için; yalnızca açılıştaki sekmede, Parolalar'da görünür.
 - Her sekmenin çöp kutusu yalnızca kendi türünü gösterir; "Tümünü geri yükle" ve "Çöpü boşalt" da yalnızca o türe dokunur.
 
-**Cihazda (2026-11-20):** Android 11 emülatöründe bütün cihaz testleri geçti; iki eski test (arama etiketi, seçili sekmenin simgesi) düzeltildi ve yeniden koşuda geçti. Android 17'deki tam koşu, bilgisayarın belleği azaldığı için ilk 4 testten sonra durduruldu ve yeniden başlatılmadı; Android 17'de aynı koşu Faz 16 koduyla tam geçmişti.
+**Cihazda (2026-11-20):** Android 11 emülatöründe bütün cihaz testleri geçti; iki eski test (arama etiketi, seçili sekmenin simgesi) düzeltildi ve yeniden koşuda geçti. Android 17'deki tam koşu, bilgisayarın belleği azaldığı için ilk 4 testten sonra durduruldu ve yeniden başlatılmadı; Android 17'de aynı koşu Faz 16 koduyla tam geçmişti. Proje sahibinin isteğiyle yayından sonra (2026-11-20 öğleden sonra) 1.6.0'ın `main`'i Android 17'de baştan sona koşuldu: entegrasyon testlerinden 27'si geçti, 7'si bu emülatörde atlandı; parmak izi (4/4), pano (3/3) ve kamera (izin verilince ve verilmeyince) denemeleri geçti.
 
 1.6.0 olarak yayımlandı (2026-11-20, [#155](https://github.com/aaudraa/KeyKey/pull/155), Faz 16 ile birlikte).
 
 **Bitti sayılması için:** kart ve not alttaki menüden açılıyor; kasa listesinin üstünde tür düğmesi yok; "+" ile eklenen kart Kartlar'da, not Notlar'da görünüyor; her çöp kutusu yalnızca kendi türünü geri yüklüyor; 320 dp ekranda menü taşmıyor.
+
+### Faz 18 — Kullanım kolaylıkları
+
+1.0 sonrası listesinin dört küçük işi ([#157](https://github.com/aaudraa/KeyKey/issues/157)). Proje sahibi 2026-11-20'de yol haritasını onay beklemeden bitirmemi istedi; kararlar bu yüzden benim. Tasarım: [`kullanim-kolayligi.md`](docs/kullanim-kolayligi.md), plan: [`kullanim-kolayligi-plani.md`](docs/kullanim-kolayligi-plani.md).
+
+- [x] Ayarlar sürüm 6: arka plan kilidi süresi ve klavye ayarı; yedeğin içerik sürümü 3
+- [x] Arka planda kilitlenme süresi (Hemen, 30 saniye, 1 dakika), iki saatle ölçülüyor; dönüşte parola listesi yeniden okunuyor
+- [x] Gizli olmayan kutularda normal klavye (isteğe bağlı)
+- [x] Parolalar, Kartlar ve Notlar'da toplu seçim: tümünü seç, klasöre taşı, çöp kutusuna taşı ve geri al
+- [x] Steam Guard kodları: içe aktarma (Aegis, 2FAS, otpauth, Bitwarden `steam://`), elle ekleme, Bitwarden dışa aktarma
+- [x] Android 17 ve 11 emülatörlerinde bütün cihaz testleri ve bu fazın cihaz denemeleri
+- [x] Kılavuz, güvenlik tasarımı, değişiklik günlüğü, mağaza notu
+- [x] Son gözden geçirme
+
+**Uygulama sırasında verilen kararlar:**
+
+- Kasa ayarları sürüm 6 olunca 1.6.0, 1.7.0'ın yedeğindeki ayar kaydını okuyamaz ve yedeği "bozuk" sanardı; Steam hesabı da öyle. Yedeğin içerik sürümü 3 oldu ve her yedek bu sürümle yazılıyor (kayıtlar şifreli olduğu için içlerine bakılamıyor). Eski sürüm artık "daha yeni bir yedek" diyor; 1.6.0'a geri dönüş için yedek açılamıyor.
+- Bekleme süresini ya da klavye ayarını gevşetmek kimlik doğrulaması istemiyor: ayarı değiştirebilen kişi kasayı zaten açık tutuyor. Bekleme süresinde kasa açık kaldığı için 2FA ek onayı da sürüyor.
+- Kullanıcı adı, özel alan adları ve kart sahibi her ayarda öğrenmeyen klavyede kalıyor; işaretlenmemiş yeni bir kutu da öyle.
+- Bitwarden Steam hesabını yalnızca `steam://ANAHTAR` biçiminde tanıyor; `otpauth://steam/…` verilince 5 haneli sayı, yani yanlış kod üretiyor. Bitwarden biçimli dışa aktarma bu yüzden `steam://` yazıyor, içe aktarma da okuyor.
+- 2FA formunda üç tür dar ekrana sığmadığı için tür seçimi çiplerle.
+- Normal klavyeli kutularda klavyenin öneri şeridi açık, düzeltme ve öğrenme isteği kapalı. Tasarım öneriyi de kapalı istiyordu, ama Flutter Android'de öneriyi kapatan her kutuyu görünür parola klavyesine çeviriyor; cihaz denemesinde ayar hiçbir şeyi değiştirmiyordu (ad kutusu `0x82091`, web adresi `0x80091`). Şimdi ad `0x2001` (kelime başı büyük harf), web adresi `0x11` (adres klavyesi).
+
+**Son gözden geçirme:** Bağımsız gözden geçirme iki önemli bulgu verdi, ikisi de önce testle düzeltildi. (1) Bekleme süresinde açık kalan bir düzenleme formu ya da toplu işlem, doldurma ekranının bu arada kaydettiği yeni parolayı eski kopyayla ezebiliyordu; artık küçük yazmalar kaydın en son hâline yapılıyor, form yalnızca kullanıcının değiştirdiği alanları taşıyor. (2) Dart'ın `Stopwatch`'ı telefon uyurken duruyor; uyku ile saati geri almak bir araya gelince süre uzayabiliyordu. Tekdüze saat Android'de `CLOCK_BOOTTIME` oldu (FFI ile `clock_gettime`); bir cihaz testi bunu `/proc/uptime` ile karşılaştırıyor. Tasarımın "kelime başı büyük harf" maddesine de dönüldü. Küçük bulgular (5 dakika kilidinin dönüşte yeniden kurulmaması, toplu klasör penceresinde harf büyüklüğü, TalkBack'in seçili olmayan satırı okuması gibi) sonraya kaldı.
+
+**Cihazda (2026-11-20):** Android 17'de bütün cihaz testleri geçti (entegrasyonda iki içe aktarma testinin hesap sayısı Steam yüzünden değişmişti, düzeltilip yeniden koşuldu). Bu fazın denemeleri Android 17'de gerçek kullanıcı yolundan: varsayılan ayarda dönüşte kasa kilitli; 30 saniye ayarında kısa dönüşte açık, 40 saniyelik dönüşte kilitli; normal klavye ayarında ad ve web adresi doğru klavye türüyle, kullanıcı adı ve parola yine görünür parola klavyesiyle; iki kayıt seçilip çöpe taşındı, "Geri al" ikisini de getirdi; Steam hesabı elle eklendi, kopyalanan kod bağımsız bir Python hesabıyla aynı. Android 11'de bütün entegrasyon testleri (yeni saat testi dahil), parmak izi, pano ve kamera testleri geçti; normal klavye ayarında kutu türleri Android 17'dekiyle aynı.
+
+**Bitti sayılması için:** 30 saniye ayarında 10 saniye sonra dönülünce kasa açık, 31 saniye sonra, telefon uyuyup döndüğünde ya da saat geri alındığında kilitli; normal klavye ayarında parola kutusu yine öğrenmeyen klavyede; aramayla gizlenen seçili kayıt çöpe gitmiyor; Steam kodu Steam uygulamasının kodlarıyla aynı.
 
 ## 1.0 sonrası
 
@@ -733,17 +761,17 @@ Proje sahibinin 2026-11-20 gecesi isteği ([#153](https://github.com/aaudraa/Key
 | Kart ve güvenli not kayıtları | 14 | Kayıt modeli türlere açık; veritabanında `type` sütunu zaten var. Tasarım: [kart ve not](docs/kart-ve-not.md). |
 | Kart doldurma | 15 | Android'in doldurma sistemi kart alanlarını da tanıyor (`creditCardNumber` vb.). |
 | Sızıntı kontrolü (Have I Been Pwned) | 16 | k-anonimlik ile parolayı göndermeden çalışır, internet gerektirir. |
-| Otomatik senkron (WebDAV, Google Drive) | 18 | Uçtan uca şifreli. Önce WebDAV; Drive için OAuth istemcisi proje sahibinin hesabında açılır. |
-| Arka plan kilidinde bekleme süresi | 17 | Kullanıcının seçtiği kısa süre (30 sn, 1 dk), varsayılan "hemen". |
-| Gizli olmayan alanlarda normal klavye | 17 | Ad, site, klasör ve aramada büyük harf ve adres klavyesi. Bugün bütün kutular bilerek `visiblePassword` açıyor, çünkü klavyelerin çoğu öğrenme kapatma isteğini ancak böyle uyguluyor; normal klavyede kayıt adları ve siteler klavyenin sözlüğüne girebilir. Ayar olarak gelir ([ayrıntı](docs/kullanici-gozuyle.md#proje-sahibinin-kararına-bırakılanlar)). |
-| Toplu seçim | 17 | Çoklu silme ve klasöre taşıma. |
-| Steam Guard kodları | 17 | 2FA tarafı için. |
-| KeePass (`.kdbx`) içe aktarma | 19 | KDBX çoğunlukla Argon2d kullanır, libsodium'da yok; ayrı ve incelenmiş bir uygulama gerekir. |
-| Passkey ve Credential Manager sağlayıcısı | 20 | Android 14 ve üstü. Passkey'ler çoğunlukla P-256 (ES256) ister, libsodium'da yok; Android'in kendi kripto sağlayıcısı kullanılır. |
-| İşlemciye göre bölünmüş APK | 21 | Evrensel APK 80 MB. Bölünmüş APK'lar evrenselin yanına eklenir; Obtainium işlemciye uygun olanı seçebilir. |
-| Kendi F-Droid deposu | 21 | F-Droid istemcisine eklenebilen kendi depomuz (`fdroid repo`, örneğin GitHub Pages'te). Ana depoya girmeden F-Droid kullanıcılarına güncelleme verir; imza bizim. |
-| KeyKey klavyesi | 22 | Giriş kutularını doldurma sistemine bildirmeyen uygulamalarda da doldurmak için kendi klavyesi (KeePassDX'teki gibi). Klavyenin kendisi de güvenlik incelemesi ister. Çıkış noktası: [#94](https://github.com/aaudraa/KeyKey/issues/94), [doldurma sistemine katılmayan ekranlar](docs/guvenlik-tasarimi.md#doldurma-sistemine-katılmayan-ekranlar). |
-| Windows | 23 | Windows derlemesi için araçlar hazır; otomatik doldurma yok, kasa ve 2FA var. iOS ve tarayıcı eklentisi planda değil (iOS için Mac gerekir). |
+| Otomatik senkron (WebDAV, Google Drive) | 19 | Uçtan uca şifreli. Önce WebDAV; Drive için OAuth istemcisi proje sahibinin hesabında açılır. |
+| Arka plan kilidinde bekleme süresi | 18 | Kullanıcının seçtiği kısa süre (30 sn, 1 dk), varsayılan "hemen". |
+| Gizli olmayan alanlarda normal klavye | 18 | Ad, site, klasör ve aramada büyük harf ve adres klavyesi. Bugün bütün kutular bilerek `visiblePassword` açıyor, çünkü klavyelerin çoğu öğrenme kapatma isteğini ancak böyle uyguluyor; normal klavyede kayıt adları ve siteler klavyenin sözlüğüne girebilir. Ayar olarak gelir ([ayrıntı](docs/kullanici-gozuyle.md#proje-sahibinin-kararına-bırakılanlar)). |
+| Toplu seçim | 18 | Çoklu silme ve klasöre taşıma. |
+| Steam Guard kodları | 18 | 2FA tarafı için. |
+| KeePass (`.kdbx`) içe aktarma | 20 | KDBX çoğunlukla Argon2d kullanır, libsodium'da yok; ayrı ve incelenmiş bir uygulama gerekir. |
+| Passkey ve Credential Manager sağlayıcısı | 21 | Android 14 ve üstü. Passkey'ler çoğunlukla P-256 (ES256) ister, libsodium'da yok; Android'in kendi kripto sağlayıcısı kullanılır. |
+| İşlemciye göre bölünmüş APK | 22 | Evrensel APK 80 MB. Bölünmüş APK'lar evrenselin yanına eklenir; Obtainium işlemciye uygun olanı seçebilir. |
+| Kendi F-Droid deposu | 22 | F-Droid istemcisine eklenebilen kendi depomuz (`fdroid repo`, örneğin GitHub Pages'te). Ana depoya girmeden F-Droid kullanıcılarına güncelleme verir; imza bizim. |
+| KeyKey klavyesi | 23 | Giriş kutularını doldurma sistemine bildirmeyen uygulamalarda da doldurmak için kendi klavyesi (KeePassDX'teki gibi). Klavyenin kendisi de güvenlik incelemesi ister. Çıkış noktası: [#94](https://github.com/aaudraa/KeyKey/issues/94), [doldurma sistemine katılmayan ekranlar](docs/guvenlik-tasarimi.md#doldurma-sistemine-katılmayan-ekranlar). |
+| Windows | 24 | Windows derlemesi için araçlar hazır; otomatik doldurma yok, kasa ve 2FA var. iOS ve tarayıcı eklentisi planda değil (iOS için Mac gerekir). |
 | IzzyOnDroid | — | Başvurulmuyor (2026-11-17): yapay zekâyla yazılmış kodu kabul etmiyor, APK başına 30 MB sınırı var. Ayrıntılar: [F-Droid tasarımı](docs/f-droid.md#izzyondroid-neden-yok). |
 | F-Droid ana deposu | — | İlk başvuru 2026-11-18'de kabul edilmedi ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)): 3 aydan yeni ve "benzersiz özellik yok". 2027-02-04'ten sonra yeniden başvurulabilir; passkey ve senkron ikinci gerekçeye cevap olabilir. İnternet özellikleri gelince F-Droid kayda `NonFreeNet` gibi bir uyarı ekleyebilir. Tarif ve süreç [başvuru belgesinde](f-droid/basvuru.md). F-Droid kaynaktan derler, derleme bizimkiyle birebir aynıysa bizim imzamızla yayımlar ([yeniden üretilebilir derleme](docs/yayin.md#yeniden-üretilebilir-derleme)). |
 | Play Store | — | Şimdilik yok (2026-11-09 kararı). 25 $ ücret ve kimlik, yeni hesaplarda 12 kişilik 14 günlük kapalı test; Google kendi imza anahtarını kullandığı için Play sürümü GitHub sürümünün üstüne kurulamaz. |
