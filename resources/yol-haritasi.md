@@ -662,6 +662,33 @@ Testler: 1667 birim ve arayüz testi, 65 Kotlin testi. Bütün entegrasyon testl
 
 **Bitti sayılması için:** üç örnek formda (ipuçlu, ipucusuz, web) kart listeden seçilip bütün alanlar doğru doluyor; güvenlik kodu parola sanılmıyor ve kaydetme önerisi çıkmıyor; giriş doldurma ve kaydetme eskisi gibi çalışıyor.
 
+### Faz 16 — İnternete açılma ve sızıntı kontrolü
+
+KeyKey'in ilk internet özelliği ([#152](https://github.com/aaudraa/KeyKey/issues/152)). Tasarım: [`internet-ve-sizinti.md`](docs/internet-ve-sizinti.md), plan: [`internet-ve-sizinti-plani.md`](docs/internet-ve-sizinti-plani.md).
+
+- [x] Ağ istemcisi tek dosyada (`lib/core/network/pwned_passwords_client.dart`); başka yerde ağ kodu olmadığını denetleyen test
+- [x] Sızıntı denetimi: SHA-1, önek gruplama, dolgu, en çok 4 eşzamanlı istek, karışık sıra, bir kez yeniden deneme, iptal; biçime uymayan yanıt "temiz" sayılmıyor
+- [x] Parola raporunda "Sızıntı kontrolü": açıklama, Have I Been Pwned atfı, ilerleme, hata ve yeniden dene, görülme sayılarıyla liste
+- [x] Android: `INTERNET` izni, şifresiz trafik kapalı, ağ güvenliği yapılandırması, yayın APK denetimi
+- [x] Metinler: kullanım koşulları sürüm 2 (yeniden soruluyor), tanıtım, gizlilik bildirimi, README, mağaza açıklamaları, F-Droid `NonFreeNet`; metinlerin "internete çıkmaz" demediğini denetleyen test
+- [x] Android 17 ve 11 emülatörlerinde gerçek API'yle deneme, uçak modu, kayıt taraması
+- [x] Güvenlik tasarımı, denetim, İngilizce özet, kılavuz, değişiklik günlüğü, sürüm `1.6.0+10`
+- [x] Son gözden geçirme: taze gözden geçirici kritik bulgu bulmadı. Düzeltilenler: sızan parolalar değiştirilince raporun yanlışlıkla "sızıntı yok" demesi (artık denetlenmeyen parolaları söylüyor), boş yanıtın "temiz" sayılması, ağ denetimi testinin kaçırdığı ağ yolları ve Java dosyaları, kalan "internete çıkmaz" ifadeleri
+
+**Uygulama sırasında verilen kararlar:**
+
+- Sızıntı kontrolü raporun en üstünde ve yalnızca düğmeyle başlıyor; ayar, arka plan denetimi ya da kaydedilen sonuç yok. Sonuç yalnızca bellekte, rapor ekranıyla yaşıyor.
+- Yeni paket eklenmedi: Dart'ın `HttpClient`'ı. Sertifika sabitleme yok (trafikte parola yok; sabitleme hizmetin sertifikası değişince denetimi bozardı).
+- Kartlar ve notlar denetlenmiyor; yalnızca giriş kayıtlarının parolaları.
+
+**Uygulama sırasında bulunan:** Flutter 3.47, Android'in şifresiz trafik yasağını (`usesCleartextTraffic`, ağ güvenliği yapılandırması) Dart'ın `HttpClient`'ına uygulamıyor: motor `domainNetworkPolicy` değerini boş geçiyor ve emülatörde `http://` isteği reddedilmedi. Tasarım bunun tersini varsayıyordu. İstemci artık https dışı adresi kendisi reddediyor (testle); manifest ayarları platform kodu için duruyor. Hata ayıklama derlemesinde Flutter araç bağlantısı için `INTERNET` izni zaten var; yayın derlemesindeki izin `check-release-apk.sh` ile denetlendi.
+
+**Cihazda (2026-11-20):** Android 17 ve Android 11 emülatörlerinde gerçek API'yle denendi: `password` sızmış, rastgele parola temiz çıktı; uçak modunda "Denetlenemedi" çıktı; logcat'te önek, özet ya da parola yok. Koşullar 1'den 2'ye yükselince tanıtım ve koşullar yeniden soruldu. Android 17'de bütün cihaz testleri geçti.
+
+**Bu fazda görülen eski hata:** parmak izi cihaz testi, 1.1.0'da gelen "kilit açılınca kalınan sekmeye dön" davranışından beri kasa listesini bekliyordu; Android 17'deki tam koşuda kırıldı ve düzeltildi.
+
+**Bitti sayılması için:** raporda `password` gibi sızmış bir parola görülme sayısıyla listeleniyor; bağlantı yokken ya da beklenmeyen yanıtta "Denetlenemedi" çıkıyor, yanlış bir "sızıntı yok" çıkmıyor; güncellemeden sonra koşullar bir kez yeniden soruluyor; kayıtta parola, özet ya da önek yok.
+
 ## 1.0 sonrası
 
 **2026-11-19:** Proje sahibi bu bölümdeki fikirlerin, kendi kararını bekleyenler dahil hepsini onayladı ve internete açılmaya karar verdi ([İnternet](#temel-kararlar)). Sıra benim kararım ve [Durum](#durum) tablosunda faz olarak duruyor. Gerekçesi:
