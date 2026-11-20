@@ -252,7 +252,7 @@ void main() {
     await openPanel(tester);
     final labels = _labels(tester);
     expect(labels.any((l) => l.contains('Henüz parola yok')), isFalse);
-    expect(labels.any((l) => l.startsWith('Kasa\n')), isFalse);
+    expect(labels.any((l) => l.startsWith('Parolalar\n')), isFalse);
     expect(labels.any((l) => l.contains('Parola')), isTrue);
     expect(labels, contains('Kapat'));
     handle.dispose();

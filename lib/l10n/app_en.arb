@@ -1738,7 +1738,7 @@
       }
     }
   },
-  "autofillCardEmpty": "There are no cards in the vault yet. You can add one in KeyKey's Vault tab.",
+  "autofillCardEmpty": "There are no cards in the vault yet. You can add one in KeyKey's Cards tab.",
   "@autofillCardEmpty": {
     "description": "Shown in the autofill card list when the vault has no cards."
   },

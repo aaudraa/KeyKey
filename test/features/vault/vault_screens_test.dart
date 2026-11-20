@@ -1452,6 +1452,49 @@ void main() {
       expect(find.text('1 notta ara'), findsOneWidget);
     });
 
+    testWidgets('sıralama üç sekmede aynı ayarı kullanır', (tester) async {
+      await pumpMixed(tester);
+      final byName = visibleNames(tester);
+      await openMenu(tester);
+      await tester.tap(find.text('Son değişene göre sırala'));
+      await tester.pumpAndSettle();
+      expect(visibleNames(tester), isNot(byName));
+
+      await openCards(tester);
+      await openMenu(tester);
+      await tester.tap(find.text('Ada göre sırala'));
+      await tester.pumpAndSettle();
+
+      await openTab(tester, Icons.key_outlined);
+      expect(visibleNames(tester), byName);
+    });
+
+    testWidgets("Kartlar'da klasörün son kartı çöpe gidince süzgeç kalkar", (
+      tester,
+    ) async {
+      cardRepo.items.add(
+        FakeRecordRepository.item(
+          CardContent(name: 'Yol', folder: 'Cüzdan'),
+          id: 4,
+        ),
+      );
+      await pumpMixed(tester);
+      await openCards(tester);
+      await tester.tap(chip('Cüzdan'));
+      await tester.pumpAndSettle();
+      expect(visibleNames(tester), ['Yol']);
+
+      await tester.tap(find.text('Yol'));
+      await tester.pumpAndSettle();
+      await openMenu(tester);
+      await tester.tap(find.text('Çöp kutusuna taşı'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CardDetailScreen), findsNothing);
+      expect(chip('Cüzdan'), findsNothing);
+      expect(visibleNames(tester), ['Eski', 'Maaş kartı']);
+    });
+
     testWidgets('parola raporu yalnızca Parolalar menüsünde', (tester) async {
       await pumpMixed(tester);
       await openMenu(tester);

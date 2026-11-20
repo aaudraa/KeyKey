@@ -1271,7 +1271,7 @@ void main() {
 
       expect(
         find.text(
-          "Kasada henüz kart yok. Kartı KeyKey'de Kasa sekmesinden "
+          "Kasada henüz kart yok. Kartı KeyKey'de Kartlar sekmesinden "
           'ekleyebilirsin.',
         ),
         findsOneWidget,

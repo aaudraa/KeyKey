@@ -89,6 +89,8 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
     final savedSort = ref.watch(
       settingsControllerProvider.select((settings) => settings?.vaultSort),
     );
+    // Ayar yazılınca yerel seçim bırakılır; üç sekme aynı ayarı izler.
+    if (_sort != null && _sort == savedSort) _sort = null;
     _filter = _filter.copyWith(sort: _sort ?? savedSort ?? LoginSort.name);
     return KkScaffold(
       appBar: kkRootAppBar(

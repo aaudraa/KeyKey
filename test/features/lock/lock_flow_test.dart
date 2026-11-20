@@ -12,7 +12,9 @@ import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/lock_screen.dart';
+import 'package:keykey/features/vault/data/card_content.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
+import 'package:keykey/features/vault/presentation/card_detail_screen.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../../support/fake_vault_service.dart';
@@ -617,6 +619,42 @@ void main() {
 
       await enterPassword(tester, FakeVaultService.correctPassword);
       expect(detail, findsOneWidget);
+    });
+
+    testWidgets('kilit açılınca Kartlar sekmesinde açık karta dönülüyor', (
+      tester,
+    ) async {
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        cards: FakeRecordRepository<CardContent>(
+          items: [
+            FakeRecordRepository.item(
+              CardContent(name: 'Maaş kartı', number: '4111111111111111'),
+              id: 1,
+            ),
+          ],
+        ),
+      );
+      await tester.tap(find.byIcon(Icons.credit_card_outlined));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Maaş kartı'));
+      await tester.pumpAndSettle();
+      expect(find.byType(CardDetailScreen), findsOneWidget);
+
+      setLifecycle(tester, AppLifecycleState.hidden);
+      setLifecycle(tester, AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(find.text(lockedTitle), findsOneWidget);
+
+      await enterPassword(tester, FakeVaultService.correctPassword);
+      expect(find.byType(CardDetailScreen), findsOneWidget);
+      // Kartlar sekmesi seçili; geri gelince kart listesi.
+      expect(find.byIcon(Icons.credit_card), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('1 kartta ara'), findsOneWidget);
     });
 
     group("KeyKey'in açtığı dosya seçicisi", () {

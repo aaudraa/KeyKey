@@ -370,7 +370,7 @@
   "autofillSetupChromeUpdate": "Chrome'u güncelle. Chrome başka bir doldurma servisini 135 sürümünden beri kullanabiliyor; bu cihazdaki sürüm {version}.",
   "autofillSetupOpenFailed": "Ayar açılamadı.",
   "autofillCardFor": "{target} için kart",
-  "autofillCardEmpty": "Kasada henüz kart yok. Kartı KeyKey'de Kasa sekmesinden ekleyebilirsin.",
+  "autofillCardEmpty": "Kasada henüz kart yok. Kartı KeyKey'de Kartlar sekmesinden ekleyebilirsin.",
   "autofillCardSearch": "Kart ara",
   "autofillWarnInsecureCard": "Bağlantı şifresiz (http). Kart bilgileri ağda açık gider.",
   "autofillWarnCard": "Seçilen kart: {name}",
