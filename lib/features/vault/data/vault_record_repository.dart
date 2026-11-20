@@ -109,7 +109,7 @@ class VaultRecordRepository<C extends VaultItemContent<C>> {
   }
 
   Future<void> deletePermanently(VaultRecord<C> item) =>
-      _store.deleteRecord(item.id);
+      _store.deleteRecord(item.id, deletedAt: _clock());
 
   /// Süresi dolmuş çöp kutusu kayıtlarını siler, kalanları döndürür.
   Future<List<VaultRecord<C>>> purgeExpiredTrash(

@@ -211,7 +211,7 @@ class VaultService {
     }
     final header = current.withRecoverySlot(pending.renewed.recoverySlot);
     _crypto.unlockWithRecoveryKey(header, typedRecoveryKey).dispose();
-    await _store.updateHeader(header);
+    await _store.updateHeader(header, recoveryChangedAt: _clock());
     session.header = header;
   }
 
@@ -383,7 +383,7 @@ class VaultService {
       newPassword,
       opsLimit: opsLimit,
     );
-    await _store.updateHeader(header);
+    await _store.updateHeader(header, passwordChangedAt: _clock());
     session.header = header;
   }
 

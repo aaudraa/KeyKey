@@ -130,6 +130,17 @@ void main() {
       expect(await store.allRecords(), isEmpty);
     });
 
+    test('kalıcı silme, deponun saatiyle silme kaydı bırakıyor', () async {
+      final item = await repository.add(const LoginContent(name: 'A'));
+      now = now.add(const Duration(hours: 3));
+
+      await repository.deletePermanently(item);
+
+      final tombstone = (await store.allTombstones()).single;
+      expect(tombstone.id, item.id);
+      expect(tombstone.deletedAt, now);
+    });
+
     test('bozuk kayıt listeyi düşürmüyor, dokunulmuyor', () async {
       await repository.add(const LoginContent(name: 'Sağlam'));
       final broken = await repository.add(const LoginContent(name: 'Bozuk'));

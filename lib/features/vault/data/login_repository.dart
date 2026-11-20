@@ -110,7 +110,7 @@ class LoginRepository {
   }
 
   Future<void> deletePermanently(LoginItem item) =>
-      _store.deleteRecord(item.id);
+      _store.deleteRecord(item.id, deletedAt: _clock());
 
   /// Süresi dolmuş çöp kutusu kayıtlarını siler, kalanları döndürür.
   Future<List<LoginItem>> purgeExpiredTrash(List<LoginItem> items) async {

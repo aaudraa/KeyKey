@@ -484,6 +484,52 @@ void main() {
     });
   });
 
+  group('yuva zamanları', () {
+    test('parola değişikliği yalnızca parola zamanını yazıyor', () async {
+      final (session, _) = await createVault();
+
+      await service.changePassword(
+        session,
+        currentPassword: password,
+        newPassword: newPassword,
+      );
+
+      final times = await store.readHeaderTimes();
+      expect(times.passwordChangedAt, now);
+      expect(times.recoveryChangedAt, isNull);
+    });
+
+    test('kurtarma yenilemesi yalnızca kurtarma zamanını yazıyor', () async {
+      final (session, _) = await createVault();
+      final (_, pending) = await service.prepareNewRecoveryKey(
+        session,
+        password,
+      );
+
+      await service.confirmNewRecoveryKey(
+        session,
+        pending!,
+        pending.recoveryKeyText,
+      );
+
+      final times = await store.readHeaderTimes();
+      expect(times.passwordChangedAt, isNull);
+      expect(times.recoveryChangedAt, now);
+    });
+
+    test('kurtarma anahtarıyla yeni parola, parola zamanını yazıyor', () async {
+      final (session, text) = await createVault();
+      final recovered = service.unlockWithRecoveryKey(session.header, text);
+      addTearDown(recovered.dispose);
+
+      await service.setNewPassword(recovered, newPassword);
+
+      final times = await store.readHeaderTimes();
+      expect(times.passwordChangedAt, now);
+      expect(times.recoveryChangedAt, isNull);
+    });
+  });
+
   group('kurtarma anahtarıyla erişim', () {
     test('doğru anahtar açıyor, yeni parola belirlenebiliyor', () async {
       final (session, text) = await createVault();

@@ -124,6 +124,133 @@ void main() {
     });
   });
 
+  group('silme kayıtları', () {
+    final later = now.add(const Duration(hours: 1));
+
+    test('silinen kayıt silme kaydı bırakıyor', () async {
+      await store.putRecord(record());
+
+      await store.deleteRecord(recordId, deletedAt: later);
+
+      final tombstones = await store.allTombstones();
+      expect(tombstones, hasLength(1));
+      expect(tombstones.single.id, recordId);
+      expect(tombstones.single.deletedAt, later);
+    });
+
+    test('aynı kayıt yeniden silinince büyük zaman kalıyor', () async {
+      await store.putRecord(record());
+      await store.deleteRecord(recordId, deletedAt: later);
+      await store.putRecord(record());
+      await store.deleteRecord(recordId, deletedAt: now);
+
+      expect((await store.allTombstones()).single.deletedAt, later);
+
+      final latest = later.add(const Duration(hours: 1));
+      await store.putRecord(record());
+      await store.deleteRecord(recordId, deletedAt: latest);
+
+      expect((await store.allTombstones()).single.deletedAt, latest);
+    });
+
+    test('ayar kaydı silinince silme kaydı yazılmıyor', () async {
+      await store.putRecord(
+        StoredRecord(
+          id: Uint8List(16),
+          type: 'settings',
+          blob: Uint8List.fromList([1]),
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+
+      await store.deleteRecord(Uint8List(16), deletedAt: later);
+
+      expect(await store.allRecords(), isEmpty);
+      expect(await store.allTombstones(), isEmpty);
+    });
+
+    test('olmayan kayıt için silme kaydı yazılmıyor', () async {
+      await store.deleteRecord(recordId, deletedAt: later);
+
+      expect(await store.allTombstones(), isEmpty);
+    });
+
+    test('kasa değiştirilince eskiler gidiyor, verilenler yazılıyor', () async {
+      await store.createVault(sampleHeader());
+      await store.putRecord(record());
+      await store.deleteRecord(recordId, deletedAt: later);
+      final otherId = Uint8List(16)..fillRange(0, 16, 9);
+
+      await store.replaceVault(
+        sampleHeader(fill: 2),
+        const [],
+        tombstones: [StoredTombstone(id: otherId, deletedAt: now)],
+        times: HeaderTimes(passwordChangedAt: later, recoveryChangedAt: now),
+      );
+
+      final tombstones = await store.allTombstones();
+      expect(tombstones.single.id, otherId);
+      expect(tombstones.single.deletedAt, now);
+      final times = await store.readHeaderTimes();
+      expect(times.passwordChangedAt, later);
+      expect(times.recoveryChangedAt, now);
+    });
+
+    test(
+      'verilmezse kasa değiştirmek silme kayıtlarını ve zamanları siliyor',
+      () async {
+        await store.createVault(sampleHeader());
+        await store.updateHeader(sampleHeader(), passwordChangedAt: later);
+        await store.putRecord(record());
+        await store.deleteRecord(recordId, deletedAt: later);
+
+        await store.replaceVault(sampleHeader(fill: 2), const []);
+
+        expect(await store.allTombstones(), isEmpty);
+        final times = await store.readHeaderTimes();
+        expect(times.passwordChangedAt, isNull);
+        expect(times.recoveryChangedAt, isNull);
+      },
+    );
+  });
+
+  group('yuva zamanları', () {
+    final later = now.add(const Duration(hours: 1));
+
+    test('yeni kasada boş', () async {
+      await store.createVault(sampleHeader());
+
+      final times = await store.readHeaderTimes();
+      expect(times.passwordChangedAt, isNull);
+      expect(times.recoveryChangedAt, isNull);
+    });
+
+    test('yalnızca verilen zaman yazılıyor', () async {
+      await store.createVault(sampleHeader());
+
+      await store.updateHeader(sampleHeader(fill: 2), passwordChangedAt: now);
+      await store.updateHeader(sampleHeader(fill: 3), recoveryChangedAt: later);
+
+      final times = await store.readHeaderTimes();
+      expect(times.passwordChangedAt, now);
+      expect(times.recoveryChangedAt, later);
+      expect(
+        (await store.readHeader())?.toJsonString(),
+        sampleHeader(fill: 3).toJsonString(),
+      );
+    });
+
+    test('zamansız güncelleme zamanlara dokunmuyor', () async {
+      await store.createVault(sampleHeader());
+      await store.updateHeader(sampleHeader(), passwordChangedAt: now);
+
+      await store.updateHeader(sampleHeader(fill: 2));
+
+      expect((await store.readHeaderTimes()).passwordChangedAt, now);
+    });
+  });
+
   group('parmak izi yuvası', () {
     final slot = StoredBiometricSlot(
       iv: Uint8List(12)..fillRange(0, 12, 3),

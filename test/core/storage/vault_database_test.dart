@@ -33,30 +33,47 @@ void main() {
 
   group('şema', () {
     late String fixture;
+    late String fixtureV1;
+
+    String readFixture(String name) =>
+        File('test/fixtures/storage/$name')
+            .readAsStringSync()
+            .replaceAll('\r\n', '\n')
+            .trim();
 
     setUpAll(() {
-      fixture = File('test/fixtures/storage/schema-v1.sql')
-          .readAsStringSync()
-          .replaceAll('\r\n', '\n')
-          .trim();
+      fixture = readFixture('schema-v2.sql');
+      fixtureV1 = readFixture('schema-v1.sql');
     });
 
-    test('sürüm 1 sabit dosyayla aynı', () async {
+    /// Tablonun sütun adları, sırasıyla.
+    Future<List<String>> columns(VaultDatabase database, String table) async {
+      final rows = await database
+          .customSelect('PRAGMA table_info($table)')
+          .get();
+      return rows.map((row) => row.read<String>('name')).toList();
+    }
+
+    test('sürüm 2 sabit dosyayla aynı', () async {
       // Bu test kırılıyorsa şema değişmiştir: schemaVersion artırılmalı ve
       // eski dosyalar için göç yazılmalı. Sabit dosya sessizce değiştirilmez.
       final database = VaultDatabase(NativeDatabase.memory());
       addTearDown(database.close);
 
-      expect(database.schemaVersion, 1);
+      expect(database.schemaVersion, 2);
       expect(await readSchema(database), fixture);
     });
 
-    test('sürüm 1 dosyası verisiyle birlikte açılıyor', () async {
+    test('sürüm 1 dosyası verisiyle birlikte sürüm 2ye geçiyor', () async {
       sqlite.sqlite3.open(file.path)
-        ..execute(fixture)
+        ..execute(fixtureV1)
         ..execute('PRAGMA user_version = 1')
         ..execute(
           "INSERT INTO vault_meta (id, header) VALUES (1, 'eski üst bilgi')",
+        )
+        ..execute(
+          'INSERT INTO records (id, type, blob, created_at, updated_at) '
+          "VALUES (zeroblob(16), 'login', x'01', 1, 2)",
         )
         ..close();
 
@@ -65,12 +82,27 @@ void main() {
       final row = await database.select(database.vaultMeta).getSingle();
 
       expect(row.header, 'eski üst bilgi');
+      expect(row.passwordChangedAt, isNull);
+      expect(row.recoveryChangedAt, isNull);
+      expect(await database.select(database.records).get(), hasLength(1));
+      expect(await database.select(database.tombstones).get(), isEmpty);
+      expect(await columns(database, 'vault_meta'), [
+        'id',
+        'header',
+        'password_changed_at',
+        'recovery_changed_at',
+      ]);
+      expect(await columns(database, 'tombstones'), ['id', 'deleted_at']);
+
+      final check = sqlite.sqlite3.open(file.path);
+      addTearDown(check.close);
+      expect(check.select('PRAGMA user_version').single.values.single, 2);
     });
 
     test('daha yeni sürümün dosyası açılmıyor ve bozulmuyor', () async {
       sqlite.sqlite3.open(file.path)
         ..execute(fixture)
-        ..execute('PRAGMA user_version = 2')
+        ..execute('PRAGMA user_version = 3')
         ..execute("INSERT INTO vault_meta (id, header) VALUES (1, 'yeni')")
         ..close();
 
@@ -78,8 +110,8 @@ void main() {
         () => VaultDatabase.openFile(file),
         throwsA(
           isA<UnsupportedSchemaException>()
-              .having((error) => error.from, 'from', 2)
-              .having((error) => error.to, 'to', 1),
+              .having((error) => error.from, 'from', 3)
+              .having((error) => error.to, 'to', 2),
         ),
       );
 
@@ -95,7 +127,7 @@ void main() {
 
       final check = sqlite.sqlite3.open(file.path);
       addTearDown(check.close);
-      expect(check.select('PRAGMA user_version').single.values.single, 2);
+      expect(check.select('PRAGMA user_version').single.values.single, 3);
       expect(
         check.select('SELECT header FROM vault_meta').single.values.single,
         'yeni',

@@ -95,7 +95,8 @@ class OtpRepository {
     return updated;
   }
 
-  Future<void> deletePermanently(OtpItem item) => _store.deleteRecord(item.id);
+  Future<void> deletePermanently(OtpItem item) =>
+      _store.deleteRecord(item.id, deletedAt: _clock());
 
   /// Süresi dolmuş çöp kutusu kayıtlarını siler, kalanları döndürür.
   Future<List<OtpItem>> purgeExpiredTrash(List<OtpItem> items) async {

@@ -15,6 +15,13 @@ class VaultMeta extends Table {
   IntColumn get id => integer().customConstraint('NOT NULL CHECK (id = 1)')();
   TextColumn get header => text()();
 
+  /// Parola yuvasının son değiştiği an (şema 2). Senkron, öteki telefonlara
+  /// hangi yuvanın daha yeni olduğunu buna bakarak söyler.
+  IntColumn get passwordChangedAt => integer().nullable()();
+
+  /// Kurtarma yuvasının son değiştiği an (şema 2).
+  IntColumn get recoveryChangedAt => integer().nullable()();
+
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
@@ -28,6 +35,21 @@ class Records extends Table {
   BlobColumn get payload => blob().named('blob')();
   IntColumn get createdAt => integer()();
   IntColumn get updatedAt => integer()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+
+  @override
+  bool get withoutRowId => true;
+}
+
+/// Kalıcı silinen kayıtların izi (şema 2): kimlik ve silinme anı. Senkronda
+/// başka telefonun dosyası silinen kaydı geri getirmesin diye tutulur.
+@DataClassName('TombstoneRow')
+class Tombstones extends Table {
+  BlobColumn get id =>
+      blob().customConstraint('NOT NULL CHECK (length(id) = 16)')();
+  IntColumn get deletedAt => integer()();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
@@ -72,7 +94,9 @@ void configureConnection(sqlite.Database database) {
     ..execute('PRAGMA secure_delete = ON');
 }
 
-@DriftDatabase(tables: [VaultMeta, Records, BiometricSlot, UnlockState])
+@DriftDatabase(
+  tables: [VaultMeta, Records, BiometricSlot, UnlockState, Tombstones],
+)
 final class VaultDatabase extends _$VaultDatabase {
   new(super.e);
 
@@ -89,7 +113,7 @@ final class VaultDatabase extends _$VaultDatabase {
   }
 
   /// Üst bilgi biçiminin sürümünden bağımsızdır.
-  static const currentSchemaVersion = 1;
+  static const currentSchemaVersion = 2;
 
   @override
   int get schemaVersion => currentSchemaVersion;
@@ -113,10 +137,15 @@ final class VaultDatabase extends _$VaultDatabase {
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (migrator) => migrator.createAll(),
-    // Henüz göç yok. Daha yeni bir sürümün yazdığı dosya da buraya düşer ve
-    // açılmaz, çünkü eski kod bilmediği bir şemayı bozabilir.
+    // Yalnızca bilinen göçler. Daha yeni bir sürümün yazdığı dosya da buraya
+    // düşer ve açılmaz, çünkü eski kod bilmediği bir şemayı bozabilir.
     onUpgrade: (migrator, from, to) async {
-      throw UnsupportedSchemaException(from: from, to: to);
+      if (from != 1 || to != 2) {
+        throw UnsupportedSchemaException(from: from, to: to);
+      }
+      await migrator.createTable(tombstones);
+      await migrator.addColumn(vaultMeta, vaultMeta.passwordChangedAt);
+      await migrator.addColumn(vaultMeta, vaultMeta.recoveryChangedAt);
     },
   );
 }

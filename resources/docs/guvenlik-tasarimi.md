@@ -322,14 +322,16 @@ Kasanın dışında iki küçük dosya daha vardır, ikisi de şifresizdir ve ka
 
 | Tablo | Alanlar | Not |
 |---|---|---|
-| `vault_meta` | `id` (her zaman 1), `header` | Üst bilgi, yukarıdaki JSON biçiminde. |
+| `vault_meta` | `id` (her zaman 1), `header`, `password_changed_at`, `recovery_changed_at` | Üst bilgi, yukarıdaki JSON biçiminde. İki zaman (şema 2) parola ve kurtarma yuvasının son değiştiği an; [senkron](senkron.md) yuvaları bunlara bakarak birleştirir. 1.8.0'dan beri değişmediyse boştur. |
 | `records` | `id` (16 bayt), `type`, `blob`, `created_at`, `updated_at` | `blob`, yukarıdaki kayıt biçimidir. |
+| `tombstones` | `id` (16 bayt), `deleted_at` | Silme kayıtları (şema 2), aşağıda. |
 | `biometric_slot` | `id` (her zaman 1), `iv` (12 bayt), `cipher_text` (48 bayt) | Yalnızca parmak izi açıksa satır vardır. |
 | `unlock_state` | `id` (her zaman 1), `failed_attempts`, `last_failed_at` | Hatalı deneme sayacı. |
 
 - **Tek işlem:** Üst bilgi değişiklikleri tek SQLite işleminde yazılır. Yarıda kalırsa eski üst bilgi geçerli kalır.
 - **Silinen veri:** `secure_delete` açık ve `journal_mode` `DELETE`'tir, böylece eski sarmalama satırları dosyanın boş alanında kalmaz. Flash bellekte fiziksel silme yine de garanti edilemez, bu yüzden [bilinen sınırlardaki](#bilinen-sınırlar) sarmalama maddesi geçerlidir.
-- **İki ayrı sürüm:** Üst bilgi biçimi (`version`) ve veritabanı şeması (`schemaVersion`) birbirinden bağımsızdır. Şema göçleri testlerle doğrulanır.
+- **Silme kayıtları:** Bir kayıt kalıcı silinince (kalıcı silme, çöpü boşaltma, 30 günlük temizlik) satırla aynı işlemde kimliği ve silinme anı yazılır; aynı kimlikte daha yenisi varsa o kalır. İçerik, tür ve ad taşımaz. Senkron açık olmasa da yazılır, böylece senkron sonradan açılınca geçmiş silmeler bilinir; senkronda başka telefonun dosyası silinen kaydı geri getiremez. Silme kayıtları silinmez. Ayar kaydı için yazılmaz. Kasa yedekten değiştirilince eski kasanın silme kayıtları da silinir. Kayıtların zaman damgaları gibi şifresizdir: veritabanını okuyan, kaç kaydın ne zaman silindiğini görür ([bilinen sınırlar](#bilinen-sınırlar)).
+- **İki ayrı sürüm:** Üst bilgi biçimi (`version`) ve veritabanı şeması (`schemaVersion`) birbirinden bağımsızdır. Şema 1.8.0'da 2 oldu (silme kayıtları ve yuva zamanları); şema 1 dosyası açılırken göç edilir, daha yeni şemadaki dosya açılmaz. Şema göçleri testlerle doğrulanır.
 
 ## Kasa oluşturma
 
