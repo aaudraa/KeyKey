@@ -185,7 +185,7 @@ void main() {
         utf8.decode([for (final m in plain) ...m.message]),
       ) as Map<String, dynamic>;
       expect(json.keys, unorderedEquals(['version', 'createdAt', 'records']));
-      expect(json['version'], 1);
+      expect(json['version'], 3);
       expect(json['createdAt'], createdAt.millisecondsSinceEpoch);
       final first = (json['records'] as List).first as Map<String, dynamic>;
       expect(
@@ -207,9 +207,12 @@ void main() {
       });
     });
 
-    test('yalnızca eski türler varsa içerik sürümü 1', () async {
+    test('yalnızca eski türler olsa da içerik sürümü 3', () async {
+      // Sürüm 6 ayar kaydını ve Steam hesabını 1.6.0 okuyamaz; içerik sürümü
+      // 3 ona "daha yeni yedek" dedirtir. Şifreli kayıtların içi burada
+      // görünmediği için her yedek bu sürümle yazılır.
       final contents = await decode(await encode(sampleRecords()));
-      expect(contents.version, 1);
+      expect(contents.version, 3);
     });
 
     test('kayıt içerik sürümleri yedeğin içerik sürümüyle birlikte', () {
@@ -229,19 +232,19 @@ void main() {
         {
           'login': 2,
           'otp': 1,
-          'settings': 5,
+          'settings': 6,
           'card': 1,
           'note': 1,
-          'payload': 2,
+          'payload': 3,
         },
       );
     });
 
-    test('kart ya da not varsa içerik sürümü 2', () async {
+    test('kart ve not içerik sürümü 3 ile gidip geliyor', () async {
       for (final type in ['card', 'note']) {
         final records = [...sampleRecords(), record(9, type: type)];
         final contents = await decode(await encode(records));
-        expect(contents.version, 2, reason: type);
+        expect(contents.version, 3, reason: type);
         expectSame(contents.records, records);
       }
     });
@@ -548,7 +551,7 @@ void main() {
 
     test('daha yeni içerik sürümü ayrı hatayla reddediliyor', () async {
       await expectLater(
-        decode(await withPayload({...payload([]), 'version': 3})),
+        decode(await withPayload({...payload([]), 'version': 4})),
         throwsA(isA<NewerBackupException>()),
       );
     });
@@ -560,28 +563,31 @@ void main() {
         // "bozuk" sanmamalı.
         await expectLater(
           decode(
-            await withPayload({...payload([]), 'version': 3, 'app': '1.5.0'}),
+            await withPayload({...payload([]), 'version': 4, 'app': '1.5.0'}),
           ),
           throwsA(isA<NewerBackupException>()),
         );
         await expectLater(
-          decode(await withPayload({'version': 3, 'items': <Object>[]})),
+          decode(await withPayload({'version': 4, 'items': <Object>[]})),
           throwsA(isA<NewerBackupException>()),
         );
       },
     );
 
-    test('sürüm 2 içerikte kart ve not açılıyor', () async {
-      final contents = await decode(
-        await withPayload({
-          ...payload([
-            entry(type: 'card'),
-            entry(id: 'AQECAwQFBgcICQoLDA0ODw==', type: 'note'),
-          ]),
-          'version': 2,
-        }),
-      );
-      expect(contents.records.map((r) => r.type), ['card', 'note']);
+    test('sürüm 2 ve 3 içerikte kart ve not açılıyor', () async {
+      for (final version in [2, 3]) {
+        final contents = await decode(
+          await withPayload({
+            ...payload([
+              entry(type: 'card'),
+              entry(id: 'AQECAwQFBgcICQoLDA0ODw==', type: 'note'),
+            ]),
+            'version': version,
+          }),
+        );
+        expect(contents.version, version);
+        expect(contents.records.map((r) => r.type), ['card', 'note']);
+      }
     });
 
     test('bilinmeyen sürüm, eksik ve fazla alan reddediliyor', () async {
@@ -600,10 +606,12 @@ void main() {
     test('bilinmeyen tür ve yinelenen kimlik reddediliyor', () async {
       await expectInvalid(payload([entry(type: 'card')]));
       await expectInvalid(payload([entry(type: 'note')]));
-      await expectInvalid({
-        ...payload([entry(type: 'kimlik')]),
-        'version': 2,
-      });
+      for (final version in [2, 3]) {
+        await expectInvalid({
+          ...payload([entry(type: 'kimlik')]),
+          'version': version,
+        });
+      }
       await expectInvalid(payload([entry(), entry()]));
       await expectInvalid(payload([entry(id: 'AAEC')]));
     });

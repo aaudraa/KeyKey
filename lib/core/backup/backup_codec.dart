@@ -51,10 +51,15 @@ final class BackupCodec {
 
   static const magic = 'KEYKEYBK';
   static const formatVersion = 1;
-  static const payloadVersion = 2;
 
-  /// Kart ve not öncesi içerik sürümü. Yalnızca [legacyRecordTypes] varsa
-  /// yedek bu sürümle yazılır; böylece eski uygulamalar onu açabilir.
+  /// Yazılan içerik sürümü. Sürüm 2 kart ve notu, sürüm 3 ayar kaydının
+  /// sürüm 6'sını ve Steam hesaplarını getirdi. Kayıtlar şifreli olduğundan
+  /// içleri burada görünmez; her yedek bu sürümle yazılır ve eski uygulamalar
+  /// onu "daha yeni yedek" diye reddeder.
+  static const payloadVersion = 3;
+
+  /// Kart ve not öncesi içerik sürümü; yalnızca [legacyRecordTypes] taşır.
+  /// Eski yedekler okunmaya devam eder.
   static const legacyPayloadVersion = 1;
   static const backupContext = 'keykey/v1/backup';
 
@@ -66,7 +71,8 @@ final class BackupCodec {
   /// İçerik sürümü 1'deki kayıt türleri: parola, 2FA ve ayar.
   static const Set<String> legacyRecordTypes = {'login', 'otp', 'settings'};
 
-  /// Yedeğe girebilen kayıt türleri; sürüm 2 kart ve notu da taşır.
+  /// Yedeğe girebilen kayıt türleri; sürüm 2 ve sonrası kart ve notu da
+  /// taşır.
   static const Set<String> recordTypes = {...legacyRecordTypes, 'card', 'note'};
 
   static const _keyLength = 32;
@@ -290,9 +296,7 @@ final class BackupCodec {
   static String _payloadJson(List<StoredRecord> records, DateTime createdAt) {
     final ids = <String>{};
     final entries = <Map<String, Object>>[];
-    var version = legacyPayloadVersion;
     for (final record in records) {
-      if (!legacyRecordTypes.contains(record.type)) version = payloadVersion;
       if (!recordTypes.contains(record.type)) {
         throw ArgumentError.value(record.type, 'type', 'Yedeklenmeyen tür');
       }
@@ -309,7 +313,7 @@ final class BackupCodec {
       });
     }
     return jsonEncode({
-      'version': version,
+      'version': payloadVersion,
       'createdAt': createdAt.millisecondsSinceEpoch,
       'records': entries,
     });
