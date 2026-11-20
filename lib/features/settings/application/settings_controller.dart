@@ -85,6 +85,12 @@ class SettingsController extends Notifier<AppSettings?> {
   Future<void> setGenerator(GeneratorPreferences generator) =>
       _update((current) => current.copyWith(generator: generator));
 
+  Future<void> setBackgroundLock(BackgroundLock lock) =>
+      _update((current) => current.copyWith(backgroundLock: lock));
+
+  Future<void> setPlainKeyboard({required bool value}) =>
+      _update((current) => current.copyWith(plainKeyboard: value));
+
   /// Otomatik yedeğin klasörü; `null` kapatır.
   Future<void> setAutoBackupFolder(AutoBackupFolder? folder) =>
       _update((current) => current.withAutoBackupFolder(folder));

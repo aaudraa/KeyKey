@@ -1441,6 +1441,13 @@
   "@settingsOtpRequireAuthHelp": {
     "description": "Explains what the setting protects against."
   },
+  "settingsBackgroundLock": "Lock in background",
+  "settingsBackgroundLockHelp": "If you switch to another app and come back before this time runs out, the vault stays open. Anyone who picks up the phone during that time also finds it open. Locking after 5 minutes without a touch still applies.",
+  "backgroundLockImmediately": "Immediately",
+  "backgroundLockSeconds30": "30 seconds",
+  "backgroundLockMinute1": "1 minute",
+  "settingsPlainKeyboard": "Normal keyboard in non-secret fields",
+  "settingsPlainKeyboardHelp": "Item names, websites, folders and search get capital letters and address keys. What you type there may enter the keyboard's dictionary and its cloud. Passwords, usernames, notes and card details always open a keyboard without learning.",
   "autofillFor": "For {target}",
   "@autofillFor": {
     "description": "Shows which app or website will be filled.",
