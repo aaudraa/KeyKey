@@ -26,7 +26,37 @@ const _items = [
   ),
 ];
 
+/// Uygulamadaki beş sekme (Faz 17).
+const _fiveItems = [
+  GlassNavItem(
+    icon: Icons.key_outlined,
+    selectedIcon: Icons.key,
+    label: 'Parolalar',
+  ),
+  GlassNavItem(
+    icon: Icons.credit_card_outlined,
+    selectedIcon: Icons.credit_card,
+    label: 'Kartlar',
+  ),
+  GlassNavItem(
+    icon: Icons.sticky_note_2_outlined,
+    selectedIcon: Icons.sticky_note_2,
+    label: 'Notlar',
+  ),
+  GlassNavItem(
+    icon: Icons.shield_outlined,
+    selectedIcon: Icons.shield,
+    label: '2FA',
+  ),
+  GlassNavItem(
+    icon: Icons.settings_outlined,
+    selectedIcon: Icons.settings,
+    label: 'Ayarlar',
+  ),
+];
+
 Widget _host({
+  List<GlassNavItem> items = _items,
   int selected = 0,
   ValueChanged<int>? onSelected,
   VoidCallback? onAdd,
@@ -47,7 +77,7 @@ Widget _host({
       bottomNavigationBar: GlassNavBar(
         selectedIndex: selected,
         onSelected: onSelected ?? (_) {},
-        items: _items,
+        items: items,
         onAdd: onAdd ?? () {},
         addOpen: addOpen,
         addLabel: 'Ekle',
@@ -75,6 +105,40 @@ class _SwitcherState extends State<_Switcher> {
 }
 
 void main() {
+  for (final (width, scale) in [(320.0, 1.0), (360.0, 2.0), (411.0, 1.0)]) {
+    testWidgets('beş sekme ${width.toInt()} dp, %${(scale * 100).toInt()} '
+        'yazı: taşma yok, her sekme en az 48 dp', (tester) async {
+      tester.view
+        ..physicalSize = Size(width * 3, 2000)
+        ..devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+      for (var selected = 0; selected < _fiveItems.length; selected++) {
+        await tester.pumpWidget(
+          _host(items: _fiveItems, selected: selected, textScale: scale),
+        );
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        final pill = tester.getRect(find.byKey(GlassNavBar.pillKey));
+        expect(pill.left, greaterThanOrEqualTo(0));
+        expect(pill.right, lessThanOrEqualTo(width));
+        for (final item in _fiveItems) {
+          final icon = find.byIcon(
+            item.label == _fiveItems[selected].label
+                ? item.selectedIcon
+                : item.icon,
+          );
+          final tab = find.ancestor(
+            of: icon,
+            matching: find.byType(InkResponse),
+          );
+          final size = tester.getSize(tab.first);
+          expect(size.width, greaterThanOrEqualTo(48), reason: item.label);
+          expect(size.height, greaterThanOrEqualTo(48), reason: item.label);
+        }
+      }
+    });
+  }
+
   testWidgets('seçili sekmenin adı görünür, diğerlerinin görünmez', (
     tester,
   ) async {

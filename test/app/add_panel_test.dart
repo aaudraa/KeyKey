@@ -80,7 +80,7 @@ void main() {
   }
 
   for (final (name, icon) in [
-    ('Kasa', null),
+    ('Parolalar', null),
     ('2FA', Icons.shield_outlined),
     ('Ayarlar', Icons.settings_outlined),
   ]) {
@@ -106,7 +106,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(_location(tester), AppRoutes.vault);
       expect(find.byType(GlassNavBar), findsOneWidget);
-      expect(find.text('Kasa'), findsWidgets);
+      expect(find.text('Parolalar'), findsWidgets);
     });
   }
 
@@ -248,10 +248,10 @@ void main() {
   testWidgets('kutu açıkken liste ekran okuyucudan gizlenir', (tester) async {
     await pumpApp(tester);
     final handle = tester.ensureSemantics();
-    expect(_labels(tester).any((l) => l.contains('Henüz kayıt yok')), isTrue);
+    expect(_labels(tester).any((l) => l.contains('Henüz parola yok')), isTrue);
     await openPanel(tester);
     final labels = _labels(tester);
-    expect(labels.any((l) => l.contains('Henüz kayıt yok')), isFalse);
+    expect(labels.any((l) => l.contains('Henüz parola yok')), isFalse);
     expect(labels.any((l) => l.startsWith('Kasa\n')), isFalse);
     expect(labels.any((l) => l.contains('Parola')), isTrue);
     expect(labels, contains('Kapat'));

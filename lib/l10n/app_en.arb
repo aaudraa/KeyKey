@@ -1,8 +1,16 @@
 {
   "@@locale": "en",
-  "navVault": "Vault",
-  "@navVault": {
-    "description": "Bottom navigation label and title of the password vault screen."
+  "navPasswords": "Passwords",
+  "@navPasswords": {
+    "description": "Bottom menu tab and screen title: the list of logins."
+  },
+  "navCards": "Cards",
+  "@navCards": {
+    "description": "Bottom menu tab and screen title: the list of bank cards."
+  },
+  "navNotes": "Notes",
+  "@navNotes": {
+    "description": "Bottom menu tab and screen title: the list of secure notes."
   },
   "navAuthenticator": "2FA",
   "@navAuthenticator": {
@@ -411,9 +419,17 @@
   "@vaultFavorites": {
     "description": "Filter chip."
   },
-  "vaultEmpty": "Nothing here yet. Tap + below to add a password, card or note.",
+  "vaultEmpty": "No passwords yet. Tap + below to add one.",
   "@vaultEmpty": {
     "description": "Empty vault message."
+  },
+  "cardsEmpty": "No cards yet. Tap + below to add a bank card.",
+  "@cardsEmpty": {
+    "description": "Empty Cards tab."
+  },
+  "notesEmpty": "No notes yet. Tap + below to add a secure note.",
+  "@notesEmpty": {
+    "description": "Empty Notes tab."
   },
   "vaultNoResults": "Nothing matches.",
   "@vaultNoResults": {
@@ -917,9 +933,17 @@
   "@introTourBody": {
     "description": "Intro page 3 text."
   },
-  "introTourVault": "Your passwords",
+  "introTourVault": "Logins for sites and apps",
   "@introTourVault": {
     "description": "Intro page 3: caption next to the vault tab icon."
+  },
+  "introTourCards": "Your bank cards",
+  "@introTourCards": {
+    "description": "Intro tour: what the Cards tab holds."
+  },
+  "introTourNotes": "Your secure notes",
+  "@introTourNotes": {
+    "description": "Intro tour: what the Notes tab holds."
   },
   "introTourOtp": "Your verification codes",
   "@introTourOtp": {
@@ -929,7 +953,7 @@
   "@introTourSettings": {
     "description": "Intro page 3: caption next to the settings tab icon."
   },
-  "introTourAdd": "New password or 2FA code",
+  "introTourAdd": "New password, card, note or 2FA code",
   "@introTourAdd": {
     "description": "Intro page 3: caption next to the + button."
   },
@@ -2261,8 +2285,26 @@
   "addOtpHint": "Scan a QR code, type it in or import",
   "addBack": "Back",
   "addClose": "Close",
-  "vaultSearchCount": "{count, plural, =1{Search 1 item} other{Search {count} items}}",
+  "vaultSearchCount": "{count, plural, =1{Search 1 password} other{Search {count} passwords}}",
   "@vaultSearchCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cardsSearchCount": "{count, plural, =1{Search 1 card} other{Search {count} cards}}",
+  "@cardsSearchCount": {
+    "description": "Search box label on the Cards tab.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notesSearchCount": "{count, plural, =1{Search 1 note} other{Search {count} notes}}",
+  "@notesSearchCount": {
+    "description": "Search box label on the Notes tab.",
     "placeholders": {
       "count": {
         "type": "int"
@@ -2327,9 +2369,6 @@
     "description": "Shown when typed or pasted text would make a secure note longer than 64 KiB."
   },
   "noteCopy": "Copy text",
-  "vaultKindLogins": "Passwords",
-  "vaultKindCards": "Cards",
-  "vaultKindNotes": "Notes",
   "restoreSummaryAll": "Backup from {date}: {logins, plural, =1{1 password} other{{logins} passwords}}, {otps, plural, =1{1 2FA account} other{{otps} 2FA accounts}}, {cards, plural, =1{1 card} other{{cards} cards}} and {notes, plural, =1{1 note} other{{notes} notes}}.",
   "@restoreSummaryAll": {
     "description": "Summary of an opened backup that has cards or notes.",

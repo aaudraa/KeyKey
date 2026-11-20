@@ -17,10 +17,13 @@ import 'package:keykey/features/vault/presentation/trash_actions.dart';
 import 'package:keykey/features/vault/presentation/vault_entry_tiles.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
-/// Çöp kutusu: parola, kart ve notlar birlikte. Kayıtlar 30 gün sonra
+/// Bir kayıt türünün çöp kutusu: Parolalar, Kartlar ya da Notlar
+/// sekmesinden açılır, yalnızca o türü gösterir. Kayıtlar 30 gün sonra
 /// kendiliğinden kalıcı olarak silinir.
 class TrashScreen extends ConsumerWidget {
-  const new({super.key});
+  const new({this.kind = VaultKind.login, super.key});
+
+  final VaultKind kind;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,7 +32,7 @@ class TrashScreen extends ConsumerWidget {
 
     final trashed = switch (state) {
       VaultEntriesLoaded(:final trashed) => sortEntries(
-        trashed,
+        trashed.where((entry) => entry.kind == kind).toList(),
         LoginSort.recentlyUpdated,
       ),
       VaultEntriesLoading() => const <VaultEntry>[],

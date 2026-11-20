@@ -28,9 +28,12 @@ String loginAvatarHeroTag(String idHex) => 'login-avatar-$idHex';
 
 enum _VaultAction { sortName, sortRecent, report, trash }
 
-/// Parola listesi: arama, favoriler, klasörler ve sıralama.
+/// Bir kayıt türünün listesi: Parolalar, Kartlar ya da Notlar sekmesi.
+/// Arama, favoriler, klasörler, sıralama ve çöp kutusu o türe ait.
 class VaultScreen extends ConsumerStatefulWidget {
-  const new({super.key});
+  const new({this.kind = VaultKind.login, super.key});
+
+  final VaultKind kind;
 
   @override
   ConsumerState<VaultScreen> createState() => _VaultScreenState();
@@ -40,7 +43,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
   final _search = TextEditingController();
   final _searchFocus = FocusNode();
   final _scroll = ScrollController();
-  LoginFilter _filter = const LoginFilter();
+  late LoginFilter _filter = LoginFilter(kind: widget.kind);
 
   /// Bu açılışta seçilen sıralama; ayara yazılana kadar ekranda bu görünür.
   LoginSort? _sort;
@@ -62,7 +65,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
       case _VaultAction.report:
         unawaited(context.push(AppRoutes.vaultReport));
       case _VaultAction.trash:
-        unawaited(context.push(AppRoutes.vaultTrash));
+        unawaited(context.push(AppRoutes.trashOf(widget.kind)));
     }
   }
 
@@ -80,6 +83,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final kind = widget.kind;
     final state = ref.watch(vaultEntriesProvider);
     final loginsReady = ref.watch(loginsControllerProvider) is LoginsLoaded;
     final savedSort = ref.watch(
@@ -89,7 +93,11 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
     return KkScaffold(
       appBar: kkRootAppBar(
         context,
-        title: l10n.navVault,
+        title: switch (kind) {
+          VaultKind.login => l10n.navPasswords,
+          VaultKind.card => l10n.navCards,
+          VaultKind.note => l10n.navNotes,
+        },
         actions: [
           KkBarSearchButton(
             tooltip: l10n.vaultSearch,
@@ -112,12 +120,13 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
                 icon: Icons.history_rounded,
                 checked: _filter.sort == LoginSort.recentlyUpdated,
               ),
-              KkMenuItem(
-                value: _VaultAction.report,
-                label: l10n.reportTitle,
-                icon: Icons.health_and_safety_outlined,
-                enabled: loginsReady,
-              ),
+              if (kind == VaultKind.login)
+                KkMenuItem(
+                  value: _VaultAction.report,
+                  label: l10n.reportTitle,
+                  icon: Icons.health_and_safety_outlined,
+                  enabled: loginsReady,
+                ),
               KkMenuItem(
                 value: _VaultAction.trash,
                 label: l10n.trashTitle,
@@ -141,15 +150,12 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
     AppLocalizations l10n,
     VaultEntriesLoaded state,
   ) {
-    final active = state.entries.where((entry) => !entry.isTrashed);
+    final kind = widget.kind;
+    final ofKind = state.entries.where((entry) => entry.kind == kind);
+    final active = ofKind.where((entry) => !entry.isTrashed);
     final count = active.length;
     final hasFavorites = active.any((entry) => entry.favorite);
-    final folders = foldersOfEntries(state.entries);
-    final activeKinds = state.activeKinds;
-    final kinds = [
-      for (final kind in VaultKind.values)
-        if (activeKinds.contains(kind)) kind,
-    ];
+    final folders = foldersOfEntries(ofKind);
     // Süzgecin dayanağı kalmadıysa (son favori kalktı, klasör boşaldı)
     // bütün kayıtlar yeniden görünür.
     if (_filter.favoritesOnly && !hasFavorites) {
@@ -157,10 +163,6 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
     }
     if (_filter.folder != null && !folders.contains(_filter.folder)) {
       _filter = _filter.copyWith(clearFolder: true);
-    }
-    if (_filter.kind != null &&
-        (kinds.length < 2 || !kinds.contains(_filter.kind))) {
-      _filter = _filter.copyWith(clearKind: true);
     }
     final visible = filterEntries(state.indexed, _filter);
     final glass = KkGlass.of(context);
@@ -173,7 +175,13 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
           child: SecretField(
             controller: _search,
             focusNode: _searchFocus,
-            label: count > 0 ? l10n.vaultSearchCount(count) : l10n.vaultSearch,
+            label: count == 0
+                ? l10n.vaultSearch
+                : switch (kind) {
+                    VaultKind.login => l10n.vaultSearchCount(count),
+                    VaultKind.card => l10n.cardsSearchCount(count),
+                    VaultKind.note => l10n.notesSearchCount(count),
+                  },
             obscure: false,
             search: true,
             textInputAction: TextInputAction.search,
@@ -181,30 +189,15 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
                 setState(() => _filter = _filter.copyWith(query: query)),
           ),
         ),
-        const BackupReminderBanner(),
-        if (kinds.length > 1 || hasFavorites || folders.isNotEmpty)
+        // Yedek hatırlatıcısı ve okunamayan kayıt uyarısı bütün kasa için;
+        // açılıştaki sekmede, Parolalar'da bir kez görünür.
+        if (kind == VaultKind.login) const BackupReminderBanner(),
+        if (hasFavorites || folders.isNotEmpty)
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
             child: Row(
               children: [
-                if (kinds.length > 1)
-                  for (final kind in kinds) ...[
-                    FilterChip(
-                      label: Text(switch (kind) {
-                        VaultKind.login => l10n.vaultKindLogins,
-                        VaultKind.card => l10n.vaultKindCards,
-                        VaultKind.note => l10n.vaultKindNotes,
-                      }),
-                      selected: _filter.kind == kind,
-                      onSelected: (selected) => setState(
-                        () => _filter = selected
-                            ? _filter.copyWith(kind: kind)
-                            : _filter.copyWith(clearKind: true),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
                 if (hasFavorites)
                   FilterChip(
                     label: Text(l10n.vaultFavorites),
@@ -231,7 +224,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
               ],
             ),
           ),
-        if (state.unreadableCount > 0)
+        if (kind == VaultKind.login && state.unreadableCount > 0)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
             child: GlassSurface(
@@ -267,7 +260,17 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
       padding: EdgeInsets.fromLTRB(16, 4, 16, navClearance(context)),
       empty: count > 0
           ? Text(l10n.vaultNoResults, textAlign: TextAlign.center)
-          : const _EmptyVault(),
+          : switch (kind) {
+              VaultKind.login => const _EmptyVault(),
+              VaultKind.card => Text(
+                l10n.cardsEmpty,
+                textAlign: TextAlign.center,
+              ),
+              VaultKind.note => Text(
+                l10n.notesEmpty,
+                textAlign: TextAlign.center,
+              ),
+            },
       itemBuilder: (context, entry, index) => switch (entry) {
         LoginEntry(:final item) => LoginTile(item: item),
         CardEntry(:final item) => CardTile(item: item),

@@ -27,6 +27,7 @@ import 'package:keykey/features/settings/presentation/change_password_screen.dar
 import 'package:keykey/features/settings/presentation/licenses_screen.dart';
 import 'package:keykey/features/settings/presentation/new_recovery_key_screen.dart';
 import 'package:keykey/features/settings/presentation/settings_screen.dart';
+import 'package:keykey/features/vault/application/vault_entries.dart';
 import 'package:keykey/features/vault/presentation/card_detail_screen.dart';
 import 'package:keykey/features/vault/presentation/card_edit_screen.dart';
 import 'package:keykey/features/vault/presentation/login_detail_screen.dart';
@@ -40,9 +41,13 @@ import 'package:keykey/features/vault/presentation/vault_screen.dart';
 abstract final class AppRoutes {
   static const vault = '/kasa';
   static const vaultNew = '/kasa/yeni';
-  static const cardNew = '/kasa/yeni-kart';
-  static const noteNew = '/kasa/yeni-not';
   static const vaultTrash = '/kasa/cop';
+  static const cards = '/kartlar';
+  static const cardNew = '/kartlar/yeni';
+  static const cardsTrash = '/kartlar/cop';
+  static const notes = '/notlar';
+  static const noteNew = '/notlar/yeni';
+  static const notesTrash = '/notlar/cop';
   static const vaultReport = '/kasa/rapor';
   static const authenticator = '/2fa';
   static const authenticatorNew = '/2fa/yeni';
@@ -67,13 +72,20 @@ abstract final class AppRoutes {
 
   static String vaultItem(String idHex) => '/kasa/kayit/$idHex';
 
-  static String cardItem(String idHex) => '/kasa/kart/$idHex';
+  static String cardItem(String idHex) => '/kartlar/$idHex';
 
-  static String cardItemEdit(String idHex) => '/kasa/kart/$idHex/duzenle';
+  static String cardItemEdit(String idHex) => '/kartlar/$idHex/duzenle';
 
-  static String noteItem(String idHex) => '/kasa/not/$idHex';
+  static String noteItem(String idHex) => '/notlar/$idHex';
 
-  static String noteItemEdit(String idHex) => '/kasa/not/$idHex/duzenle';
+  static String noteItemEdit(String idHex) => '/notlar/$idHex/duzenle';
+
+  /// Türün sekmesindeki çöp kutusu.
+  static String trashOf(VaultKind kind) => switch (kind) {
+    VaultKind.login => vaultTrash,
+    VaultKind.card => cardsTrash,
+    VaultKind.note => notesTrash,
+  };
 
   /// Bir ya da birkaç paketin lisans metni; adlar sorgu parametresinde.
   static String licenseText({
@@ -148,12 +160,15 @@ String? vaultRedirect(
 String resumeLocationFor(String path) {
   if (_vaultItem.hasMatch(path)) return path;
   bool under(String root) => path == root || path.startsWith('$root/');
+  if (under(AppRoutes.cards)) return AppRoutes.cards;
+  if (under(AppRoutes.notes)) return AppRoutes.notes;
   if (under(AppRoutes.authenticator)) return AppRoutes.authenticator;
   if (under(AppRoutes.settings)) return AppRoutes.settings;
   return AppRoutes.vault;
 }
 
-final _vaultItem = RegExp(r'^/kasa/(kayit|kart|not)/[^/]+$');
+/// Kaydın ayrıntısı: kimlik onaltılık; `yeni` ve `cop` eşleşmez.
+final _vaultItem = RegExp(r'^/(kasa/kayit|kartlar|notlar)/[0-9a-f]+$');
 
 const Set<String> _gateRoutes = {
   AppRoutes.terms,
@@ -249,44 +264,8 @@ final routerProvider = Provider<GoRouter>((ref) {
                     builder: (context, state) => const LoginEditScreen(),
                   ),
                   kkRoute(
-                    parentNavigatorKey: rootNavigatorKey,
-                    path: 'yeni-kart',
-                    builder: (context, state) => const CardEditScreen(),
-                  ),
-                  kkRoute(
-                    parentNavigatorKey: rootNavigatorKey,
-                    path: 'yeni-not',
-                    builder: (context, state) => const NoteEditScreen(),
-                  ),
-                  kkRoute(
                     path: 'cop',
                     builder: (context, state) => const TrashScreen(),
-                  ),
-                  kkRoute(
-                    path: 'not/:id',
-                    builder: (context, state) =>
-                        NoteDetailScreen(idHex: state.pathParameters['id']!),
-                    routes: [
-                      kkRoute(
-                        parentNavigatorKey: rootNavigatorKey,
-                        path: 'duzenle',
-                        builder: (context, state) =>
-                            NoteEditScreen(idHex: state.pathParameters['id']),
-                      ),
-                    ],
-                  ),
-                  kkRoute(
-                    path: 'kart/:id',
-                    builder: (context, state) =>
-                        CardDetailScreen(idHex: state.pathParameters['id']!),
-                    routes: [
-                      kkRoute(
-                        parentNavigatorKey: rootNavigatorKey,
-                        path: 'duzenle',
-                        builder: (context, state) =>
-                            CardEditScreen(idHex: state.pathParameters['id']),
-                      ),
-                    ],
                   ),
                   kkRoute(
                     path: 'rapor',
@@ -302,6 +281,76 @@ final routerProvider = Provider<GoRouter>((ref) {
                         path: 'duzenle',
                         builder: (context, state) =>
                             LoginEditScreen(idHex: state.pathParameters['id']),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              kkRoute(
+                path: AppRoutes.cards,
+                builder: (context, state) =>
+                    const VaultScreen(kind: VaultKind.card),
+                routes: [
+                  // Sabit adlar kimlikten önce: `yeni` ve `cop` kimlik
+                  // sanılmasın.
+                  kkRoute(
+                    parentNavigatorKey: rootNavigatorKey,
+                    path: 'yeni',
+                    builder: (context, state) => const CardEditScreen(),
+                  ),
+                  kkRoute(
+                    path: 'cop',
+                    builder: (context, state) =>
+                        const TrashScreen(kind: VaultKind.card),
+                  ),
+                  kkRoute(
+                    path: ':id',
+                    builder: (context, state) =>
+                        CardDetailScreen(idHex: state.pathParameters['id']!),
+                    routes: [
+                      kkRoute(
+                        parentNavigatorKey: rootNavigatorKey,
+                        path: 'duzenle',
+                        builder: (context, state) =>
+                            CardEditScreen(idHex: state.pathParameters['id']),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              kkRoute(
+                path: AppRoutes.notes,
+                builder: (context, state) =>
+                    const VaultScreen(kind: VaultKind.note),
+                routes: [
+                  kkRoute(
+                    parentNavigatorKey: rootNavigatorKey,
+                    path: 'yeni',
+                    builder: (context, state) => const NoteEditScreen(),
+                  ),
+                  kkRoute(
+                    path: 'cop',
+                    builder: (context, state) =>
+                        const TrashScreen(kind: VaultKind.note),
+                  ),
+                  kkRoute(
+                    path: ':id',
+                    builder: (context, state) =>
+                        NoteDetailScreen(idHex: state.pathParameters['id']!),
+                    routes: [
+                      kkRoute(
+                        parentNavigatorKey: rootNavigatorKey,
+                        path: 'duzenle',
+                        builder: (context, state) =>
+                            NoteEditScreen(idHex: state.pathParameters['id']),
                       ),
                     ],
                   ),

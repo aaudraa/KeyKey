@@ -156,7 +156,9 @@ void main() {
     ) async {
       await goToPage(tester, 2);
       for (final icon in [
-        Icons.lock_outline,
+        Icons.key_outlined,
+        Icons.credit_card_outlined,
+        Icons.sticky_note_2_outlined,
         Icons.shield_outlined,
         Icons.settings_outlined,
         Icons.add_rounded,
@@ -164,16 +166,25 @@ void main() {
         expect(inArt(find.byIcon(icon)), findsWidgets);
       }
       // Sekme adları açıklamalardan büyük ve kalın.
-      for (final name in ['Kasa', '2FA', 'Ayarlar', 'Ekle']) {
+      for (final name in [
+        'Parolalar',
+        'Kartlar',
+        'Notlar',
+        '2FA',
+        'Ayarlar',
+        'Ekle',
+      ]) {
         final style = tester.widget<Text>(inArt(find.text(name))).style;
         expect(style?.fontSize, 18, reason: name);
         expect(style?.fontWeight, FontWeight.w800, reason: name);
       }
       for (final caption in [
-        'Parolaların',
+        'Site ve uygulama girişlerin',
+        'Banka kartların',
+        'Güvenli notların',
         'Doğrulama kodların',
         'Yedek, doldurma ve tema',
-        'Yeni parola ya da 2FA kodu',
+        'Yeni parola, kart, not ya da 2FA kodu',
       ]) {
         expect(inArt(find.text(caption)), findsOneWidget);
       }

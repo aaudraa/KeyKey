@@ -15,7 +15,10 @@ import 'package:keykey/features/backup/data/import/login_import.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:keykey/features/vault/application/breach_check.dart';
+import 'package:keykey/features/vault/data/card_content.dart';
+import 'package:keykey/features/vault/data/card_number.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
+import 'package:keykey/features/vault/data/note_content.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
 import 'package:keykey/features/vault/presentation/password_report_screen.dart';
 import 'package:sodium/sodium_sumo.dart';
@@ -44,6 +47,19 @@ void main() {
     ),
     id: 1,
   );
+  final card = FakeRecordRepository.item(
+    CardContent(
+      name: 'Maaş kartı',
+      number: '4111111111111111',
+      expiry: CardExpiry(month: 12, year: 2099),
+      folder: 'Cüzdan',
+    ),
+    id: 2,
+  );
+  final note = FakeRecordRepository.item(
+    NoteContent(name: 'Ev Wi-Fi', text: 'ağ: Ev'),
+    id: 3,
+  );
   final otp = FakeOtpRepository.item(
     OtpContent(
       parameters: OtpParameters.totp(secret: utf8.encode('anahtar-1234567')),
@@ -61,6 +77,11 @@ void main() {
     'kayıt düzenleme': (AppRoutes.vaultItemEdit(loginIdHex(login.id)), null),
     'parola raporu': (AppRoutes.vaultReport, null),
     'çöp kutusu': (AppRoutes.vaultTrash, null),
+    'kart listesi': (AppRoutes.cards, null),
+    'kart çöp kutusu': (AppRoutes.cardsTrash, null),
+    'kart ayrıntısı': (AppRoutes.cardItem(loginIdHex(card.id)), null),
+    'not listesi': (AppRoutes.notes, null),
+    'not ayrıntısı': (AppRoutes.noteItem(loginIdHex(note.id)), null),
     '2FA': (AppRoutes.authenticator, null),
     'yeni 2FA': (AppRoutes.authenticatorNew, null),
     '2FA düzenleme': (
@@ -160,6 +181,8 @@ void main() {
             service: service,
             logins: FakeLoginRepository(items: [login]),
             otps: FakeOtpRepository(items: [otp]),
+            cards: FakeRecordRepository<CardContent>(items: [card]),
+            notes: FakeRecordRepository<NoteContent>(items: [note]),
             clock: () =>
                 DateTime.fromMillisecondsSinceEpoch(30000, isUtc: true),
           );

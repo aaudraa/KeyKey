@@ -198,9 +198,19 @@ class _AppShellState extends ConsumerState<AppShell>
           tabsHidden: _open,
           items: [
             GlassNavItem(
-              icon: Icons.lock_outline,
-              selectedIcon: Icons.lock,
-              label: l10n.navVault,
+              icon: Icons.key_outlined,
+              selectedIcon: Icons.key,
+              label: l10n.navPasswords,
+            ),
+            GlassNavItem(
+              icon: Icons.credit_card_outlined,
+              selectedIcon: Icons.credit_card,
+              label: l10n.navCards,
+            ),
+            GlassNavItem(
+              icon: Icons.sticky_note_2_outlined,
+              selectedIcon: Icons.sticky_note_2,
+              label: l10n.navNotes,
             ),
             GlassNavItem(
               icon: Icons.shield_outlined,

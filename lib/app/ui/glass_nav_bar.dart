@@ -51,6 +51,19 @@ class GlassNavBar extends StatelessWidget {
   static const double _addSize = KkMetrics.minTouch;
   static const double _inner = 8;
 
+  /// Şeridin ekran kenarlarından uzaklığı.
+  static const double _side = 16;
+
+  /// Dar ekranda (küçük telefon, büyük "ekran boyutu" ayarı) sekmeler
+  /// sığsın diye kenar ve iç boşluklar daralır; sekmelerin dokunma alanı
+  /// 48 dp'de kalır.
+  static const double _innerCompact = 4;
+  static const double _sideCompact = 4;
+
+  /// Sekmeler, ayraç ve "+" verilen boşluklarla [width]'e sığıyor mu?
+  bool _fits(double width, {required double inner, required double side}) =>
+      _tabWidth * items.length + 1 + inner * 4 + _addSize + side * 2 <= width;
+
   final int selectedIndex;
   final ValueChanged<int> onSelected;
   final List<GlassNavItem> items;
@@ -72,7 +85,7 @@ class GlassNavBar extends StatelessWidget {
 
   /// Seçili sekmenin adı şeride sığıyor mu? Büyük yazıda ya da dar ekranda
   /// ad gizlenir, sekme yalnızca simgeyle kalır.
-  bool _showLabel(BuildContext context, double maxWidth) {
+  bool _showLabel(BuildContext context, double maxWidth, double inner) {
     final scaler = MediaQuery.textScalerOf(context);
     if (scaler.scale(10) > 13) return false;
     final style = _labelStyle(context);
@@ -89,9 +102,9 @@ class GlassNavBar extends StatelessWidget {
         labelWidth +
         16 +
         1 +
-        _inner * 4 +
+        inner * 4 +
         _addSize +
-        _inner * 2;
+        inner * 2;
     return needed <= maxWidth;
   }
 
@@ -110,16 +123,23 @@ class GlassNavBar extends StatelessWidget {
     final localizations = MaterialLocalizations.of(context);
     final bottomInset = MediaQuery.paddingOf(context).bottom;
     const radius = BorderRadius.all(Radius.circular(height / 2));
+    final compact = !_fits(
+      MediaQuery.sizeOf(context).width,
+      inner: _inner,
+      side: _side,
+    );
+    final inner = compact ? _innerCompact : _inner;
+    final side = compact ? _sideCompact : _side;
 
     return Padding(
       padding: EdgeInsets.only(
         bottom: bottomGap + bottomInset,
-        left: 16,
-        right: 16,
+        left: side,
+        right: side,
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final showLabel = _showLabel(context, constraints.maxWidth);
+          final showLabel = _showLabel(context, constraints.maxWidth, inner);
           return Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -134,7 +154,7 @@ class GlassNavBar extends StatelessWidget {
                   child: SizedBox(
                     height: height,
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: _inner),
+                      padding: EdgeInsets.symmetric(horizontal: inner),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -150,9 +170,7 @@ class GlassNavBar extends StatelessWidget {
                               ),
                             ),
                           Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: _inner,
-                            ),
+                            padding: EdgeInsets.symmetric(horizontal: inner),
                             child: SizedBox(
                               width: 1,
                               height: 28,

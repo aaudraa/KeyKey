@@ -299,17 +299,24 @@ class _Tour extends StatelessWidget {
   final bool reduced;
 
   static const List<IconData> _icons = [
-    Icons.lock_outline,
+    Icons.key_outlined,
+    Icons.credit_card_outlined,
+    Icons.sticky_note_2_outlined,
     Icons.shield_outlined,
     Icons.settings_outlined,
     Icons.add_rounded,
   ];
 
+  /// Menüdeki sekme sayısı; sonuncu simge "+".
+  static const int _tabs = 5;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final rows = [
-      (l10n.navVault, l10n.introTourVault),
+      (l10n.navPasswords, l10n.introTourVault),
+      (l10n.navCards, l10n.introTourCards),
+      (l10n.navNotes, l10n.introTourNotes),
       (l10n.navAuthenticator, l10n.introTourOtp),
       (l10n.navSettings, l10n.introTourSettings),
       (l10n.vaultAdd, l10n.introTourAdd),
@@ -319,8 +326,9 @@ class _Tour extends StatelessWidget {
       builder: (context, _) {
         final t = enter.value;
         // Animasyonlar kapalıyken hiçbir simge vurgulanmaz, hepsi okunur.
-        final step = (loop.value * 4 * IntroArt._tourRounds).floor();
-        final current = reduced || t < 1 || loop.value >= 1 ? -1 : step % 4;
+        final count = _icons.length;
+        final step = (loop.value * count * IntroArt._tourRounds).floor();
+        final current = reduced || t < 1 || loop.value >= 1 ? -1 : step % count;
         return ConstrainedBox(
           constraints: const BoxConstraints(
             minHeight: KkMetrics.introArtHeight,
@@ -384,7 +392,7 @@ class _TourPill extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            for (var i = 0; i < 3; i++) tab(i),
+            for (var i = 0; i < _Tour._tabs; i++) tab(i),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: SizedBox(
@@ -394,7 +402,7 @@ class _TourPill extends StatelessWidget {
               ),
             ),
             AnimatedScale(
-              scale: current == 3 ? 1.18 : 1,
+              scale: current == _Tour._tabs ? 1.18 : 1,
               duration: KkMotion.of(context, KkMotion.base),
               curve: KkMotion.spring,
               child: Container(

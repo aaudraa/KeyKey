@@ -22,9 +22,7 @@ void main() {
   late FakeVaultService service;
 
   const lockedTitle = 'KeyKey kilitli';
-  const vaultText =
-      'Henüz kayıt yok. Parola, kart ya da not eklemek için '
-      'alttaki + düğmesine dokun.';
+  const vaultText = 'Henüz parola yok. Eklemek için alttaki + düğmesine dokun.';
   const otpEmptyText =
       'Henüz 2FA hesabı yok. İlkini kurmak için alttaki + düğmesine dokun.';
 
@@ -92,6 +90,16 @@ void main() {
       expect(resumeLocationFor('/kasa/kayit/0a1b/duzenle'), AppRoutes.vault);
       expect(resumeLocationFor(AppRoutes.vaultNew), AppRoutes.vault);
       expect(resumeLocationFor(AppRoutes.vaultTrash), AppRoutes.vault);
+      // Kart ve notun ayrıntısına kendi sekmesinde dönülür; formlara ve
+      // çöp kutusuna dönülmez, sekmenin listesine dönülür.
+      expect(resumeLocationFor('/kartlar/0a1b'), '/kartlar/0a1b');
+      expect(resumeLocationFor('/kartlar/0a1b/duzenle'), AppRoutes.cards);
+      expect(resumeLocationFor(AppRoutes.cardNew), AppRoutes.cards);
+      expect(resumeLocationFor(AppRoutes.cardsTrash), AppRoutes.cards);
+      expect(resumeLocationFor(AppRoutes.cards), AppRoutes.cards);
+      expect(resumeLocationFor('/notlar/0a1b'), '/notlar/0a1b');
+      expect(resumeLocationFor(AppRoutes.noteNew), AppRoutes.notes);
+      expect(resumeLocationFor(AppRoutes.notesTrash), AppRoutes.notes);
       expect(
         resumeLocationFor(AppRoutes.authenticator),
         AppRoutes.authenticator,

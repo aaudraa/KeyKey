@@ -1,6 +1,8 @@
 {
   "@@locale": "tr",
-  "navVault": "Kasa",
+  "navPasswords": "Parolalar",
+  "navCards": "Kartlar",
+  "navNotes": "Notlar",
   "navAuthenticator": "2FA",
   "navSettings": "Ayarlar",
   "secretShow": "Göster",
@@ -95,7 +97,9 @@
   "vaultSortRecent": "Son değişene göre sırala",
   "vaultAdd": "Ekle",
   "vaultFavorites": "Favoriler",
-  "vaultEmpty": "Henüz kayıt yok. Parola, kart ya da not eklemek için alttaki + düğmesine dokun.",
+  "vaultEmpty": "Henüz parola yok. Eklemek için alttaki + düğmesine dokun.",
+  "cardsEmpty": "Henüz kart yok. Banka kartı eklemek için alttaki + düğmesine dokun.",
+  "notesEmpty": "Henüz not yok. Güvenli not eklemek için alttaki + düğmesine dokun.",
   "vaultNoResults": "Eşleşen kayıt yok.",
   "vaultUnreadable": "{count, plural, other{{count} kayıt okunamadı. Bu kayıtlara dokunulmadı.}}",
   "loginNotFound": "Bu kayıt artık yok.",
@@ -207,10 +211,12 @@
   "introOfflineBody": "Hesap yok, sunucu yok. Kasan bu telefonda şifreli durur. İnternete yalnızca senin başlattığın denetimler çıkar; parolaların gitmez.",
   "introTourTitle": "Nerede ne var",
   "introTourBody": "Alttaki menüden her şeye ulaşırsın.",
-  "introTourVault": "Parolaların",
+  "introTourVault": "Site ve uygulama girişlerin",
+  "introTourCards": "Banka kartların",
+  "introTourNotes": "Güvenli notların",
   "introTourOtp": "Doğrulama kodların",
   "introTourSettings": "Yedek, doldurma ve tema",
-  "introTourAdd": "Yeni parola ya da 2FA kodu",
+  "introTourAdd": "Yeni parola, kart, not ya da 2FA kodu",
   "introAutofillTitle": "Otomatik doldurma",
   "introAutofillBody": "Uygulamalarda ve Chrome'da giriş kutusuna dokun, KeyKey ile tek dokunuşla doldur.",
   "introAutofillSuggestion": "KeyKey ile doldur",
@@ -482,7 +488,7 @@
   "addOtpHint": "QR tara, elle gir ya da içe aktar",
   "addBack": "Geri",
   "addClose": "Kapat",
-  "vaultSearchCount": "{count, plural, other{{count} kayıtta ara}}",
+  "vaultSearchCount": "{count, plural, other{{count} parolada ara}}",
   "@vaultSearchCount": {
     "placeholders": {
       "count": {
@@ -490,6 +496,8 @@
       }
     }
   },
+  "cardsSearchCount": "{count, plural, other{{count} kartta ara}}",
+  "notesSearchCount": "{count, plural, other{{count} notta ara}}",
   "vaultCopyPassword": "Parolayı kopyala",
   "screenMore": "Diğer işlemler",
   "loginLastChanged": "Son değişiklik: {date}",
@@ -545,9 +553,6 @@
   "noteText": "Metin",
   "noteTooLong": "Not en çok 64 KiB olabilir. Fazlası eklenmedi.",
   "noteCopy": "Metni kopyala",
-  "vaultKindLogins": "Parolalar",
-  "vaultKindCards": "Kartlar",
-  "vaultKindNotes": "Notlar",
   "restoreSummaryAll": "{date} tarihli yedek: {logins} parola, {otps} 2FA hesabı, {cards} kart ve {notes} not.",
   "restoreNewerVersion": "Bu yedek KeyKey'in daha yeni bir sürümüyle alınmış. Uygulamayı güncelleyip yeniden dene.",
   "backupTooLarge": "Kasa tek yedek dosyasına sığmıyor (64 MB sınırı). Büyük notları kısaltıp yeniden dene.",
