@@ -2,7 +2,7 @@
 
 KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. 1.5.0'a kadar tamamen çevrimdışıydı; 2026-11-19'da internet gerektiren özelliklere de açılma kararı alındı ([İnternet](#temel-kararlar)). Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-20 · **Şu anki faz:** 18 bitti; sıradaki 19, senkron. [1.7.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.7.0) yayında (arka plan kilidi süresi, normal klavye, toplu seçim, Steam Guard kodları; 1.4.0'dan beri gelenlerle birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
+**Son güncelleme:** 2026-11-21 · **Şu anki faz:** 19 (senkron) bitti, 1.8.0 olarak çıkıyor ([#160](https://github.com/aaudraa/KeyKey/issues/160), tasarım: [senkron](docs/senkron.md)); sıradaki 20 (KeePass içe aktarma). [1.7.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.7.0) yayında (arka plan kilidi süresi, normal klavye, toplu seçim, Steam Guard kodları; 1.4.0'dan beri gelenlerle birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
 
 > [!IMPORTANT]
 > **KeyKey 1.0 yayında.** Projenin kendi güvenlik denetimi tamamlandı, ama bağımsız bir denetim yapılmadı. Şifreli yedeğini düzenli al ve telefonun dışında da sakla.
@@ -32,7 +32,7 @@ KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uyg
 | 16 | İnternete açılma ve sızıntı kontrolü | M | 14 | `faz/16-internet` | Tamamlandı (1.6.0) |
 | 17 | Kartlar ve notlar için gezinme | S | 14 | `faz/17-gezinme` | Tamamlandı (1.6.0) |
 | 18 | Kilit süresi, klavye, toplu seçim, Steam Guard | M | 14 | `faz/18-kullanim-kolayligi` | Tamamlandı (1.7.0) |
-| 19 | Senkron (WebDAV; Google Drive ayrı) | XL | 16 | `faz/19-senkron` | Devam ediyor |
+| 19 | Senkron (WebDAV; Google Drive ayrı) | XL | 16 | `faz/19-senkron` | Tamamlandı (1.8.0) |
 | 20 | KeePass (`.kdbx`) içe aktarma | L | 14 | `faz/20-keepass` | Planlandı |
 | 21 | Passkey sağlayıcısı | XL | 15 | `faz/21-passkey` | Planlandı |
 | 22 | İşlemciye göre APK ve kendi F-Droid deposu | M | — | `faz/22-dagitim` | Planlandı |
@@ -759,8 +759,8 @@ Kasanın kullanıcının kendi WebDAV klasörü üzerinden telefonlar arasında 
 - [x] Ayarlar → Senkron: kurulum, durum, şimdi eşitle, cihazlar, kaldırma, kapatma
 - [x] Yeni telefonu senkrondan kurma; senkron açıkken geri yükleme; başka kasası olan telefonu katma
 - [x] Kullanım koşulları sürüm 3, gizlilik bildirimi, güvenlik tasarımı ve özeti, kılavuz, değişiklik günlüğü, mağaza notu
-- [ ] Entegrasyon testi ve gerçek bir WebDAV sunucusuyla (rclone) cihaz denemeleri
-- [ ] Son gözden geçirme
+- [x] Entegrasyon testi ve gerçek bir WebDAV sunucusuyla (rclone) cihaz denemeleri
+- [x] Son gözden geçirme
 
 **Uygulama sırasında verilen kararlar:**
 
@@ -771,6 +771,11 @@ Kasanın kullanıcının kendi WebDAV klasörü üzerinden telefonlar arasında 
 - Başka kasanın dosyası olan klasörde senkron açılmaz; telefon o kasaya ancak o kasanın ana parolasıyla katılabilir. Katılınca kasa yeni oturumla açık kalır, kilit ekranına gidilmez.
 - Senkron açıkken geri yüklenen kayıtlar şimdiyle damgalanır; öteki telefonlardaki eski silmeler onları yeniden silmez. Değiştirmede yedekte olmayan kayıtlar eşitlemede geri gelir, yani geri yükleme senkron üzerinden hiçbir şeyi silmez.
 - Ayarlar'da senkron, yedek grubunun altında kendi grubunda ("Telefonlar arası").
+- Ana parola değişince ya da kurtarma anahtarı yenilenince senkron beklemeden eşitler. Tasarımın tetik listesinde yoktu; cihaz denemesinde yeni üst bilgi bir sonraki tetiğe kadar telefonda kaldı, sunucudaki dosya o arada eski parolayla açılıyordu.
+
+**Son gözden geçirme:** Bağımsız gözden geçirme (Opus) iki kritik ve üç önemli bulgu verdi; hepsi önce testle düzeltildi. (1) Ara dosyanın `.part` eki: Nextcloud ve ownCloud bu eki yarım yükleme sayıp dosya önbelleğine almıyor, her eşitleme hata verirdi. Ara ek `.tmp` oldu. (2) Uzun süre eşitlenmemiş bir telefonda çöp kutusunun süresi dolunca silme kaydı şimdiyle yazılıyordu; başka telefonda sonradan çöpten çıkarılan kayıt bütün telefonlardan siliniyordu. Silme kaydı artık çöpe atılan sürümün zamanını taşıyor. (3) Eşitleme yerel durumu okuyup ayrı bir işlemde yazıyordu: arada kaydedilen bir değişiklik eziliyor, geri yükleme başka bir kasa koyduysa eski oturumun kayıtları yeni kasaya yazılabiliyordu. Okuma, birleştirme ve yazma artık tek işlemde; diskteki kasa oturumun kasası değilse hiçbir şey yazılmıyor. (4) Üst bilgi yuvaları oturumun elindeki kopyadan kuruluyordu; bir yarışla parola değişikliği ya da yeni kurtarma anahtarı geri alınabilirdi. Üst bilgi artık diskten okunuyor, her işlem yalnızca kendi yuvasını yazıyor, kilitten hemen önce biten eşitlemeden sonra kilit ekranı diskteki üst bilgiyi alıyor. (5) Kılavuz ve güvenlik tasarımı artık parolası sızan kullanıcıya kasayı yeni bir kasaya taşımayı öneriyor. Gerçek bir Nextcloud sunucusuyla deneme yapılamadı: bu makinede kapsayıcı aracı yok, Nextcloud da Windows'ta çalışmıyor. Küçük bulgular (beklenmedik bir hatadan sonra oturum boyunca eşitlemenin durması, eşitleme sürerken kapatılan senkronun dosyayı geri yükleyebilmesi, çok büyük kasada yanlış hata metni, otomatik yedeğin eşitlemeyle gelen değişiklikleri saymaması, şema göçünün işlem içinde olmaması gibi) sonraya kaldı.
+
+**Cihazda (2026-11-20/21):** Android 17 ve Android 11 emülatörlerinde bütün entegrasyon testleri (yeni senkron testi dahil: telefonun içinde çalışan küçük bir WebDAV sunucusu, gerçek istemci, SQLite ve libsodium ile iki telefonun birleşmesi, silmenin taşınması, yarım kalan yüklemenin görünmemesi), parmak izi, pano ve kamera testleri geçti. 2FA akış testi Android 17'de yalnızca emülatörün animasyon ölçekleri 0 iken çerçeve hatası veriyor; 1.7.0'da da aynı, ölçekler kullanıcı varsayılanı olan 1'deyken geçiyor. Gerçek kullanıcı yolu Android 17'de `rclone serve webdav` ile (kullanıcı adı ve parolalı, `adb reverse` ile `http://127.0.0.1`): kasa kuruldu, senkron açıldı, kayıt eklendi; sunucudaki dosyada kayıt adı, kullanıcı adı, parola, uygulama parolası ve cihaz adı şifresiz geçmiyor. Uygulama verisi silinip "Senkrondan kur" ile ikinci telefon gibi kuruldu, kayıt geldi; kalıcı silinen kayıt öteki telefonun eski dosyasından geri gelmedi. Parola değişikliğinin hemen yüklenmediği burada bulundu ve düzeltildi; düzeltmeden sonra parola değişince dosya beş saniye içinde yeni üst bilgiyle yüklendi, yeni kurulan telefonda eski parola reddedildi, yenisi kasayı açtı. Son gözden geçirmenin düzeltmelerinden sonra senkron, kasa akışı, uygulama ve yedek entegrasyon testleri Android 17'de yeniden geçti.
 
 **Bitti sayılması için:** iki telefonda eklenen, değiştirilen ve silinen kayıtlar ötekine geçiyor; eski bir dosya yeni bir değişikliği geri almıyor; kalıcı silinen kayıt geri gelmiyor; yeni telefon senkrondan kuruluyor; başka kasası olan telefon kayıtlarını kaybetmeden katılıyor; sunucuya giden dosyada şifresiz kayıt yok.
 
