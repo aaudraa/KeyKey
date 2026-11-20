@@ -2,7 +2,7 @@
 
 KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. 1.5.0'a kadar tamamen çevrimdışıydı; 2026-11-19'da internet gerektiren özelliklere de açılma kararı alındı ([İnternet](#temel-kararlar)). Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-20 · **Şu anki faz:** 18 (kullanım kolaylıkları) sürüyor ([#157](https://github.com/aaudraa/KeyKey/issues/157), tasarım: [kullanım kolaylıkları](docs/kullanim-kolayligi.md)). [1.6.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.6.0) yayında (sızıntı kontrolü, kartlar ve notlar alttaki menüde; 1.4.0'dan beri gelenlerle birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
+**Son güncelleme:** 2026-11-20 · **Şu anki faz:** 18 (kullanım kolaylıkları) bitti, 1.7.0 olarak çıkıyor ([#157](https://github.com/aaudraa/KeyKey/issues/157), tasarım: [kullanım kolaylıkları](docs/kullanim-kolayligi.md)); sıradaki 19 (senkron). [1.6.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.6.0) yayında (sızıntı kontrolü, kartlar ve notlar alttaki menüde; 1.4.0'dan beri gelenlerle birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
 
 > [!IMPORTANT]
 > **KeyKey 1.0 yayında.** Projenin kendi güvenlik denetimi tamamlandı, ama bağımsız bir denetim yapılmadı. Şifreli yedeğini düzenli al ve telefonun dışında da sakla.
@@ -31,7 +31,7 @@ KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uyg
 | 15 | Kart doldurma | M | 14 | `faz/15-kart-doldurma` | Tamamlandı (1.5.0) |
 | 16 | İnternete açılma ve sızıntı kontrolü | M | 14 | `faz/16-internet` | Tamamlandı (1.6.0) |
 | 17 | Kartlar ve notlar için gezinme | S | 14 | `faz/17-gezinme` | Tamamlandı (1.6.0) |
-| 18 | Kilit süresi, klavye, toplu seçim, Steam Guard | M | 14 | `faz/18-kullanim-kolayligi` | Sürüyor |
+| 18 | Kilit süresi, klavye, toplu seçim, Steam Guard | M | 14 | `faz/18-kullanim-kolayligi` | Tamamlandı (1.7.0) |
 | 19 | Senkron (WebDAV, Google Drive) | XL | 16 | `faz/19-senkron` | Planlandı |
 | 20 | KeePass (`.kdbx`) içe aktarma | L | 14 | `faz/20-keepass` | Planlandı |
 | 21 | Passkey sağlayıcısı | XL | 15 | `faz/21-passkey` | Planlandı |
@@ -726,9 +726,9 @@ Proje sahibinin 2026-11-20 gecesi isteği ([#153](https://github.com/aaudraa/Key
 - [x] Gizli olmayan kutularda normal klavye (isteğe bağlı)
 - [x] Parolalar, Kartlar ve Notlar'da toplu seçim: tümünü seç, klasöre taşı, çöp kutusuna taşı ve geri al
 - [x] Steam Guard kodları: içe aktarma (Aegis, 2FAS, otpauth, Bitwarden `steam://`), elle ekleme, Bitwarden dışa aktarma
-- [ ] Android 17 ve 11 emülatörlerinde bütün cihaz testleri
+- [x] Android 17 ve 11 emülatörlerinde bütün cihaz testleri ve bu fazın cihaz denemeleri
 - [x] Kılavuz, güvenlik tasarımı, değişiklik günlüğü, mağaza notu
-- [ ] Son gözden geçirme
+- [x] Son gözden geçirme
 
 **Uygulama sırasında verilen kararlar:**
 
@@ -737,6 +737,11 @@ Proje sahibinin 2026-11-20 gecesi isteği ([#153](https://github.com/aaudraa/Key
 - Kullanıcı adı, özel alan adları ve kart sahibi her ayarda öğrenmeyen klavyede kalıyor; işaretlenmemiş yeni bir kutu da öyle.
 - Bitwarden Steam hesabını yalnızca `steam://ANAHTAR` biçiminde tanıyor; `otpauth://steam/…` verilince 5 haneli sayı, yani yanlış kod üretiyor. Bitwarden biçimli dışa aktarma bu yüzden `steam://` yazıyor, içe aktarma da okuyor.
 - 2FA formunda üç tür dar ekrana sığmadığı için tür seçimi çiplerle.
+- Normal klavyeli kutularda klavyenin öneri şeridi açık, düzeltme ve öğrenme isteği kapalı. Tasarım öneriyi de kapalı istiyordu, ama Flutter Android'de öneriyi kapatan her kutuyu görünür parola klavyesine çeviriyor; cihaz denemesinde ayar hiçbir şeyi değiştirmiyordu (ad kutusu `0x82091`, web adresi `0x80091`). Şimdi ad `0x2001` (kelime başı büyük harf), web adresi `0x11` (adres klavyesi).
+
+**Son gözden geçirme:** Bağımsız gözden geçirme iki önemli bulgu verdi, ikisi de önce testle düzeltildi. (1) Bekleme süresinde açık kalan bir düzenleme formu ya da toplu işlem, doldurma ekranının bu arada kaydettiği yeni parolayı eski kopyayla ezebiliyordu; artık küçük yazmalar kaydın en son hâline yapılıyor, form yalnızca kullanıcının değiştirdiği alanları taşıyor. (2) Dart'ın `Stopwatch`'ı telefon uyurken duruyor; uyku ile saati geri almak bir araya gelince süre uzayabiliyordu. Tekdüze saat Android'de `CLOCK_BOOTTIME` oldu (FFI ile `clock_gettime`); bir cihaz testi bunu `/proc/uptime` ile karşılaştırıyor. Tasarımın "kelime başı büyük harf" maddesine de dönüldü. Küçük bulgular (5 dakika kilidinin dönüşte yeniden kurulmaması, toplu klasör penceresinde harf büyüklüğü, TalkBack'in seçili olmayan satırı okuması gibi) sonraya kaldı.
+
+**Cihazda (2026-11-20):** Android 17'de bütün cihaz testleri geçti (entegrasyonda iki içe aktarma testinin hesap sayısı Steam yüzünden değişmişti, düzeltilip yeniden koşuldu). Bu fazın denemeleri Android 17'de gerçek kullanıcı yolundan: varsayılan ayarda dönüşte kasa kilitli; 30 saniye ayarında kısa dönüşte açık, 40 saniyelik dönüşte kilitli; normal klavye ayarında ad ve web adresi doğru klavye türüyle, kullanıcı adı ve parola yine görünür parola klavyesiyle; iki kayıt seçilip çöpe taşındı, "Geri al" ikisini de getirdi; Steam hesabı elle eklendi, kopyalanan kod bağımsız bir Python hesabıyla aynı. Android 11'de bütün entegrasyon testleri (yeni saat testi dahil), parmak izi, pano ve kamera testleri geçti; normal klavye ayarında kutu türleri Android 17'dekiyle aynı.
 
 **Bitti sayılması için:** 30 saniye ayarında 10 saniye sonra dönülünce kasa açık, 31 saniye sonra, telefon uyuyup döndüğünde ya da saat geri alındığında kilitli; normal klavye ayarında parola kutusu yine öğrenmeyen klavyede; aramayla gizlenen seçili kayıt çöpe gitmiyor; Steam kodu Steam uygulamasının kodlarıyla aynı.
 
