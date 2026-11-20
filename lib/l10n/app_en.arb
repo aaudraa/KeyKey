@@ -2215,6 +2215,15 @@
   "@breachClean": {
     "description": "Breach check finished and found nothing."
   },
+  "breachUnchecked": "{count, plural, =1{1 password was added or changed after the check and was not checked.} other{{count} passwords were added or changed after the check and were not checked.}}",
+  "@breachUnchecked": {
+    "description": "Breach check result when some passwords changed after the check.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "breachRecheck": "Check again",
   "@breachRecheck": {
     "description": "Button to run the breach check again."

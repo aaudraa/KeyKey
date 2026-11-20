@@ -353,6 +353,42 @@ void main() {
       expect(posta, findsNothing);
     });
 
+    testWidgets('sızan parolalar değişince "temiz" demez, denetlenmediğini '
+        'söyler', (tester) async {
+      source.answer = (prefix) => leak(shared, 3);
+      await openReport(tester);
+      await runCheck(tester);
+      expect(find.text('Sızıntılarda görülen parolalar (2)'), findsOneWidget);
+
+      for (final (i, detail) in [
+        'Sızıntılarda 3 kez görüldü · ali@example.com',
+        'Sızıntılarda 3 kez görüldü',
+      ].indexed) {
+        final tile = find.text(detail);
+        await tester.ensureVisible(tile);
+        await tester.tap(tile);
+        await tester.pumpAndSettle();
+        await tester.enterText(
+          find.widgetWithText(TextField, 'Parola'),
+          'Yeni-Guclu-Parola-$i-7wQ#',
+        );
+        await tester.pump();
+        await tester.tap(find.widgetWithText(FilledButton, 'Kaydet'));
+        await tester.pumpAndSettle();
+      }
+
+      expect(find.byType(PasswordReportScreen), findsOneWidget);
+      expect(find.textContaining('Sızıntılarda görülen parola'), findsNothing);
+      expect(
+        find.text(
+          '2 parola denetimden sonra eklendi ya da değişti; bunlar '
+          'denetlenmedi.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Yeniden denetle'), findsOneWidget);
+    });
+
     testWidgets('parola yoksa düğme kapalı', (tester) async {
       logins = FakeLoginRepository(
         items: [

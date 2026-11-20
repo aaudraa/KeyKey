@@ -19,15 +19,21 @@ final RegExp _rangeLine = RegExp(r'^([0-9A-F]{35}):([0-9]+)$');
 /// giriş sayfasının HTML'i) yanıtın tamamı geçersizdir: [FormatException].
 Map<String, int> parsePwnedRange(String body) {
   final counts = <String, int>{};
+  var lines = 0;
   for (final raw in body.split('\n')) {
     final line = raw.endsWith('\r') ? raw.substring(0, raw.length - 1) : raw;
     if (line.isEmpty) continue;
+    lines++;
     final match = _rangeLine.firstMatch(line);
     final count = match == null ? null : int.tryParse(match[2]!);
     if (count == null) {
       throw const FormatException('Pwned Passwords yanıtı geçersiz');
     }
     if (count > 0) counts[match![1]!] = count;
+  }
+  // Dolgulu yanıtta her zaman satır vardır; boş gövde "temiz" sayılmaz.
+  if (lines == 0) {
+    throw const FormatException('Pwned Passwords yanıtı boş');
   }
   return counts;
 }
@@ -143,6 +149,17 @@ final class BreachChecker {
 /// Sızıntılarda görülen etkin kayıtlar ve görülme sayıları: çok görülen
 /// önce, eşitse ada göre. Denetimden sonra parolası değişen kayıt yeni
 /// parolası denetlenmediği için listede yoktur.
+/// Denetimden sonra eklenen ya da değişen, bu yüzden [result]'ta olmayan
+/// parolası olan etkin kayıtların sayısı.
+int uncheckedLoginCount(Iterable<LoginItem> items, BreachResult result) => items
+    .where(
+      (item) =>
+          !item.content.isTrashed &&
+          item.content.password.isNotEmpty &&
+          result.countFor(item.content.password) == null,
+    )
+    .length;
+
 List<(LoginItem, int)> leakedLogins(
   Iterable<LoginItem> items,
   BreachResult result,
