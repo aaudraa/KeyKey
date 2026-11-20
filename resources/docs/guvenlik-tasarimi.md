@@ -39,8 +39,10 @@ Bu belge KeyKey'in verileri nasıl şifrelediğini bayt düzeyinde anlatır. Kod
 | Kilidi açık telefonu eline geçiren, KeyKey açık | Ekrandaki kayıtları ve parolaları görür, kopyalar | Arka plana geçince hemen, 5 dakika dokunulmazsa kilitlenir. Ana parolayı değiştirmek mevcut parolayı, şifresiz dışa aktarma kimlik doğrulamayı ister; 2FA kodları için ek onay isteğe bağlıdır | Kısmen: açık kasadaki parolalar görülebilir |
 | Yedek dosyasını ele geçiren (ör. Drive hesabı ele geçmiş) | Dosyayı kendi bilgisayarında sınırsız deneyebilir | Argon2id; kayıtlar dosyanın içinde de ayrıca şifreli; kayıt sayısı ve türleri gizli | Korunur, parola güçlüyse. Eski yedekler eski parolayla açılır |
 | Diskteki kasa dosyasına yazabilen | Dosyayı okur, değiştirir, eskisiyle değiştirir | Her kayıt kimliğine ve türüne bağlı şifreli; değiştirilen kayıt açılmaz | Okuyamaz; ama geri alma ve silme fark edilmez ([bilinen sınırlar](#bilinen-sınırlar)) |
-| Cihazdaki izinsiz zararlı uygulama | Kendi alanında çalışır, araya girmeye çalışır | Android uygulama yalıtımı; kasa dosyası uygulamanın özel klasöründe; `INTERNET` izni yok; dışa açık bileşen yalnızca ana ekran ve sistemin bağlandığı doldurma servisi | Korunur |
+| Cihazdaki izinsiz zararlı uygulama | Kendi alanında çalışır, araya girmeye çalışır | Android uygulama yalıtımı; kasa dosyası uygulamanın özel klasöründe; dışa açık bileşen yalnızca ana ekran ve sistemin bağlandığı doldurma servisi | Korunur |
 | Panoyu okuyan uygulama | Kopyalanan parolayı okumaya çalışır | Android 10'dan beri arka plandaki uygulamalar panoyu okuyamaz; değer hassas işaretli, 30 saniye sonra silinir | Kısmen: etkin klavye ve o an öndeki uygulama görebilir |
+| Ağdaki saldırgan: aynı Wi-Fi, otelin giriş sayfası, internet sağlayıcısı | Sızıntı kontrolünün trafiğini görür, engeller ya da değiştirmeye çalışır | Trafikte parola yok, yalnızca 5 karakterlik önekler; yalnızca HTTPS ve sistem sertifikaları; https dışı adres reddedilir; yönlendirme izlenmez; biçime uymayan yanıt hata verir, "sızıntı yok" sayılmaz ([Sızıntı kontrolü](#sızıntı-kontrolü)) | Korunur. Denetimi engelleyebilir: sonuç "denetlenemedi" olur |
+| Have I Been Pwned ya da önündeki Cloudflare | IP adresini, sorulan önekleri ve zamanı görür; yanlış yanıt verebilir | k-anonimlik: yalnızca özetin ilk 5 karakteri; dolgulu yanıt; kullanıcı dokunmadan istek yok; hesap, çerez ya da kimlik yok | Kısmen: önek kümesi bir kasanın parmak izi olabilir; yanlış "görülmedi" yanıtı fark edilemez ([bilinen sınır 9](#bilinen-sınırlar)) |
 | Kötü niyetli doldurma hedefi: sahte uygulama, sahte site, WebView içeren uygulama | Kayıtlı parolayı kendine doldurtmaya çalışır | Uygulamada paket adı ve imza, web'de Public Suffix List ile alan adı; `webDomain` yalnızca güvenilen tarayıcılardan; şüpheli durumda uyarı ve ek onay ([Otomatik doldurma](#otomatik-doldurma)) | Büyük ölçüde korunur |
 | Ekran görüntüsü, ekran kaydı, son uygulamalar önizlemesi | Ekranı kaydeder | `FLAG_SECURE`; son uygulamalarda önizleme kapalı | Korunur |
 | Bindirme (overlay) izni olan uygulama | Saydam pencereyle kullanıcıya istemediği bir şeye dokundurur (tapjacking) | Android 12+: KeyKey ekrandayken bindirmeler gizlenir. Android 11: örtülü noktadaki dokunuş düşürülür ([Arayüz koruması](#arayüz-koruması)) | Korunur |
@@ -50,7 +52,9 @@ Bu belge KeyKey'in verileri nasıl şifrelediğini bayt düzeyinde anlatır. Kod
 | Ana parola ve kurtarma anahtarı birlikte kayboldu | — | Bilinçli olarak arka kapı yok | Veri geri gelmez |
 | Bağımlılık veya derleme ortamı ele geçmiş (tedarik zinciri) | Uygulamaya kötü kod sokar | Kilitli bağımlılık sürümleri; `sqlite3` hazır kütüphanesi sabit özetle denetlenir; CI'da gizli bilgi taraması; denetim [#86](https://github.com/aaudraa/KeyKey/issues/86), yeniden üretilebilir derleme Faz 9 | Kısmen |
 
-**Kapsam dışı:** Zorla parola söyletme, omuz üstünden bakma, işletim sistemindeki açıklar ve donanım saldırıları. Uygulamanın internet izni olmadığı için ağ üzerinden bir saldırı yüzeyi yoktur; bu da veriyi dışarı gönderemeyeceğinin güvencesidir.
+**Kapsam dışı:** Zorla parola söyletme, omuz üstünden bakma, işletim sistemindeki açıklar ve donanım saldırıları.
+
+**Ağ:** 1.0-1.5'in `INTERNET` izni yoktu. 1.6.0'dan beri tek ağ trafiği, kullanıcının başlattığı [sızıntı kontrolüdür](#sızıntı-kontrolü); ağ kodu tek dosyada durur ve bunu bir test denetler. Kasa, yedek, otomatik doldurma, pano ve diğer bütün özellikler ağa çıkmaz; hesap ve sunucu yoktur.
 
 ## Algoritmalar
 
@@ -440,7 +444,7 @@ Ana uygulama ve doldurma ekranı aynı korumayı kullanır (`WindowProtection`).
 
 ## Tarayıcıda açma
 
-Kayıt ayrıntısındaki **Siteyi aç** ve Hakkında'daki bağlantılar adresi `ACTION_VIEW` ve `CATEGORY_BROWSABLE` ile sisteme devreder; sayfayı tarayıcı ya da o siteyi açtığını bildiren uygulama (örneğin GitHub uygulaması) açar. KeyKey'in `INTERNET` izni yine yok.
+Kayıt ayrıntısındaki **Siteyi aç** ve Hakkında'daki bağlantılar adresi `ACTION_VIEW` ve `CATEGORY_BROWSABLE` ile sisteme devreder; sayfayı tarayıcı ya da o siteyi açtığını bildiren uygulama (örneğin GitHub uygulaması) açar. Sayfayı KeyKey yüklemez.
 
 - **Yalnızca web sayfası:** Adres hem Dart'ta hem Kotlin'de denetlenir; http ve https dışındaki şemalar (`intent:`, `javascript:`, `file:`, `content:`, `androidapp://`) açılmaz. Böylece içe aktarılmış ya da yazılmış bir adres başka bir uygulamanın bileşenini başlatamaz. Şeması olmayan adrese `https://` eklenir (`nas.example:5001` gibi port taşıyan ad şema sayılmaz).
 - **Yanıltıcı adresler:** Kullanıcı bilgisi taşıyan adres (`https://banka.example@baska.example`) açılmaz; ekranda banka gibi okunur ama tarayıcı başka siteyi açardı. ASCII dışı harfli alan adları da açılmaz, çünkü benzer görünen alan adlarıyla karıştırılabilir; bu kayıtlarda adres kopyalanıp tarayıcıya yapıştırılır.
@@ -456,13 +460,29 @@ Kayıt ayrıntısındaki **Siteyi aç** ve Hakkında'daki bağlantılar adresi `
 
 ### Parola raporu
 
-Kasa ekranındaki "Parola raporu" zayıf ve birden çok kayıtta kullanılan parolaları gösterir.
+Kasa ekranındaki "Parola raporu" zayıf ve birden çok kayıtta kullanılan parolaları gösterir; kullanıcı isterse parolaların sızıntılarda görülüp görülmediğini de denetler ([Sızıntı kontrolü](#sızıntı-kontrolü)).
 
 - **Zayıf:** Kayıt düzenleme ekranındaki güç göstergesiyle aynı kural (`PasswordPolicy.strengthOf`, yaygın parola listesiyle). "Çok kısa" (10 karakterden az) ve "zayıf" çıkanlar rapora girer. Parola üreticisi eşik değil, bit sayısı gösterir; ürettiği parola düzenleme ekranında aynı göstergeden geçer.
 - **Tekrar eden:** Parolası birebir aynı olan kayıtlar gruplanır.
 - **Kapsam:** Çöp kutusundaki ve parolası boş kayıtlar sayılmaz.
-- **Gizlilik:** Rapor, kasa açıkken zaten bellekte duran çözülmüş kayıtlardan hesaplanır. İnternete çıkmaz; sızıntı listelerine (ör. Have I Been Pwned) sorulmaz, çünkü KeyKey'in internet izni yok. Sonuç kasaya ve diske yazılmaz. Ekranda parolalar gösterilmez, yalnızca kayıt adları ve kullanıcı adları. Rapor ekranı kapanınca hesaplanan rapor atılır (`autoDispose`); kasa kilitlenince kayıtlarla birlikte bellekten çıkar.
+- **Gizlilik:** Rapor, kasa açıkken zaten bellekte duran çözülmüş kayıtlardan hesaplanır. Zayıf ve tekrar eden parolalar için ağa çıkılmaz. Sonuç kasaya ve diske yazılmaz. Ekranda parolalar gösterilmez, yalnızca kayıt adları ve kullanıcı adları. Rapor ekranı kapanınca hesaplanan rapor atılır (`autoDispose`); kasa kilitlenince kayıtlarla birlikte bellekten çıkar.
 - **Kayda gitme:** Kayda dokununca düzenleme ekranı açılır; parola değişince rapor kendiliğinden güncellenir.
+
+### Sızıntı kontrolü
+
+1.6.0'dan beri raporun en üstünde. Parolaların bilinen veri sızıntılarında görülüp görülmediğini [Have I Been Pwned](https://haveibeenpwned.com/Passwords)'ın Pwned Passwords hizmetine k-anonimlikle sorar. Tasarım ve gerekçeler: [internet ve sızıntı kontrolü](internet-ve-sizinti.md).
+
+- **Yalnızca dokununca:** Ağa çıkan tek yol **İnternetten denetle** düğmesidir. Rapor açılınca, kasa açılınca ya da arka planda hiçbir istek gitmez; sonuç kaydedilmediği için kendiliğinden yinelenen bir denetim de yoktur.
+- **Ne gider:** Etkin (çöpte olmayan, parolası boş olmayan) kayıtların parolalarının SHA-1 özeti (UTF-8, büyük harfli onaltılık) alınır, ilk 5 karaktere göre gruplanır. Her önek bir kez sorulur: `GET https://api.pwnedpasswords.com/range/{önek}`. Parola, özetin geri kalan 35 karakteri ve kaydın hiçbir alanı gitmez. Yanıttaki sonekler telefonda karşılaştırılır.
+- **İstemci:** Dart'ın `dart:io` `HttpClient`'ı, yeni bağımlılık yok. Adres sabit; https dışı adres kurulurken reddedilir (yalnızca yerel test sunucusu hariç). Yönlendirme izlenmez, bağlantı kalıcı tutulmaz, çerez yok, `User-Agent: KeyKey`, `Add-Padding: true` (yanıt boyu öneki ele vermesin diye dolgu). Bağlanma 10, istek 30 saniyede zaman aşımına uğrar; yanıt 1 MiB'ı aşarsa reddedilir.
+- **Sırası ve hızı:** Önekler karışık sırayla, aynı anda en çok 4 istek olarak gider; sıra kayıtların sırasını ele vermez. Her önek bir kez yeniden denenir.
+- **Yanıt:** Her satır `^[0-9A-F]{35}:[0-9]+$` biçiminde olmalı; sayısı 0 olan satırlar dolgudur. Biçime uymayan tek satır bütün denetimi hata yapar: bir otelin giriş sayfası gibi HTML yanıtı "sızıntı yok" sayılmaz. Yarım sonuç gösterilmez.
+- **Sonuç:** Yalnızca bellekte, özet → görülme sayısı olarak. Ekranda kayıt adı, kullanıcı adı ve görülme sayısı; parolanın kendisi gösterilmez. Parolası sonradan değişen kayıt listeden kendiliğinden düşer, çünkü yeni parolası denetlenmemiştir. Kasaya, ayarlara ve diske hiçbir şey yazılmaz.
+- **Kilit ve ekrandan çıkma:** Denetim rapor ekranıyla yaşar (`autoDispose`). Ekran kapanınca ya da kasa kilitlenince yeni istek başlamaz, süren isteklerin yanıtı atılır ve sonuç bellekten çıkar.
+- **Ağ kodu tek yerde:** `lib/core/network/pwned_passwords_client.dart` dışında `lib` ve Kotlin kaynaklarında ağ arayüzü (`HttpClient`, soket, `package:http`, `java.net.URL`, OkHttp…) kullanılamaz; `test/core/network/network_audit_test.dart` bunu her derlemede denetler.
+- **Sertifika sabitleme yok:** Sistemin güvendiği sertifika yetkilileri kullanılır. Sabitlemek, hizmet sertifikasını değiştirince denetimi bozardı; trafikte parola olmadığı için kazancı küçük.
+- **Android ayarları:** `INTERNET` izni; `usesCleartextTraffic="false"` ve yalnızca sistem sertifikalarına güvenen ağ güvenliği yapılandırması. **Bulgu (1.6.0):** Flutter 3.47 bu kuralı Dart'ın `HttpClient`'ına uygulamıyor (motor `domainNetworkPolicy` değerini boş geçiyor); emülatörde `http://` isteği reddedilmedi. Bu ayarlar platform kodunu korur; Dart tarafında https'i istemcinin kendisi zorlar.
+- **Atıf:** Veri CC BY 4.0; rapor ekranında "Veri: Have I Been Pwned (CC BY 4.0)" bağlantısı.
 
 ## 2FA kodları
 
@@ -835,6 +855,7 @@ Kasa açıkken arama yapılabilsin diye kayıtların tamamı çözülüp bellekt
 6. **Hatalı deneme beklemesi yalnızca uygulamanın kuralıdır.** Sayaç şifresizdir ve kopyalanmış bir kasa dosyası üzerindeki denemeleri sınırlamaz. Ayrıntılar [Kilit](#kilit) bölümünde.
 7. **Kilitten sonra bellekte kalan dizeler.** Yazılan ana parola ve ekranda gösterilmiş değerler (parola, kullanıcı adı) kilitten sonra da Dart'ın henüz toplanmamış dizelerinde kalabilir; denetimde kilitten 2,5 dakika sonra bile bulundular ([ölçüm](guvenlik-denetimi.md#bellek)). Anahtarlar, kurtarma anahtarı ve 2FA anahtarları bulunmadı. Bu ölçüm, kurtarma anahtarını kasa açıkken gösteren yeni kurtarma anahtarı ekranından önce yapıldı: o ekranda gösterilen ve yazılan anahtar da bir Dart dizesidir; ekran kilitte kendi kopyalarını bırakır, ama toplanmamış dizeler aynı şekilde kalabilir. Bu belleği okumak root ya da süreçte kod çalıştırmayı gerektirir; böyle bir saldırgan ana parolayı yazılırken de görebileceği için risk kabul edildi. Ayrıntılar [Bellek](#bellek) bölümünde.
 8. **Doldurma bildirimi güvenli pencerenin dışında.** Doldurmadan sonraki bildirim kaydın adını taşır ve KeyKey'in `FLAG_SECURE` penceresinin dışında görünür: ekran kaydına girer, erişilebilirlik servislerine bildirilir. Bildirimden önce kayıt adı KeyKey dışında hiç görünmüyordu. Kayıt adı genelde zaten ekranda olan uygulamanın ya da sitenin adı olduğu ve kullanıcı adı ile parola bildirime girmediği için bu kabul edildi.
+9. **Sızıntı kontrolü karşı tarafa güvenir ve iz bırakır.** Have I Been Pwned (ve önündeki Cloudflare) IP adresini, sorulan önekleri ve zamanı görür. Bir IP'den gelen önek kümesi o kasanın parmak izi gibi kullanılabilir; tek başına parolayı ele vermez. Rastgele üretilmiş bir parolanın 5 karakterlik öneki 20 bit verir, geriye 140 bit kalır; zayıf bir parolanın öneki ise bir sözlükle aday listesini daraltır (zayıf parola zaten raporun diğer bölümünde). Hizmet yanlış yanıt verirse yanlış bir "görülmedi" fark edilemez; "sızıntılarda görülmedi" zaten "güvenli" demek değildir. Denetim sırasında özetler, parolaların kendisi gibi, Dart belleğinde durur ([Bellek](#bellek)).
 
 ## Test yaklaşımı
 
@@ -843,4 +864,5 @@ Kasa açıkken arama yapılabilsin diye kayıtların tamamı çözülüp bellekt
 - **Biçim uyumluluğu:** `test/fixtures/crypto/` ve `test/fixtures/vault/` altındaki sabit dosyalar her sürümde açılabilmelidir. Bu dosyalar yalnızca deneme verisi ve deneme parolası içerir.
 - **2FA:** HOTP ve TOTP, RFC 4226 ve RFC 6238 eklerindeki bütün vektörlerle; Base32, RFC 4648 vektörleriyle doğrulanır. `otpauth://` ayrıştırıcısı, Google Authenticator okuyucusu ve dosya okuyucuları rastgele bozulmuş girdilerle de çalıştırılır; yalnızca kendi hata türlerini fırlatmaları beklenir.
 - **İçe aktarma:** scrypt ve PBKDF2-HMAC-SHA256, RFC 7914 vektörleriyle doğrulanır. Aegis projesinin testlerindeki örnek dışa aktarmalar (`test/fixtures/import/`) Node'un OpenSSL kriptosuyla açılarak ara değerler çıkarıldı; bizim türettiğimiz anahtarlar bunlarla karşılaştırılır. Android'in AES-GCM'i aynı değerlerle cihazda sınanır.
+- **Ağ:** Pwned Passwords istemcisi bilgisayarda yerel bir test sunucusuna karşı (yol, başlıklar, yönlendirme, hata, büyük yanıt, zaman aşımı, https dışı adres) sınanır; sızıntı denetimi sahte kaynakla (dolgu, geçersiz satır, eşzamanlılık, yeniden deneme, iptal). Ağ kodunun tek dosyada kaldığını bir test denetler. Cihazda gerçek hizmete karşı bir entegrasyon testi çalışır.
 - **Cihaz testleri:** Aynı işlemler dört emülatörde çalıştırılır. Faz 2'de bir gerçek telefonda da çalıştırıldı; Faz 5 sonunda uygulama içi cihaz testleri ve pano testi aynı telefonda geçti. Parmak izi ve kamera betikleri emülatör komutları kullandığı için telefonda elle denendi.

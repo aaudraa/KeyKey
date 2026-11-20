@@ -1,6 +1,6 @@
 # KeyKey kullanım kılavuzu
 
-KeyKey, parolalarını, kartlarını, güvenli notlarını ve 2FA kodlarını yalnızca telefonunda, şifreli olarak saklayan bir uygulama. Hesap açman gerekmez, internete bağlanmaz. Bu kılavuz kurulumdan yedeklemeye kadar her şeyi adım adım anlatıyor.
+KeyKey, parolalarını, kartlarını, güvenli notlarını ve 2FA kodlarını yalnızca telefonunda, şifreli olarak saklayan bir uygulama. Hesap açman gerekmez, sunucusu yoktur; internete yalnızca senin başlattığın sızıntı kontrolü için çıkar. Bu kılavuz kurulumdan yedeklemeye kadar her şeyi adım adım anlatıyor.
 
 Görüntülerdeki kayıtlar örnektir.
 
@@ -91,6 +91,7 @@ Kasa ekranının sağ üstündeki **⋮** menüsünde:
 
 - **Çöp kutusu:** Sildiğin kayıtlar burada 30 gün durur, sonra kalıcı olarak silinir. Yanlışlıkla sildiğini buradan geri yüklersin. Çöp kutusunun **⋮** menüsünde **Tümünü geri yükle** ve onay isteyen **Çöpü boşalt** var.
 - **Parola raporu:** Zayıf ve birden çok kayıtta kullandığın parolaları gösterir. Hesaplama telefonda yapılır, hiçbir yere gönderilmez.
+- **Sızıntı kontrolü:** Raporun en üstündeki **İnternetten denetle**, parolalarının bilinen veri sızıntılarında görülüp görülmediğini Have I Been Pwned'a sorar. Parolanın kendisi gitmez: yalnızca özetinin ilk 5 karakteri gider, karşılaştırma telefonda yapılır. Have I Been Pwned IP adresini görür. Sızıntılarda görülen parolalar kaç kez görüldükleriyle listelenir; kayda dokunup parolayı değiştir, aynı parolayı kullandığın başka yerler varsa onları da. "Görülmedi" demek "güvenli" demek değildir. Sonuç kaydedilmez; ekrandan çıkınca ya da kasa kilitlenince silinir. Bağlantı yoksa "Denetlenemedi" yazar, **Yeniden dene** ile tekrar denersin.
 
 ## Kartlar ve güvenli notlar
 
@@ -165,7 +166,7 @@ KeyKey, uygulamalardaki ve Chrome'daki giriş formlarını ve ödeme formlarınd
 
 KeyKey verilerini hiçbir yere göndermediği için **telefon kaybolursa ya da bozulursa yedeğin yoksa kasan da gider.** Yedek almayı alışkanlık edin.
 
-**Yedek almak için:** Ayarlar'ın en üstündeki **Yedekle**'ye dokun ve dosyanın kaydedileceği yeri seç. Drive gibi bir bulut klasörü seçebilirsin; KeyKey yalnızca dosyayı oraya bırakır, internete kendisi çıkmaz.
+**Yedek almak için:** Ayarlar'ın en üstündeki **Yedekle**'ye dokun ve dosyanın kaydedileceği yeri seç. Drive gibi bir bulut klasörü seçebilirsin; KeyKey yalnızca dosyayı oraya bırakır; dosyayı buluta Drive uygulaması taşır.
 
 - Yedek dosyası (`.keykey`) şifrelidir. Yedeği aldığın andaki ana parolanla ya da kurtarma anahtarınla açılır.
 - Son yedekten sonra bir şey değiştiyse ve yedek 14 günden eskiyse kasa ekranında hatırlatma çıkar. **Sonra** dersen 7 gün susar.
@@ -214,7 +215,7 @@ Ayarlar → Hakkında → **Lisanslar**: önce KeyKey'in kendi lisansı (GPL-3.0
 - **Bazı uygulamalar otomatik doldurmayı desteklemiyor.** Bazı uygulamalar giriş kutularını Android'in doldurma sistemine bildirmiyor; bu ekranlarda öneri hiç çıkmaz. Aynı ekranda Google'ın ve Samsung'un parola yöneticileri de çalışmaz. Kullanıcı adını ve parolayı KeyKey'den kopyalayıp yapıştır; pano 30 saniye sonra temizlenir.
 - **Samsung Internet desteklenmiyor.** Bu tarayıcı başka bir doldurma servisine istek göndermiyor, yalnızca kendi kayıtlı parolalarını ve Samsung Pass'i öneriyor. Parolayı KeyKey'den kopyalayarak girebilir ya da Chrome gibi bir tarayıcı kullanabilirsin. Samsung klavyesiyle uygulamalarda doldurma çalışıyor.
 - **Chrome'da ayrı bir ayar gerekiyor.** [Otomatik doldurma](#otomatik-doldurma) bölümündeki ikinci adımı atlarsan Chrome kendi parola yöneticisini kullanmaya devam eder.
-- **Eşitleme yok.** KeyKey internete çıkmadığı için iki telefon arasında kendiliğinden eşitlenmez. Kayıtları başka bir telefona yedekle taşırsın.
+- **Eşitleme yok.** KeyKey'in sunucusu olmadığı için iki telefon arasında kendiliğinden eşitlenmez. Kayıtları başka bir telefona yedekle taşırsın.
 - **Ekran görüntüsü alınamaz.** KeyKey ekrandayken ekran görüntüsü ve ekran kaydı engellenir, son uygulamalar listesinde de içeriği görünmez. Bu bilerek yapılır.
 - **Kilidi açık telefon.** KeyKey açıkken telefonu eline alan biri ekrandaki kayıtları görebilir. Arka plana geçince hemen kilitlenmesi ve 2FA için ek onay bu riski azaltır.
 

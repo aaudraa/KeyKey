@@ -21,13 +21,13 @@ Bu, projenin kendi denetimidir; bağımsız bir denetim değildir.
 | MASVS-AUTH-1 | Uzak kimlik doğrulama | Kapsam dışı | Sunucu ve hesap yok |
 | MASVS-AUTH-2 | Yerel kimlik doğrulama | Karşılanıyor | Ana parola kasayı kriptografik olarak açar; parmak izi bir olay değil, Keystore anahtarıyla bağlı. [Kimlik doğrulama](#kimlik-doğrulama) |
 | MASVS-AUTH-3 | Hassas işlemlerde ek doğrulama | Karşılanıyor | Şifresiz dışa aktarma, 2FA kodlarını gösterme (ayar açıksa), ek onayı kapatma ve parola değiştirme yeniden doğrulama ister. [Kimlik doğrulama](#kimlik-doğrulama) |
-| MASVS-NETWORK-1 | Güvenli ağ trafiği | Kapsam dışı | `INTERNET` izni yok; uygulama ağa çıkamaz. CI'da denetleniyor. [Ağ](#ağ) |
-| MASVS-NETWORK-2 | Kimlik sabitleme | Kapsam dışı | Bağlanılan sunucu yok. [Ağ](#ağ) |
+| MASVS-NETWORK-1 | Güvenli ağ trafiği | Karşılanıyor (1.6.0) | Tek trafik kullanıcının başlattığı sızıntı kontrolü: yalnızca HTTPS, sistem sertifikaları, https dışı adres ve yönlendirme reddedilir; şifresiz trafik manifestte kapalı. 1.0-1.5'te `INTERNET` izni yoktu. [Ağ](#ağ) |
+| MASVS-NETWORK-2 | Kimlik sabitleme | Kapsam dışı | Bilinçli olarak sabitleme yok: trafikte parola ya da kasa verisi yok, yalnızca 5 karakterlik özet önekleri; sabitleme hizmet sertifikası değişince denetimi bozardı. [Ağ](#ağ) |
 | MASVS-PLATFORM-1 | Süreçler arası iletişim | Karşılanıyor | Dışa açık bileşenler korumalı. Denetimde deep link ile ekran açtırma bulundu, düzeltildi. [Süreçler arası iletişim](#süreçler-arası-iletişim) |
 | MASVS-PLATFORM-2 | WebView | Kapsam dışı | WebView kullanılmıyor. [WebView](#webview) |
 | MASVS-PLATFORM-3 | Arayüzün güvenliği | Kısmen | `FLAG_SECURE`, bindirme gizleme, gizli dokunuş filtresi, Android 14+ hassas pencere. Sınır: Android 11-13'te erişilebilirlik servisleri. [Arayüz koruması](#arayüz-koruması), [Erişilebilirlik](#erişilebilirlik) |
 | MASVS-CODE-1 | Güncel platform sürümü | Karşılanıyor | `targetSdk` 36, `minSdk` 30 (Android 11). [Kod ve platform](#kod-ve-platform) |
-| MASVS-CODE-2 | Güncelleme zorunluluğu | Kapsam dışı | Ağ olmadığı için sunucudan zorunlu güncelleme yapılamaz; bilinçli. [Kod ve platform](#kod-ve-platform) |
+| MASVS-CODE-2 | Güncelleme zorunluluğu | Kapsam dışı | KeyKey'in sunucusu olmadığı için sunucudan zorunlu güncelleme yapılamaz; bilinçli. [Kod ve platform](#kod-ve-platform) |
 | MASVS-CODE-3 | Bilinen açığı olmayan bileşenler | Karşılanıyor | OSV taraması temiz (Guava açığı kapatıldı); Dependabot haftalık. [Bağımlılıklar](bagimliliklar.md#bilinen-açıklar) |
 | MASVS-CODE-4 | Güvenilmeyen girdinin doğrulanması | Karşılanıyor | Bütün dosya ve bağlantı okuyucuları sınırlı, kendi hata türleriyle; rastgele bozulmuş girdiyle sınanıyor. [Güvenilmeyen girdi](#güvenilmeyen-girdi) |
 | MASVS-RESILIENCE-1..4 | Platform bütünlüğü, kurcalama, analiz | Kapsam dışı | Bilinçli: açık kaynak; güvenlik kodun gizliliğine değil kriptoya dayanıyor. [Yayın derlemesi](#yayın-derlemesi), [Dayanıklılık](#dayanıklılık) |
@@ -95,7 +95,8 @@ TalkBack'in korumalı pencerede çalışmaya devam ettiği [Erişilebilirlik](#e
 
 | Denetim | Sonuç |
 |---|---|
-| İzinler yalnızca izin listesindekiler; `INTERNET` yok | Tamam |
+| İzinler yalnızca izin listesindekiler; `INTERNET` 1.6.0'dan beri listede, gerekçesiyle | Tamam |
+| `usesCleartextTraffic` kapalı, ağ güvenliği yapılandırması tanımlı (1.6.0) | Tamam |
 | `debuggable` kapalı, `allowBackup` kapalı, `dataExtractionRules` tanımlı | Tamam |
 | R8 açık: kendi paketimizden adı korunan sınıflar yalnızca manifestteki dört bileşen (`MainActivity`, `AutofillActivity`, `KeyKeyAutofillService`, `ClipboardClearReceiver`); geri kalanların adı kısaltılmış | Tamam |
 | Yerel kütüphanelerde (`libapp`, `libflutter`, `libsodium`, `libsqlite3`, `libflutter_zxing` ve diğerleri, 3 mimari, 24 dosya) hata ayıklama bölümü (`.debug_*`) ve tam sembol tablosu (`.symtab`) yok. Kalan dinamik semboller kütüphanenin Dart'tan çağrılabilmesi için gerekli | Tamam |
@@ -273,7 +274,15 @@ Telefon Android 13 olduğu için hassas işaretli pencere orada yok. Android 14+
 
 **İlgili kontroller:** MASVS-NETWORK-1, MASVS-NETWORK-2. **Görev:** [#91](https://github.com/aaudraa/KeyKey/issues/91).
 
-KeyKey'in `INTERNET` izni yok; Android bu izin olmadan soket açtırmaz. [`check-release-apk.sh`](../scripts/check-release-apk.sh) birleştirilmiş manifestteki izinleri izin listesiyle karşılaştırır ve her PR'da CI'da çalışır; bir bağımlılık bu izni eklerse derleme düşer. Bu yüzden ağ trafiğinin güvenliği ve sertifika sabitleme kontrolleri uygulanamaz. Otomatik senkron gibi internet isteyen özellikler [1.0 sonrası](../yol-haritasi.md#10-sonrası) ayrı bir karar olarak duruyor; o zaman bu iki kontrol yeniden değerlendirilmeli.
+1.0-1.5'te KeyKey'in `INTERNET` izni yoktu; Android bu izin olmadan soket açtırmaz ve iki kontrol kapsam dışıydı.
+
+**1.6.0 (2026-11-20, Faz 16, [#152](https://github.com/aaudraa/KeyKey/issues/152)).** Proje sahibi 2026-11-19'da internete açılmaya karar verdi; ilk ağ özelliği parola raporundaki [sızıntı kontrolü](guvenlik-tasarimi.md#sızıntı-kontrolü). İki kontrol yeniden değerlendirildi:
+
+- **Trafik:** Yalnızca kullanıcı dokununca, yalnızca `https://api.pwnedpasswords.com/range/{5 karakter}`. Sistem sertifika yetkilileri (kullanıcının eklediği sertifikalar değil). https dışı adres istemcide reddedilir, yönlendirme izlenmez, yanıt 1 MiB ile sınırlı, biçime uymayan yanıt bütün denetimi hata yapar. Trafikte parola, kayıt alanı ya da kimlik yok; `User-Agent: KeyKey`, çerez yok.
+- **Şifresiz trafik:** Manifestte `usesCleartextTraffic="false"` ve yalnızca sistem sertifikalarına güvenen ağ güvenliği yapılandırması; [`check-release-apk.sh`](../scripts/check-release-apk.sh) ikisini de denetler. **Bulgu:** Flutter 3.47 bu kuralı Dart'ın `HttpClient`'ına uygulamıyor (motor `domainNetworkPolicy`'yi boş geçiyor); Android 17 emülatöründe yapılandırma yerindeyken `http://` isteği reddedilmedi. Bu ayarlar platform kodunu korur; Dart tarafında https'i istemcinin kendisi zorlar ve bunu bir birim testi denetler.
+- **Ağ kodu tek yerde:** `test/core/network/network_audit_test.dart`, `lib` ve Kotlin kaynaklarında istemci dosyası dışında ağ arayüzü (`HttpClient`, soket, `package:http`, `java.net.URL`, OkHttp) bulursa düşer. Hiçbir bağımlılık ağa çıkmıyor ([bağımlılıklar](bagimliliklar.md)).
+- **Sabitleme:** Bilinçli olarak yok; gerekçe tabloda.
+- **İzin listesi:** `check-release-apk.sh` her PR'da izinleri listeyle karşılaştırır; `INTERNET` gerekçesiyle listede, başka bir izin eklenirse derleme düşer.
 
 ## Süreçler arası iletişim
 
@@ -309,7 +318,7 @@ KeyKey WebView kullanmıyor. Sürüm APK'sının dex dosyalarında `android.webk
 **İlgili kontroller:** MASVS-CODE-1, MASVS-CODE-2, MASVS-CODE-3. **Görev:** [#91](https://github.com/aaudraa/KeyKey/issues/91).
 
 - **Platform sürümü.** `targetSdk` 36 (Flutter'ın varsayılanı, Android 16), `minSdk` 30 (Android 11). Android 11 öncesi bilinçli olarak desteklenmiyor. Cihaz testleri Android 11, 14, 16 ve 17'de çalışıyor.
-- **Güncelleme zorunluluğu.** KeyKey ağa çıkmadığı için sunucudan zorunlu güncelleme yapılamaz; bu, "internete çıkmaz" kararının sonucudur. Güncellemeler GitHub Releases (ileride belki F-Droid ya da Play Store) üzerinden dağıtılacak; güvenlik düzeltmeleri sürüm notlarında duyurulacak (Faz 9). Açık bildirme yolu [`SECURITY.md`](../../.github/SECURITY.md).
+- **Güncelleme zorunluluğu.** KeyKey'in sunucusu olmadığı için sunucudan zorunlu güncelleme yapılamaz; 1.6.0'daki tek ağ trafiği sızıntı kontrolüdür. Güncellemeler GitHub Releases (ileride belki F-Droid ya da Play Store) üzerinden dağıtılacak; güvenlik düzeltmeleri sürüm notlarında duyurulacak (Faz 9). Açık bildirme yolu [`SECURITY.md`](../../.github/SECURITY.md).
 - **Bileşenler.** [Bağımlılık belgesi](bagimliliklar.md): 104 Dart paketi ve Gradle kütüphaneleri OSV'de tarandı; bulunan tek açık (Guava) kapatıldı. Dependabot pub, Gradle ve GitHub Actions bağımlılıklarını haftalık denetliyor.
 - **Sürüm numarası.** Şu an `0.1.0+1`; sürüm numaralandırma Faz 9'da.
 
@@ -346,7 +355,7 @@ Bilinçli olarak kapsam dışı: root ve emülatör tespiti, kurcalama denetimi,
 
 **İlgili kontroller:** MASVS-PRIVACY-1..4. **Görev:** [#91](https://github.com/aaudraa/KeyKey/issues/91).
 
-- **En az veri.** KeyKey yalnızca kullanıcının girdiği kayıtları tutar; hesap, kimlik, reklam kimliği, analitik ve hata raporu gönderimi yok. Ağ izni olmadığı için hiçbir veri cihazdan çıkamaz ([Ağ](#ağ)).
+- **En az veri.** KeyKey yalnızca kullanıcının girdiği kayıtları tutar; hesap, kimlik, reklam kimliği, analitik ve hata raporu gönderimi yok. 1.6.0'dan beri cihazdan çıkan tek şey, kullanıcı sızıntı kontrolünü başlatınca parola özetlerinin 5 karakterlik önekleridir ([Ağ](#ağ)).
 - **İzinler.** Kamera (yalnızca QR taramada istenir), biyometri ve bindirme gizleme. Bütün paketleri görme izni (`QUERY_ALL_PACKAGES`) istenmez; yalnızca ana ekranda simgesi olan uygulamalar görünür. İzin listesi CI'da denetleniyor.
 - **Kullanıcının denetimi.** Kullanıcı bütün verisini şifreli yedek ya da şifresiz dosya olarak dışa aktarabilir; kayıtları kalıcı olarak silebilir; uygulama kaldırılınca bütün veri silinir (bulut yedeği kapalı).
-- **Şeffaflık.** README "internete çıkmaz" diyor; bu, manifestten doğrulanabilir. Mağaza için gizlilik bildirimi (Play Store veri güvenliği formu, F-Droid açıklaması) Faz 9'daki dağıtım kararıyla birlikte yazılacak.
+- **Şeffaflık.** 1.5'e kadar README "internete çıkmaz" diyordu ve bu manifestten doğrulanabiliyordu. 1.6.0'dan beri gizlilik bildirimi sızıntı kontrolünde neyin kime gittiğini ve karşı tarafın ne gördüğünü yazıyor; uygulama metinlerinin ve belgelerin artık "internete çıkmaz" demediğini bir test denetliyor. Mağaza için gizlilik bildirimi (Play Store veri güvenliği formu, F-Droid açıklaması) Faz 9'daki dağıtım kararıyla birlikte yazılacak.
