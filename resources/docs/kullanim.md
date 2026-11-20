@@ -219,7 +219,7 @@ Ayarlar → Görünüm → **Tema**: **Sistem** (telefonunun ayarını izler), *
 
 Telefonunda "Animasyonları kaldır" erişilebilirlik ayarı açıksa KeyKey'in hareketleri de kapanır.
 
-**Klavye:** KeyKey bütün kutuları öğrenmeyen bir klavyeyle açar; bu klavyede büyük harf ve adres tuşları yoktur. Ayarlar → Güvenlik → **Gizli olmayan kutularda normal klavye** açıksa kayıt adı, klasör, arama ve 2FA servis adı normal klavyeyle (cümle başı büyük harf), web adresi adres klavyesiyle açılır. Bu kutulara yazdıkların klavyenin sözlüğüne ve bulutuna girebilir. Parola, kullanıcı adı, notlar ve kart bilgileri her zaman öğrenmeyen klavyeyle açılır.
+**Klavye:** KeyKey bütün kutuları öğrenmeyen bir klavyeyle açar; bu klavyede büyük harf ve adres tuşları yoktur. Ayarlar → Güvenlik → **Gizli olmayan kutularda normal klavye** açıksa kayıt adı, klasör, arama ve 2FA servis adı normal klavyeyle (kelime başı büyük harf), web adresi adres klavyesiyle açılır. Bu kutulara yazdıkların klavyenin sözlüğüne ve bulutuna girebilir. Parola, kullanıcı adı, notlar ve kart bilgileri her zaman öğrenmeyen klavyeyle açılır.
 
 Ayarlar → Hakkında → **Lisanslar**: önce KeyKey'in kendi lisansı (GPL-3.0), sonra KeyKey'in kullandığı parçalar ne işe yaradıklarıyla (şifreleme, veritabanı, QR kod okuma, sözcük listeleri…), en sonda bütün paketlerin lisans metinleri.
 

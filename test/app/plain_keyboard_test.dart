@@ -70,7 +70,7 @@ void main() {
   void expectPlainText(WidgetTester tester, String label) {
     final f = field(tester, label);
     expect(f.keyboardType, TextInputType.text, reason: label);
-    expect(f.textCapitalization, TextCapitalization.sentences, reason: label);
+    expect(f.textCapitalization, TextCapitalization.words, reason: label);
     expectNoLearning(f, label);
   }
 

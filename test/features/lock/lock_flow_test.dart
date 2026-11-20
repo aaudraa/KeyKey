@@ -924,6 +924,87 @@ void main() {
         expect(find.text('Doldurmadan gelen'), findsOneWidget);
       });
 
+      Future<FakeLoginRepository> editAcrossBackground(
+        WidgetTester tester, {
+        required Future<void> Function() edit,
+      }) async {
+        final logins = FakeLoginRepository(
+          items: [
+            FakeLoginRepository.item(
+              const LoginContent(
+                name: 'Posta',
+                username: 'ali',
+                password: 'eski',
+              ),
+              id: 1,
+            ),
+          ],
+        );
+        await pumpKeyKey(
+          tester,
+          status: VaultOpen(service.newSession()),
+          service: service,
+          logins: logins,
+          settings: FakeSettingsRepository(
+            AppSettings.defaults.copyWith(
+              backgroundLock: BackgroundLock.seconds30,
+            ),
+          ),
+          extraOverrides: [lockClockProvider.overrideWithValue(clock)],
+        );
+        final idHex = '${'00' * 15}01';
+        GoRouter.of(tester.element(find.byType(Scaffold).first))
+            .go(AppRoutes.vaultItemEdit(idHex));
+        await tester.pumpAndSettle();
+        await edit();
+
+        setLifecycle(tester, AppLifecycleState.paused);
+        // Bu arada doldurma ekranı kaydın parolasını güncelledi.
+        logins.items[0] = FakeLoginRepository.item(
+          logins.items[0].content.copyWith(password: 'yeni'),
+          id: 1,
+        );
+        clock.advance(const Duration(seconds: 5));
+        await tester.pump(const Duration(seconds: 5));
+        await resume(tester);
+
+        await tester.tap(find.text('Kaydet'));
+        await tester.pumpAndSettle();
+        return logins;
+      }
+
+      testWidgets('açık kalan form doldurmanın kaydettiği parolayı ezmiyor', (
+        tester,
+      ) async {
+        final logins = await editAcrossBackground(
+          tester,
+          edit: () => tester.enterText(
+            find.widgetWithText(TextField, 'Ad'),
+            'Posta kutusu',
+          ),
+        );
+
+        final saved = logins.items.single.content;
+        expect(saved.name, 'Posta kutusu');
+        expect(saved.password, 'yeni');
+      });
+
+      testWidgets('formda değişen parola kazanıyor, doldurmanınki geçmişte', (
+        tester,
+      ) async {
+        final logins = await editAcrossBackground(
+          tester,
+          edit: () => tester.enterText(
+            find.widgetWithText(TextField, 'Parola'),
+            'benim',
+          ),
+        );
+
+        final saved = logins.items.single.content;
+        expect(saved.password, 'benim');
+        expect(saved.passwordHistory.first.password, 'yeni');
+      });
+
       testWidgets('dosya seçicisi açıkken bekleme süresi devreye girmiyor', (
         tester,
       ) async {

@@ -41,6 +41,7 @@ Proje sahibi 2026-11-20 sabahı bütün yol haritasını onay beklemeden bitirme
 1. Yalnızca bir `Timer`. Android uygulamayı dondurunca (Android 11'den beri önbellekteki uygulamalar dondurulur) zamanlayıcı çalışmaz; dönüldüğünde süre çoktan geçmiş olabilir ama kasa açık kalır. Elendi.
 2. Yalnızca duvar saati (`DateTime.now`). Kullanıcı saati geri alırsa süre uzar. Telefon açık bir saldırganın elindeyse saati değiştirmek zaten mümkün, ama bu yine de bir delik.
 3. **Seçilen:** arka plana geçerken iki saat birden kaydedilir: duvar saati ve `Stopwatch` (tekdüze saat). Dönüldüğünde ikisinden biri süreyi geçtiyse ya da duvar saati geri gittiyse kasa kilitlenir. Ayrıca arka planda bir `Timer` süre dolunca kilitler; uygulama donmuşsa dönüşteki denetim yakalar. Tekdüze saat telefon uyurken durabilir, duvar saati durmaz; duvar saati geri alınabilir, tekdüze saat alınamaz. İkisi birlikte iki açığı da kapatır.
+   - **Uygulamada (son gözden geçirme):** `Stopwatch` `CLOCK_MONOTONIC`'tir ve uykuda durur; uyku ile saati geri almak bir araya gelince süre uzuyordu. Tekdüze saat Android'de `CLOCK_BOOTTIME` oldu (FFI ile `clock_gettime`): uykuda da ilerler, ayarlanamaz.
 
 **Normal klavye nerede seçilir?** Her kutu kendi türünü söyler (`SecretField`'e "gizli değil: düz metin" ya da "gizli değil: adres"); ayar açıksa bu tür kullanılır. Varsayılan "gizli" kalır, böylece unutulan bir kutu güvenli tarafta kalır. Ayarın tek tek kutulara verilmesi (kullanıcı adı açık, site kapalı gibi) elendi; ayarlar ekranı karmaşıklaşırdı.
 

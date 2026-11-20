@@ -11,7 +11,7 @@ import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Gizli olmayan bir kutunun, ayar açıkken kullanacağı klavye.
 enum PlainKeyboard {
-  /// Normal klavye, cümle başı büyük harf: kayıt adı, klasör, arama.
+  /// Normal klavye, kelime başı büyük harf: kayıt adı, klasör, arama.
   text,
 
   /// Adres klavyesi (`/`, `.com`): web adresi.
@@ -182,7 +182,7 @@ class _SecretFieldState extends ConsumerState<SecretField> {
             _ => TextInputType.visiblePassword,
           },
       textCapitalization: usePlain && plain == PlainKeyboard.text
-          ? TextCapitalization.sentences
+          ? TextCapitalization.words
           : TextCapitalization.none,
       maxLines: widget.obscure ? 1 : widget.maxLines,
       minLines: 1,

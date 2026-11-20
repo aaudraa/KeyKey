@@ -142,41 +142,41 @@ class LoginsController extends Notifier<LoginsState> {
     return updated;
   }
 
-  Future<void> setFavorite(LoginItem item, {required bool favorite}) async {
-    _swap(
-      await _openRepository.updateMetadata(
-        item,
-        item.content.copyWith(favorite: favorite),
-      ),
-    );
-  }
+  Future<void> setFavorite(LoginItem item, {required bool favorite}) =>
+      _updateMetadata(item, (content) => content.copyWith(favorite: favorite));
 
   /// Çöp kutusuna taşır.
-  Future<void> moveToTrash(LoginItem item, DateTime now) async {
-    _swap(
-      await _openRepository.updateMetadata(
-        item,
-        item.content.copyWith(trashedAt: now),
-      ),
-    );
-  }
+  Future<void> moveToTrash(LoginItem item, DateTime now) =>
+      _updateMetadata(item, (content) => content.copyWith(trashedAt: now));
 
   /// Klasörü değiştirir; `null` klasörden çıkarır. Geçmişe dokunmaz.
-  Future<void> moveToFolder(LoginItem item, String? folder) async {
-    _swap(
-      await _openRepository.updateMetadata(
-        item,
-        item.content.copyWith(folder: folder),
-      ),
-    );
+  Future<void> moveToFolder(LoginItem item, String? folder) =>
+      _updateMetadata(item, (content) => content.copyWith(folder: folder));
+
+  Future<void> restore(LoginItem item) =>
+      _updateMetadata(item, (content) => content.copyWith(trashedAt: null));
+
+  /// Kaydın durumdaki en son hali; yoksa verilen. Ekranın elindeki kopya
+  /// eskimiş olabilir: arka planda bekleme süresinde doldurma ekranı kaydı
+  /// değiştirmiş, dönüşte liste yeniden okunmuş olabilir.
+  LoginItem latest(LoginItem item) {
+    if (state case LoginsLoaded(:final items)) {
+      for (final current in items) {
+        if (_sameId(current, item)) return current;
+      }
+    }
+    return item;
   }
 
-  Future<void> restore(LoginItem item) async {
+  /// Yalnızca [change]'in dokunduğu alanı yazar; içeriğin geri kalanı
+  /// kaydın en son halinden gelir.
+  Future<void> _updateMetadata(
+    LoginItem item,
+    LoginContent Function(LoginContent) change,
+  ) async {
+    final current = latest(item);
     _swap(
-      await _openRepository.updateMetadata(
-        item,
-        item.content.copyWith(trashedAt: null),
-      ),
+      await _openRepository.updateMetadata(current, change(current.content)),
     );
   }
 
