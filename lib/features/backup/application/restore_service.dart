@@ -7,13 +7,9 @@ import 'package:keykey/core/crypto/vault_crypto.dart';
 import 'package:keykey/core/crypto/vault_header.dart';
 import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/vault_session.dart';
-import 'package:keykey/features/authenticator/data/otp_content.dart';
+import 'package:keykey/features/backup/application/record_validation.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
-import 'package:keykey/features/vault/data/card_content.dart';
-import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
-import 'package:keykey/features/vault/data/note_content.dart';
-import 'package:keykey/features/vault/data/record_content.dart';
 import 'package:keykey/features/vault/data/vault_record_repository.dart';
 import 'package:sodium/sodium_sumo.dart';
 
@@ -290,42 +286,19 @@ class RestoreService {
             blob: record.blob,
           );
           try {
-            switch (record.type) {
-              case LoginRepository.recordType:
-                LoginContent.fromJsonBytes(plain);
-                logins++;
-              case RecordCipher.otpType:
-                OtpContent.fromJsonBytes(plain);
-                otps++;
-              case VaultRecordRepository.cardType:
-                try {
-                  CardContent.fromJsonBytes(plain);
-                } on InvalidRecordContentException {
-                  throw const InvalidBackupException('Okunamayan kart kaydı.');
-                }
-                cards++;
-              case VaultRecordRepository.noteType:
-                try {
-                  NoteContent.fromJsonBytes(plain);
-                } on InvalidRecordContentException {
-                  throw const InvalidBackupException('Okunamayan not kaydı.');
-                }
-                notes++;
-              case SettingsRepository.recordType:
-                if (AppSettings.tryParse(plain) == null) {
-                  throw const InvalidBackupException('Okunamayan ayar kaydı.');
-                }
-              default:
-                throw const InvalidBackupException(
-                  'Desteklenmeyen kayıt türü.',
-                );
-            }
-          } on InvalidLoginContentException {
-            throw const InvalidBackupException('Okunamayan parola kaydı.');
-          } on InvalidOtpContentException {
-            throw const InvalidBackupException('Okunamayan 2FA kaydı.');
+            validateRecordContent(record.type, plain);
           } finally {
             plain.fillRange(0, plain.length, 0);
+          }
+          switch (record.type) {
+            case LoginRepository.recordType:
+              logins++;
+            case RecordCipher.otpType:
+              otps++;
+            case VaultRecordRepository.cardType:
+              cards++;
+            case VaultRecordRepository.noteType:
+              notes++;
           }
         }
       } finally {

@@ -48,6 +48,43 @@ final class HeaderTimes {
   final DateTime? recoveryChangedAt;
 }
 
+/// Senkronun kasaya tek işlemde yazdığı değişiklikler.
+final class StoreChanges {
+  const new({
+    this.put = const [],
+    this.delete = const [],
+    this.addTombstones = const [],
+    this.removeTombstones = const [],
+    this.header,
+    this.times,
+  });
+
+  /// Yazılacak kayıtlar; aynı kimlikte kayıt varsa üzerine yazılır.
+  final List<StoredRecord> put;
+
+  /// Silinecek kayıtlar. Bu yolda ek silme kaydı yazılmaz; gerekenler
+  /// [addTombstones]'ta gelir.
+  final List<Uint8List> delete;
+
+  /// Yazılacak silme kayıtları; aynı kimlikte daha yenisi varsa o kalır.
+  final List<StoredTombstone> addTombstones;
+
+  /// Kaldırılacak silme kayıtları (silindikten sonra yeniden değişen kayıt).
+  final List<Uint8List> removeTombstones;
+
+  /// Verilirse üst bilgi; [times] ile birlikte yazılır.
+  final VaultHeader? header;
+  final HeaderTimes? times;
+
+  bool get isEmpty =>
+      put.isEmpty &&
+      delete.isEmpty &&
+      addTombstones.isEmpty &&
+      removeTombstones.isEmpty &&
+      header == null &&
+      times == null;
+}
+
 /// Birleştirmenin sonucu.
 final class MergeCounts {
   const new({required this.added, required this.updated, required this.kept});
@@ -270,6 +307,48 @@ final class VaultStore {
       await _putTombstone(
         StoredTombstone(id: id, deletedAt: deletedAt ?? DateTime.now()),
       );
+    });
+  }
+
+  /// Senkronun değişikliklerini tek işlemde yazar. Yarıda kalırsa hiçbir şey
+  /// değişmez.
+  Future<void> applyChanges(StoreChanges changes) {
+    return _database.transaction(() async {
+      for (final record in changes.put) {
+        await putRecord(record);
+      }
+      for (final id in changes.delete) {
+        final query = _database.delete(_database.records)
+          ..where((row) => row.id.equals(id));
+        await query.go();
+      }
+      for (final tombstone in changes.addTombstones) {
+        await _putTombstone(tombstone);
+      }
+      for (final id in changes.removeTombstones) {
+        final query = _database.delete(_database.tombstones)
+          ..where((row) => row.id.equals(id));
+        await query.go();
+      }
+      final header = changes.header;
+      final times = changes.times;
+      if (header != null || times != null) {
+        await _database
+            .update(_database.vaultMeta)
+            .write(
+              VaultMetaCompanion(
+                header: header == null
+                    ? const Value.absent()
+                    : Value(header.toJsonString()),
+                passwordChangedAt: times == null
+                    ? const Value.absent()
+                    : Value(times.passwordChangedAt?.millisecondsSinceEpoch),
+                recoveryChangedAt: times == null
+                    ? const Value.absent()
+                    : Value(times.recoveryChangedAt?.millisecondsSinceEpoch),
+              ),
+            );
+      }
     });
   }
 
