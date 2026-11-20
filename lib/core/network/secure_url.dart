@@ -8,7 +8,7 @@ const loopbackHosts = {'127.0.0.1', 'localhost', '::1'};
 /// Adreste kullanıcı bilgisi (`ad:parola@`), sorgu ve parça olamaz: kimlik
 /// bilgisi adreste taşınmaz, adres her istekte olduğu gibi kullanılır.
 ///
-/// Flutter, Android'in şifresiz trafik yasağını Dart'ın `HttpClient`'ına
+/// Flutter, Android'in şifresiz trafik yasağını Dart'ın HTTP istemcisine
 /// uygulamıyor; bu kural o yüzden Dart tarafında.
 bool isSecureServiceUrl(Uri uri) {
   if (uri.host.isEmpty ||
