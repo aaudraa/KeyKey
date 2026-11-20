@@ -317,6 +317,9 @@ class FakeAppPackages implements AppPackages {
 
   @override
   Future<String> versionName() async => version;
+
+  @override
+  Future<String> deviceModel() async => 'Test Telefonu';
 }
 
 /// Kopyalananları kaydeder. Gerçek panoyu cihaz testi sınar.

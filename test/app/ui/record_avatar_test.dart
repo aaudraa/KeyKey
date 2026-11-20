@@ -32,6 +32,9 @@ final class _FakePackages implements AppPackages {
 
   @override
   Future<String> versionName() async => '1.0.0';
+
+  @override
+  Future<String> deviceModel() async => '';
 }
 
 final _app = LoginApp(packageName: 'com.example.oyun', certsSha256: ['a' * 64]);
