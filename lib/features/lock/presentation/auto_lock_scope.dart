@@ -6,6 +6,7 @@ import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/features/lock/application/lock_clock.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
+import 'package:keykey/features/sync/application/sync_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 
 /// Kasayı arka plana geçince ve kullanılmadığında kilitler.
@@ -88,6 +89,8 @@ class _AutoLockScopeState extends ConsumerState<AutoLockScope>
         _lock();
       case AppLifecycleState.resumed:
         _returnFromBackground();
+        // Kasa açık kaldıysa ve son eşitlemeden bir dakika geçtiyse eşitler.
+        ref.read(syncControllerProvider.notifier).onResumed();
       case AppLifecycleState.inactive:
         break;
     }

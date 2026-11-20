@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter_riverpod/misc.dart';
+import 'package:keykey/core/backup/backup_codec.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
+import 'package:keykey/core/network/webdav_client.dart';
 import 'package:keykey/core/platform/app_packages.dart';
 import 'package:keykey/core/platform/backup_folders.dart';
 import 'package:keykey/core/platform/document_files.dart';
@@ -29,6 +31,8 @@ import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/settings/application/theme_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:keykey/features/settings/data/theme_preference.dart';
+import 'package:keykey/features/sync/application/sync_controller.dart';
+import 'package:keykey/features/sync/application/sync_service.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/application/records_controller.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
@@ -102,6 +106,21 @@ Future<List<Override>> bootstrap() async {
     ),
     restoreServiceProvider.overrideWithValue(
       RestoreService(sodium: sodium, store: store),
+    ),
+    syncServiceProvider.overrideWithValue(
+      SyncService(
+        store: store,
+        codec: BackupCodec(sodium),
+        sodium: sodium,
+        transport: (settings) => WebDavClient(
+          folder: settings.folder,
+          username: settings.username,
+          password: settings.appPassword,
+        ),
+        device: autoBackupDevice,
+        deviceName: PigeonAppPackages().deviceModel,
+        now: () => DateTime.now().toUtc(),
+      ),
     ),
     aesGcmProvider.overrideWithValue(PlatformAesGcm()),
     vaultServiceProvider.overrideWithValue(service),

@@ -9,6 +9,7 @@ import 'package:keykey/features/backup/application/auto_backup_controller.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/auto_lock_scope.dart';
 import 'package:keykey/features/settings/application/theme_controller.dart';
+import 'package:keykey/features/sync/application/sync_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 class KeyKeyApp extends ConsumerWidget {
@@ -21,8 +22,10 @@ class KeyKeyApp extends ConsumerWidget {
       ..listen(vaultControllerProvider, (_, next) {
         if (next is! VaultOpen) hideKkSnack();
       })
-      // Otomatik yedek yalnızca ana uygulamada çalışır; durumu ayarlar okur.
-      ..listen(autoBackupControllerProvider, (_, _) {});
+      // Otomatik yedek ve senkron yalnızca ana uygulamada çalışır; durumlarını
+      // ayarlar okur.
+      ..listen(autoBackupControllerProvider, (_, _) {})
+      ..listen(syncControllerProvider, (_, _) {});
     return MaterialApp.router(
       title: 'KeyKey',
       theme: AppTheme.light,

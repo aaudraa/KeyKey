@@ -101,8 +101,9 @@ final class SyncCache {
 }
 
 /// Senkron klasörüyle bir eşitleme: indir, birleştir, kendi dosyanı yükle.
-/// Tasarım: `resources/docs/senkron.md`.
-final class SyncService {
+/// Tasarım: `resources/docs/senkron.md`. Kontrolcü testleri sahtesini
+/// verebilsin diye `final` değil.
+class SyncService {
   new({
     required this._store,
     required this._codec,
