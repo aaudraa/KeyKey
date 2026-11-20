@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
 import 'package:keykey/core/crypto/record_cipher.dart';
+import 'package:keykey/core/network/secure_url.dart';
 import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/generator/application/generator_preferences.dart';
@@ -34,6 +35,100 @@ final class AutoBackupFolder {
     if (name is! String || name.isEmpty) return null;
     return AutoBackupFolder(uri: uri, name: name);
   }
+}
+
+/// Senkronun bu telefondaki bilgileri: WebDAV klasörü, kimlik bilgileri ve
+/// son eşitlemenin izi. Ayar kaydıyla kasanın içinde şifreli durur; senkron
+/// dosyasına girmez. Tasarım: `resources/docs/senkron.md`.
+final class SyncSettings {
+  const new({
+    required this.folder,
+    required this.username,
+    required this.appPassword,
+    this.lastSyncAt,
+    this.lastDigest,
+  });
+
+  /// WebDAV klasörünün adresi ([isSecureServiceUrl]).
+  final Uri folder;
+
+  final String username;
+
+  /// Sunucunun uygulama parolası (ya da hesap parolası).
+  final String appPassword;
+
+  /// Son başarılı eşitlemenin zamanı.
+  final DateTime? lastSyncAt;
+
+  /// Son yüklenen senkron dosyasının içerik özeti (64 küçük onaltılık
+  /// karakter); değişmeyen durum yeniden yüklenmez.
+  final String? lastDigest;
+
+  /// Son eşitlemenin izini değiştirir; bağlantı bilgileri aynı kalır.
+  SyncSettings withLastSync(DateTime at, String digest) => SyncSettings(
+    folder: folder,
+    username: username,
+    appPassword: appPassword,
+    lastSyncAt: at,
+    lastDigest: digest,
+  );
+
+  Map<String, Object?> toJson() => {
+    'folder': folder.toString(),
+    'username': username,
+    'appPassword': appPassword,
+    'lastSyncAt': lastSyncAt?.millisecondsSinceEpoch,
+    'lastDigest': lastDigest,
+  };
+
+  static final _digest = RegExp(r'^[0-9a-f]{64}$');
+
+  /// Tam beş alan; adres kurala uyar, kullanıcı adı ve parola boş değil.
+  /// Uymazsa `null`.
+  static SyncSettings? tryParse(Object? value) {
+    const keys = {
+      'folder',
+      'username',
+      'appPassword',
+      'lastSyncAt',
+      'lastDigest',
+    };
+    if (value is! Map<String, Object?> ||
+        value.length != keys.length ||
+        !keys.containsAll(value.keys)) {
+      return null;
+    }
+    final folder = value['folder'];
+    final username = value['username'];
+    final appPassword = value['appPassword'];
+    final lastSyncAt = value['lastSyncAt'];
+    final lastDigest = value['lastDigest'];
+    if (folder is! String) return null;
+    final uri = Uri.tryParse(folder);
+    if (uri == null || !isSecureServiceUrl(uri)) return null;
+    if (username is! String || username.isEmpty) return null;
+    if (appPassword is! String || appPassword.isEmpty) return null;
+    if (lastSyncAt != null && (lastSyncAt is! int || lastSyncAt < 0)) {
+      return null;
+    }
+    if (lastDigest != null &&
+        (lastDigest is! String || !_digest.hasMatch(lastDigest))) {
+      return null;
+    }
+    return SyncSettings(
+      folder: uri,
+      username: username,
+      appPassword: appPassword,
+      lastSyncAt: lastSyncAt is int
+          ? DateTime.fromMillisecondsSinceEpoch(lastSyncAt, isUtc: true)
+          : null,
+      lastDigest: lastDigest as String?,
+    );
+  }
+
+  /// Kimlik bilgisi günlüğe ya da hata mesajına düşmesin.
+  @override
+  String toString() => 'SyncSettings(${folder.host})';
 }
 
 /// Uygulama arka plana geçince kasanın kilitlenmeden önce bekleyeceği süre.
@@ -74,6 +169,7 @@ final class AppSettings {
     this.autoBackupFolder,
     this.backgroundLock = BackgroundLock.immediately,
     this.plainKeyboard = false,
+    this.sync,
   });
 
   static const defaults = AppSettings(
@@ -92,9 +188,9 @@ final class AppSettings {
   /// Sürüm 2 [autofillCopyOtp], sürüm 3 yedek bilgilerini ([lastBackupAt],
   /// [backupReminderSnoozedUntil]), sürüm 4 [vaultSort] ve [generator]
   /// alanlarını, sürüm 5 [autoBackupFolder] alanını, sürüm 6
-  /// [backgroundLock] ve [plainKeyboard] alanlarını ekledi. Eski sürümler
-  /// okunmaya devam eder.
-  static const currentVersion = 6;
+  /// [backgroundLock] ve [plainKeyboard] alanlarını, sürüm 7 [sync] alanını
+  /// ekledi. Eski sürümler okunmaya devam eder.
+  static const currentVersion = 7;
 
   /// 2FA kodlarını göstermeden önce parmak izi veya ana parola istenir.
   final bool otpRequireAuth;
@@ -124,6 +220,9 @@ final class AppSettings {
   /// Gizli olmayan kutularda (ad, site, klasör, arama) normal klavye.
   final bool plainKeyboard;
 
+  /// Senkron bilgileri; kapalıysa `null`.
+  final SyncSettings? sync;
+
   /// Yedek zamanları yalnızca ileri alınır, silinmez; bu yüzden `null`
   /// verilen alan olduğu gibi kalır.
   AppSettings copyWith({
@@ -146,6 +245,7 @@ final class AppSettings {
     autoBackupFolder: autoBackupFolder,
     backgroundLock: backgroundLock ?? this.backgroundLock,
     plainKeyboard: plainKeyboard ?? this.plainKeyboard,
+    sync: sync,
   );
 
   /// Otomatik yedeğin klasörünü değiştirir; `null` kapatır. [copyWith] bu
@@ -160,6 +260,22 @@ final class AppSettings {
     autoBackupFolder: folder,
     backgroundLock: backgroundLock,
     plainKeyboard: plainKeyboard,
+    sync: sync,
+  );
+
+  /// Senkron bilgilerini değiştirir; `null` kapatır. [copyWith] bu alana
+  /// dokunmaz.
+  AppSettings withSync(SyncSettings? sync) => AppSettings(
+    otpRequireAuth: otpRequireAuth,
+    autofillCopyOtp: autofillCopyOtp,
+    lastBackupAt: lastBackupAt,
+    backupReminderSnoozedUntil: backupReminderSnoozedUntil,
+    vaultSort: vaultSort,
+    generator: generator,
+    autoBackupFolder: autoBackupFolder,
+    backgroundLock: backgroundLock,
+    plainKeyboard: plainKeyboard,
+    sync: sync,
   );
 
   Uint8List toJsonBytes() => utf8.encode(
@@ -175,6 +291,7 @@ final class AppSettings {
       'autoBackupFolder': autoBackupFolder?.toJson(),
       'backgroundLockSeconds': backgroundLock.seconds,
       'plainKeyboard': plainKeyboard,
+      'sync': sync?.toJson(),
     }),
   );
 
@@ -197,7 +314,7 @@ final class AppSettings {
     // Sürüm 1'de kod kopyalama yoktu; varsayılanı açık. Sürüm 3'ten önce
     // yedek bilgisi, sürüm 4'ten önce sıralama ve üretici, sürüm 5'ten önce
     // otomatik yedek, sürüm 6'dan önce arka plan kilidi süresi ve klavye
-    // ayarı yoktu.
+    // ayarı, sürüm 7'den önce senkron yoktu.
     const v3 = {
       'version',
       'otpRequireAuth',
@@ -205,20 +322,23 @@ final class AppSettings {
       'lastBackupAt',
       'backupReminderSnoozedUntil',
     };
-    final keys = switch (decoded['version']) {
+    const v6 = {
+      ...v3,
+      'vaultSort',
+      'generator',
+      'autoBackupFolder',
+      'backgroundLockSeconds',
+      'plainKeyboard',
+    };
+    final version = decoded['version'];
+    final keys = switch (version) {
       1 => const {'version', 'otpRequireAuth'},
       2 => const {'version', 'otpRequireAuth', 'autofillCopyOtp'},
       3 => v3,
       4 => const {...v3, 'vaultSort', 'generator'},
       5 => const {...v3, 'vaultSort', 'generator', 'autoBackupFolder'},
-      currentVersion => const {
-        ...v3,
-        'vaultSort',
-        'generator',
-        'autoBackupFolder',
-        'backgroundLockSeconds',
-        'plainKeyboard',
-      },
+      6 => v6,
+      currentVersion => const {...v6, 'sync'},
       _ => null,
     };
     if (keys == null ||
@@ -235,7 +355,7 @@ final class AppSettings {
     if (!_isTime(lastBackupAt) || !_isTime(snoozedUntil)) return null;
     var vaultSort = LoginSort.name;
     var generator = GeneratorPreferences.defaults;
-    if (decoded['version'] case 4 || 5 || currentVersion) {
+    if (version case 4 || 5 || 6 || currentVersion) {
       final sortName = decoded['vaultSort'];
       final sort = LoginSort.values
           .where((s) => _sortName(s) == sortName)
@@ -246,7 +366,7 @@ final class AppSettings {
       generator = parsed;
     }
     AutoBackupFolder? autoBackupFolder;
-    if (decoded['version'] case 5 || currentVersion) {
+    if (version case 5 || 6 || currentVersion) {
       final folder = decoded['autoBackupFolder'];
       if (folder != null) {
         autoBackupFolder = AutoBackupFolder.tryParse(folder);
@@ -255,12 +375,17 @@ final class AppSettings {
     }
     var backgroundLock = BackgroundLock.immediately;
     var plainKeyboard = false;
-    if (decoded['version'] == currentVersion) {
+    if (version case 6 || currentVersion) {
       final lock = BackgroundLock.bySeconds(decoded['backgroundLockSeconds']);
       final plain = decoded['plainKeyboard'];
       if (lock == null || plain is! bool) return null;
       backgroundLock = lock;
       plainKeyboard = plain;
+    }
+    SyncSettings? sync;
+    if (version == currentVersion && decoded['sync'] != null) {
+      sync = SyncSettings.tryParse(decoded['sync']);
+      if (sync == null) return null;
     }
     return AppSettings(
       otpRequireAuth: otpRequireAuth,
@@ -272,6 +397,7 @@ final class AppSettings {
       autoBackupFolder: autoBackupFolder,
       backgroundLock: backgroundLock,
       plainKeyboard: plainKeyboard,
+      sync: sync,
     );
   }
 

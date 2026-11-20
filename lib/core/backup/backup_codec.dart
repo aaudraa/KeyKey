@@ -8,6 +8,34 @@ import 'package:keykey/core/crypto/vault_header.dart';
 import 'package:keykey/core/storage/vault_store.dart';
 import 'package:sodium/sodium_sumo.dart';
 
+/// Senkron dosyasının şifreli katmandaki bilgileri (içerik sürümü 4).
+/// Tasarım: `resources/docs/senkron.md`.
+final class SyncInfo {
+  const new({
+    required this.device,
+    this.deviceName,
+    this.passwordChangedAt,
+    this.recoveryChangedAt,
+    this.deleted = const [],
+  });
+
+  /// Dosyayı yazan kurulumun altı küçük onaltılık karakterlik kimliği.
+  final String device;
+
+  /// Telefonun modeli; yalnızca cihaz listesinde gösterilir.
+  final String? deviceName;
+
+  /// Yazan telefonun bildiği yuva zamanları.
+  final DateTime? passwordChangedAt;
+  final DateTime? recoveryChangedAt;
+
+  /// Silme kayıtları.
+  final List<StoredTombstone> deleted;
+
+  static final devicePattern = RegExp(r'^[0-9a-f]{6}$');
+  static const maxDeviceNameLength = 64;
+}
+
 /// Açılmış bir yedeğin içeriği.
 ///
 /// Kayıtlar hâlâ kayıt biçiminde şifrelidir; yedeğin kasa anahtarıyla
@@ -17,6 +45,7 @@ final class BackupContents {
     required this.createdAt,
     required this.records,
     this.version = BackupCodec.legacyPayloadVersion,
+    this.sync,
   });
 
   final DateTime createdAt;
@@ -24,6 +53,9 @@ final class BackupContents {
 
   /// İçerik sürümü: yalnızca eski türler varsa 1, kart ya da not varsa 2.
   final int version;
+
+  /// Senkron dosyasıysa bilgileri; yedekte `null`.
+  final SyncInfo? sync;
 }
 
 /// Yapısı denetlenmiş ama henüz açılmamış bir yedek dosyası.
@@ -53,10 +85,17 @@ final class BackupCodec {
   static const formatVersion = 1;
 
   /// Yazılan içerik sürümü. Sürüm 2 kart ve notu, sürüm 3 ayar kaydının
-  /// sürüm 6'sını ve Steam hesaplarını getirdi. Kayıtlar şifreli olduğundan
+  /// sürüm 6'sını ve Steam hesaplarını, sürüm 4 ayar kaydının sürüm 7'sini ve
+  /// senkron dosyasının `sync` nesnesini getirdi. Kayıtlar şifreli olduğundan
   /// içleri burada görünmez; her yedek bu sürümle yazılır ve eski uygulamalar
   /// onu "daha yeni yedek" diye reddeder.
-  static const payloadVersion = 3;
+  static const payloadVersion = 4;
+
+  /// `sync` nesnesinin taşınabildiği ilk içerik sürümü.
+  static const _syncPayloadVersion = 4;
+
+  /// Ayar kaydının türü; senkron dosyasına girmez.
+  static const _settingsType = 'settings';
 
   /// Kart ve not öncesi içerik sürümü; yalnızca [legacyRecordTypes] taşır.
   /// Eski yedekler okunmaya devam eder.
@@ -83,15 +122,18 @@ final class BackupCodec {
 
   SecretStream get _stream => _sodium.crypto.secretStream;
 
-  /// Kasanın yedeğini üretir.
+  /// Kasanın yedeğini üretir. [sync] verilirse senkron dosyasıdır: ayar
+  /// kaydı taşıyamaz, silme kayıtları kayıtlarla birlikte sınıra sayılır.
   Future<Uint8List> encode({
     required VaultHeader header,
     required SecureKey vaultKey,
     required List<StoredRecord> records,
     required DateTime createdAt,
+    SyncInfo? sync,
   }) async {
-    if (records.length > maxRecords) {
-      throw ArgumentError.value(records.length, 'records', 'Çok fazla kayıt');
+    final count = records.length + (sync?.deleted.length ?? 0);
+    if (count > maxRecords) {
+      throw ArgumentError.value(count, 'records', 'Çok fazla kayıt');
     }
     final headerBytes = utf8.encode(header.toJsonString());
     if (headerBytes.length > maxHeaderLength) {
@@ -104,7 +146,7 @@ final class BackupCodec {
       ..add(headerBytes);
     final prefixBytes = prefix.takeBytes();
 
-    final payload = utf8.encode(_payloadJson(records, createdAt));
+    final payload = utf8.encode(_payloadJson(records, createdAt, sync));
     try {
       // Boyut şifrelemeden önce kesin olarak bilinir: her parça uzunluk
       // alanı ve doğrulama etiketiyle büyür.
@@ -293,12 +335,19 @@ final class BackupCodec {
   static Uint8List _associatedData(Uint8List prefix) =>
       buildAssociatedData([backupContext, prefix]);
 
-  static String _payloadJson(List<StoredRecord> records, DateTime createdAt) {
+  static String _payloadJson(
+    List<StoredRecord> records,
+    DateTime createdAt,
+    SyncInfo? sync,
+  ) {
     final ids = <String>{};
     final entries = <Map<String, Object>>[];
     for (final record in records) {
       if (!recordTypes.contains(record.type)) {
         throw ArgumentError.value(record.type, 'type', 'Yedeklenmeyen tür');
+      }
+      if (sync != null && record.type == _settingsType) {
+        throw ArgumentError.value(record.type, 'type', 'Senkrona girmez');
       }
       final id = base64.encode(record.id);
       if (record.id.length != _recordIdLength || !ids.add(id)) {
@@ -316,7 +365,35 @@ final class BackupCodec {
       'version': payloadVersion,
       'createdAt': createdAt.millisecondsSinceEpoch,
       'records': entries,
+      if (sync != null) 'sync': _syncJson(sync),
     });
+  }
+
+  static Map<String, Object?> _syncJson(SyncInfo sync) {
+    final name = sync.deviceName;
+    if (!SyncInfo.devicePattern.hasMatch(sync.device) ||
+        (name != null && name.length > SyncInfo.maxDeviceNameLength)) {
+      throw ArgumentError.value(sync.device, 'device', 'Geçersiz cihaz');
+    }
+    final ids = <String>{};
+    final deleted = <Map<String, Object>>[];
+    for (final tombstone in sync.deleted) {
+      final id = base64.encode(tombstone.id);
+      if (tombstone.id.length != _recordIdLength || !ids.add(id)) {
+        throw ArgumentError.value(id, 'deleted', 'Geçersiz veya yinelenen');
+      }
+      deleted.add({
+        'id': id,
+        'deletedAt': tombstone.deletedAt.millisecondsSinceEpoch,
+      });
+    }
+    return {
+      'device': sync.device,
+      'deviceName': name,
+      'passwordChangedAt': sync.passwordChangedAt?.millisecondsSinceEpoch,
+      'recoveryChangedAt': sync.recoveryChangedAt?.millisecondsSinceEpoch,
+      'deleted': deleted,
+    };
   }
 
   static BackupContents _parsePayload(Uint8List bytes) {
@@ -335,10 +412,16 @@ final class BackupCodec {
         throw const NewerBackupException('Daha yeni içerik sürümü.');
       }
     }
-    final root = _object(decoded, const {'version', 'createdAt', 'records'});
+    const rootKeys = {'version', 'createdAt', 'records'};
+    final hasSync =
+        decoded is Map<String, Object?> && decoded.containsKey('sync');
+    final root = _object(decoded, hasSync ? {...rootKeys, 'sync'} : rootKeys);
     final version = root['version'];
     if (version is! int || version < legacyPayloadVersion) {
       throw const InvalidBackupException('Desteklenmeyen içerik sürümü.');
+    }
+    if (hasSync && version < _syncPayloadVersion) {
+      throw const InvalidBackupException('Bu sürümde senkron bilgisi olamaz.');
     }
     final allowed = version == legacyPayloadVersion
         ? legacyRecordTypes
@@ -361,6 +444,9 @@ final class BackupCodec {
       if (type is! String || !allowed.contains(type)) {
         throw const InvalidBackupException('Desteklenmeyen kayıt türü.');
       }
+      if (hasSync && type == _settingsType) {
+        throw const InvalidBackupException('Senkron dosyasında ayar kaydı.');
+      }
       final id = _bytes(entry['id']);
       if (id.length != _recordIdLength || !ids.add(entry['id']! as String)) {
         throw const InvalidBackupException('Geçersiz kayıt kimliği.');
@@ -375,12 +461,59 @@ final class BackupCodec {
         ),
       );
     }
+    final sync = hasSync ? _parseSync(root['sync'], records.length) : null;
     return BackupContents(
       createdAt: _time(root['createdAt']),
       records: records,
       version: version,
+      sync: sync,
     );
   }
+
+  static SyncInfo _parseSync(Object? value, int recordCount) {
+    final sync = _object(value, const {
+      'device',
+      'deviceName',
+      'passwordChangedAt',
+      'recoveryChangedAt',
+      'deleted',
+    });
+    final device = sync['device'];
+    if (device is! String || !SyncInfo.devicePattern.hasMatch(device)) {
+      throw const InvalidBackupException('Geçersiz cihaz kimliği.');
+    }
+    final name = sync['deviceName'];
+    if (name != null &&
+        (name is! String || name.length > SyncInfo.maxDeviceNameLength)) {
+      throw const InvalidBackupException('Geçersiz cihaz adı.');
+    }
+    final list = sync['deleted'];
+    if (list is! List<Object?> || recordCount + list.length > maxRecords) {
+      throw const InvalidBackupException('Geçersiz silme kayıtları.');
+    }
+    final ids = <String>{};
+    final deleted = <StoredTombstone>[];
+    for (final item in list) {
+      final entry = _object(item, const {'id', 'deletedAt'});
+      final id = _bytes(entry['id']);
+      if (id.length != _recordIdLength || !ids.add(entry['id']! as String)) {
+        throw const InvalidBackupException('Geçersiz silme kaydı kimliği.');
+      }
+      deleted.add(
+        StoredTombstone(id: id, deletedAt: _time(entry['deletedAt'])),
+      );
+    }
+    return SyncInfo(
+      device: device,
+      deviceName: name as String?,
+      passwordChangedAt: _timeOrNull(sync['passwordChangedAt']),
+      recoveryChangedAt: _timeOrNull(sync['recoveryChangedAt']),
+      deleted: deleted,
+    );
+  }
+
+  static DateTime? _timeOrNull(Object? value) =>
+      value == null ? null : _time(value);
 
   static Map<String, Object?> _object(Object? value, Set<String> keys) {
     if (value is! Map<String, Object?> ||

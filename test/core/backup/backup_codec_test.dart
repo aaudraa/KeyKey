@@ -185,7 +185,7 @@ void main() {
         utf8.decode([for (final m in plain) ...m.message]),
       ) as Map<String, dynamic>;
       expect(json.keys, unorderedEquals(['version', 'createdAt', 'records']));
-      expect(json['version'], 3);
+      expect(json['version'], 4);
       expect(json['createdAt'], createdAt.millisecondsSinceEpoch);
       final first = (json['records'] as List).first as Map<String, dynamic>;
       expect(
@@ -207,12 +207,13 @@ void main() {
       });
     });
 
-    test('yalnızca eski türler olsa da içerik sürümü 3', () async {
-      // Sürüm 6 ayar kaydını ve Steam hesabını 1.6.0 okuyamaz; içerik sürümü
-      // 3 ona "daha yeni yedek" dedirtir. Şifreli kayıtların içi burada
-      // görünmediği için her yedek bu sürümle yazılır.
+    test('yalnızca eski türler olsa da içerik sürümü 4', () async {
+      // Sürüm 7 ayar kaydını 1.7.0 okuyamaz; içerik sürümü 4 ona "daha yeni
+      // yedek" dedirtir. Şifreli kayıtların içi burada görünmediği için her
+      // yedek bu sürümle yazılır.
       final contents = await decode(await encode(sampleRecords()));
-      expect(contents.version, 3);
+      expect(contents.version, 4);
+      expect(contents.sync, isNull);
     });
 
     test('kayıt içerik sürümleri yedeğin içerik sürümüyle birlikte', () {
@@ -232,19 +233,19 @@ void main() {
         {
           'login': 2,
           'otp': 1,
-          'settings': 6,
+          'settings': 7,
           'card': 1,
           'note': 1,
-          'payload': 3,
+          'payload': 4,
         },
       );
     });
 
-    test('kart ve not içerik sürümü 3 ile gidip geliyor', () async {
+    test('kart ve not içerik sürümü 4 ile gidip geliyor', () async {
       for (final type in ['card', 'note']) {
         final records = [...sampleRecords(), record(9, type: type)];
         final contents = await decode(await encode(records));
-        expect(contents.version, 3, reason: type);
+        expect(contents.version, 4, reason: type);
         expectSame(contents.records, records);
       }
     });
@@ -497,17 +498,20 @@ void main() {
         ...field(prefix),
       ]);
       final text = payload is String ? payload : jsonEncode(payload);
+      final bytes = Uint8List.fromList(utf8.encode(text));
+      const size = BackupCodec.chunkSize;
+      final messages = [
+        for (var i = 0; i == 0 || i < bytes.length; i += size)
+          SecretStreamPlainMessage(
+            Uint8List.sublistView(bytes, i, min(i + size, bytes.length)),
+            additionalData: ad,
+            tag: i + size >= bytes.length
+                ? SecretStreamMessageTag.finalPush
+                : SecretStreamMessageTag.message,
+          ),
+      ];
       final cipher = await sodium.crypto.secretStream
-          .pushEx(
-            messageStream: Stream.value(
-              SecretStreamPlainMessage(
-                Uint8List.fromList(utf8.encode(text)),
-                additionalData: ad,
-                tag: SecretStreamMessageTag.finalPush,
-              ),
-            ),
-            key: key,
-          )
+          .pushEx(messageStream: Stream.fromIterable(messages), key: key)
           .toList();
       key.dispose();
       return Uint8List.fromList([
@@ -551,7 +555,7 @@ void main() {
 
     test('daha yeni içerik sürümü ayrı hatayla reddediliyor', () async {
       await expectLater(
-        decode(await withPayload({...payload([]), 'version': 4})),
+        decode(await withPayload({...payload([]), 'version': 5})),
         throwsA(isA<NewerBackupException>()),
       );
     });
@@ -563,19 +567,19 @@ void main() {
         // "bozuk" sanmamalı.
         await expectLater(
           decode(
-            await withPayload({...payload([]), 'version': 4, 'app': '1.5.0'}),
+            await withPayload({...payload([]), 'version': 5, 'app': '1.5.0'}),
           ),
           throwsA(isA<NewerBackupException>()),
         );
         await expectLater(
-          decode(await withPayload({'version': 4, 'items': <Object>[]})),
+          decode(await withPayload({'version': 5, 'items': <Object>[]})),
           throwsA(isA<NewerBackupException>()),
         );
       },
     );
 
-    test('sürüm 2 ve 3 içerikte kart ve not açılıyor', () async {
-      for (final version in [2, 3]) {
+    test('sürüm 2, 3 ve 4 içerikte kart ve not açılıyor', () async {
+      for (final version in [2, 3, 4]) {
         final contents = await decode(
           await withPayload({
             ...payload([
@@ -606,7 +610,7 @@ void main() {
     test('bilinmeyen tür ve yinelenen kimlik reddediliyor', () async {
       await expectInvalid(payload([entry(type: 'card')]));
       await expectInvalid(payload([entry(type: 'note')]));
-      for (final version in [2, 3]) {
+      for (final version in [2, 3, 4]) {
         await expectInvalid({
           ...payload([entry(type: 'kimlik')]),
           'version': version,
@@ -624,6 +628,156 @@ void main() {
     test('zaman negatif veya sayı dışı olamaz', () async {
       await expectInvalid({...payload([]), 'createdAt': -1});
       await expectInvalid({...payload([]), 'createdAt': '3'});
+    });
+
+    group('senkron bilgisi', () {
+      Map<String, Object?> sync({
+        Object? device = 'a1b2c3',
+        Object? deviceName = 'SM-G780G',
+        List<Object> deleted = const [],
+      }) => {
+        'device': device,
+        'deviceName': deviceName,
+        'passwordChangedAt': 5,
+        'recoveryChangedAt': null,
+        'deleted': deleted,
+      };
+
+      Map<String, Object?> tombstone([
+        String id = 'AQECAwQFBgcICQoLDA0ODw==',
+      ]) => {'id': id, 'deletedAt': 4};
+
+      Map<String, Object?> v4(List<Object> records, Map<String, Object?> s) => {
+        'version': 4,
+        'createdAt': 3,
+        'records': records,
+        'sync': s,
+      };
+
+      test('elle üretilen senkron dosyası açılıyor', () async {
+        final contents = await decode(
+          await withPayload(v4([entry()], sync(deleted: [tombstone()]))),
+        );
+        expect(contents.version, 4);
+        expect(contents.sync?.device, 'a1b2c3');
+        expect(contents.sync?.deviceName, 'SM-G780G');
+        expect(
+          contents.sync?.passwordChangedAt,
+          DateTime.fromMillisecondsSinceEpoch(5, isUtc: true),
+        );
+        expect(contents.sync?.recoveryChangedAt, isNull);
+        expect(contents.sync?.deleted.single.id, hasLength(16));
+        expect(
+          contents.sync?.deleted.single.deletedAt,
+          DateTime.fromMillisecondsSinceEpoch(4, isUtc: true),
+        );
+      });
+
+      test('yalnızca sürüm 4 senkron bilgisi taşıyabilir', () async {
+        await expectInvalid({
+          ...payload([entry()]),
+          'sync': sync(),
+        });
+        await expectInvalid({
+          ...payload([entry()]),
+          'version': 3,
+          'sync': sync(),
+        });
+      });
+
+      test('ayar kaydı ve yinelenen silme kaydı reddediliyor', () async {
+        await expectInvalid(v4([entry(type: 'settings')], sync()));
+        await expectInvalid(
+          v4([entry()], sync(deleted: [tombstone(), tombstone()])),
+        );
+      });
+
+      test('cihaz kimliği ve adı denetleniyor', () async {
+        await expectInvalid(v4([entry()], sync(device: 'A1B2C3')));
+        await expectInvalid(v4([entry()], sync(device: 'a1b2c')));
+        await expectInvalid(v4([entry()], sync(device: null)));
+        await expectInvalid(v4([entry()], sync(deviceName: 'x' * 65)));
+        await expectInvalid(v4([entry()], sync(deviceName: 3)));
+        final named = await decode(
+          await withPayload(v4([entry()], sync(deviceName: null))),
+        );
+        expect(named.sync?.deviceName, isNull);
+      });
+
+      test('eksik, fazla ve bozuk alanlar reddediliyor', () async {
+        await expectInvalid(v4([entry()], {...sync(), 'ek': 1}));
+        await expectInvalid(v4([entry()], {...sync()}..remove('deleted')));
+        await expectInvalid(
+          v4([entry()], {...sync(), 'passwordChangedAt': -1}),
+        );
+        await expectInvalid(
+          v4(
+            [entry()],
+            sync(
+              deleted: [
+                {...tombstone(), 'deletedAt': '4'},
+              ],
+            ),
+          ),
+        );
+        await expectInvalid(v4([entry()], sync(deleted: [tombstone('AAEC')])));
+      });
+
+      test('kayıtlar ve silme kayıtları birlikte sınıra sayılıyor', () async {
+        final deleted = [
+          for (var i = 0; i < BackupCodec.maxRecords; i++)
+            {
+              'id': base64.encode(
+                Uint8List(16)..buffer.asByteData().setUint32(0, i),
+              ),
+              'deletedAt': 4,
+            },
+        ];
+        await expectInvalid(
+          v4([entry(id: 'AP8CAwQFBgcICQoLDA0ODw==')], sync(deleted: deleted)),
+        );
+      });
+
+      test('yazılan senkron bilgisi geri geliyor', () async {
+        final info = SyncInfo(
+          device: 'a1b2c3',
+          deviceName: 'SM-G780G',
+          passwordChangedAt: createdAt,
+          deleted: [
+            StoredTombstone(id: Uint8List(16)..[0] = 9, deletedAt: createdAt),
+          ],
+        );
+        final bytes = await codec.encode(
+          header: header,
+          vaultKey: vaultKey,
+          records: [
+            record(1),
+            record(2, type: 'otp'),
+          ],
+          createdAt: createdAt,
+          sync: info,
+        );
+        final contents = await decode(bytes);
+        expect(contents.version, 4);
+        expect(contents.records, hasLength(2));
+        expect(contents.sync?.device, 'a1b2c3');
+        expect(contents.sync?.passwordChangedAt, createdAt);
+        expect(contents.sync?.recoveryChangedAt, isNull);
+        expect(contents.sync?.deleted.single.id[0], 9);
+      });
+
+      test('senkron dosyasına ayar kaydı yazılmıyor', () {
+        expect(
+          codec.encode(
+            header: header,
+            vaultKey: vaultKey,
+            records: sampleRecords(),
+            createdAt: createdAt,
+            sync: const SyncInfo(device: 'a1b2c3'),
+          ),
+          throwsArgumentError,
+        );
+      });
     });
   });
 }

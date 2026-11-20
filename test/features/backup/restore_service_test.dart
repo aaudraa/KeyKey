@@ -146,6 +146,33 @@ void main() {
       opened.dispose();
     });
 
+    test('senkron dosyası yedek gibi açılıyor', () async {
+      await put(a, 1);
+      await put(a, 2, type: 'otp');
+      final records = await a.store.allRecords();
+      final bytes = await BackupCodec(sodium).encode(
+        header: a.session.header,
+        vaultKey: a.session.vaultKey,
+        records: records,
+        createdAt: DateTime.utc(2026, 11, 7),
+        sync: SyncInfo(
+          device: 'a1b2c3',
+          deleted: [
+            StoredTombstone(id: id(9), deletedAt: DateTime.utc(2026, 7)),
+          ],
+        ),
+      );
+
+      final opened = await restore.openWithPassword(
+        restore.parse(bytes),
+        passwordA,
+      );
+      expect(opened.loginCount, 1);
+      expect(opened.otpCount, 1);
+      expect(opened.records, hasLength(2));
+      opened.dispose();
+    });
+
     test('kart ve notlar sayılıyor', () async {
       await put(a, 1);
       await put(a, 2, type: 'card');

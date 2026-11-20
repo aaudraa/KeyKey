@@ -564,7 +564,7 @@ Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/googl
 
 ```json
 {
-  "version": 6,
+  "version": 7,
   "otpRequireAuth": false,
   "autofillCopyOtp": true,
   "lastBackupAt": 1730000000000,
@@ -584,7 +584,14 @@ Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/googl
     "name": "KeyKey"
   },
   "backgroundLockSeconds": 0,
-  "plainKeyboard": false
+  "plainKeyboard": false,
+  "sync": {
+    "folder": "https://bulut.example.com/remote.php/dav/files/ayse/KeyKey",
+    "username": "ayse",
+    "appPassword": "<uygulama parolası>",
+    "lastSyncAt": 1730000000000,
+    "lastDigest": "<64 onaltılık karakter>"
+  }
 }
 ```
 
@@ -593,6 +600,7 @@ Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/googl
 - `vaultSort` (`name` ya da `recent`) ve `generator` sürüm 4 ile geldi: kasa listesinin sıralaması ve parola üreticisinin son **kullanılan** seçenekleri (uzunluk 8–64, en az bir karakter türü, cümlede 4–12 sözcük). Üretilen parola yazılmaz. Daha eski kayıtlarda ada göre sıralama ve varsayılan üretici kullanılır. Sınır dışı bir değer kaydın tamamını okunamaz yapar (aşağıdaki kural). Sürüm 4 kaydını içeren bir yedek KeyKey'in eski bir sürümünde açılırsa ayar kaydı okunamaz sayılır, ek onay açık gelir.
 - `autoBackupFolder` sürüm 5 ile geldi: [otomatik yedeğin](#otomatik-yedek) klasörü ya da `null`. Tam iki alan taşır; `uri` `content://` ile başlar, `name` boş olamaz. Daha eski kayıtlarda otomatik yedek kapalı sayılır. Sürüm 5 kaydını içeren bir yedek eski bir sürümde açılırsa yine ayar kaydı okunamaz sayılır.
 - `backgroundLockSeconds` (0, 30 ya da 60) ve `plainKeyboard` sürüm 6 (1.7.0) ile geldi: [arka planda kilitlenmeden önceki bekleme](#otomatik-kilit) ve gizli olmayan kutularda normal klavye. Başka bir saniye değeri ya da yanlış tür kaydın tamamını okunamaz yapar. Daha eski kayıtlarda "Hemen" ve öğrenmesiz klavye kullanılır. 1.7.0 yedekleri [içerik sürümü 3](#yedek-biçimi) ile yazılır, eski sürümler onları "daha yeni yedek" diye reddeder.
+- `sync` sürüm 7 (1.8.0) ile geldi: [senkronun](senkron.md) bu telefondaki bilgileri ya da `null`. Tam beş alan taşır: WebDAV klasörünün adresi (`https`, ya da bu telefonun kendi adresinde `http`; adreste kullanıcı bilgisi, sorgu ve parça olamaz), kullanıcı adı ve uygulama parolası (boş olamaz), son eşitlemenin zamanı ve son yüklenen dosyanın özeti (64 küçük onaltılık karakter ya da `null`). Uymayan alan kaydın tamamını okunamaz yapar. Uygulama parolası yalnızca burada, kasanın içinde şifreli durur; ayar kaydı senkron dosyasına girmez, elle ve otomatik yedeğe girer. Daha eski kayıtlarda senkron kapalı sayılır. 1.8.0 yedekleri içerik sürümü 4 ile yazılır.
 - Kayıt yoksa ek onay kapalıdır. Kayıt var ama okunamıyorsa, biçime uymuyorsa veya türü farklıysa ek onay **açık** sayılır: dosyayı değiştiren biri ayarı böyle kapatamasın. Kod kopyalama ise kapalı sayılır. Kullanıcı doğrulayıp ek onayı kapatabilir. Kaydın tamamen silinmesi ise [kayıt silme sınırına](#bilinen-sınırlar) girer.
 
 **Sınır:** Bu, kasa anahtarını değiştirmez. 2FA anahtarı yine kasa anahtarından türetilir, çünkü ana parola ve kurtarma anahtarı da 2FA kayıtlarını açabilmelidir. Ayar, kilidi açık telefonu eline alan birine karşı koruma sağlar, cihazdaki zararlı yazılıma karşı korumaz.
@@ -751,8 +759,9 @@ parça   = uzunluk (4 bayt, büyük uçlu) || şifreli parça
 ```
 
 - Kayıtlar veritabanındaki halleriyle, yani [kayıt biçiminde](#kayıt-biçimi) şifreli olarak taşınır. Yedek bu yüzden iki katmanlıdır: dosyayı açan biri bile kayıtları ayrıca kasa anahtarının alt anahtarlarıyla çözmek zorundadır. Kayıt sayısı, türleri ve zaman damgaları da dış katmanda gizli kalır; veritabanı dosyasından farklı olarak yedek bunları ele vermez.
-- **İçerik sürümü.** Sürüm 1'de `type` yalnızca `login`, `otp` veya `settings` olabilir. Sürüm 2 (1.4.0) `card` ve `note` türlerini ekledi. 1.4.0-1.6.0, kart ya da not yoksa içeriği yine sürüm 1 olarak yazar; böylece kartsız yedekler 1.4.0 öncesi sürümlerle de açılır. 1.3.0 ve öncesi, sürüm 2 bir yedeği "bozuk ya da değiştirilmiş" diye reddeder. Sürüm 3 (1.7.0) yeni tür eklemez; ayar kaydının sürüm 6'sı ve Steam hesapları (`kind: steam`) için gelir. Kayıtlar şifreli olduğundan yedek yazılırken içleri görünmez; bu yüzden 1.7.0'dan itibaren her yedek sürüm 3 ile yazılır. Sürüm 1, 2 ve 3 okunmaya devam eder. 1.4.0'dan sonra daha yeni bir dosya ya da içerik sürümü ayrı bir hatayla (`NewerBackupException`) ayrılır ve kullanıcıya uygulamayı güncellemesi söylenir. İçerik sürümü, JSON'un alanları denetlenmeden önce okunur; sonraki bir sürüm kök alanlarını değiştirse de "daha yeni" diye bildirilir. Sürüm 1 içerikte `card` ya da `note` türü reddedilir.
+- **İçerik sürümü.** Sürüm 1'de `type` yalnızca `login`, `otp` veya `settings` olabilir. Sürüm 2 (1.4.0) `card` ve `note` türlerini ekledi. 1.4.0-1.6.0, kart ya da not yoksa içeriği yine sürüm 1 olarak yazar; böylece kartsız yedekler 1.4.0 öncesi sürümlerle de açılır. 1.3.0 ve öncesi, sürüm 2 bir yedeği "bozuk ya da değiştirilmiş" diye reddeder. Sürüm 3 (1.7.0) yeni tür eklemez; ayar kaydının sürüm 6'sı ve Steam hesapları (`kind: steam`) için gelir. Kayıtlar şifreli olduğundan yedek yazılırken içleri görünmez; bu yüzden 1.7.0'dan itibaren her yedek sürüm 3 ile yazılır. Sürüm 4 (1.8.0) ayar kaydının sürüm 7'si ve senkron dosyasının `sync` nesnesi için gelir; 1.8.0'dan itibaren her yedek sürüm 4 ile yazılır. Sürüm 1, 2, 3 ve 4 okunmaya devam eder. 1.4.0'dan sonra daha yeni bir dosya ya da içerik sürümü ayrı bir hatayla (`NewerBackupException`) ayrılır ve kullanıcıya uygulamayı güncellemesi söylenir. İçerik sürümü, JSON'un alanları denetlenmeden önce okunur; sonraki bir sürüm kök alanlarını değiştirse de "daha yeni" diye bildirilir. Sürüm 1 içerikte `card` ya da `note` türü reddedilir.
 - **Kayıt içeriği sürümü değişirse yedeğin içerik sürümü de artar.** Eski bir sürüm tanımadığı kayıt içeriğini "bozuk" diye reddeder; içerik sürümü artarsa "daha yeni yedek" der. 1.4.0 öncesinde parola (sürüm 2) ve ayar (sürüm 5) kayıtları bu kural olmadan değişti; o dönemin eski sürümleri yeni yedekleri "bozuk" diye reddediyor. Bir test, kayıt içerik sürümlerini yedeğin içerik sürümüyle birlikte sabitliyor; biri değişince test kırılır ve bu adım hatırlanır.
+- **Senkron dosyası:** Aynı biçimde, içerik sürümü 4 ve kökte bir `sync` nesnesiyle yazılır ([senkron](senkron.md#senkron-dosyası)): `device` (altı küçük onaltılık karakter), `deviceName` (en çok 64 karakter ya da `null`), `passwordChangedAt` ve `recoveryChangedAt` (yuva zamanları ya da `null`), `deleted` (silme kayıtları: `id` ve `deletedAt`; kimlik tekrarlanamaz). Bütün alanlar zorunludur. `sync` yalnızca sürüm 4'te bulunabilir. Senkron dosyası ayar kaydı taşıyamaz. Kayıtlar ve silme kayıtları 100 000 sınırına birlikte sayılır. Geri yükleme senkron dosyasını yedek gibi açar ve `sync` nesnesini kullanmaz.
 - İkili alanlar Base64'tür.
 - Parmak izi yuvası ve hatalı deneme sayacı yedeğe girmez. Parmak izi yalnızca o cihazın Keystore anahtarıyla açılır, sayaç da cihaza aittir.
 - **Okurken doğrulama katıdır:** Sihir, sürüm, uzunluklar, üst bilgi ve JSON alanları tek tek denetlenir. Bilinmeyen sürüm, eksik veya fazla alan, yinelenen kayıt kimliği ve yanlış tür reddedilir.
