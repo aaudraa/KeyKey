@@ -2,7 +2,7 @@
 
 KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. 1.5.0'a kadar tamamen çevrimdışıydı; 2026-11-19'da internet gerektiren özelliklere de açılma kararı alındı ([İnternet](#temel-kararlar)). Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-20 · **Şu anki faz:** 16 ve 17 bitti; sıradaki 18, kullanım kolaylıkları. [1.6.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.6.0) yayında (sızıntı kontrolü, kartlar ve notlar alttaki menüde; 1.4.0'dan beri gelenlerle birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
+**Son güncelleme:** 2026-11-20 · **Şu anki faz:** 18 (kullanım kolaylıkları) sürüyor ([#157](https://github.com/aaudraa/KeyKey/issues/157), tasarım: [kullanım kolaylıkları](docs/kullanim-kolayligi.md)). [1.6.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.6.0) yayında (sızıntı kontrolü, kartlar ve notlar alttaki menüde; 1.4.0'dan beri gelenlerle birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
 
 > [!IMPORTANT]
 > **KeyKey 1.0 yayında.** Projenin kendi güvenlik denetimi tamamlandı, ama bağımsız bir denetim yapılmadı. Şifreli yedeğini düzenli al ve telefonun dışında da sakla.
@@ -31,7 +31,7 @@ KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uyg
 | 15 | Kart doldurma | M | 14 | `faz/15-kart-doldurma` | Tamamlandı (1.5.0) |
 | 16 | İnternete açılma ve sızıntı kontrolü | M | 14 | `faz/16-internet` | Tamamlandı (1.6.0) |
 | 17 | Kartlar ve notlar için gezinme | S | 14 | `faz/17-gezinme` | Tamamlandı (1.6.0) |
-| 18 | Kilit süresi, klavye, toplu seçim, Steam Guard | M | 14 | `faz/18-kullanim-kolayligi` | Planlandı |
+| 18 | Kilit süresi, klavye, toplu seçim, Steam Guard | M | 14 | `faz/18-kullanim-kolayligi` | Sürüyor |
 | 19 | Senkron (WebDAV, Google Drive) | XL | 16 | `faz/19-senkron` | Planlandı |
 | 20 | KeePass (`.kdbx`) içe aktarma | L | 14 | `faz/20-keepass` | Planlandı |
 | 21 | Passkey sağlayıcısı | XL | 15 | `faz/21-passkey` | Planlandı |
@@ -733,17 +733,17 @@ Proje sahibinin 2026-11-20 gecesi isteği ([#153](https://github.com/aaudraa/Key
 | Kart ve güvenli not kayıtları | 14 | Kayıt modeli türlere açık; veritabanında `type` sütunu zaten var. Tasarım: [kart ve not](docs/kart-ve-not.md). |
 | Kart doldurma | 15 | Android'in doldurma sistemi kart alanlarını da tanıyor (`creditCardNumber` vb.). |
 | Sızıntı kontrolü (Have I Been Pwned) | 16 | k-anonimlik ile parolayı göndermeden çalışır, internet gerektirir. |
-| Otomatik senkron (WebDAV, Google Drive) | 18 | Uçtan uca şifreli. Önce WebDAV; Drive için OAuth istemcisi proje sahibinin hesabında açılır. |
-| Arka plan kilidinde bekleme süresi | 17 | Kullanıcının seçtiği kısa süre (30 sn, 1 dk), varsayılan "hemen". |
-| Gizli olmayan alanlarda normal klavye | 17 | Ad, site, klasör ve aramada büyük harf ve adres klavyesi. Bugün bütün kutular bilerek `visiblePassword` açıyor, çünkü klavyelerin çoğu öğrenme kapatma isteğini ancak böyle uyguluyor; normal klavyede kayıt adları ve siteler klavyenin sözlüğüne girebilir. Ayar olarak gelir ([ayrıntı](docs/kullanici-gozuyle.md#proje-sahibinin-kararına-bırakılanlar)). |
-| Toplu seçim | 17 | Çoklu silme ve klasöre taşıma. |
-| Steam Guard kodları | 17 | 2FA tarafı için. |
-| KeePass (`.kdbx`) içe aktarma | 19 | KDBX çoğunlukla Argon2d kullanır, libsodium'da yok; ayrı ve incelenmiş bir uygulama gerekir. |
-| Passkey ve Credential Manager sağlayıcısı | 20 | Android 14 ve üstü. Passkey'ler çoğunlukla P-256 (ES256) ister, libsodium'da yok; Android'in kendi kripto sağlayıcısı kullanılır. |
-| İşlemciye göre bölünmüş APK | 21 | Evrensel APK 80 MB. Bölünmüş APK'lar evrenselin yanına eklenir; Obtainium işlemciye uygun olanı seçebilir. |
-| Kendi F-Droid deposu | 21 | F-Droid istemcisine eklenebilen kendi depomuz (`fdroid repo`, örneğin GitHub Pages'te). Ana depoya girmeden F-Droid kullanıcılarına güncelleme verir; imza bizim. |
-| KeyKey klavyesi | 22 | Giriş kutularını doldurma sistemine bildirmeyen uygulamalarda da doldurmak için kendi klavyesi (KeePassDX'teki gibi). Klavyenin kendisi de güvenlik incelemesi ister. Çıkış noktası: [#94](https://github.com/aaudraa/KeyKey/issues/94), [doldurma sistemine katılmayan ekranlar](docs/guvenlik-tasarimi.md#doldurma-sistemine-katılmayan-ekranlar). |
-| Windows | 23 | Windows derlemesi için araçlar hazır; otomatik doldurma yok, kasa ve 2FA var. iOS ve tarayıcı eklentisi planda değil (iOS için Mac gerekir). |
+| Otomatik senkron (WebDAV, Google Drive) | 19 | Uçtan uca şifreli. Önce WebDAV; Drive için OAuth istemcisi proje sahibinin hesabında açılır. |
+| Arka plan kilidinde bekleme süresi | 18 | Kullanıcının seçtiği kısa süre (30 sn, 1 dk), varsayılan "hemen". |
+| Gizli olmayan alanlarda normal klavye | 18 | Ad, site, klasör ve aramada büyük harf ve adres klavyesi. Bugün bütün kutular bilerek `visiblePassword` açıyor, çünkü klavyelerin çoğu öğrenme kapatma isteğini ancak böyle uyguluyor; normal klavyede kayıt adları ve siteler klavyenin sözlüğüne girebilir. Ayar olarak gelir ([ayrıntı](docs/kullanici-gozuyle.md#proje-sahibinin-kararına-bırakılanlar)). |
+| Toplu seçim | 18 | Çoklu silme ve klasöre taşıma. |
+| Steam Guard kodları | 18 | 2FA tarafı için. |
+| KeePass (`.kdbx`) içe aktarma | 20 | KDBX çoğunlukla Argon2d kullanır, libsodium'da yok; ayrı ve incelenmiş bir uygulama gerekir. |
+| Passkey ve Credential Manager sağlayıcısı | 21 | Android 14 ve üstü. Passkey'ler çoğunlukla P-256 (ES256) ister, libsodium'da yok; Android'in kendi kripto sağlayıcısı kullanılır. |
+| İşlemciye göre bölünmüş APK | 22 | Evrensel APK 80 MB. Bölünmüş APK'lar evrenselin yanına eklenir; Obtainium işlemciye uygun olanı seçebilir. |
+| Kendi F-Droid deposu | 22 | F-Droid istemcisine eklenebilen kendi depomuz (`fdroid repo`, örneğin GitHub Pages'te). Ana depoya girmeden F-Droid kullanıcılarına güncelleme verir; imza bizim. |
+| KeyKey klavyesi | 23 | Giriş kutularını doldurma sistemine bildirmeyen uygulamalarda da doldurmak için kendi klavyesi (KeePassDX'teki gibi). Klavyenin kendisi de güvenlik incelemesi ister. Çıkış noktası: [#94](https://github.com/aaudraa/KeyKey/issues/94), [doldurma sistemine katılmayan ekranlar](docs/guvenlik-tasarimi.md#doldurma-sistemine-katılmayan-ekranlar). |
+| Windows | 24 | Windows derlemesi için araçlar hazır; otomatik doldurma yok, kasa ve 2FA var. iOS ve tarayıcı eklentisi planda değil (iOS için Mac gerekir). |
 | IzzyOnDroid | — | Başvurulmuyor (2026-11-17): yapay zekâyla yazılmış kodu kabul etmiyor, APK başına 30 MB sınırı var. Ayrıntılar: [F-Droid tasarımı](docs/f-droid.md#izzyondroid-neden-yok). |
 | F-Droid ana deposu | — | İlk başvuru 2026-11-18'de kabul edilmedi ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)): 3 aydan yeni ve "benzersiz özellik yok". 2027-02-04'ten sonra yeniden başvurulabilir; passkey ve senkron ikinci gerekçeye cevap olabilir. İnternet özellikleri gelince F-Droid kayda `NonFreeNet` gibi bir uyarı ekleyebilir. Tarif ve süreç [başvuru belgesinde](f-droid/basvuru.md). F-Droid kaynaktan derler, derleme bizimkiyle birebir aynıysa bizim imzamızla yayımlar ([yeniden üretilebilir derleme](docs/yayin.md#yeniden-üretilebilir-derleme)). |
 | Play Store | — | Şimdilik yok (2026-11-09 kararı). 25 $ ücret ve kimlik, yeni hesaplarda 12 kişilik 14 günlük kapalı test; Google kendi imza anahtarını kullandığı için Play sürümü GitHub sürümünün üstüne kurulamaz. |
