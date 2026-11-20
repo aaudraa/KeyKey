@@ -13,7 +13,7 @@ Faz 18 ([tasarım](docs/kullanim-kolayligi.md)).
 ### Eklenenler
 
 - **Arka planda kilitlenme süresi:** Ayarlar → Güvenlik'te Hemen (varsayılan), 30 saniye ya da 1 dakika. Süre dolmadan dönülürse kasa açık kalır. Süre iki saatle ölçülür: telefon uyusa ya da saati geri alınsa bile uzamaz. 5 dakika dokunmama kilidi ayrıca sürer. Dönüşte parola listesi yeniden okunur (otomatik doldurma bu arada bir parola eklemiş olabilir).
-- **Gizli olmayan kutularda normal klavye** (varsayılan kapalı): kayıt adı, klasör, arama ve 2FA servis adı normal klavye ve büyük harfle, web adresi adres klavyesiyle açılır. Parola, kullanıcı adı, notlar ve kart bilgileri her zaman öğrenmeyen klavyeyle açılır.
+- **Gizli olmayan kutularda normal klavye** (varsayılan kapalı): kayıt adı, klasör, arama ve 2FA servis adı normal klavye ve kelime başı büyük harfle, web adresi adres klavyesiyle açılır; bu kutularda klavye öneri gösterir, öğrenme isteği kapalı kalır. Parola, kullanıcı adı, notlar ve kart bilgileri her zaman öğrenmeyen klavyeyle açılır.
 - **Toplu seçim:** Parolalar, Kartlar ve Notlar listelerinde uzun basınca seçim başlar; tümünü seç, klasöre taşı (yeni klasör ya da klasörden çıkar dahil) ve çöp kutusuna taşı (Geri al ile). Seçim yalnızca görünen kayıtlarla çalışır; arama daralınca gizlenen seçimler düşer.
 - **Steam Guard kodları:** 5 karakterlik Steam kodları. Aegis (`steam`), 2FAS (`STEAM`), `otpauth://steam/…`, `encoder=steam` bağlantıları ve Bitwarden'ın `steam://` anahtarı içe aktarılır; elle eklemede **Gelişmiş** altında **Steam Guard** türü. Bitwarden biçimli dışa aktarma Steam hesabını `steam://` ile yazar.
 

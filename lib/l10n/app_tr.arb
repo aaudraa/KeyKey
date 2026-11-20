@@ -342,7 +342,7 @@
   "backgroundLockSeconds30": "30 saniye",
   "backgroundLockMinute1": "1 dakika",
   "settingsPlainKeyboard": "Gizli olmayan kutularda normal klavye",
-  "settingsPlainKeyboardHelp": "Kayıt adı, site, klasör ve aramada büyük harf ve adres tuşları gelir. Bu kutulara yazılanlar klavyenin sözlüğüne ve klavye bulutuna girebilir. Parola, kullanıcı adı, notlar ve kart bilgileri her zaman öğrenmesiz klavyeyle açılır.",
+  "settingsPlainKeyboardHelp": "Kayıt adı, site, klasör ve aramada büyük harf, adres tuşları ve klavyenin önerileri gelir. Bu kutulara yazılanlar klavyenin sözlüğüne ve klavye bulutuna girebilir. Parola, kullanıcı adı, notlar ve kart bilgileri her zaman öğrenmesiz klavyeyle açılır.",
   "autofillFor": "{target} için",
   "autofillNoRequest": "Doldurulacak bir form yok.",
   "autofillNoVault": "Önce KeyKey'de bir kasa oluştur.",

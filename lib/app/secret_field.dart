@@ -51,8 +51,9 @@ class SecretField extends ConsumerStatefulWidget {
 
   /// Gizli olmayan kutu: ayarlarda "normal klavye" açıksa bu klavye açılır.
   /// Verilmezse, kutu gizliyse ya da [keyboardType] verildiyse her zaman
-  /// öğrenmesiz klavye. Öneri, düzeltme ve öğrenme isteği iki durumda da
-  /// kapalıdır.
+  /// öğrenmesiz klavye. Düzeltme ve öğrenme isteği iki durumda da kapalıdır;
+  /// normal klavyede öneri şeridi açılır, çünkü Android'de öneriyi kapatmak
+  /// klavyeyi yine görünür parola klavyesine çevirir.
   final PlainKeyboard? plain;
 
   final FocusNode? focusNode;
@@ -188,7 +189,10 @@ class _SecretFieldState extends ConsumerState<SecretField> {
       minLines: 1,
       textInputAction: widget.textInputAction,
       autocorrect: false,
-      enableSuggestions: false,
+      // Flutter Android'de öneriyi kapatınca kutunun türünü görünür parolaya
+      // çeviriyor (TextInputPlugin); normal klavye ancak öneri açıkken gelir.
+      // Öğrenme isteği her durumda kapalı.
+      enableSuggestions: usePlain,
       enableIMEPersonalizedLearning: false,
       smartDashesType: SmartDashesType.disabled,
       smartQuotesType: SmartQuotesType.disabled,

@@ -51,6 +51,16 @@ void main() {
     expect(f.autocorrect, isFalse, reason: label);
   }
 
+  /// Normal klavyeli kutu: düzeltme ve öğrenme yine kapalı, ama öneri açık
+  /// istenir. Flutter Android'de öneriyi kapatınca türü de görünür parolaya
+  /// çeviriyor (TextInputPlugin); o zaman ne büyük harf ne adres tuşları
+  /// gelir. Cihazda `dumpsys input_method` ile görüldü.
+  void expectPlainLearning(TextField f, String label) {
+    expect(f.enableIMEPersonalizedLearning, isFalse, reason: label);
+    expect(f.enableSuggestions, isTrue, reason: label);
+    expect(f.autocorrect, isFalse, reason: label);
+  }
+
   void expectSecret(WidgetTester tester, String label) {
     final f = field(tester, label);
     expect(
@@ -71,7 +81,7 @@ void main() {
     final f = field(tester, label);
     expect(f.keyboardType, TextInputType.text, reason: label);
     expect(f.textCapitalization, TextCapitalization.words, reason: label);
-    expectNoLearning(f, label);
+    expectPlainLearning(f, label);
   }
 
   group('ayar açık', () {
@@ -82,7 +92,7 @@ void main() {
       expectPlainText(tester, 'Ad');
       final url = field(tester, 'Web adresi');
       expect(url.keyboardType, TextInputType.url);
-      expectNoLearning(url, 'Web adresi');
+      expectPlainLearning(url, 'Web adresi');
       for (final label in ['Kullanıcı adı', 'Parola']) {
         expectSecret(tester, label);
       }
@@ -112,7 +122,7 @@ void main() {
       await open(tester, AppRoutes.vault, plain: true);
       final search = tester.widget<TextField>(find.byType(TextField).first);
       expect(search.keyboardType, TextInputType.text);
-      expectNoLearning(search, 'arama');
+      expectPlainLearning(search, 'arama');
     });
   });
 

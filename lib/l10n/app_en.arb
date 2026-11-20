@@ -1462,7 +1462,7 @@
   "backgroundLockSeconds30": "30 seconds",
   "backgroundLockMinute1": "1 minute",
   "settingsPlainKeyboard": "Normal keyboard in non-secret fields",
-  "settingsPlainKeyboardHelp": "Item names, websites, folders and search get capital letters and address keys. What you type there may enter the keyboard's dictionary and its cloud. Passwords, usernames, notes and card details always open a keyboard without learning.",
+  "settingsPlainKeyboardHelp": "Item names, websites, folders and search get capital letters, address keys and the keyboard's suggestions. What you type there may enter the keyboard's dictionary and its cloud. Passwords, usernames, notes and card details always open a keyboard without learning.",
   "autofillFor": "For {target}",
   "@autofillFor": {
     "description": "Shows which app or website will be filled.",

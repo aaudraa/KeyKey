@@ -67,6 +67,7 @@ Proje sahibi 2026-11-20 sabahı bütün yol haritasını onay beklemeden bitirme
 - Ayar: `plainKeyboard` (bool), kasa ayarlarında, sürüm 6.
 - `SecretField`'e `plain` parametresi gelir: `null` (gizli, bugünkü davranış), `PlainKeyboard.text` ya da `PlainKeyboard.url`.
 - Ayar açıkken `text`, `TextInputType.text` ve kelime başı büyük harfle; `url`, `TextInputType.url` ile açılır. İki durumda da otomatik düzeltme, öneri ve kişisel öğrenme isteği kapalı kalır.
+  - **Uygulamada (cihaz denemesi):** Flutter Android'de öneriyi kapatan kutuya görünür parola türünü de ekliyor; öyle olunca normal klavye hiç gelmiyordu. Normal klavyeli kutularda öneri açık; düzeltme ve öğrenme isteği kapalı.
 - Kutular:
   - **`text`:** parola, kart ve not adı, klasör, kasa ve 2FA araması, 2FA hizmet adı.
   - **`url`:** parolanın web adresi.
