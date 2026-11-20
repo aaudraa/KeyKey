@@ -2,7 +2,7 @@
 
 KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. 1.5.0'a kadar tamamen çevrimdışıydı; 2026-11-19'da internet gerektiren özelliklere de açılma kararı alındı ([İnternet](#temel-kararlar)). Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-20 · **Şu anki faz:** 16 (internete açılma ve sızıntı kontrolü, [#152](https://github.com/aaudraa/KeyKey/issues/152)) ve 17 (kartlar ve notlar menüde, [#153](https://github.com/aaudraa/KeyKey/issues/153)) birlikte 1.6.0 olarak çıkıyor. [1.5.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.5.0) yayında (kart doldurma; 1.4.0'ın kartları ve notlarıyla birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
+**Son güncelleme:** 2026-11-20 · **Şu anki faz:** 16 ve 17 bitti; sıradaki 18, kullanım kolaylıkları. [1.6.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.6.0) yayında (sızıntı kontrolü, kartlar ve notlar alttaki menüde; 1.4.0'dan beri gelenlerle birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
 
 > [!IMPORTANT]
 > **KeyKey 1.0 yayında.** Projenin kendi güvenlik denetimi tamamlandı, ama bağımsız bir denetim yapılmadı. Şifreli yedeğini düzenli al ve telefonun dışında da sakla.
@@ -688,6 +688,8 @@ KeyKey'in ilk internet özelliği ([#152](https://github.com/aaudraa/KeyKey/issu
 
 **Bu fazda görülen eski hata:** parmak izi cihaz testi, 1.1.0'da gelen "kilit açılınca kalınan sekmeye dön" davranışından beri kasa listesini bekliyordu; Android 17'deki tam koşuda kırıldı ve düzeltildi.
 
+1.6.0 olarak yayımlandı (2026-11-20, [#154](https://github.com/aaudraa/KeyKey/pull/154), Faz 17 ile birlikte). İmza sertifikası aynı (`66ff7b5c…`), Obtainium 1.5.0'ın üstüne günceller; F-Droid'in kendi derlemesi APK'yla bayt bayt aynı çıktı. Yayın APK'sında yeni izin yalnızca `INTERNET`.
+
 **Bitti sayılması için:** raporda `password` gibi sızmış bir parola görülme sayısıyla listeleniyor; bağlantı yokken ya da beklenmeyen yanıtta "Denetlenemedi" çıkıyor, yanlış bir "sızıntı yok" çıkmıyor; güncellemeden sonra koşullar bir kez yeniden soruluyor; kayıtta parola, özet ya da önek yok.
 
 ### Faz 17 — Kartlar ve notlar için gezinme
@@ -710,6 +712,8 @@ Proje sahibinin 2026-11-20 gecesi isteği ([#153](https://github.com/aaudraa/Key
 - Her sekmenin çöp kutusu yalnızca kendi türünü gösterir; "Tümünü geri yükle" ve "Çöpü boşalt" da yalnızca o türe dokunur.
 
 **Cihazda (2026-11-20):** Android 11 emülatöründe bütün cihaz testleri geçti; iki eski test (arama etiketi, seçili sekmenin simgesi) düzeltildi ve yeniden koşuda geçti. Android 17'deki tam koşu, bilgisayarın belleği azaldığı için ilk 4 testten sonra durduruldu ve yeniden başlatılmadı; Android 17'de aynı koşu Faz 16 koduyla tam geçmişti.
+
+1.6.0 olarak yayımlandı (2026-11-20, [#155](https://github.com/aaudraa/KeyKey/pull/155), Faz 16 ile birlikte).
 
 **Bitti sayılması için:** kart ve not alttaki menüden açılıyor; kasa listesinin üstünde tür düğmesi yok; "+" ile eklenen kart Kartlar'da, not Notlar'da görünüyor; her çöp kutusu yalnızca kendi türünü geri yüklüyor; 320 dp ekranda menü taşmıyor.
 
