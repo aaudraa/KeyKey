@@ -730,22 +730,34 @@ class FakeRestoreService implements RestoreService {
   /// Değiştirme sırasında kasaya yazılıyormuş gibi çağrılır.
   void Function()? onReplace;
 
+  /// Son değiştirme ve birleştirmede verilen damga zamanı.
+  DateTime? replacedStampAt;
+  DateTime? mergedStampAt;
+
   @override
   Future<void> replace(
     OpenedBackup backup, {
     AutoBackupFolder? autoBackupFolder,
     SyncSettings? sync,
+    SyncInfo? syncInfo,
+    DateTime? stampAt,
   }) async {
     replaces++;
     replacedFolder = autoBackupFolder;
     replacedSync = sync;
+    replacedStampAt = stampAt;
     onReplace?.call();
   }
 
   @override
-  Future<MergeCounts> merge(OpenedBackup backup, VaultSession session) async {
+  Future<MergeCounts> merge(
+    OpenedBackup backup,
+    VaultSession session, {
+    DateTime? stampAt,
+  }) async {
     if (session.isDisposed) throw const VaultLockedException();
     merges++;
+    mergedStampAt = stampAt;
     onMerge?.call();
     return mergeResult;
   }

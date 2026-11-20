@@ -379,6 +379,54 @@ void main() {
       expect(find.text('Kasamla birleştir'), findsOneWidget);
     });
 
+    group('senkron açıkken', () {
+      const note =
+          'Senkron açık: yedekteki kayıtlar bütün telefonlarda yedekteki '
+          'haline döner; yedekte olmayan kayıtlar silinmez.';
+      final sync = SyncSettings(
+        folder: Uri.parse('https://bulut.example.com/dav/KeyKey/'),
+        username: 'ayse',
+        appPassword: 'uygulama-parolasi',
+      );
+
+      testWidgets('uyarı görünüyor, birleştirme şimdiyle damgalanıyor', (
+        tester,
+      ) async {
+        await openFromSettings(
+          tester,
+          settings: FakeSettingsRepository(AppSettings.defaults.withSync(sync)),
+        );
+        expect(find.text(note), findsOneWidget);
+        await tester.tap(find.text('Kasamla birleştir'));
+        await tester.pumpAndSettle();
+        expect(restores.mergedStampAt, isNotNull);
+      });
+
+      testWidgets('değiştirmede bu telefonun senkron bilgisi veriliyor', (
+        tester,
+      ) async {
+        await openFromSettings(
+          tester,
+          settings: FakeSettingsRepository(AppSettings.defaults.withSync(sync)),
+        );
+        await tester.tap(find.text('Kasanın yerine yedeği koy'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Değiştir'));
+        await tester.pumpAndSettle();
+        expect(restores.replacedSync!.folder, sync.folder);
+        expect(restores.replacedStampAt, isNotNull);
+      });
+
+      testWidgets('senkron kapalıyken uyarı ve damga yok', (tester) async {
+        await openFromSettings(tester);
+        expect(find.text(note), findsNothing);
+        await tester.tap(find.text('Kasamla birleştir'));
+        await tester.pumpAndSettle();
+        expect(restores.merges, 1);
+        expect(restores.mergedStampAt, isNull);
+      });
+    });
+
     testWidgets('değiştirince parmak izi kapanıyor ve kasa kilitleniyor', (
       tester,
     ) async {

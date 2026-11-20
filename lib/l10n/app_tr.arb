@@ -658,5 +658,6 @@
   "restoreSyncIntro": "Kasa, öteki telefonundaki ana parolanla ya da kurtarma anahtarınla açılır.",
   "restoreSyncWrongPassword": "Bu parola kasayı açmadı. Öteki telefonundaki ana parolayı dene.",
   "restoreSyncWrongRecoveryKey": "Bu kurtarma anahtarı klasördeki kasaya ait değil.",
-  "restoreSyncDone": "Kasa kuruldu, senkron açık."
+  "restoreSyncDone": "Kasa kuruldu, senkron açık.",
+  "restoreSyncOnNote": "Senkron açık: yedekteki kayıtlar bütün telefonlarda yedekteki haline döner; yedekte olmayan kayıtlar silinmez."
 }

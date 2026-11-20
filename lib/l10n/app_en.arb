@@ -2793,5 +2793,9 @@
   "restoreSyncDone": "Vault set up, sync is on.",
   "@restoreSyncDone": {
     "description": "Snack after the vault was set up from sync."
+  },
+  "restoreSyncOnNote": "Sync is on: the records in the backup return to their backed-up state on every phone; records that are not in the backup are not deleted.",
+  "@restoreSyncOnNote": {
+    "description": "Note on the restore summary while sync is on."
   }
 }

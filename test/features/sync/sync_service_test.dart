@@ -8,6 +8,8 @@ import 'package:keykey/core/storage/vault_database.dart';
 import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/vault_service.dart';
 import 'package:keykey/core/vault/vault_session.dart';
+import 'package:keykey/features/backup/application/backup_service.dart';
+import 'package:keykey/features/backup/application/restore_service.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:keykey/features/sync/application/sync_merger.dart';
 import 'package:keykey/features/sync/application/sync_service.dart';
@@ -203,6 +205,163 @@ void main() {
     for (final r in await phone.store.allRecords())
       if (r.type == 'login') r.id[15],
   ]..sort();
+
+  group('senkron açıkken geri yükleme', () {
+    const password = 'Ana-Parola-2026';
+
+    Future<BackupFile> backupOf(_Phone phone) async {
+      final bytes = await BackupService(
+        sodium: sodium,
+        store: phone.store,
+      ).create(phone.session, now);
+      return RestoreService(sodium: sodium, store: phone.store).parse(bytes);
+    }
+
+    Future<OpenedBackup> open(_Phone phone, BackupFile file) => RestoreService(
+      sodium: sodium,
+      store: phone.store,
+    ).openWithPassword(file, password);
+
+    Future<StoredRecord> record(_Phone phone, int n) async =>
+        (await phone.store.getRecord(id(n)))!;
+
+    Future<String> nameOf(_Phone phone, int n) async {
+      final stored = await record(phone, n);
+      return LoginContent.fromJsonBytes(
+        phone.session.records.decrypt(
+          recordId: stored.id,
+          type: stored.type,
+          blob: stored.blob,
+        ),
+      ).name;
+    }
+
+    Future<AppSettings> settingsOf(_Phone phone, {_Phone? keyOf}) async {
+      final stored = (await phone.store.allRecords()).singleWhere(
+        (r) => r.type == 'settings',
+      );
+      return AppSettings.tryParse(
+        (keyOf ?? phone).session.records.decrypt(
+          recordId: stored.id,
+          type: stored.type,
+          blob: stored.blob,
+        ),
+      )!;
+    }
+
+    test('kalıcı silinen kayıt birleştirerek geri gelir, öteki telefonun '
+        'silmesi onu yeniden silmez', () async {
+      final a = await first('a1b2c3');
+      await addLogin(a, 1);
+      final backup = await backupOf(a);
+      final b = await second(a, 'b2c3d4');
+      await a.sync();
+      await b.sync();
+      expect(await loginIds(b), [1]);
+
+      now = now.add(const Duration(hours: 1));
+      await b.store.deleteRecord(id(1), deletedAt: now);
+      await b.sync();
+      await a.sync();
+      expect(await loginIds(a), isEmpty);
+
+      now = now.add(const Duration(hours: 1));
+      final opened = await open(a, backup);
+      final counts = await RestoreService(
+        sodium: sodium,
+        store: a.store,
+      ).merge(opened, a.session, stampAt: now);
+      opened.dispose();
+      expect(counts.added, 1);
+      expect((await record(a, 1)).updatedAt, now);
+      expect(await a.store.allTombstones(), isEmpty);
+
+      await a.sync();
+      await b.sync();
+      await a.sync();
+      expect(await loginIds(a), [1]);
+      expect(await loginIds(b), [1]);
+    });
+
+    test('senkron kapalıyken birleştirme zamanları değiştirmiyor ama silme '
+        'kaydını kaldırıyor', () async {
+      final a = await first('a1b2c3');
+      await addLogin(a, 1);
+      final createdAt = now;
+      final backup = await backupOf(a);
+      await a.store.deleteRecord(id(1), deletedAt: now);
+
+      final opened = await open(a, backup);
+      await RestoreService(
+        sodium: sodium,
+        store: a.store,
+      ).merge(opened, a.session);
+      opened.dispose();
+      expect((await record(a, 1)).updatedAt, createdAt);
+      expect(await a.store.allTombstones(), isEmpty);
+    });
+
+    test('aynı kasada değiştirme senkronu açık tutuyor, yedekte olmayanlar '
+        'geri geliyor', () async {
+      final a = await first('a1b2c3');
+      await addLogin(a, 1, name: 'Eski');
+      final backup = await backupOf(a);
+
+      now = now.add(const Duration(hours: 1));
+      await addLogin(a, 1, name: 'Yeni');
+      await addLogin(a, 2);
+      await a.sync();
+      final b = await second(a, 'b2c3d4');
+      await addLogin(b, 3);
+      await b.sync();
+      expect(await nameOf(b, 1), 'Yeni');
+
+      now = now.add(const Duration(hours: 1));
+      final opened = await open(a, backup);
+      await RestoreService(
+        sodium: sodium,
+        store: a.store,
+      ).replace(opened, sync: a.settings, stampAt: now);
+      opened.dispose();
+      expect(await loginIds(a), [1]);
+      expect((await record(a, 1)).updatedAt, now);
+      final settings = await settingsOf(a);
+      expect(settings.sync!.folder, a.settings.folder);
+
+      // Kasa kilitlenip açılınca önbellek boş başlar.
+      await a.service.sync(a.session, settings.sync!, cache: SyncCache());
+      expect(await loginIds(a), [1, 2, 3]);
+      expect(await nameOf(a, 1), 'Eski');
+      await b.sync();
+      expect(await loginIds(b), [1, 2, 3]);
+      expect(await nameOf(b, 1), 'Eski');
+    });
+
+    test('başka kasada değiştirme senkronu kapatıyor, zamanlar '
+        'değişmiyor', () async {
+      final a = await first('a1b2c3');
+      await addLogin(a, 1);
+      final c = await first('c0c0c0');
+      await addLogin(c, 5);
+      final createdAt = now;
+      final backup = await backupOf(c);
+
+      now = now.add(const Duration(hours: 1));
+      final opened = await RestoreService(
+        sodium: sodium,
+        store: a.store,
+      ).openWithPassword(backup, password);
+      await RestoreService(
+        sodium: sodium,
+        store: a.store,
+      ).replace(opened, sync: a.settings, stampAt: now);
+      opened.dispose();
+
+      expect(await loginIds(a), [5]);
+      expect((await record(a, 5)).updatedAt, createdAt);
+      expect((await settingsOf(a, keyOf: c)).sync, isNull);
+    });
+  });
 
   test('boş klasöre bu telefonun dosyası yükleniyor', () async {
     final a = await first('a1b2c3');

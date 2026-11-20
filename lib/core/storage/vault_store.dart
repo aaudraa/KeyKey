@@ -222,23 +222,44 @@ final class VaultStore {
 
   /// Kayıtları tek işlemde ekler. Aynı kimlikte kayıt varsa `updatedAt`
   /// değeri yeni olan kalır; türü farklıysa var olana dokunulmaz.
-  Future<MergeCounts> mergeRecords(List<StoredRecord> records) {
+  ///
+  /// Eklenen ya da güncellenen kaydın silme kaydı kaldırılır: geri gelen
+  /// kayıt senkronda yeniden silinmez. [stampAt] verilirse (senkron açık)
+  /// bu kayıtların `updatedAt` değeri o an yapılır; karşılaştırma yine
+  /// kaydın kendi zamanıyladır. Zaman şifreli içerikte değildir.
+  Future<MergeCounts> mergeRecords(
+    List<StoredRecord> records, {
+    DateTime? stampAt,
+  }) {
     return _database.transaction(() async {
       var added = 0;
       var updated = 0;
       var kept = 0;
       for (final record in records) {
         final existing = await getRecord(record.id);
+        final stamped = stampAt == null
+            ? record
+            : StoredRecord(
+                id: record.id,
+                type: record.type,
+                blob: record.blob,
+                createdAt: record.createdAt,
+                updatedAt: stampAt,
+              );
         if (existing == null) {
-          await _database.into(_database.records).insert(_companion(record));
+          await _database.into(_database.records).insert(_companion(stamped));
           added++;
         } else if (existing.type == record.type &&
             record.updatedAt.isAfter(existing.updatedAt)) {
-          await putRecord(record);
+          await putRecord(stamped);
           updated++;
         } else {
           kept++;
+          continue;
         }
+        final query = _database.delete(_database.tombstones)
+          ..where((row) => row.id.equals(record.id));
+        await query.go();
       }
       return MergeCounts(added: added, updated: updated, kept: kept);
     });

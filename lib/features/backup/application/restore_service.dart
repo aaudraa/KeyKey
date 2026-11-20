@@ -132,15 +132,27 @@ class RestoreService {
   ///
   /// [sync] bu telefonun senkron bilgisidir ve her zaman yedektekinin yerine
   /// geçer (`null` kapalı): yedek başka bir telefonda, başka bir klasörle
-  /// alınmış olabilir. Senkron dosyasından kurulumda (yeni telefon) silme
-  /// kayıtları ve yuva zamanları dosyadan yazılır; senkron dosyası yedek
-  /// olmadığı için son yedek zamanı yazılmaz.
+  /// alınmış olabilir. Kasa varken yedeğin kasa kimliği farklıysa senkron
+  /// kapanır (klasör başka kasanın); aynıysa açık kalır ve [stampAt]
+  /// verilmişse kayıtların `updatedAt` değeri o an yapılır, böylece yedekteki
+  /// haller bütün telefonlarda en yeni olur.
+  ///
+  /// [syncInfo] yalnızca senkrondan kurulumda (yeni telefon) verilir: silme
+  /// kayıtları ve yuva zamanları dosyadan yazılır, son yedek zamanı yazılmaz.
+  /// Geri yükle'de senkron dosyası yedek gibidir; içindeki bilgi yok sayılır.
   Future<void> replace(
     OpenedBackup backup, {
     AutoBackupFolder? autoBackupFolder,
     SyncSettings? sync,
+    SyncInfo? syncInfo,
+    DateTime? stampAt,
   }) async {
-    final info = backup.sync;
+    final info = syncInfo;
+    final previous = await _store.readHeader();
+    final sameVault =
+        previous == null || listEquals(previous.vaultId, backup.header.vaultId);
+    final keptSync = sameVault ? sync : null;
+    final stamp = keptSync == null ? null : stampAt;
     final cipher = _cipherFor(backup);
     final List<StoredRecord> records;
     try {
@@ -153,17 +165,25 @@ class RestoreService {
               cipher,
               backup.createdAt,
               autoBackupFolder,
-              sync,
+              keptSync,
             )
+          else if (stamp == null)
+            record
           else
-            record,
+            StoredRecord(
+              id: record.id,
+              type: record.type,
+              blob: record.blob,
+              createdAt: record.createdAt,
+              updatedAt: stamp,
+            ),
         if (!backup.records.any((record) => listEquals(record.id, settingsId)))
           _settingsRecord(
             cipher,
             AppSettings.defaults
                 .copyWith(lastBackupAt: info == null ? backup.createdAt : null)
                 .withAutoBackupFolder(autoBackupFolder)
-                .withSync(sync),
+                .withSync(keptSync),
             id: settingsId,
             createdAt: backup.createdAt,
             updatedAt: backup.createdAt,
@@ -258,7 +278,13 @@ class RestoreService {
   /// Yedeğin parola ve 2FA kayıtlarını açık kasaya ekler. Ayar kaydı alınmaz.
   ///
   /// Kayıtlar açık kasanın anahtarıyla yeniden şifrelenir, kimlikleri korunur.
-  Future<MergeCounts> merge(OpenedBackup backup, VaultSession session) async {
+  /// Senkron açıksa çağıran [stampAt] olarak şimdiyi verir; kurallar
+  /// [VaultStore.mergeRecords]'ta.
+  Future<MergeCounts> merge(
+    OpenedBackup backup,
+    VaultSession session, {
+    DateTime? stampAt,
+  }) async {
     final source = _cipherFor(backup);
     final records = <StoredRecord>[];
     try {
@@ -290,7 +316,7 @@ class RestoreService {
     } finally {
       source.dispose();
     }
-    return await _store.mergeRecords(records);
+    return await _store.mergeRecords(records, stampAt: stampAt);
   }
 
   RecordCipher _cipherFor(OpenedBackup backup) {

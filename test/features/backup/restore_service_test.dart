@@ -319,7 +319,7 @@ void main() {
         final restore = RestoreService(sodium: sodium, store: store);
         final opened = await restore.openWithPassword(file, passwordA);
 
-        await restore.replace(opened, sync: sync);
+        await restore.replace(opened, sync: sync, syncInfo: opened.sync);
         opened.dispose();
 
         final records = await store.allRecords();
@@ -352,6 +352,23 @@ void main() {
         expect(settings.lastBackupAt, isNull);
         expect(settings.otpRequireAuth, AppSettings.defaults.otpRequireAuth);
         expect(settings.autoBackupFolder, isNull);
+      });
+
+      test("Geri yükle'de senkron bilgisi yok sayılıyor", () async {
+        final file = await syncFileOf(a);
+        final database = VaultDatabase(NativeDatabase.memory());
+        addTearDown(database.close);
+        final store = VaultStore(database);
+        final restore = RestoreService(sodium: sodium, store: store);
+        final opened = await restore.openWithPassword(file, passwordA);
+
+        await restore.replace(opened);
+        opened.dispose();
+
+        expect(await store.allTombstones(), isEmpty);
+        final times = await store.readHeaderTimes();
+        expect(times.passwordChangedAt, isNull);
+        expect(times.recoveryChangedAt, isNull);
       });
 
       test('yanlış parolada hiçbir şey yazılmıyor', () async {

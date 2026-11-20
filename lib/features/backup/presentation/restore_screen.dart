@@ -24,6 +24,7 @@ import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/recovery_key_formatter.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
+import 'package:keykey/features/sync/application/sync_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/application/records_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
@@ -156,7 +157,13 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
     final controller = ref.read(vaultControllerProvider.notifier);
     setState(() => _busy = true);
     try {
-      await ref.read(restoreServiceProvider).replace(backup, sync: widget.sync);
+      await ref
+          .read(restoreServiceProvider)
+          .replace(
+            backup,
+            sync: widget.sync,
+            syncInfo: widget.sync == null ? null : backup.sync,
+          );
       final session = ref
           .read(vaultServiceProvider)
           .openRestoredSession(backup.header, backup.copyKey());
@@ -169,14 +176,21 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
     }
   }
 
+  /// Senkron açıksa şimdi: geri gelen kayıtlar öteki telefonlardaki daha
+  /// eski silmeleri ve değişiklikleri yener.
+  DateTime? _stampAt() => ref.read(settingsControllerProvider)?.sync == null
+      ? null
+      : ref.read(syncClockProvider)();
+
   Future<void> _merge(OpenedBackup backup, VaultSession session) async {
     final l10n = AppLocalizations.of(context);
     final snack = kkSnackFor(context);
+    final stampAt = _stampAt();
     setState(() => _busy = true);
     try {
       final counts = await ref
           .read(restoreServiceProvider)
-          .merge(backup, session);
+          .merge(backup, session, stampAt: stampAt);
       ref
         ..invalidate(loginsControllerProvider)
         ..invalidate(otpsControllerProvider)
@@ -209,14 +223,21 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
     if (!confirmed || !mounted) return;
     final controller = ref.read(vaultControllerProvider.notifier);
     // Klasörün izni bu cihazda alındı; parmak izi yuvası gibi cihaza bağlı.
-    final folder = ref.read(settingsControllerProvider)?.autoBackupFolder;
+    final settings = ref.read(settingsControllerProvider);
+    final folder = settings?.autoBackupFolder;
+    final stampAt = _stampAt();
     setState(() => _busy = true);
     try {
       // Önce parmak izi kapanır: yeni kasanın anahtarı eski yuvayla açılmaz.
       await ref.read(vaultServiceProvider).disableBiometric();
       await ref
           .read(restoreServiceProvider)
-          .replace(backup, autoBackupFolder: folder);
+          .replace(
+            backup,
+            autoBackupFolder: folder,
+            sync: settings?.sync,
+            stampAt: stampAt,
+          );
       // Kilit ekranına gidilir; kasa artık yedeğin ana parolasıyla açılır.
       controller.lockReplaced(backup.header);
     } on Exception {
@@ -339,6 +360,13 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
       ],
       const SizedBox(height: 24),
       if (status is VaultOpen) ...[
+        if (ref.watch(settingsControllerProvider)?.sync != null) ...[
+          GlassSurface(
+            padding: const EdgeInsets.all(12),
+            child: Text(l10n.restoreSyncOnNote),
+          ),
+          const SizedBox(height: 16),
+        ],
         Text(l10n.restoreMergeHelp),
         const SizedBox(height: 8),
         FilledButton(
