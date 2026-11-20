@@ -1,4 +1,4 @@
-KeyKey parolalarını ve iki adımlı doğrulama kodlarını telefonunda, şifreli olarak tutar; başka hiçbir yerde değil. Hesap ve sunucu yok; kasan hiçbir yere gönderilmez. İnternete yalnızca senin başlattığın sızıntı kontrolü çıkar ve ona parolanın kendisi değil, özetinin ilk 5 karakteri gider.
+KeyKey parolalarını ve iki adımlı doğrulama kodlarını telefonunda, şifreli olarak tutar. Hesap yok, KeyKey'in sunucusu yok. İnternete yalnızca senin açtığın iki özellik çıkar: sızıntı kontrolüne parolanın kendisi değil, özetinin ilk 5 karakteri gider; senkron ise kasanı kendi WebDAV sunucun (Nextcloud, ownCloud ve benzerleri) üzerinden telefonlarının arasında ana parolanla uçtan uca şifreli eşitler.
 
 <b>Parolalar</b>
 <ul>
@@ -21,10 +21,11 @@ KeyKey parolalarını ve iki adımlı doğrulama kodlarını telefonunda, şifre
 <li>Uygulamalar imza sertifikasıyla eşleşir; şüpheli durumlarda uyarı çıkar</li>
 </ul>
 
-<b>Kilit ve yedek</b>
+<b>Kilit, yedek ve senkron</b>
 <ul>
 <li>Ana parola, parmak iziyle açma, otomatik kilitlenme, kurtarma anahtarı</li>
 <li>İstediğin yere kaydettiğin şifreli yedek ve geri yükleme</li>
+<li>Kendi WebDAV sunucun üzerinden telefonlar arasında isteğe bağlı, uçtan uca şifreli senkron</li>
 <li>Bitwarden, Chrome, Firefox ve KeePassXC'den içe aktarma; ayrılmak istersen şifresiz dışa aktarma</li>
 </ul>
 

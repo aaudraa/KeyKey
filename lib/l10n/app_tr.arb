@@ -194,8 +194,8 @@
   "licensesLoadFailed": "Lisans metinleri yüklenemedi.",
   "termsTitle": "Kullanım koşulları",
   "termsIntro": "KeyKey'i kullanmaya başlamadan önce lütfen oku. Kısa tuttuk; her madde KeyKey'in gerçekte nasıl çalıştığını anlatıyor.",
-  "termsDataTitle": "Verilerin bu telefonda",
-  "termsDataBody": "Parolaların, 2FA hesapların ve notların bu telefondaki kasada durur. Yedek ya da dışa aktarma dosyası yalnızca sen istersen oluşur ve senin seçtiğin yere kaydedilir. KeyKey hesap açtırmaz, sunucusu yoktur, reklam göstermez, kullanım bilgisi toplamaz. İnternete yalnızca senin başlattığın denetimler için çıkar; bugün tek denetim parola raporundaki sızıntı kontrolüdür ve parolalarının kendisi gönderilmez. Bir bağlantıyı açtığında sayfa tarayıcında açılır. Geliştiriciler verilerini göremez, toplamaz ve saklamaz.",
+  "termsDataTitle": "Verilerin senin elinde",
+  "termsDataBody": "Parolaların, 2FA hesapların, kartların ve notların bu telefondaki kasada durur. Yedek ya da dışa aktarma dosyası yalnızca sen istersen oluşur ve senin seçtiğin yere kaydedilir. KeyKey hesap açtırmaz, sunucusu yoktur, reklam göstermez, kullanım bilgisi toplamaz. İnternete yalnızca senin açtığın özellikler için çıkar: parola raporundaki sızıntı kontrolü (parolalarının kendisi gönderilmez) ve açarsan senkron. Bir bağlantıyı açtığında sayfa tarayıcında açılır. Geliştiriciler verilerini göremez, toplamaz ve saklamaz.",
   "termsCryptoTitle": "Kasa nasıl korunur",
   "termsCryptoBody": "Kasa, ana parolandan Argon2id ile türetilen bir anahtarla korunur; kayıtlar XChaCha20-Poly1305 ile şifrelenir. Ana parolan hiçbir yere kaydedilmez. Parmak iziyle açmayı açarsan kasanın anahtarı, telefonun güvenli donanımında (Android Keystore) duran bir anahtarla korunur.",
   "termsSecretsTitle": "Ana parola ve kurtarma anahtarı yalnızca sende",
@@ -670,5 +670,7 @@
   "syncJoinWrongPassword": "Bu parola o kasayı açmadı.",
   "syncJoinWrongRecoveryKey": "Bu kurtarma anahtarı o kasaya ait değil.",
   "syncJoinFailed": "Katılamadı; bu telefonun kasası değişmedi.",
-  "syncJoinDone": "Bu telefonda artık senkron kasasının ana parolası geçerli. Parmak iziyle açmayı yeniden aç."
+  "syncJoinDone": "Bu telefonda artık senkron kasasının ana parolası geçerli. Parmak iziyle açmayı yeniden aç.",
+  "termsSyncTitle": "Senkronu açarsan",
+  "termsSyncBody": "Senkronu açarsan kasanın şifreli bir kopyası senin seçtiğin WebDAV sunucusuna yazılır ve aynı klasörü kullanan telefonlarınla eşitlenir. Kopya ana parolanla şifrelidir; sunucu içeriğini okuyamaz. KeyKey ve geliştiricileri o sunucuya erişmez. Sunucunun güvenliği ve uygulama parolasının saklanması senin ya da sunucu sağlayıcının sorumluluğundadır. Senkron yedek yerine geçmez: bir telefonda silinen kayıt öteki telefonlardan da silinir, bu yüzden yedek almayı sürdür."
 }

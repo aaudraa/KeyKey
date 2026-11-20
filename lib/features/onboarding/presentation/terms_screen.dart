@@ -46,6 +46,7 @@ class _TermsScreenState extends ConsumerState<TermsScreen> {
       (l10n.termsCryptoTitle, l10n.termsCryptoBody),
       (l10n.termsSecretsTitle, l10n.termsSecretsBody),
       (l10n.termsBackupTitle, l10n.termsBackupBody),
+      (l10n.termsSyncTitle, l10n.termsSyncBody),
       (l10n.termsDeviceTitle, l10n.termsDeviceBody),
       (l10n.termsOpenSourceTitle, l10n.termsOpenSourceBody),
       (l10n.termsWarrantyTitle, l10n.termsWarrantyBody),

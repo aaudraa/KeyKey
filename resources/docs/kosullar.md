@@ -1,14 +1,14 @@
 # Kullanım koşulları
 
-**Sürüm:** 2 · **Tarih:** 2026-11-20 · English: [terms.md](terms.md)
+**Sürüm:** 3 · **Tarih:** 2026-11-20 · English: [terms.md](terms.md)
 
 KeyKey bu koşulları kasa kurulmadan ya da açılmadan önce bir kez gösterir; "Okudum, anladım ve kabul ediyorum." işaretlenmeden devam edilmez. Ayarlar → Hakkında → **Kullanım koşulları**'ndan yeniden okunabilir. Uygulamadaki metinle bu dosya aynıdır; koşullar değişirse sürüm numarası artar ve uygulama yeni metni bir kez daha sorar. Verilerle ilgili ayrıntılar [gizlilik bildiriminde](gizlilik.md), lisansın tamamı [LICENSE](../../LICENSE) dosyasında.
 
 KeyKey'i kullanmaya başlamadan önce lütfen oku. Kısa tuttuk; her madde KeyKey'in gerçekte nasıl çalıştığını anlatıyor.
 
-## Verilerin bu telefonda
+## Verilerin senin elinde
 
-Parolaların, 2FA hesapların ve notların bu telefondaki kasada durur. Yedek ya da dışa aktarma dosyası yalnızca sen istersen oluşur ve senin seçtiğin yere kaydedilir. KeyKey hesap açtırmaz, sunucusu yoktur, reklam göstermez, kullanım bilgisi toplamaz. İnternete yalnızca senin başlattığın denetimler için çıkar; bugün tek denetim parola raporundaki sızıntı kontrolüdür ve parolalarının kendisi gönderilmez. Bir bağlantıyı açtığında sayfa tarayıcında açılır. Geliştiriciler verilerini göremez, toplamaz ve saklamaz.
+Parolaların, 2FA hesapların, kartların ve notların bu telefondaki kasada durur. Yedek ya da dışa aktarma dosyası yalnızca sen istersen oluşur ve senin seçtiğin yere kaydedilir. KeyKey hesap açtırmaz, sunucusu yoktur, reklam göstermez, kullanım bilgisi toplamaz. İnternete yalnızca senin açtığın özellikler için çıkar: parola raporundaki sızıntı kontrolü (parolalarının kendisi gönderilmez) ve açarsan senkron. Bir bağlantıyı açtığında sayfa tarayıcında açılır. Geliştiriciler verilerini göremez, toplamaz ve saklamaz.
 
 ## Kasa nasıl korunur
 
@@ -21,6 +21,10 @@ Ana parolanı ve kurtarma anahtarını yalnızca sen bilirsin. İkisini birden k
 ## Yedek almak senin elinde
 
 Telefon kaybolur, bozulur ya da KeyKey silinirse kasa da gider. Düzenli olarak şifreli yedek almak ve yedeği güvenli bir yerde saklamak senin sorumluluğundadır. Şifresiz dışa aktarma dosyası korumasızdır; işin bitince sil.
+
+## Senkronu açarsan
+
+Senkronu açarsan kasanın şifreli bir kopyası senin seçtiğin WebDAV sunucusuna yazılır ve aynı klasörü kullanan telefonlarınla eşitlenir. Kopya ana parolanla şifrelidir; sunucu içeriğini okuyamaz. KeyKey ve geliştiricileri o sunucuya erişmez. Sunucunun güvenliği ve uygulama parolasının saklanması senin ya da sunucu sağlayıcının sorumluluğundadır. Senkron yedek yerine geçmez: bir telefonda silinen kayıt öteki telefonlardan da silinir, bu yüzden yedek almayı sürdür.
 
 ## Telefonunun güvenliği
 

@@ -818,11 +818,11 @@
   "@termsIntro": {
     "description": "Terms: opening paragraph."
   },
-  "termsDataTitle": "Your data stays on this phone",
+  "termsDataTitle": "Your data is in your hands",
   "@termsDataTitle": {
     "description": "Terms section title: where data lives."
   },
-  "termsDataBody": "Your passwords, 2FA accounts and notes are kept in the vault on this phone. A backup or export file is only created when you ask for it, and saved where you choose. KeyKey has no account and no server, shows no ads and collects no usage data. It goes online only for checks you start yourself; today the only one is the breach check in the password report, and your passwords themselves are never sent. When you open a link, the page opens in your browser. The developers cannot see, collect or store your data.",
+  "termsDataBody": "Your passwords, 2FA accounts, cards and notes are kept in the vault on this phone. A backup or export file is only created when you ask for it, and saved where you choose. KeyKey has no account and no server, shows no ads and collects no usage data. It goes online only for features you turn on yourself: the breach check in the password report (your passwords themselves are never sent) and, if you turn it on, sync. When you open a link, the page opens in your browser. The developers cannot see, collect or store your data.",
   "@termsDataBody": {
     "description": "Terms section body: where data lives."
   },
@@ -2841,5 +2841,13 @@
   "syncJoinDone": "The sync vault's master password now works on this phone. Turn fingerprint unlock on again.",
   "@syncJoinDone": {
     "description": "Snack after joining."
+  },
+  "termsSyncTitle": "If you turn on sync",
+  "@termsSyncTitle": {
+    "description": "Title of the terms section about sync."
+  },
+  "termsSyncBody": "If you turn on sync, an encrypted copy of your vault is written to the WebDAV server you choose and synced with your phones that use the same folder. The copy is encrypted with your master password; the server cannot read it. KeyKey and its developers have no access to that server. Keeping the server secure and storing the app password are up to you or the server provider. Sync is not a backup: a record deleted on one phone is deleted on the other phones too, so keep taking backups.",
+  "@termsSyncBody": {
+    "description": "Terms section about sync."
   }
 }

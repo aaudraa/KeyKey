@@ -1,8 +1,9 @@
 import 'dart:io';
 
 /// Kullanım koşullarının sürümü. Koşullar değişince artırılır; daha eski
-/// sürümü kabul etmiş kullanıcıya yenisi bir kez gösterilir.
-const currentTermsVersion = 2;
+/// sürümü kabul etmiş kullanıcıya yenisi bir kez gösterilir. Sürüm 3:
+/// senkron (şifreli kopya kullanıcının seçtiği sunucuda).
+const currentTermsVersion = 3;
 
 /// Dosyadaki metni kabul edilen sürüme çevirir. Boş ya da tanınmayan
 /// içerik hiç kabul edilmemiş (0) sayılır.
@@ -31,6 +32,9 @@ final class FileTermsAcceptanceStore implements TermsAcceptanceStore {
       return 0;
     }
   }
+
+  /// Şimdiki koşullar kabul edilmiş mi; daha eski sürümün kabulü sayılmaz.
+  Future<bool> accepted() async => await read() >= currentTermsVersion;
 
   @override
   Future<void> write(int version) =>

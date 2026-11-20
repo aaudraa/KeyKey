@@ -60,9 +60,7 @@ Future<List<Override>> bootstrap() async {
   final termsStore = FileTermsAcceptanceStore(File('${directory.path}/terms'));
   final terms = [
     termsAcceptanceStoreProvider.overrideWithValue(termsStore),
-    initialTermsAcceptedProvider.overrideWithValue(
-      await termsStore.read() >= currentTermsVersion,
-    ),
+    initialTermsAcceptedProvider.overrideWithValue(await termsStore.accepted()),
   ];
 
   final VaultDatabase database;

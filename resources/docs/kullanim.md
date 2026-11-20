@@ -14,6 +14,7 @@ Görüntülerdeki kayıtlar örnektir.
 - [2FA kodları](#2fa-kodları)
 - [Otomatik doldurma](#otomatik-doldurma)
 - [Yedekleme ve yeni telefona geçiş](#yedekleme-ve-yeni-telefona-geçiş)
+- [Senkron](#senkron)
 - [Başka uygulamalardan geçiş](#başka-uygulamalardan-geçiş)
 - [Görünüm](#görünüm)
 - [Bilinen sınırlar](#bilinen-sınırlar)
@@ -175,7 +176,7 @@ KeyKey, uygulamalardaki ve Chrome'daki giriş formlarını ve ödeme formlarınd
 
 <img src="../design/kilavuz/11-yedek-hatirlatma.webp" width="240" alt="Yedek hatırlatması"> <img src="../design/kilavuz/12-ayarlar.webp" width="240" alt="Ayarlar">
 
-KeyKey verilerini hiçbir yere göndermediği için **telefon kaybolursa ya da bozulursa yedeğin yoksa kasan da gider.** Yedek almayı alışkanlık edin.
+KeyKey verilerini kendiliğinden hiçbir yere göndermediği için **telefon kaybolursa ya da bozulursa yedeğin yoksa kasan da gider.** Yedek almayı alışkanlık edin. [Senkron](#senkron) yedeğin yerine geçmez.
 
 **Yedek almak için:** Ayarlar'ın en üstündeki **Yedekle**'ye dokun ve dosyanın kaydedileceği yeri seç. Drive gibi bir bulut klasörü seçebilirsin; KeyKey yalnızca dosyayı oraya bırakır; dosyayı buluta Drive uygulaması taşır.
 
@@ -197,6 +198,37 @@ KeyKey verilerini hiçbir yere göndermediği için **telefon kaybolursa ya da b
 
 - **Birleştir:** Yedekteki kayıtlar kasana eklenir. Aynı kayıt iki yerde de varsa daha yeni olan kalır.
 - **Değiştir:** Kasan (parolalar, kartlar, notlar ve 2FA hesapları) silinir, yerine yedek gelir. Geri alınamaz, bu yüzden ayrıca onay ister.
+
+## Senkron
+
+Senkron, kasanı aynı kasayı kullanan telefonların (ya da telefon ve tabletin) arasında eşitler: birinde eklediğin parola ötekinde de görünür. KeyKey'in sunucusu yoktur; eşitleme senin seçtiğin bir **WebDAV** klasörü üzerinden olur (Nextcloud, ownCloud ya da başka bir WebDAV sunucusu). Kasanın klasöre giden kopyası ana parolanla şifrelidir; sunucu içeriğini okuyamaz.
+
+**Açmak için:** Ayarlar → Telefonlar arası → **Senkron**.
+
+1. Sunucunda KeyKey için boş bir klasör aç. Nextcloud'da klasörün WebDAV adresi Dosyalar → sol alttaki **Dosya ayarları** → **WebDAV** altında yazar; sonuna klasörün adını ekle (örneğin `https://bulut.ornek.com/remote.php/dav/files/ayse/KeyKey/`).
+2. Sunucuda KeyKey için ayrı bir **uygulama parolası** oluştur (Nextcloud: Ayarlar → Güvenlik → **Yeni uygulama parolası oluştur**). Hesabının asıl parolasını kullanma: uygulama parolası tek başına iptal edilebilir.
+3. KeyKey'de adresi, kullanıcı adını ve uygulama parolasını yaz, **Bağlan**'a dokun. Klasör boşsa ya da bu kasanınsa açıklamayı okuyup **Aç**'a dokun.
+
+- Kasa açılınca, bir kayıt değişince (birkaç saniye sonra), uygulamaya döndüğünde (son eşitlemeden bir dakika geçtiyse) ve **Şimdi eşitle**'ye dokununca eşitlenir. Kasa kilitliyken eşitlenmez.
+- Aynı kayıt iki telefonda değişirse **en son değişen** kalır. Kaybeden parola kaydın parola geçmişine eklenir.
+- Bir telefonda kalıcı sildiğin kayıt öteki telefonlardan da silinir. Çöp kutusuna atılan kayıt öteki telefonlarda da çöp kutusuna gider.
+- Ana parolayı ya da kurtarma anahtarını bir telefonda değiştirirsen öteki telefonlar eşitlenince yenisini alır ve bunu bir kez söyler. Parmak izi her telefonda ayrıca açılır.
+- Telefonun saati çok ilerideyse (24 saatten fazla) o telefonun dosyası alınmaz ve senkron ekranında söylenir.
+- **Cihazlar** listesinde klasörü kullanan telefonları görürsün. Kullanmadığın bir telefonu **Kaldır**'la listeden çıkarabilirsin; o telefon hâlâ kullanılıyorsa bir sonraki eşitlemesinde dosyasını yeniden yükler.
+- **Senkronu kapat** bu telefonda senkronu kapatır; istersen bu telefonun sunucudaki dosyasını da siler. Kasan telefonda kalır.
+
+**Yeni telefonda:** KeyKey'i kur, ilk ekranda **Senkrondan kur**'a dokun, aynı adresi, kullanıcı adını ve uygulama parolasını yaz (yeni telefon için ayrı bir uygulama parolası da açabilirsin), sonra öteki telefondaki ana parolanı gir. Kasa klasördeki en yeni dosyadan kurulur ve senkron açık gelir.
+
+**İki telefonda ayrı kasalar varsa:** İkincisinde senkronu açarken klasörde başka bir kasa olduğu söylenir. **Bu telefonu o kasaya kat** dersen klasördeki kasanın ana parolasını ya da kurtarma anahtarını girersin; bu telefonun kayıtları o kasaya eklenir. Bundan sonra bu telefonda o kasanın ana parolası geçerlidir; eskisi ve eski kurtarma anahtarı geçmez.
+
+**Senkron açıkken yedekten geri yükleme:** Birleştirince yedekteki kayıtlar bütün telefonlarda geri gelir. Değiştirince yedekteki kayıtlar bütün telefonlarda yedekteki haline döner; yedekte olmayan kayıtlar öteki telefonlardan geri gelir, yani senkron açıkken geri yükleme hiçbir kaydı silmez. Başka bir kasanın yedeğiyle değiştirirsen bu telefonda senkron kapanır.
+
+> [!IMPORTANT]
+> **Telefonun kaybolur ya da çalınırsa:** Sunucuda o telefonun uygulama parolasını hemen iptal et (Nextcloud: Ayarlar → Güvenlik → oturumlar ve uygulama parolaları). Kasası açık bir telefon, uygulama parolası geçerli oldukça eşitlemeye devam eder. Sonra kalan telefonda Cihazlar listesinden o telefonu kaldır.
+>
+> **Ana parolanın başkasının eline geçtiğinden şüphelenirsen:** Ana parolayı değiştir. Ama bu bir iptal değildir: sunucunun dosya geçmişindeki ya da kullanılmayan bir telefonun dosyasındaki eski kopyalar eski parolayla açılır. Sunucunun dosya geçmişini ve çöp kutusunu da temizle.
+
+Senkron bir yedek değildir: yanlışlıkla sildiğin kayıt bütün telefonlardan silinir. Yedek almayı sürdür.
 
 ## Başka uygulamalardan geçiş
 
@@ -228,7 +260,7 @@ Ayarlar → Hakkında → **Lisanslar**: önce KeyKey'in kendi lisansı (GPL-3.0
 - **Bazı uygulamalar otomatik doldurmayı desteklemiyor.** Bazı uygulamalar giriş kutularını Android'in doldurma sistemine bildirmiyor; bu ekranlarda öneri hiç çıkmaz. Aynı ekranda Google'ın ve Samsung'un parola yöneticileri de çalışmaz. Kullanıcı adını ve parolayı KeyKey'den kopyalayıp yapıştır; pano 30 saniye sonra temizlenir.
 - **Samsung Internet desteklenmiyor.** Bu tarayıcı başka bir doldurma servisine istek göndermiyor, yalnızca kendi kayıtlı parolalarını ve Samsung Pass'i öneriyor. Parolayı KeyKey'den kopyalayarak girebilir ya da Chrome gibi bir tarayıcı kullanabilirsin. Samsung klavyesiyle uygulamalarda doldurma çalışıyor.
 - **Chrome'da ayrı bir ayar gerekiyor.** [Otomatik doldurma](#otomatik-doldurma) bölümündeki ikinci adımı atlarsan Chrome kendi parola yöneticisini kullanmaya devam eder.
-- **Eşitleme yok.** KeyKey'in sunucusu olmadığı için iki telefon arasında kendiliğinden eşitlenmez. Kayıtları başka bir telefona yedekle taşırsın.
+- **Senkron yalnızca WebDAV ile.** Telefonlar arasında eşitlemek için Nextcloud, ownCloud ya da başka bir WebDAV sunucusu gerekir. Google Drive ile senkron henüz yok; Drive'a elle yedek alabilirsin.
 - **Ekran görüntüsü alınamaz.** KeyKey ekrandayken ekran görüntüsü ve ekran kaydı engellenir, son uygulamalar listesinde de içeriği görünmez. Bu bilerek yapılır.
 - **Kilidi açık telefon.** KeyKey açıkken telefonu eline alan biri ekrandaki kayıtları görebilir. Arka plana geçince hemen kilitlenmesi ve 2FA için ek onay bu riski azaltır; arka plan kilidine bekleme süresi verdiysen o süre boyunca kasa açık kalır.
 

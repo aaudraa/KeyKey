@@ -16,8 +16,8 @@ Android için hesapsız, sunucusuz, açık kaynak parola yöneticisi ve 2FA doğ
 
 ## Neden KeyKey?
 
-- **Verilerin sende kalır.** Sunucu ve hesap yok; her şey telefonunda şifreli olarak durur.
-- **Parolaların telefondan çıkmaz.** İnternete yalnızca senin başlattığın sızıntı kontrolü çıkar ve ona da yalnızca parola özetinin ilk 5 karakteri gider. Ağ kodunun tek bir dosyada kaldığı her derlemede otomatik olarak denetleniyor.
+- **Verilerin sende kalır.** KeyKey'in sunucusu ve hesabı yok; her şey telefonunda şifreli olarak durur.
+- **Parolaların şifresiz hiçbir yere gitmez.** İnternete yalnızca senin açtığın iki özellik çıkar: sızıntı kontrolüne parola özetinin ilk 5 karakteri gider; isteğe bağlı senkron, kasanı kendi WebDAV sunucun (Nextcloud, ownCloud…) üzerinden telefonların arasında ana parolanla uçtan uca şifreli eşitler. Ağ kodunun iki dosyada kaldığı her derlemede otomatik olarak denetleniyor.
 - **Yedeğin senin kontrolünde.** Şifreli yedek dosyanı istediğin yere kendin kaydedersin.
 - **Kodu açık.** Uygulamanın ne yaptığını herkes inceleyebilir; derleme yeniden üretilebilir.
 
@@ -46,6 +46,7 @@ Eski bir `v0.x` deneme sürümü kullanıyorsan önce [geçiş adımlarını](re
 | **Otomatik doldurma** | Android uygulamalarında ve Chrome'da parola doldurma ve kaydetme, ödeme formlarında kart doldurma; uygulamalar imza sertifikasıyla eşleşir, şüpheli durumlarda uyarı verilir |
 | **Kilit** | Ana parola, parmak iziyle açma, otomatik kilitlenme, kurtarma anahtarı |
 | **Yedekleme** | Şifreli yedek, otomatik yedek ve geri yükleme; Bitwarden (kart ve notlar dahil), Chrome, Firefox ve KeePassXC'den içe aktarma; başka bir parola yöneticisine geçmek için şifresiz dışa aktarma (CSV ya da kartlar dahil JSON) |
+| **Senkron** | Kendi WebDAV sunucun üzerinden telefonlar arasında uçtan uca şifreli eşitleme; yeni telefonu senkrondan kurma, başka kasası olan telefonu katma |
 | **Görünüm** | Açık, koyu ya da sistem teması; Türkçe ve İngilizce |
 
 ## Güvenlik yaklaşımı
@@ -53,7 +54,7 @@ Eski bir `v0.x` deneme sürümü kullanıyorsan önce [geçiş adımlarını](re
 - Kasanın şifrelemesi için kendi kriptografimizi yazmıyoruz; denenmiş [libsodium](https://libsodium.org) kütüphanesini kullanıyoruz.
 - Ana parolandan anahtar türetmek için **Argon2id**, verileri şifrelemek için **XChaCha20-Poly1305** kullanılıyor.
 - 2FA kodları (TOTP, HOTP) ve başka uygulamaların şifreli dışa aktarmalarını açmak için gereken birkaç standart algoritmayı biz uyguluyoruz; hepsi RFC test vektörleriyle doğrulanıyor.
-- Ana parola hiçbir yerde saklanmaz. Onu ve kurtarma anahtarını birlikte kaybedersen verilerin geri getirilemez; bunu yapabilecek bir sunucu ya da arka kapı yok.
+- Ana parola hiçbir yerde saklanmaz. Onu ve kurtarma anahtarını birlikte kaybedersen verilerin geri getirilemez; bunu yapabilecek bir sunucu ya da arka kapı yok. Senkron sunucusu da yalnızca şifreli dosya görür.
 - KeyKey hiçbir veri toplamaz ([gizlilik bildirimi](resources/docs/gizlilik.md)).
 
 Neyin korunduğu ve neyin korunmadığı [güvenlik tasarımı belgesinin](resources/docs/guvenlik-tasarimi.md) "Tehdit modeli" ve "Bilinen sınırlar" bölümlerinde. Projenin OWASP MASVS'e göre yaptığı kendi denetiminin sonuçları [denetim belgesinde](resources/docs/guvenlik-denetimi.md).

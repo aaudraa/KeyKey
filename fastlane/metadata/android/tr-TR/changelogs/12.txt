@@ -1,0 +1,3 @@
+Senkron: kasanı kendi WebDAV sunucun (Nextcloud, ownCloud ya da başka bir sunucu) üzerinden telefonların arasında uçtan uca şifreli eşitle. Ayarlar > Telefonlar arası > Senkron. Yeni telefonu senkrondan kurma, başka kasası olan telefonu o kasaya katma.
+
+Bu sürümün yedeklerini 1.7.0 ve öncesi açamaz; eski sürüm "daha yeni bir yedek" der. Kullanım koşulları güncellendi ve bir kez yeniden sorulur.

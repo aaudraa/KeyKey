@@ -2,7 +2,7 @@
 
 **Applies to:** KeyKey 1.0 and later · **Last updated:** 2026-11-20 · Türkçe: [gizlilik.md](gizlilik.md)
 
-KeyKey collects no data. There is no account and no server; your vault stays on this phone, encrypted. Since 1.6.0 KeyKey has the internet permission, and it goes online only for a check you start yourself: the [breach check](#breach-check) in the password report. Your passwords and your vault do not leave the device during that check. All network code lives in a single file, and a test on every build checks that there is no network code anywhere else; anyone can verify this from the source code.
+KeyKey collects no data. There is no account and KeyKey has no server; your vault stays on this phone, encrypted. Since 1.6.0 KeyKey has the internet permission, and it goes online only for two features you turn on yourself: the [breach check](#breach-check) in the password report and, if you turn it on, [sync](#sync). Your passwords and your vault do not leave the device during the breach check; with sync, only a copy of your vault encrypted with your master password goes to the server you choose. All network code lives in two files, and a test on every build checks that there is no network code anywhere else; anyone can verify this from the source code.
 
 ## What is not collected
 
@@ -15,6 +15,7 @@ KeyKey collects no data. There is no account and no server; your vault stays on 
 
 - Your passwords, cards, secure notes, 2FA accounts and settings live only on your device, in a database encrypted with a key derived from your master password. Encryption details are in the [security summary](security-summary.md).
 - Android cloud backup is disabled; the vault is not backed up to your Google account.
+- If you turn on sync, the folder address, username and app password are stored encrypted inside the vault, in the settings record. They are also part of the vault's backup (the backup is encrypted).
 - There are two exceptions, each a small, separate, unencrypted file in the app's own folder that holds nothing else:
   - Your theme choice (system, light or dark), so the lock screen can open in your chosen theme.
   - That you accepted the [terms of use](terms.md): only the version number of the accepted terms. The terms are shown before the vault is opened, so this can't be kept inside the vault.
@@ -27,7 +28,7 @@ KeyKey collects no data. There is no account and no server; your vault stays on 
 | Camera | Requested only while scanning a 2FA QR code. Images are not stored and never leave the device. |
 | Biometrics (fingerprint) | To unlock the vault with a fingerprint. The fingerprint itself never reaches KeyKey; Android only reports "verified". |
 | Hide overlay windows | So other apps cannot draw over KeyKey and trick your taps while it is on screen. |
-| Internet | Only for the breach check in the password report, when you tap it. What is sent is [below](#breach-check). |
+| Internet | For the breach check in the password report, when you tap it; and, if you turn it on, for sync, only with the server you entered. What is sent is below: [breach check](#breach-check), [sync](#sync). |
 
 KeyKey does not request location, contacts, storage or "see all apps" (`QUERY_ALL_PACKAGES`) permissions.
 
@@ -49,6 +50,15 @@ If you tap **Check online** in the password report, KeyKey asks [Have I Been Pwn
 - **What is kept:** nothing. The result stays in memory only and is gone when you leave the screen or the vault locks.
 
 The data belongs to Have I Been Pwned and is used under CC BY 4.0.
+
+## Sync
+
+If you turn on Settings → **Sync**, KeyKey writes an encrypted copy of your vault to the WebDAV folder you entered (Nextcloud, ownCloud or another WebDAV server) and reads the files of your phones that use the same folder. Nothing is sent while sync is off.
+
+- **What is sent:** A copy of your vault, encrypted with your master password in the same format as a backup: records, the IDs and times of deleted records, and the phone's model (for example SM-G780G). The file name holds this installation's random 6-character ID (`keykey-sync-a1b2c3.keykey`). The username and app password are sent inside HTTPS with every request to sign in to the server; they are not written to the file.
+- **Who receives it:** Only the server you entered, only over HTTPS (redirects are not followed). KeyKey and its developers have no server; the developers have no access to the files.
+- **What the other side sees:** Your IP address and the file names, sizes and modification times. It cannot read or change the content without your master password; it can try to guess your master password offline, so a strong master password matters.
+- **What is stored:** One file per phone on the server. When you turn sync off you can delete this phone's file as well; the server's file history and trash are out of KeyKey's reach.
 
 ## Files
 
