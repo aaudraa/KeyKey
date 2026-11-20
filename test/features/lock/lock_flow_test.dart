@@ -10,8 +10,10 @@ import 'package:keykey/app/ui/keykey_logo.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
+import 'package:keykey/features/lock/application/lock_clock.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/lock_screen.dart';
+import 'package:keykey/features/settings/data/app_settings.dart';
 import 'package:keykey/features/vault/data/card_content.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/presentation/card_detail_screen.dart';
@@ -767,6 +769,179 @@ void main() {
       expect(find.text(lockedTitle), findsOneWidget);
 
       setLifecycle(tester, AppLifecycleState.resumed);
+    });
+
+    group('arka planda bekleme süresi', () {
+      late FakeLockClock clock;
+
+      setUp(() => clock = FakeLockClock());
+
+      Future<FakeLoginRepository> pumpWithDelay(
+        WidgetTester tester,
+        BackgroundLock lock,
+      ) async {
+        final logins = FakeLoginRepository();
+        await pumpKeyKey(
+          tester,
+          status: VaultOpen(service.newSession()),
+          service: service,
+          logins: logins,
+          settings: FakeSettingsRepository(
+            AppSettings.defaults.copyWith(backgroundLock: lock),
+          ),
+          extraOverrides: [lockClockProvider.overrideWithValue(clock)],
+        );
+        return logins;
+      }
+
+      Future<void> resume(WidgetTester tester) async {
+        setLifecycle(tester, AppLifecycleState.resumed);
+        await tester.pumpAndSettle();
+      }
+
+      testWidgets('Hemen ayarında arka plana geçer geçmez kilitleniyor', (
+        tester,
+      ) async {
+        await pumpWithDelay(tester, BackgroundLock.immediately);
+        setLifecycle(tester, AppLifecycleState.hidden);
+        await resume(tester);
+        expect(find.text(lockedTitle), findsOneWidget);
+      });
+
+      testWidgets('süre dolmadan dönülünce kasa açık kalıyor', (tester) async {
+        await pumpWithDelay(tester, BackgroundLock.seconds30);
+        setLifecycle(tester, AppLifecycleState.paused);
+        clock.advance(const Duration(seconds: 10));
+        await tester.pump(const Duration(seconds: 10));
+        await resume(tester);
+        expect(find.text(vaultText), findsOneWidget);
+        expect(find.text(lockedTitle), findsNothing);
+      });
+
+      testWidgets('süre dolduysa dönüşte kilitli (uygulama donmuştu)', (
+        tester,
+      ) async {
+        await pumpWithDelay(tester, BackgroundLock.seconds30);
+        setLifecycle(tester, AppLifecycleState.paused);
+        // Zamanlayıcı çalışmadı: yalnızca saatler ilerledi.
+        clock.advance(const Duration(seconds: 31));
+        await resume(tester);
+        expect(find.text(lockedTitle), findsOneWidget);
+      });
+
+      testWidgets('telefon uyuduysa duvar saatiyle kilitli', (tester) async {
+        await pumpWithDelay(tester, BackgroundLock.minute1);
+        setLifecycle(tester, AppLifecycleState.paused);
+        clock.advance(
+          const Duration(seconds: 5),
+          wall: const Duration(minutes: 2),
+        );
+        await resume(tester);
+        expect(find.text(lockedTitle), findsOneWidget);
+      });
+
+      testWidgets('saat geri alındıysa kilitli', (tester) async {
+        await pumpWithDelay(tester, BackgroundLock.minute1);
+        setLifecycle(tester, AppLifecycleState.paused);
+        clock.advance(
+          const Duration(seconds: 5),
+          wall: const Duration(hours: -1),
+        );
+        await resume(tester);
+        expect(find.text(lockedTitle), findsOneWidget);
+      });
+
+      testWidgets('arka planda süre dolunca zamanlayıcı kilitliyor', (
+        tester,
+      ) async {
+        final session = service.newSession();
+        await pumpKeyKey(
+          tester,
+          status: VaultOpen(session),
+          service: service,
+          settings: FakeSettingsRepository(
+            AppSettings.defaults.copyWith(
+              backgroundLock: BackgroundLock.seconds30,
+            ),
+          ),
+          extraOverrides: [lockClockProvider.overrideWithValue(clock)],
+        );
+        setLifecycle(tester, AppLifecycleState.paused);
+        await tester.pump(const Duration(seconds: 29));
+        expect(session.isDisposed, isFalse);
+        await tester.pump(const Duration(seconds: 2));
+        expect(session.isDisposed, isTrue);
+        await resume(tester);
+        expect(find.text(lockedTitle), findsOneWidget);
+      });
+
+      testWidgets('dokunmama kilidi arka planda da sayıyor', (tester) async {
+        await pumpWithDelay(tester, BackgroundLock.minute1);
+        clock.advance(const Duration(minutes: 4, seconds: 40));
+        await tester.pump(const Duration(minutes: 4, seconds: 40));
+        expect(find.text(vaultText), findsOneWidget);
+
+        setLifecycle(tester, AppLifecycleState.paused);
+        // Bekleme süresinin yarısı; ama son dokunuştan beri 5 dakikayı geçti.
+        clock.advance(const Duration(seconds: 30));
+        await resume(tester);
+        expect(find.text(lockedTitle), findsOneWidget);
+      });
+
+      testWidgets('arka plandan dönüş son dokunma sayılmıyor', (tester) async {
+        await pumpWithDelay(tester, BackgroundLock.seconds30);
+        setLifecycle(tester, AppLifecycleState.paused);
+        clock.advance(const Duration(seconds: 10));
+        await tester.pump(const Duration(seconds: 10));
+        await resume(tester);
+        expect(find.text(vaultText), findsOneWidget);
+
+        // Dönüşten sonra 4 dk 51 sn dokunulmadı: toplam 5 dakika 1 saniye.
+        await tester.pump(const Duration(minutes: 4, seconds: 51));
+        await tester.pumpAndSettle();
+        expect(find.text(lockedTitle), findsOneWidget);
+      });
+
+      testWidgets('dönüşte parolalar yeniden okunuyor', (tester) async {
+        final logins = await pumpWithDelay(tester, BackgroundLock.seconds30);
+        expect(find.text(vaultText), findsOneWidget);
+
+        setLifecycle(tester, AppLifecycleState.paused);
+        // Bu arada doldurma ekranı bir kayıt ekledi.
+        logins.items.add(
+          FakeLoginRepository.item(
+            const LoginContent(
+              name: 'Doldurmadan gelen',
+              username: 'u',
+              password: 'p',
+            ),
+          ),
+        );
+        clock.advance(const Duration(seconds: 5));
+        await tester.pump(const Duration(seconds: 5));
+        await resume(tester);
+
+        expect(find.text('Doldurmadan gelen'), findsOneWidget);
+      });
+
+      testWidgets('dosya seçicisi açıkken bekleme süresi devreye girmiyor', (
+        tester,
+      ) async {
+        await pumpWithDelay(tester, BackgroundLock.seconds30);
+        final picker = Completer<String>();
+        final result = ProviderScope.containerOf(
+          tester.element(find.text(vaultText)),
+        ).read(externalActivityGateProvider.notifier).run(() => picker.future);
+
+        setLifecycle(tester, AppLifecycleState.paused);
+        clock.advance(const Duration(minutes: 2));
+        await tester.pump(const Duration(minutes: 2));
+        picker.complete('dosya');
+        await resume(tester);
+        expect(await result, 'dosya');
+        // Seçici kendi 3 dakikalık sınırını uygular; dönüşte açık.
+        expect(find.text(vaultText), findsOneWidget);
+      });
     });
 
     testWidgets('kilit anahtarları siliyor', (tester) async {

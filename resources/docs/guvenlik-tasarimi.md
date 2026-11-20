@@ -36,7 +36,7 @@ Bu belge KeyKey'in verileri nasıl şifrelediğini bayt düzeyinde anlatır. Kod
 |---|---|---|---|
 | Kilitli telefonu bulan veya çalan | Ekran kilidini aşamaz; adli araçlarla diski kopyalayabilir | Android dosya şifrelemesinin üstüne kasa şifrelemesi; anahtar ana paroladan türetilir, diskte durmaz | Korunur |
 | Kilidi açık telefonu kısa süre eline geçiren, KeyKey kilitli | Uygulamayı açar, parola dener, yeni parmak izi ekleyebilir | Ana parola veya parmak izi gerekir; hatalı denemede artan bekleme; yeni parmak izi eklenince parmak iziyle açma kapanır | Korunur, parola güçlüyse |
-| Kilidi açık telefonu eline geçiren, KeyKey açık | Ekrandaki kayıtları ve parolaları görür, kopyalar | Arka plana geçince hemen, 5 dakika dokunulmazsa kilitlenir. Ana parolayı değiştirmek mevcut parolayı, şifresiz dışa aktarma kimlik doğrulamayı ister; 2FA kodları için ek onay isteğe bağlıdır | Kısmen: açık kasadaki parolalar görülebilir |
+| Kilidi açık telefonu eline geçiren, KeyKey açık | Ekrandaki kayıtları ve parolaları görür, kopyalar | Arka plana geçince hemen (kullanıcı seçtiyse 30 saniye ya da 1 dakika sonra), 5 dakika dokunulmazsa kilitlenir. Ana parolayı değiştirmek mevcut parolayı, şifresiz dışa aktarma kimlik doğrulamayı ister; 2FA kodları için ek onay isteğe bağlıdır | Kısmen: açık kasadaki parolalar görülebilir |
 | Yedek dosyasını ele geçiren (ör. Drive hesabı ele geçmiş) | Dosyayı kendi bilgisayarında sınırsız deneyebilir | Argon2id; kayıtlar dosyanın içinde de ayrıca şifreli; kayıt sayısı ve türleri gizli | Korunur, parola güçlüyse. Eski yedekler eski parolayla açılır |
 | Diskteki kasa dosyasına yazabilen | Dosyayı okur, değiştirir, eskisiyle değiştirir | Her kayıt kimliğine ve türüne bağlı şifreli; değiştirilen kayıt açılmaz | Okuyamaz; ama geri alma ve silme fark edilmez ([bilinen sınırlar](#bilinen-sınırlar)) |
 | Cihazdaki izinsiz zararlı uygulama | Kendi alanında çalışır, araya girmeye çalışır | Android uygulama yalıtımı; kasa dosyası uygulamanın özel klasöründe; dışa açık bileşen yalnızca ana ekran ve sistemin bağlandığı doldurma servisi | Korunur |
@@ -368,7 +368,11 @@ Kasa üç durumdan birindedir: **kurulmamış**, **kilitli** veya **açık**. Ka
 
 ### Otomatik kilit
 
-- Uygulama arka plana geçince (`hidden` veya `paused`) hemen kilitlenir. `inactive` kilitlemez, çünkü parmak izi penceresi ve sistem diyalogları da onu tetikler.
+- Uygulama arka plana geçince (`hidden` veya `paused`) varsayılan olarak hemen kilitlenir. `inactive` kilitlemez, çünkü parmak izi penceresi ve sistem diyalogları da onu tetikler.
+- **Bekleme süresi (1.7.0):** Ayarlar → Güvenlik'te "Arka planda kilitlenme" Hemen (varsayılan), 30 saniye ya da 1 dakika olabilir. Ayar şifreli kasa ayarlarında durur; okunamazsa "Hemen" sayılır. Süre seçiliyse arka plana geçiş anı iki saatle kaydedilir: duvar saati (`DateTime.now`) ve tekdüze saat (`Stopwatch`). Arka planda bir zamanlayıcı süre dolunca kilitler. Android önbellekteki uygulamayı dondurabilir ve telefon uyurken zamanlayıcılar işlemez; bu yüzden dönüşte (`resumed`) süre yeniden denetlenir: iki saatten biri süreyi geçtiyse ya da duvar saati geri gittiyse kasa önce kilitlenir. Tekdüze saat telefon uyurken durabilir, duvar saati durmaz; duvar saati geri alınabilir, tekdüze saat alınamaz. İkisi birlikte iki açığı da kapatır.
+- Dönüşte dokunmama süresi de aynı iki saatle son dokunuştan beri denetlenir; bekleme süresi dokunmama kilidini uzatmaz. Kurtarma akışı (`VaultRecovering`) ve dosya seçicisi istisnası bekleme süresini kullanmaz. `detached` her zaman hemen kilitler.
+- Bekleme süresinde kasa açık kaldığı için, dönüşte parola listesi diskten yeniden okunur: bu arada doldurma ekranı bir parola eklemiş ya da değiştirmiş olabilir. Okunmasaydı eski kaydı düzenleyen kullanıcı doldurma ekranının yazdığını ezebilirdi.
+- **Bedeli:** Süre boyunca telefonu eline alan biri KeyKey'i açık bulur. Varsayılan bu yüzden "Hemen"; açıklama ayarın yanında yazar.
 - **İstisna:** KeyKey'in kendi açtığı belge seçici, belge oluşturma ekranı ve fotoğraf seçici ayrı birer etkinliktir ve uygulamayı arka plana alır. Bunlar açıkken arka plan kilidi en fazla 3 dakika ertelenir; yoksa kullanıcı dosyayı seçip döndüğünde kasa kilitli olur ve işlem sonuçsuz kalır. Süre dolunca kasa, seçici hâlâ açık olsa bile kilitlenir. Dokunmama kilidi bu sırada da çalışır. Bedeli: seçici açıkken kullanıcı telefonu bırakırsa kasa en fazla 3 dakika açık kalır. Sistem ayarlarına giden bağlantılar bu istisnaya girmez.
 - Ekrana 5 dakika dokunulmazsa kilitlenir.
 - Kilitlenince kasa ve alt anahtarlar `dispose` edilir, çözülmüş veri tutan durumlar sıfırlanır, yönlendirme kilit ekranına gider ve önceki ekranlar yığından çıkarılır.
@@ -536,7 +540,7 @@ Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/googl
 
 ### Kodları görmek için ek onay
 
-İsteğe bağlı bir ayardır. Açıksa 2FA ekranı ve parola kaydındaki eşleşmiş kod, kasa açık olsa bile kodları göstermeden önce parmak izi, parmak izi kapalıysa ya da vazgeçilirse ana parola ister. Onay, kasa kilitlenene kadar geçerlidir; uygulama arka plana geçince kasa zaten kilitlenir.
+İsteğe bağlı bir ayardır. Açıksa 2FA ekranı ve parola kaydındaki eşleşmiş kod, kasa açık olsa bile kodları göstermeden önce parmak izi, parmak izi kapalıysa ya da vazgeçilirse ana parola ister. Onay, kasa kilitlenene kadar geçerlidir. Uygulama arka plana geçince kasa kilitlenir; kullanıcı bir [bekleme süresi](#otomatik-kilit) seçtiyse ve süre dolmadan dönerse kasa da onay da açık kalır. O sürede telefonu eline alan biri parolaları da görür; onayı ayrıca sıfırlamak bir şey kazandırmaz.
 
 - **Doğrulama gerçekten kasayı açar.** Parmak izi, Keystore anahtarının kasa anahtarını açabildiğiyle; ana parola, parola yuvasının açılabildiğiyle doğrulanır. Açılan kopya hemen silinir. Ana parolada hatalı denemeler kilit ekranındaki sayaca eklenir ve aynı bekleme uygulanır, yani bu pencere parola denemek için kullanılamaz.
 - **Kapatmak doğrulama ister,** açmak istemez. Yoksa kilidi açık telefonu eline alan biri önce ayarı kapatabilirdi.
@@ -682,7 +686,7 @@ Bu ekranlarda kullanıcı adı ve parola KeyKey'den kopyalanarak girilir; pano k
 
 ### Eşzamanlılık
 
-Ana uygulama ve doldurma ekranı aynı süreçte, aynı veritabanı dosyasına iki ayrı bağlantıyla erişebilir. SQLite dosya kilidini kullanır. Aynı anda yazma olursa bağlantı hemen hata vermesin diye `busy_timeout` beş saniyedir. Ana uygulamanın bellekteki listesi, doldurma ekranının yaptığı değişikliği kasa yeniden açılınca görür; ana uygulama arka plana geçince zaten kilitlenir.
+Ana uygulama ve doldurma ekranı aynı süreçte, aynı veritabanı dosyasına iki ayrı bağlantıyla erişebilir. SQLite dosya kilidini kullanır. Aynı anda yazma olursa bağlantı hemen hata vermesin diye `busy_timeout` beş saniyedir. Ana uygulama arka plana geçince kilitlenir; kullanıcı bir bekleme süresi seçtiyse kasa açık kalabilir, o zaman dönüşte parola listesi yeniden okunur ([Otomatik kilit](#otomatik-kilit)). Kilitlendiyse liste kasa yeniden açılınca okunur.
 
 ### Sınırlar
 

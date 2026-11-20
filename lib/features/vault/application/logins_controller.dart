@@ -95,6 +95,19 @@ class LoginsController extends Notifier<LoginsState> {
     state = LoginsLoaded(items: kept, unreadableCount: loaded.unreadableCount);
   }
 
+  /// Kasa açıkken kayıtları yeniden okur; örneğin arka plandayken doldurma
+  /// ekranı bir parola eklemiş ya da değiştirmiş olabilir. Okuma sürerken
+  /// eski liste görünür.
+  Future<void> reload() async {
+    final repository = _repository;
+    if (repository == null) return;
+    try {
+      await _load(repository, ++_generation);
+    } on VaultLockedException {
+      // Okuma sürerken kilitlendi; kilit ekranı zaten geliyor.
+    }
+  }
+
   LoginRepository get _openRepository {
     final repository = _repository;
     if (repository == null) throw const VaultLockedException();
