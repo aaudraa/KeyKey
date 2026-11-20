@@ -135,7 +135,7 @@ void main() {
 
     final typing = Stopwatch()..start();
     await tester.enterText(
-      find.widgetWithText(TextField, '1000 kayıtta ara'),
+      find.widgetWithText(TextField, '1000 parolada ara'),
       'kayıt 999',
     );
     await tester.pump();

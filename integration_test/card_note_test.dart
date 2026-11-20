@@ -206,9 +206,11 @@ void main() {
       expect(find.text(name), findsNothing);
     }
 
+    // Kartlar sekmesindeyiz; önce Notlar'a geçilir ki dokunulan simge
+    // seçili olmayan sekmenin simgesi olsun.
     for (final (icon, name, other) in [
-      (Icons.credit_card_outlined, 'Maaş kartı', 'Ev Wi-Fi'),
       (Icons.sticky_note_2_outlined, 'Ev Wi-Fi', 'Maaş kartı'),
+      (Icons.credit_card_outlined, 'Maaş kartı', 'Ev Wi-Fi'),
     ]) {
       await tester.tap(find.byIcon(icon));
       await pumpUntilFound(tester, find.byTooltip('Diğer işlemler'));
