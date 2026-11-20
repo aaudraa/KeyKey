@@ -69,10 +69,20 @@ abstract final class OtpauthUri {
     final slash = path.indexOf('/');
     final typeText = slash >= 0 ? path.substring(0, slash) : path;
     final label = _decode(slash >= 0 ? path.substring(slash + 1) : '');
-    final kind = OtpKind.byLabel(typeText.toLowerCase());
+    var kind = OtpKind.byLabel(typeText.toLowerCase());
     if (kind == null) _fail(OtpauthError.unsupportedType);
+    final queryParameters = _queryParameters(query);
+    // Bazı uygulamalar Steam'i `otpauth://totp/…?encoder=steam` diye yazar.
+    // Bilinmeyen bir kodlayıcı yanlış kod üretir, kabul edilmez.
+    final encoder = queryParameters['encoder']?.trim().toLowerCase() ?? '';
+    if (encoder.isNotEmpty) {
+      if (encoder != 'steam' || kind != OtpKind.totp) {
+        _fail(OtpauthError.unsupportedType);
+      }
+      kind = OtpKind.steam;
+    }
 
-    final parameters = _parameters(kind, _queryParameters(query));
+    final parameters = _parameters(kind, queryParameters);
     final issuerParameter = parameters.issuer;
     final (labelIssuer, account) = _splitLabel(label, issuerParameter);
     return OtpauthAccount(
@@ -103,7 +113,7 @@ abstract final class OtpauthUri {
       'algorithm=${parameters.algorithm.label}',
       'digits=${parameters.digits}',
       switch (parameters.kind) {
-        OtpKind.totp => 'period=${parameters.period}',
+        OtpKind.totp || OtpKind.steam => 'period=${parameters.period}',
         OtpKind.hotp => 'counter=${parameters.counter}',
       },
     ].join('&');
@@ -117,6 +127,7 @@ abstract final class OtpauthUri {
     'digits',
     'period',
     'counter',
+    'encoder',
   };
 
   static Map<String, String> _queryParameters(String query) {
@@ -158,15 +169,31 @@ abstract final class OtpauthUri {
         : OtpAlgorithm.byLabel(algorithmText.replaceAll('-', '').toUpperCase());
     if (algorithm == null) _fail(OtpauthError.invalidAlgorithm);
 
-    final digits =
-        _number(query['digits'], OtpauthError.invalidDigits) ??
-        OtpParameters.defaultDigits;
+    final digitsText = _number(query['digits'], OtpauthError.invalidDigits);
+    if (kind == OtpKind.steam) {
+      // Steam'in değerleri sabittir; yazılmışlarsa (Aegis yazar) aynı olmalı.
+      if (algorithm != OtpAlgorithm.sha1) _fail(OtpauthError.invalidAlgorithm);
+      if (digitsText != null && digitsText != OtpParameters.steamDigits) {
+        _fail(OtpauthError.invalidDigits);
+      }
+      final period = _number(query['period'], OtpauthError.invalidPeriod);
+      if (period != null && period != OtpParameters.defaultPeriod) {
+        _fail(OtpauthError.invalidPeriod);
+      }
+      return (
+        otp: OtpParameters.steam(secret: secret),
+        issuer: query['issuer'],
+      );
+    }
+    final digits = digitsText ?? OtpParameters.defaultDigits;
     if (!OtpParameters.isValidDigits(digits)) {
       _fail(OtpauthError.invalidDigits);
     }
 
     final OtpParameters otp;
     switch (kind) {
+      case OtpKind.steam:
+        throw StateError('Steam yukarıda okundu.');
       case OtpKind.totp:
         final period =
             _number(query['period'], OtpauthError.invalidPeriod) ??

@@ -9,7 +9,6 @@ import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otp_generator.dart';
 import 'package:keykey/features/authenticator/application/otp_visibility.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
-import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/authenticator/presentation/otp_clock_builder.dart';
 import 'package:keykey/features/authenticator/presentation/otp_display.dart';
@@ -62,7 +61,7 @@ class _LinkedOtpTileState extends ConsumerState<LinkedOtpTile> {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final parameters = widget.item.content.parameters;
-    final isTotp = parameters.kind == OtpKind.totp;
+    final isTotp = parameters.isTimeBased;
 
     final visible = ref.watch(otpCodesVisibleProvider);
     if (visible == null) return const SizedBox.shrink();

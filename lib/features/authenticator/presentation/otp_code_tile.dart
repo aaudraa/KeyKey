@@ -121,7 +121,7 @@ class OtpCodeTile extends StatelessWidget {
     String? nextCode;
     Duration? remaining;
     switch (parameters.kind) {
-      case OtpKind.totp:
+      case OtpKind.totp || OtpKind.steam:
         code = OtpGenerator.codeFor(parameters, now);
         remaining = OtpGenerator.remaining(now, parameters.period!);
         if (remaining <= nextCodeThreshold) {

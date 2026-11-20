@@ -1222,7 +1222,7 @@
   },
   "otpLinkUnsupported": "This code type is not supported. KeyKey supports TOTP and HOTP.",
   "@otpLinkUnsupported": {
-    "description": "Error for an otpauth link of another type, such as Steam."
+    "description": "Error for an otpauth link of another type, such as Yandex."
   },
   "otpLinkFilled": "Filled in from the link.",
   "@otpLinkFilled": {
@@ -1252,6 +1252,8 @@
   "@otpTypeHotp": {
     "description": "HOTP choice."
   },
+  "otpTypeSteam": "Steam Guard",
+  "otpSteamHint": "Steam codes have 5 characters; the algorithm, length and period are fixed.",
   "otpAlgorithm": "Algorithm",
   "@otpAlgorithm": {
     "description": "Label of the hash algorithm choice."
@@ -1387,7 +1389,7 @@
   "@otpImportWrongPassword": {
     "description": "Error for a wrong export password."
   },
-  "otpImportUnsupported": "{count, plural, =1{1 account was skipped because KeyKey does not support it, for example Steam.} other{{count} accounts were skipped because KeyKey does not support them, for example Steam.}}",
+  "otpImportUnsupported": "{count, plural, =1{1 account was skipped because KeyKey does not support it, for example Yandex.} other{{count} accounts were skipped because KeyKey does not support them, for example Yandex.}}",
   "@otpImportUnsupported": {
     "description": "Info about skipped accounts.",
     "placeholders": {

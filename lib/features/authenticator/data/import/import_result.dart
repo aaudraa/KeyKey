@@ -45,7 +45,7 @@ final class ImportBatch {
 
   final List<ImportedAccount> accounts;
 
-  /// KeyKey'in desteklemediği için atlanan hesaplar, örneğin Steam.
+  /// KeyKey'in desteklemediği için atlanan hesaplar, örneğin Yandex.
   final int unsupported;
 
   /// Google Authenticator büyük dışa aktarmayı bu kadar QR'a böler.

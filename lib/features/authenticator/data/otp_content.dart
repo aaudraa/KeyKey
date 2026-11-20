@@ -159,7 +159,7 @@ final class OtpContent {
     }
 
     final digits = _int(root['digits'], 'digits');
-    if (!OtpParameters.isValidDigits(digits)) {
+    if (kind != OtpKind.steam && !OtpParameters.isValidDigits(digits)) {
       throw const InvalidOtpContentException('Geçersiz alan: digits');
     }
 
@@ -186,6 +186,15 @@ final class OtpContent {
           digits: digits,
           counter: counter,
         );
+      case OtpKind.steam:
+        // Değerler sabit; yazılanlar tam olarak bunlar olmalı.
+        if (algorithm != OtpAlgorithm.sha1 ||
+            digits != OtpParameters.steamDigits ||
+            root['counter'] != null ||
+            _int(root['period'], 'period') != OtpParameters.defaultPeriod) {
+          throw const InvalidOtpContentException('Geçersiz alan: steam');
+        }
+        return OtpParameters.steam(secret: secret);
     }
   }
 

@@ -244,17 +244,19 @@ Tür `otp` olan kayıtlar 2FA anahtarıyla şifrelenir. Düz metin şu JSON'dur:
 
 | Alan | Kural |
 |---|---|
-| `kind` | `totp` veya `hotp`. |
+| `kind` | `totp`, `hotp` veya `steam` (1.7.0). |
 | `secret` | Gizli anahtar, RFC 4648 Base32, büyük harf ve dolgusuz. 1-256 bayt. |
 | `algorithm` | `SHA1`, `SHA256` veya `SHA512`. |
-| `digits` | 6, 7 veya 8. |
-| `period` | `totp` için 1-3600 saniye, `hotp` için `null`. |
-| `counter` | `hotp` için sıradaki sayaç değeri (0 veya daha büyük), `totp` için `null`. |
+| `digits` | 6, 7 veya 8; `steam` için tam olarak 5. |
+| `period` | `totp` için 1-3600 saniye, `steam` için tam olarak 30, `hotp` için `null`. |
+| `counter` | `hotp` için sıradaki sayaç değeri (0 veya daha büyük), `totp` ve `steam` için `null`. |
+| `algorithm` (`steam`) | Tam olarak `SHA1`. Steam'in değerleri sabittir; farklı bir değer kaydı okunamaz yapar. |
 | `loginId` | Eşleştirilen parola kaydının kimliği (32 karakter, küçük harf onaltılık) veya `null`. |
 
 - Okurken doğrulama parola kaydındaki kadar katıdır. Ayrıca Base32 metni yazdığımız biçimde olmalıdır: küçük harf, dolgu, boşluk veya fazladan bit reddedilir.
 - Çöp kutusu ve okunamayan kayıt kuralları parola kaydıyla aynıdır. Yanlışlıkla silinen 2FA hesabı servise girişi engelleyebileceği için hemen silinmez.
 - `loginId`'nin gösterdiği kayıt silinmişse eşleşme yok sayılır.
+- **Uyumluluk:** `steam` kaydını 1.6.0 ve öncesi tanımaz. 1.7.0 yedekleri [içerik sürümü 3](#yedek-biçimi) ile yazıldığı için eski sürüm onları "daha yeni yedek" diye açmaz, kullanıcıya güncellemesini söyler. Kasadaki kaydı ise okunamayan kayıt sayar ve dokunmaz. Kılavuz ve değişiklik günlüğü bunu söyler.
 
 ### Kart kaydının içeriği
 
@@ -502,6 +504,7 @@ Kasa ekranındaki "Parola raporu" zayıf ve birden çok kayıtta kullanılan par
 
 - **HOTP** (RFC 4226): `HMAC(gizli anahtar, sayaç)` hesaplanır, sayaç 8 baytlık büyük uçlu yazılır. Son baytın düşük 4 biti bir konum gösterir, o konumdaki 4 bayttan en üst bit atılır ve sonuç `10^hane`'ye göre kalanı alınarak önüne sıfır eklenir.
 - **TOTP** (RFC 6238): Sayaç `floor(unix zamanı / period)`'dur, başlangıç zamanı 0'dır. SHA-256 ve SHA-512 için de aynı kesme yöntemi kullanılır.
+- **Steam Guard** (1.7.0): TOTP'nin SHA1 ve 30 saniyeyle bulunan 31 bitlik sayısı, `23456789BCDFGHJKMNPQRTVWXY` alfabesiyle 5 kez `sayı mod 26` karakterine çevrilir ve her adımda `sayı = sayı div 26` yapılır. Kod gruplanmadan gösterilir. Test değerleri Steam'in kendi uygulamasının ürettiği kodlardır (KeePassXC'nin testlerinden; bağımsız bir Python hesabıyla da doğrulandı).
 - HMAC için `package:crypto` kullanılır. libsodium'da SHA-1 yok, HMAC-SHA256 ve HMAC-SHA512'si ise yalnızca 32 baytlık anahtar alıyor.
 - **HOTP sayacı:** Kod, kullanıcı istediğinde üretilir. Sayaç önce bir artırılıp diske yazılır, kod ondan sonra gösterilir. Böylece uygulama yarıda kapansa da aynı kod iki kez görünmez. Gösterilen kod kayıttaki eski sayaç değeriyle hesaplanır, yani `counter` her zaman sıradaki kullanılacak değerdir. Bu RFC 4226'daki tanıma uyar.
 - **Sıradaki kod:** TOTP süresinin bitmesine az kaldığında bir sonraki kod da gösterilir. Kullanıcı yazarken süre dolarsa kodu yeniden okumak zorunda kalmaz.
@@ -512,12 +515,13 @@ Kasa ekranındaki "Parola raporu" zayıf ve birden çok kayıtta kullanılan par
 
 Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/google/google-authenticator/wiki/Key-Uri-Format): `otpauth://totp/Servis:hesap?secret=...&issuer=Servis`.
 
-- Şema ve tür büyük küçük harf ayırmaz. `totp` ve `hotp` dışındaki türler, örneğin `steam`, desteklenmiyor diye reddedilir.
+- Şema ve tür büyük küçük harf ayırmaz. `totp`, `hotp` ve `steam` dışındaki türler, örneğin `yandex`, desteklenmiyor diye reddedilir.
+- **Steam:** `otpauth://steam/…` ya da `otpauth://totp/…?encoder=steam` Steam hesabıdır. `algorithm`, `digits` ve `period` yazılmışsa (Aegis yazar) SHA1, 5 ve 30 olmalıdır. Başka bir `encoder` değeri yanlış kod üreteceği için reddedilir; 1.7.0'dan önce `encoder` parametresi yok sayılıyordu. KeyKey Steam hesabını `otpauth://steam/…` olarak, bütün değerleri açıkça yazarak dışa verir; yalnızca [Bitwarden biçimli dışa aktarma](#düz-metin-dışa-aktarma) `steam://ANAHTAR` yazar.
 - `secret` zorunludur. Kullanıcıların elle yazdığı veya kopyaladığı metinlere uymak için Base32 okunurken küçük harf, boşluk, tire ve dolgu kabul edilir; Türkçe klavyenin `ı` ve `İ` harfleri `I` sayılır. Artan bitler atılır.
 - `issuer` parametresi varsa etiketteki `Servis:` önekinden önce gelir. Etiketteki iki noktadan sonraki boşluklar atılır. Servis adında da iki nokta olabileceği için, `issuer` etiketin başında geçiyorsa etiket tam oradan bölünür.
 - Servis ve hesap adlarından denetim karakterleri ve metnin yönünü değiştiren karakterler (örneğin U+202E) atılır. Bunlar bir adı ekranda başka bir servisin adı gibi gösterebilir.
 - Yüzde kodlaması kendi çözücümüzle açılır. Sorgu kısmında `+` boşluktur, etikette değildir.
-- `algorithm`, `digits` ve `period` verilmezse SHA1, 6 ve 30 kullanılır. `hotp` için `counter` zorunludur.
+- `algorithm`, `digits` ve `period` verilmezse SHA1, 6 ve 30 kullanılır (Steam'de 5 hane). `hotp` için `counter` zorunludur.
 - Bilinen bir parametre iki kez geçerse veya değeri kurallara uymazsa bağlantı reddedilir. Bilinmeyen parametreler, örneğin `image`, yok sayılır. `image` adresine bağlanılmaz.
 - 4096 karakterden uzun metin okunmaz.
 - Ayrıştırıcı yalnızca kendi hata türünü fırlatır. Hata mesajı hangi kuralın bozulduğunu söyler, gizli anahtarı içermez. Bozuk girdi testleri rastgele metinlerle de çalıştırılır.
@@ -542,7 +546,7 @@ Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/googl
 - **Sınırlar:** Kötü niyetli bir dosya cihazı belleksiz bırakmasın diye scrypt en fazla 128 MiB bellek (N ve p bloklarının toplamı), p ≤ 16 ve Aegis varsayılanının 32 katı iş (128·r·N·p ≤ 1 GiB) ile çalışır, dosya en fazla 10 MB olabilir. Türetme ayrı isolate'te yapılır, ekran donmaz.
 - Dosya Android'in belge seçicisiyle seçilir, depolama izni gerekmez. `file_selector` dosyayı önbelleğe kopyalar; kopya okunur okunmaz silinir.
 - Dosyalar güvenilmeyen veri sayılır. Başka uygulamaların biçimi oldukları için bilinmeyen alanlar yok sayılır, ama bozuk bir hesap atlanır ve bozuk dosya uygulamayı düşürmez. Bozuk girdi testleri rastgele değiştirilmiş dosyalarla da çalıştırılır.
-- Desteklenmeyen hesaplar, örneğin Steam veya 5 haneli kodlar, atlanır ve kullanıcıya sayısı söylenir. Gizli anahtarı zaten kayıtlı olan hesap, çöp kutusunda bile olsa, işaretlenir ve tekrar eklenmez.
+- Steam hesapları (Aegis `steam`, 2FAS `STEAM`) 1.7.0'dan beri içe aktarılır; değerleri SHA1, 5 ve 30 değilse hesap bozuk sayılır. Desteklenmeyen hesaplar, örneğin Yandex veya Steam dışındaki 5 haneli kodlar, atlanır ve kullanıcıya sayısı söylenir. Gizli anahtarı zaten kayıtlı olan hesap, çöp kutusunda bile olsa, işaretlenir ve tekrar eklenmez.
 - Hesaplar kaydedilmeden önce liste halinde gösterilir, kullanıcı hangilerinin ekleneceğini seçer.
 - Aegis'in 2019'dan eski, `repaired` işareti olmayan parola yuvaları farklı bir parola kodlamasıyla türetilmişti. Bu yuvalar desteklenmez; parola yanlış görünür.
 
@@ -799,7 +803,7 @@ Son yedek zamanı dosya kaydedildikten sonra yazıldığı için yedeğin içind
 
 | Kaynak | Biçim | Not |
 |---|---|---|
-| Bitwarden | Şifresiz JSON ve CSV dışa aktarma | Giriş, kart ve güvenli not kayıtları alınır (aşağıda). `totp` alanı 2FA hesabı olarak eklenir ve kayda bağlanır. Metin ve gizli özel alanlar alınır. CSV'deki `login_uri` alanı, Bitwarden'ın okuyucusundaki gibi kendi içinde bir CSV satırıdır. Parola korumalı veya hesaba bağlı şifreli JSON desteklenmez; kullanıcıya şifresiz dışa aktarması söylenir. Örneklerden biri 2026-11'de alınmış gerçek bir JSON dışa aktarmasıdır; kişisel değerleri sahteleriyle değiştirildi. |
+| Bitwarden | Şifresiz JSON ve CSV dışa aktarma | Giriş, kart ve güvenli not kayıtları alınır (aşağıda). `totp` alanı 2FA hesabı olarak eklenir ve kayda bağlanır; `steam://ANAHTAR` (1.7.0) Steam hesabı olur. Metin ve gizli özel alanlar alınır. CSV'deki `login_uri` alanı, Bitwarden'ın okuyucusundaki gibi kendi içinde bir CSV satırıdır. Parola korumalı veya hesaba bağlı şifreli JSON desteklenmez; kullanıcıya şifresiz dışa aktarması söylenir. Örneklerden biri 2026-11'de alınmış gerçek bir JSON dışa aktarmasıdır; kişisel değerleri sahteleriyle değiştirildi. |
 | Chrome | Parolalar CSV'si (`name,url,username,password,note`) | Android'de Chrome'un parola yöneticisi `name` sütununa kayıt adı yerine alan adını yazar. Örneklerden biri Android Chrome 145'in gerçek dışa aktarmasıdır. |
 | Firefox | Parolalar CSV'si (`url,username,password,httpRealm,formActionOrigin,guid,timeCreated,timeLastUsed,timePasswordChanged`) | Kayıt adı yoktur, ad adresin alan adından gelir. Yalnızca adres, kullanıcı adı ve parola alınır; `httpRealm`, `formActionOrigin`, `guid` ve zaman sütunları yok sayılır. Biçim, Chrome'dan ayrılması için `httpRealm` ve `formActionOrigin` sütunlarından tanınır. |
 | KeePassXC | CSV dışa aktarma | `TOTP` sütunu 2FA hesabı olarak eklenir. Grubun yolu, kök grup atılarak klasör olur; kök grubun adı KeePassXC'in arayüz diline göre değişir. Örnek, KeePassXC 2.8.0'ın kendi komut satırı aracıyla alınmış gerçek bir dışa aktarmadır. |
@@ -824,7 +828,7 @@ Son yedek zamanı dosya kaydedildikten sonra yazıldığı için yedeğin içind
 Başka bir parola yöneticisine geçmek için. Dosya **şifresizdir**; bu yüzden iki adımlı onay ister.
 
 - Önce biçim seçilir (CSV ya da JSON), sonra dosyanın şifresiz olduğu ve kimlerin okuyabileceği açıkça anlatılır. Ardından ana parola veya parmak iziyle [kimlik doğrulanır](#kodları-görmek-için-ek-onay).
-- **CSV:** Bitwarden'ın CSV sütunları (`folder,favorite,type,name,notes,fields,reprompt,login_uri,login_username,login_password,login_totp`); çoğu parola yöneticisi bu biçimi okur. Bağlı 2FA hesabı `login_totp` sütununa `otpauth://` bağlantısı olarak yazılır. Bir kayda bağlı olmayan 2FA hesapları ayrı satırlara yazılır. Bağlı uygulamalar `androidapp://` adresi olarak eklenir. Notlar `type=note` satırlarıdır. Bitwarden CSV kart taşıyamadığı için kartlar yazılmaz; kasada kart varsa biçim penceresi bunu söyler.
+- **CSV:** Bitwarden'ın CSV sütunları (`folder,favorite,type,name,notes,fields,reprompt,login_uri,login_username,login_password,login_totp`); çoğu parola yöneticisi bu biçimi okur. Bağlı 2FA hesabı `login_totp` sütununa `otpauth://` bağlantısı olarak yazılır. Steam hesabı (1.7.0) Bitwarden'ın tanıdığı `steam://ANAHTAR` biçimiyle yazılır; Bitwarden `otpauth://steam/…` bağlantısında 5 haneli sayı, yani yanlış kod üretir. Bir kayda bağlı olmayan 2FA hesapları ayrı satırlara yazılır. Bağlı uygulamalar `androidapp://` adresi olarak eklenir. Notlar `type=note` satırlarıdır. Bitwarden CSV kart taşıyamadığı için kartlar yazılmaz; kasada kart varsa biçim penceresi bunu söyler.
 - **JSON (1.4.0):** Bitwarden'ın şifresiz JSON biçimi (`encrypted: false`, `folders`, `items`; tür 1 giriş, 2 güvenli not, 3 kart). Kartlar dahil her şeyi taşır; Bitwarden, KeePassXC ve Proton Pass içe alabiliyor. Öğe kimliği kayıt kimliğinin UUID biçimidir, klasör kimlikleri sırayla üretilir. 2FA hesapları CSV'deki kuralla yazılır. Kartın PIN'i `PIN` adlı gizli bir özel alandır; marka Bitwarden'ın adlarıyla yazılır (Troy onda olmadığı için `Other`). Boş alanlar `null` olur. Dosya `.json` uzantısıyla, `application/json` türüyle kaydedilir.
 - Çöp kutusundaki kayıtlar ve parola geçmişi dışa aktarılmaz.
 - Dosya `ACTION_CREATE_DOCUMENT` ile kaydedilir, uygulamanın klasöründe kopya kalmaz. Kaydedilen baytlar bellekte sıfırlanır.

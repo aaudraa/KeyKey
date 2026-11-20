@@ -20,7 +20,6 @@ import 'package:keykey/features/authenticator/application/otp_clock.dart';
 import 'package:keykey/features/authenticator/application/otp_search.dart';
 import 'package:keykey/features/authenticator/application/otp_visibility.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
-import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/authenticator/presentation/otp_clock_builder.dart';
 import 'package:keykey/features/authenticator/presentation/otp_code_tile.dart';
@@ -211,9 +210,7 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
 
     return OtpClockBuilder(
       // TOTP yoksa saati izlemeye gerek yok, pil harcanmaz.
-      active: visible.any(
-        (item) => item.content.parameters.kind == OtpKind.totp,
-      ),
+      active: visible.any((item) => item.content.parameters.isTimeBased),
       builder: (context, now) => KkItemsView<OtpItem>(
         header: header,
         controller: _scroll,

@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:keykey/features/authenticator/application/otp_generator.dart';
-import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
 
@@ -23,7 +22,7 @@ Future<String?> linkedOtpCodeForFill({
   final linked = [
     for (final item in loaded.items)
       if (!item.content.isTrashed &&
-          item.content.parameters.kind == OtpKind.totp &&
+          item.content.parameters.isTimeBased &&
           listEquals(item.content.loginId, loginId))
         item,
   ]..sort((a, b) => a.createdAt.compareTo(b.createdAt));

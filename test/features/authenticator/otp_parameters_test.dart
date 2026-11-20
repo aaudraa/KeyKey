@@ -101,4 +101,23 @@ void main() {
     expect(OtpAlgorithm.byLabel('SHA512'), OtpAlgorithm.sha512);
     expect(OtpAlgorithm.byLabel('MD5'), isNull);
   });
+
+  test('Steam: SHA1, 5 karakter, 30 saniye; sayaç yok', () {
+    final steam = OtpParameters.steam(secret: const [1, 2, 3]);
+    expect(steam.kind, OtpKind.steam);
+    expect(steam.algorithm, OtpAlgorithm.sha1);
+    expect(steam.digits, 5);
+    expect(steam.period, 30);
+    expect(steam.counter, isNull);
+    expect(steam.isTimeBased, isTrue);
+    expect(OtpKind.byLabel('steam'), OtpKind.steam);
+    expect(() => steam.withCounter(1), throwsStateError);
+    expect(steam, isNot(OtpParameters.totp(secret: const [1, 2, 3])));
+    expect(() => OtpParameters.steam(secret: const []), throwsArgumentError);
+  });
+
+  test('zamana dayalı türler', () {
+    expect(OtpParameters.totp(secret: const [1]).isTimeBased, isTrue);
+    expect(OtpParameters.hotp(secret: const [1]).isTimeBased, isFalse);
+  });
 }

@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
-import 'package:keykey/features/authenticator/data/otpauth_uri.dart';
+import 'package:keykey/features/backup/data/export/bitwarden_totp.dart';
 import 'package:keykey/features/vault/data/card_number.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:keykey/features/vault/data/vault_record_repository.dart';
@@ -226,9 +226,5 @@ abstract final class BitwardenJsonExport {
     ].join('-');
   }
 
-  static String _otpauth(OtpItem item) => OtpauthUri.format(
-    parameters: item.content.parameters,
-    issuer: item.content.issuer,
-    account: item.content.account,
-  );
+  static String _otpauth(OtpItem item) => bitwardenTotp(item.content);
 }

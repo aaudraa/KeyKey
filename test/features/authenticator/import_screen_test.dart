@@ -78,18 +78,16 @@ void main() {
 
     expect(find.text('İçe aktar'), findsOneWidget);
     // Liste tembel kurulur, satır saymak yerine seçili sayıya bakılır.
-    expect(find.text('6 hesabı ekle'), findsOneWidget);
-    expect(
-      find.textContaining('1 hesap KeyKey desteklemediği için'),
-      findsOneWidget,
-    );
+    // Steam hesabı da geliyor (1.7.0); desteklenmeyen hesap kalmadı.
+    expect(find.text('7 hesabı ekle'), findsOneWidget);
+    expect(find.textContaining('desteklemediği için'), findsNothing);
     expect(otps.items, isEmpty);
 
-    await tester.tap(find.text('6 hesabı ekle'));
+    await tester.tap(find.text('7 hesabı ekle'));
     await settle(tester);
 
-    expect(otps.items, hasLength(6));
-    expect(find.text('6 hesap eklendi.'), findsOneWidget);
+    expect(otps.items, hasLength(7));
+    expect(find.text('7 hesap eklendi.'), findsOneWidget);
     expect(find.text('İçe aktar'), findsNothing);
     final deno = otps.items.firstWhere((item) => item.content.issuer == 'Deno');
     expect(deno.content.account, 'Mason');
@@ -119,9 +117,9 @@ void main() {
     expect(duplicate.value, isFalse);
     expect(duplicate.onChanged, isNull);
 
-    await tester.tap(find.text('5 hesabı ekle'));
+    await tester.tap(find.text('6 hesabı ekle'));
     await settle(tester);
-    expect(otps.items, hasLength(6));
+    expect(otps.items, hasLength(7));
   });
 
   testWidgets('seçim kaldırılınca sayı değişiyor', (tester) async {
@@ -130,7 +128,7 @@ void main() {
     await tester.tap(find.text('Deno'));
     await settle(tester);
 
-    expect(find.text('5 hesabı ekle'), findsOneWidget);
+    expect(find.text('6 hesabı ekle'), findsOneWidget);
   });
 
   testWidgets('şifreli 2FAS dosyası parolayla açılıyor', (tester) async {
@@ -152,10 +150,10 @@ void main() {
     await tester.tap(find.text('Aç'));
     await waitForIsolate(tester);
 
-    expect(find.text('4 hesabı ekle'), findsOneWidget);
-    await tester.tap(find.text('4 hesabı ekle'));
+    expect(find.text('5 hesabı ekle'), findsOneWidget);
+    await tester.tap(find.text('5 hesabı ekle'));
     await settle(tester);
-    expect(otps.items, hasLength(4));
+    expect(otps.items, hasLength(5));
   });
 
   testWidgets('tanınmayan dosya söyleniyor', (tester) async {

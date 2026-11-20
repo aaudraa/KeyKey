@@ -130,6 +130,28 @@ void main() {
     expect(export.logins[1].totp, isNull);
   });
 
+  test("Steam hesabı Bitwarden'ın steam:// biçiminde, geri okunuyor", () {
+    final steamSecret = Base32.decodeCanonical(
+      '63BEDWCQZKTQWPESARIERL5DTTQFCJTK',
+    );
+    final steam = FakeOtpRepository.item(
+      OtpContent(
+        parameters: OtpParameters.steam(secret: steamSecret),
+        issuer: 'Steam',
+        account: 'oyuncu',
+      ),
+      id: 4,
+    );
+    final csv = BitwardenCsvExport.build(logins: const [], otps: [steam]);
+    expect(csv, contains('steam://63BEDWCQZKTQWPESARIERL5DTTQFCJTK'));
+    final read = LoginExportReader.read(Uint8List.fromList(utf8.encode(csv)));
+    final row = read.logins.single;
+    expect(row.name, 'Steam');
+    expect(row.username, 'oyuncu');
+    final otp = otpFromImport(row.totp!, issuer: 'Steam', account: 'oyuncu')!;
+    expect(otp.parameters, OtpParameters.steam(secret: steamSecret));
+  });
+
   test('bağlı olmayan 2FA ayrı satırda, çöp kutusundakiler yok', () {
     final export = roundTrip();
     final bank = export.logins[2];
