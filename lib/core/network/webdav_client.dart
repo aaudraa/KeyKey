@@ -39,6 +39,7 @@ final class WebDavClient implements SyncTransport {
 
   static const _filePrefix = 'keykey-sync-';
   static const _fileSuffix = '.keykey';
+
   /// Ara dosyanın eki. `.part` olamaz: Nextcloud ve ownCloud o uzantıyı
   /// yarım yükleme sayıp dosya önbelleğine almıyor (geri okuma ve taşıma
   /// bulamıyor).
