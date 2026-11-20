@@ -19,6 +19,7 @@ import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/data/note_content.dart';
 import 'package:sodium/sodium_sumo.dart';
 
+import '../../core/storage/test_data.dart';
 import '../../support/fake_sync_service.dart';
 import '../../support/fake_vault_service.dart';
 
@@ -173,6 +174,29 @@ void main() {
       final status = container.read(syncControllerProvider);
       expect(status.lastSyncAt, isNull);
       expect(status.enabled, isFalse);
+    });
+  });
+
+  test('sürerken kilitlenirse kilit ekranı diskteki üst bilgiyi alıyor', () {
+    fakeAsync((async) {
+      sync.gate = Completer();
+      final container = open();
+      async.elapse(const Duration(seconds: 1));
+      expect(sync.calls, 1);
+      final service = container.read(vaultServiceProvider) as FakeVaultService;
+
+      container.read(vaultControllerProvider.notifier).lock();
+      // Kilitten hemen önce başlamış eşitleme yuvaları değiştirip yazdı.
+      final written = service.header.withRecoverySlot(
+        sampleHeader(fill: 2).recoverySlot,
+      );
+      service.storedHeader = written;
+      sync.gate!.complete();
+      async.elapse(const Duration(seconds: 1));
+
+      final status = container.read(vaultControllerProvider);
+      expect(status, isA<VaultLocked>());
+      expect((status as VaultLocked).header, same(written));
     });
   });
 

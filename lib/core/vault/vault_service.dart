@@ -193,9 +193,9 @@ class VaultService {
   }
 
   /// Yazılan anahtar bekleyen yuvayı açıyorsa üst bilgiyi yazar ve oturumu
-  /// günceller. Üst bilgi oturumdaki güncel üst bilgiden kurulur, yalnızca
-  /// kurtarma yuvası değişir; arada parola değiştiyse yeni parola yuvası
-  /// korunur.
+  /// günceller. Üst bilgi diskteki güncel üst bilgiden aynı işlemde kurulur,
+  /// yalnızca kurtarma yuvası değişir; arada parola değiştiyse (bu telefonda
+  /// ya da eşitlemeyle) yeni parola yuvası ve zamanı korunur.
   ///
   /// Metin geçersizse [InvalidRecoveryKeyException], başka anahtarsa
   /// [WrongSecretException] fırlatır; bu durumda diske bir şey yazılmaz.
@@ -205,13 +205,16 @@ class VaultService {
     PendingRecoveryKey pending,
     String typedRecoveryKey,
   ) async {
-    final current = session.header;
-    if (!_sameBytes(current.vaultId, pending.vaultId)) {
+    if (!_sameBytes(session.header.vaultId, pending.vaultId)) {
       throw StateError('Bekleyen kurtarma anahtarı başka bir kasanın.');
     }
-    final header = current.withRecoverySlot(pending.renewed.recoverySlot);
-    _crypto.unlockWithRecoveryKey(header, typedRecoveryKey).dispose();
-    await _store.updateHeader(header, recoveryChangedAt: _clock());
+    final header = await _store.transaction(() async {
+      final current = await _currentHeader(pending.vaultId);
+      final header = current.withRecoverySlot(pending.renewed.recoverySlot);
+      _crypto.unlockWithRecoveryKey(header, typedRecoveryKey).dispose();
+      await _store.updateHeader(header, recoveryChangedAt: _clock());
+      return header;
+    });
     session.header = header;
   }
 
@@ -377,14 +380,31 @@ class VaultService {
     String newPassword,
   ) async {
     final opsLimit = await _kdf.calibrateOpsLimit();
-    final header = await _crypto.changePassword(
+    final wrapped = await _crypto.changePassword(
       session.header,
       vaultKey,
       newPassword,
       opsLimit: opsLimit,
     );
-    await _store.updateHeader(header, passwordChangedAt: _clock());
+    // Argon2id sürerken eşitleme kurtarma yuvasını değiştirmiş olabilir:
+    // yalnızca parola yuvası diskteki güncel üst bilgiye yazılır.
+    final header = await _store.transaction(() async {
+      final current = await _currentHeader(wrapped.vaultId);
+      final header = current.withPasswordSlotFrom(wrapped);
+      await _store.updateHeader(header, passwordChangedAt: _clock());
+      return header;
+    });
     session.header = header;
+  }
+
+  /// Diskteki üst bilgi. Kasa yoksa ya da başka bir kasaysa (geri yükleme
+  /// değiştirdi) [VaultLockedException].
+  Future<VaultHeader> _currentHeader(Uint8List vaultId) async {
+    final current = await _store.readHeader();
+    if (current == null || !_sameBytes(current.vaultId, vaultId)) {
+      throw const VaultLockedException();
+    }
+    return current;
   }
 
   /// Yedekten kurulan kasa için oturum açar. [vaultKey] oturuma geçer.

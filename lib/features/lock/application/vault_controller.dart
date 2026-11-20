@@ -405,6 +405,16 @@ class VaultController extends Notifier<VaultStatus> {
 
   /// Parola yazılırken kilitlendiyse kilit durumu yeni üst bilgiyi tutmalı,
   /// yoksa uygulama yeniden başlayana kadar eski parola çalışmaya devam eder.
+  /// Kasa kilitliyse diskteki üst bilgiyi kilit ekranına alır. Kilitten
+  /// hemen önce başlamış bir eşitleme yuvaları değiştirmiş olabilir; kilit
+  /// ekranı eski üst bilgiyle kalırsa eski parola bu telefonda bir kez daha
+  /// açardı.
+  Future<void> refreshLockedHeader() async {
+    if (state is! VaultLocked) return;
+    final header = await _service.readHeader();
+    if (header != null && state is VaultLocked) state = VaultLocked(header);
+  }
+
   void _syncLockedHeader(VaultSession session) {
     if (state is VaultLocked) state = VaultLocked(session.header);
   }

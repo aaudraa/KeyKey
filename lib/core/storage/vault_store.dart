@@ -124,6 +124,11 @@ final class VaultStore {
   /// Kurulu değilse `null` döner.
   ///
   /// Üst bilgi bozuksa `InvalidVaultHeaderException` fırlatır.
+  /// [action] tek SQLite işleminde çalışır; içindeki okumalar ve yazmalar
+  /// arasına başka bir yazma giremez, hata olursa hiçbiri kalmaz.
+  Future<T> transaction<T>(Future<T> Function() action) =>
+      _database.transaction(action);
+
   Future<VaultHeader?> readHeader() async {
     final row = await _database.select(_database.vaultMeta).getSingleOrNull();
     return row == null ? null : VaultHeader.fromJsonString(row.header);

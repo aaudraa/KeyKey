@@ -179,6 +179,13 @@ class SyncController extends Notifier<SyncStatus> {
   /// Gösterilmemiş ilk bildirimi verir ve listeden çıkarır.
   SyncIssue? consumeNotice() => _notices.isEmpty ? null : _notices.removeAt(0);
 
+  /// Eşitleme sürerken kasa kilitlendiyse, yazılmış olabilecek yuvalar kilit
+  /// ekranına geçer.
+  void _afterLock(int generation) {
+    if (generation == _generation || !ref.mounted) return;
+    unawaited(ref.read(vaultControllerProvider.notifier).refreshLockedHeader());
+  }
+
   /// Ana parola ya da kurtarma anahtarı değişti: beklemeden eşitlenir.
   void _onHeaderChanged() {
     if (_enabled) unawaited(_request());
@@ -233,6 +240,7 @@ class SyncController extends Notifier<SyncStatus> {
           .read(syncServiceProvider)
           .sync(vault.session, sync, cache: _cache);
     } on VaultLockedException {
+      _afterLock(generation);
       return;
     } on OtherVaultException {
       _finish(generation, failure: null, otherVault: true);
@@ -245,7 +253,10 @@ class SyncController extends Notifier<SyncStatus> {
       _finish(generation, failure: SyncFailureKind.badResponse);
       return;
     }
-    if (generation != _generation) return;
+    if (generation != _generation) {
+      _afterLock(generation);
+      return;
+    }
     try {
       await ref
           .read(settingsControllerProvider.notifier)

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:drift/native.dart';
@@ -202,10 +203,76 @@ void main() {
     ),
   );
 
+  Future<String> loginName(_Phone phone, int n) async {
+    final stored = (await phone.store.getRecord(id(n)))!;
+    return LoginContent.fromJsonBytes(
+      phone.session.records.decrypt(
+        recordId: stored.id,
+        type: stored.type,
+        blob: stored.blob,
+      ),
+    ).name;
+  }
+
   Future<List<int>> loginIds(_Phone phone) async => [
     for (final r in await phone.store.allRecords())
       if (r.type == 'login') r.id[15],
   ]..sort();
+
+  group('aynı anda yazma', () {
+    test('eşitleme sırasında kaydedilen değişiklik ezilmiyor', () async {
+      final a = await first('a1b2c3');
+      await addLogin(a, 1, name: 'Eski');
+      await a.sync();
+      final b = await second(a, 'b2c3d4');
+      await b.sync();
+      now = now.add(const Duration(minutes: 1));
+      await addLogin(b, 1, name: 'B');
+      await b.sync();
+      now = now.add(const Duration(minutes: 1));
+
+      // A'da kullanıcı, eşitleme yerel durumu okuduktan hemen sonra kaydı
+      // değiştiriyor (otomatik doldurma ya da düzenleme ekranı).
+      Future<void>? edit;
+      var armed = true;
+      final service = SyncService(
+        store: a.store,
+        codec: BackupCodec(sodium),
+        sodium: sodium,
+        transport: (_) => folder,
+        device: 'a1b2c3',
+        deviceName: () async => 'Telefon a1b2c3',
+        now: () {
+          if (armed) {
+            armed = false;
+            edit = Zone.root.run(() => addLogin(a, 1, name: 'A yeni'));
+          }
+          return now;
+        },
+      );
+      await service.sync(a.session, a.settings);
+      await edit;
+
+      expect(await loginName(a, 1), 'A yeni');
+    });
+
+    test('kasa bu arada başka bir kasayla değiştirildiyse hiçbir şey '
+        'yazmıyor', () async {
+      final a = await first('a1b2c3');
+      await addLogin(a, 1);
+      await a.sync();
+      final b = await second(a, 'b2c3d4');
+      final c = await first('c3d4e5');
+      // Geri yükleme B'nin kasasını başka bir kasayla değiştirdi; eski
+      // oturumla süren eşitleme yazmamalı.
+      await b.store.replaceVault(c.session.header, const []);
+
+      await expectLater(b.sync(), throwsA(isA<VaultLockedException>()));
+
+      expect(await loginIds(b), isEmpty);
+      expect(folder.files.keys, isNot(contains('keykey-sync-b2c3d4.keykey')));
+    });
+  });
 
   group('çöp kutusunun süresi', () {
     test('eşitlenmemiş telefonun süresi dolan çöpü, ötekinde çöpten '

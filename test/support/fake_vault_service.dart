@@ -107,7 +107,10 @@ class FakeVaultService implements VaultService {
   }
 
   @override
-  Future<VaultHeader?> readHeader() async => header;
+  Future<VaultHeader?> readHeader() async => storedHeader ?? header;
+
+  /// Diskte duran üst bilgi; verilmezse [header].
+  VaultHeader? storedHeader;
 
   @override
   Future<PendingVault> prepareVault(String password) async {

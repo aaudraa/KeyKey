@@ -252,16 +252,17 @@ class SyncService {
       );
     }
 
-    final local = await _localState(session);
-    final plan = SyncMerger(
-      cipher: session.records,
-      now: _now(),
-    ).merge(local, sources);
-    if (!plan.isEmpty) {
-      await _store.applyChanges(plan.changes);
-      final header = plan.changes.header;
-      if (header != null) session.header = header;
-    }
+    // Okuma, birleştirme ve yazma tek işlemde: arada kaydedilen bir
+    // değişiklik eski bir plana ezilmez, yerine başka kasa konmuşsa yazılmaz.
+    final (local, plan) = await _store.transaction(() async {
+      final local = await _localState(session);
+      final plan = SyncMerger(
+        cipher: session.records,
+        now: _now(),
+      ).merge(local, sources);
+      if (!plan.isEmpty) await _store.applyChanges(plan.changes);
+      return (local, plan);
+    });
     issues.addAll(plan.issues);
 
     // Sorunsuz dosyalar bir dahaki eşitlemede indirilmez.
@@ -278,6 +279,7 @@ class SyncService {
     }
 
     final state = plan.isEmpty ? local : await _localState(session);
+    session.header = state.header;
     final digest = _digest(state);
     final ownListed = listed.any((f) => f.name == _ownName);
     var uploaded = false;
@@ -338,15 +340,24 @@ class SyncService {
     await _transport(settings).delete(fileName(device));
   }
 
-  Future<LocalState> _localState(VaultSession session) async => LocalState(
-    records: [
-      for (final record in await _store.allRecords())
-        if (record.type != _settingsType) record,
-    ],
-    tombstones: await _store.allTombstones(),
-    header: session.header,
-    times: await _store.readHeaderTimes(),
-  );
+  /// Yerel durum diskten: üst bilgi de oturumdan değil diskten okunur, yuva
+  /// zamanlarıyla birlikte. Diskteki kasa oturumun kasası değilse (geri
+  /// yükleme başka bir kasa koydu) [VaultLockedException].
+  Future<LocalState> _localState(VaultSession session) async {
+    final header = await _store.readHeader();
+    if (header == null || !_sameBytes(header.vaultId, session.header.vaultId)) {
+      throw const VaultLockedException();
+    }
+    return LocalState(
+      records: [
+        for (final record in await _store.allRecords())
+          if (record.type != _settingsType) record,
+      ],
+      tombstones: await _store.allTombstones(),
+      header: header,
+      times: await _store.readHeaderTimes(),
+    );
+  }
 
   /// Birleşmiş halin özeti (BLAKE2b-256, onaltılık): kayıtların kimliği,
   /// türü, `updatedAt` değeri ve şifreli verisinin özeti; silme kayıtları;
