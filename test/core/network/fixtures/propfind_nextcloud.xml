@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<d:multistatus xmlns:d="DAV:" xmlns:s="http://sabredav.org/ns" xmlns:oc="http://owncloud.org/ns" xmlns:nc="http://nextcloud.org/ns">
+ <d:response>
+  <d:href>/dav/Key%20Kasa/</d:href>
+  <d:propstat>
+   <d:prop>
+    <d:getlastmodified>Fri, 20 Nov 2026 08:00:00 GMT</d:getlastmodified>
+    <d:resourcetype><d:collection/></d:resourcetype>
+    <d:getetag>&quot;dir&quot;</d:getetag>
+   </d:prop>
+   <d:status>HTTP/1.1 200 OK</d:status>
+  </d:propstat>
+  <d:propstat>
+   <d:prop>
+    <d:getcontentlength/>
+   </d:prop>
+   <d:status>HTTP/1.1 404 Not Found</d:status>
+  </d:propstat>
+ </d:response>
+ <d:response>
+  <d:href>/dav/Key%20Kasa/keykey-sync-a1b2c3.keykey</d:href>
+  <d:propstat>
+   <d:prop>
+    <d:getlastmodified>Fri, 20 Nov 2026 09:00:00 GMT</d:getlastmodified>
+    <d:getcontentlength>200</d:getcontentlength>
+    <d:resourcetype/>
+    <d:getetag>&quot;e1&quot;</d:getetag>
+   </d:prop>
+   <d:status>HTTP/1.1 200 OK</d:status>
+  </d:propstat>
+ </d:response>
+ <d:response>
+  <d:href>/dav/Key%20Kasa/keykey-sync-0f0f0f.keykey</d:href>
+  <d:propstat>
+   <d:prop>
+    <d:getlastmodified>Fri, 20 Nov 2026 10:00:00 GMT</d:getlastmodified>
+    <d:getcontentlength>300</d:getcontentlength>
+    <d:resourcetype/>
+    <d:getetag>&quot;e2&quot;</d:getetag>
+   </d:prop>
+   <d:status>HTTP/1.1 200 OK</d:status>
+  </d:propstat>
+ </d:response>
+ <d:response>
+  <d:href>/dav/Key%20Kasa/keykey-sync-a1b2c3.keykey.part</d:href>
+  <d:propstat>
+   <d:prop>
+    <d:getcontentlength>100</d:getcontentlength>
+    <d:resourcetype/>
+   </d:prop>
+   <d:status>HTTP/1.1 200 OK</d:status>
+  </d:propstat>
+ </d:response>
+ <d:response>
+  <d:href>/dav/Key%20Kasa/notlar.txt</d:href>
+  <d:propstat>
+   <d:prop>
+    <d:getcontentlength>5</d:getcontentlength>
+    <d:resourcetype/>
+   </d:prop>
+   <d:status>HTTP/1.1 200 OK</d:status>
+  </d:propstat>
+ </d:response>
+ <d:response>
+  <d:href>/dav/Key%20Kasa/keykey-sync-klasor.keykey/</d:href>
+  <d:propstat>
+   <d:prop>
+    <d:resourcetype><d:collection/></d:resourcetype>
+   </d:prop>
+   <d:status>HTTP/1.1 200 OK</d:status>
+  </d:propstat>
+ </d:response>
+</d:multistatus>
