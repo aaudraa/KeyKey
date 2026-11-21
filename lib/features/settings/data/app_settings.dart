@@ -278,6 +278,19 @@ final class AppSettings {
     sync: sync,
   );
 
+  /// Yedek zamanı ve hatırlatıcı ertelemesi olmadan; başka bir kasaya
+  /// geçilince bu telefonun yedekleri o kasanın değildir.
+  AppSettings withoutBackupHistory() => AppSettings(
+    otpRequireAuth: otpRequireAuth,
+    autofillCopyOtp: autofillCopyOtp,
+    vaultSort: vaultSort,
+    generator: generator,
+    autoBackupFolder: autoBackupFolder,
+    backgroundLock: backgroundLock,
+    plainKeyboard: plainKeyboard,
+    sync: sync,
+  );
+
   Uint8List toJsonBytes() => utf8.encode(
     jsonEncode({
       'version': currentVersion,

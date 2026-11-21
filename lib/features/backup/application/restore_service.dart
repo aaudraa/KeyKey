@@ -394,7 +394,10 @@ class RestoreService {
         ...byId.values,
         _settingsRecord(
           target,
-          (settings ?? AppSettings.defaults).withSync(sync),
+          // Eski kasanın yedek zamanı taşınmaz: klasördeki yedekler o kasanın.
+          (settings ?? AppSettings.defaults)
+              .withSync(sync)
+              .withoutBackupHistory(),
           id: SettingsRepository.recordId,
           createdAt: settingsRecord?.createdAt ?? remote.createdAt,
           updatedAt: settingsRecord?.updatedAt ?? remote.createdAt,
