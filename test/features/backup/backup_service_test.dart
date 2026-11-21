@@ -142,9 +142,9 @@ void main() {
     await putLogin(5);
     await store.deleteRecord(
       Uint8List(16)..[0] = 5,
-      deletedAt: DateTime.utc(2026, 3, 1),
+      deletedAt: DateTime.utc(2026, 3),
     );
-    expect(await backups.latestChange(), DateTime.utc(2026, 3, 1));
+    expect(await backups.latestChange(), DateTime.utc(2026, 3));
   });
 
   test('önerilen dosya adı yerel tarihi taşıyor', () {

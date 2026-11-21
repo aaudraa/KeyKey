@@ -219,6 +219,9 @@ final class WebDavClient implements SyncTransport {
     } on IOException {
       // SocketException, HttpException.
       throw const SyncTransportException(SyncFailureKind.offline);
+    } on FormatException {
+      // Ayrıştırılamayan yanıt; çağıranlar yalnızca bu türü bekler.
+      throw const SyncTransportException(SyncFailureKind.badResponse);
     } finally {
       client.close(force: true);
     }
@@ -330,7 +333,14 @@ final class WebDavClient implements SyncTransport {
       } on FormatException {
         continue;
       }
-      final path = Uri.decodeFull(resolved.path);
+      // Klasördeki başka bir dosyanın adı geçerli UTF-8 olmayabilir (Latin-1
+      // bir sistemden "caf%E9.txt"); o girdi atlanır, liste bozulmaz.
+      final String path;
+      try {
+        path = Uri.decodeFull(resolved.path);
+      } on FormatException {
+        continue;
+      }
       if (!path.startsWith(folderPath)) continue;
       final name = path.substring(folderPath.length);
       if (name.isEmpty ||

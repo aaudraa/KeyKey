@@ -396,7 +396,7 @@ void main() {
 
 /// Zorla yedek isteklerini sayar, dosya yazmaz.
 class _RecordingAutoBackup extends AutoBackupController {
-  _RecordingAutoBackup(this._onForced);
+  new(this._onForced);
 
   final void Function() _onForced;
 
