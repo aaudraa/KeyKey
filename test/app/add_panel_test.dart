@@ -106,7 +106,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(_location(tester), AppRoutes.vault);
       expect(find.byType(GlassNavBar), findsOneWidget);
-      expect(find.text('Parolalar'), findsWidgets);
+      // Sekme adı görünmez (#163); seçili Parolalar sekmesi dolu simgeyle.
+      expect(find.byIcon(Icons.key), findsOneWidget);
     });
   }
 

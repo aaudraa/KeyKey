@@ -139,30 +139,33 @@ void main() {
     });
   }
 
-  testWidgets('seçili sekmenin adı görünür, diğerlerinin görünmez', (
-    tester,
-  ) async {
-    await tester.pumpWidget(_host());
-    expect(find.text('Kasa'), findsOneWidget);
-    expect(find.text('2FA'), findsNothing);
-    expect(find.text('Ayarlar'), findsNothing);
-  });
+  // Proje sahibinin notu (#163, 2026-11-21): yalnızca kısa "2FA" sığdığı için
+  // ad tutarsız görünüyordu; adlar kalktı, simge ve vurgu kaldı.
+  for (final (width, scale) in [(320.0, 1.0), (411.0, 1.0), (800.0, 1.0)]) {
+    testWidgets('${width.toInt()} dp, %${(scale * 100).toInt()} yazıda hiçbir '
+        'sekmenin adı görünmüyor', (tester) async {
+      tester.view
+        ..physicalSize = Size(width * 3, 2000)
+        ..devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+      for (var selected = 0; selected < _fiveItems.length; selected++) {
+        await tester.pumpWidget(
+          _host(items: _fiveItems, selected: selected, textScale: scale),
+        );
+        await tester.pumpAndSettle();
+        for (final item in _fiveItems) {
+          expect(find.text(item.label), findsNothing, reason: item.label);
+        }
+      }
+    });
+  }
 
-  // Proje sahibinin isteği (2026-11-16): sekme adı daha büyük ve kalın.
-  testWidgets('sekme adı 16 punto, çok kalın', (tester) async {
-    await tester.pumpWidget(_host());
-    final style = tester.widget<Text>(find.text('Kasa')).style;
-    expect(style?.fontSize, 16);
-    expect(style?.fontWeight, FontWeight.w800);
-  });
-
-  testWidgets('seçim değişince ad yeni sekmeye geçer', (tester) async {
+  testWidgets('seçim değişince simge dolu olana geçer', (tester) async {
     await tester.pumpWidget(const _Switcher());
     await tester.tap(find.byIcon(Icons.shield_outlined));
     await tester.pumpAndSettle();
-    expect(find.text('2FA'), findsOneWidget);
-    expect(find.text('Kasa'), findsNothing);
     expect(find.byIcon(Icons.shield), findsOneWidget);
+    expect(find.text('2FA'), findsNothing);
   });
 
   testWidgets('seçilen sekmenin simgesi küçük bir zıplama yapar', (
