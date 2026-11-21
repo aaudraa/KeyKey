@@ -407,6 +407,32 @@ void main() {
       expect(bridge.filled?.password, 'banka-parolasi');
       expect(bridge.notice, 'Banka dolduruldu');
     });
+
+    testWidgets('çöpteki kayıt eşleşmiyor ve sormadan doldurulmuyor', (
+      tester,
+    ) async {
+      final index = logins.items.indexWhere(
+        (item) => item.content.name == 'Banka',
+      );
+      final item = logins.items[index];
+      logins.items[index] = FakeLoginRepository.item(
+        item.content.copyWith(trashedAt: DateTime.utc(2026, 11, 20)),
+        id: item.id.last,
+      );
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: const AutofillTarget(
+          packageName: 'com.android.chrome',
+          appLabel: 'Chrome',
+          webDomain: 'giris.banka.example.com',
+          webScheme: 'https',
+        ),
+      );
+
+      expect(bridge.filled, isNull);
+      expect(find.text('Eşleşen kayıtlar'), findsNothing);
+    });
   });
 
   testWidgets('arama süzüyor', (tester) async {
