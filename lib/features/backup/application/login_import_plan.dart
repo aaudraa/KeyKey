@@ -128,12 +128,12 @@ LoginImportPlan planLoginImport(
     // hangisinin taşıyacağı seçime bağlı; kaydederken [importedOtps] seçer.
     final otpAlreadySaved =
         otp != null && secrets.contains(_secretKey(otp.parameters.secret));
+    // Kasadaki her girişle karşılaştırılır; bir kez hesaplanır.
+    final fingerprint = _fingerprint(content);
     candidates.add(
       LoginImportCandidate(
         content: content,
-        duplicate: known.any(
-          (fingerprint) => fingerprint.matches(_fingerprint(content)),
-        ),
+        duplicate: known.any((other) => other.matches(fingerprint)),
         otp: otp,
         otpAlreadySaved: otpAlreadySaved,
       ),
