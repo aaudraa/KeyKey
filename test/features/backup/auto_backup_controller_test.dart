@@ -270,6 +270,27 @@ void main() {
     },
   );
 
+  test('yedek zamanı yazılamasa da budanır ve durum temizlenir', () {
+    // K3: ayar kaydı başka bir hatayla düşünce budama atlanıyordu;
+    // lastBackupAt ilerlemediği için her tetikte yeni dosya birikiyordu.
+    fakeAsync((async) {
+      final olds = [
+        for (var hours = 1; hours <= 5; hours++)
+          autoName(now.subtract(Duration(minutes: hours * 10))),
+      ];
+      folders.files[folder.uri] = {
+        for (final name in olds) name: Uint8List.fromList([9]),
+      };
+      backups.latest = now.subtract(const Duration(hours: 1));
+      final container = open();
+      settings.saveError = Exception('disk dolu');
+      async.elapse(const Duration(seconds: 6));
+      expect(folders.writes, 1);
+      expect(files().keys, unorderedEquals([nowName, ...olds.take(4)]));
+      expect(container.read(autoBackupControllerProvider).problem, isNull);
+    });
+  });
+
   test('zamanlayıcı beklerken kasa kilitlenirse yazılmaz', () {
     fakeAsync((async) {
       backups.latest = now.subtract(const Duration(hours: 1));
