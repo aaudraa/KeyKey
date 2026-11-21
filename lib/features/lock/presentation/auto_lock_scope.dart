@@ -70,11 +70,18 @@ class _AutoLockScopeState extends ConsumerState<AutoLockScope>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.hidden || AppLifecycleState.paused:
-        // KeyKey'in açtığı bir dosya seçicisi sürüyorsa kilit, seçicinin
-        // kendi süre sınırına bırakılır.
-        if (ref.read(externalActivityGateProvider)) return;
         // Dönerken de paused'dan hidden'a geçilir; bekleme zaten kurulu.
         if (_background != null) return;
+        // KeyKey'in açtığı bir dosya seçicisi sürüyorsa kilit, seçicinin
+        // kendi süre sınırına bırakılır. O sınırın zamanlayıcısı telefon
+        // uyurken durur; an kaydedilir ki dönüşte iki saatle denetlensin.
+        if (ref.read(externalActivityGateProvider)) {
+          _background = (
+            at: _clock.read(),
+            delay: ExternalActivityGate.maxDuration,
+          );
+          return;
+        }
         final delay =
             ref.read(settingsControllerProvider)?.backgroundLock.delay ??
             Duration.zero;

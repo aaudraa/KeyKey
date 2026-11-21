@@ -1068,6 +1068,25 @@ void main() {
         // Seçici kendi 3 dakikalık sınırını uygular; dönüşte açık.
         expect(find.text(vaultText), findsOneWidget);
       });
+
+      testWidgets('dosya seçicisi açıkken telefon uyuduysa dönüşte kilitli', (
+        tester,
+      ) async {
+        // Telefon uyurken Dart zamanlayıcıları ilerlemez; seçicinin 3
+        // dakikalık sınırı dönüşte iki saatle denetlenmeli.
+        await pumpWithDelay(tester, BackgroundLock.seconds30);
+        final picker = Completer<String>();
+        final result = ProviderScope.containerOf(
+          tester.element(find.text(vaultText)),
+        ).read(externalActivityGateProvider.notifier).run(() => picker.future);
+
+        setLifecycle(tester, AppLifecycleState.paused);
+        clock.advance(const Duration(hours: 4));
+        picker.complete('dosya');
+        await resume(tester);
+        await result;
+        expect(find.text(lockedTitle), findsOneWidget);
+      });
     });
 
     testWidgets('kilit anahtarları siliyor', (tester) async {
