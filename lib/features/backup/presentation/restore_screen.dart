@@ -13,13 +13,13 @@ import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/backup/backup_codec.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
-import 'package:keykey/core/crypto/recovery_key.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/backup/application/auto_backup_controller.dart';
 import 'package:keykey/features/backup/application/restore_service.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
+import 'package:keykey/features/lock/application/recovery_key_text.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/recovery_key_formatter.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
@@ -293,8 +293,8 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
                 enabled: !_busy,
                 errorText: _error,
                 helperText: l10n.recoveryKeyProgress(
-                  RecoveryKeyCodec.symbolsOf(_secret.text).length,
-                  RecoveryKeyCodec.textLength,
+                  RecoveryKeyText.symbolsOf(_secret.text).length,
+                  RecoveryKeyText.textLength,
                 ),
                 inputFormatters: [RecoveryKeyFormatter()],
                 style: const TextStyle(fontFamily: 'monospace'),

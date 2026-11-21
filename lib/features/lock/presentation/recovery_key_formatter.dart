@@ -1,5 +1,5 @@
 import 'package:keykey/app/grouped_text_formatter.dart';
-import 'package:keykey/core/crypto/recovery_key.dart';
+import 'package:keykey/features/lock/application/recovery_key_text.dart';
 
 /// Kurtarma anahtarını yazarken kağıttaki gibi gösterir: büyük harf ve beşli
 /// gruplar arasında tire. Tireyi kullanıcı yazmaz, kendiliğinden gelir.
@@ -10,9 +10,9 @@ import 'package:keykey/core/crypto/recovery_key.dart';
 class RecoveryKeyFormatter extends GroupedTextFormatter {
   new()
     : super(
-        groupLength: RecoveryKeyCodec.groupLength,
+        groupLength: RecoveryKeyText.groupLength,
         separator: '-',
         allowed: RegExp(r'^[A-Za-z0-9ıİ \t-]*$'),
-        normalize: RecoveryKeyCodec.normalize,
+        normalize: RecoveryKeyText.normalize,
       );
 }

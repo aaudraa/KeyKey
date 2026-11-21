@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
-import 'package:keykey/core/crypto/recovery_key.dart';
+import 'package:keykey/features/lock/application/recovery_key_text.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/recovery_key_steps.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
@@ -29,11 +29,11 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
   void _submit() {
     if (_key.text.trim().isEmpty) return;
     final l10n = AppLocalizations.of(context);
-    final count = RecoveryKeyCodec.symbolsOf(_key.text).length;
-    if (count != RecoveryKeyCodec.textLength) {
+    final count = RecoveryKeyText.symbolsOf(_key.text).length;
+    if (count != RecoveryKeyText.textLength) {
       setState(
         () =>
-            _error = l10n.recoveryKeyLength(count, RecoveryKeyCodec.textLength),
+            _error = l10n.recoveryKeyLength(count, RecoveryKeyText.textLength),
       );
       return;
     }
