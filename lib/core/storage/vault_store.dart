@@ -319,6 +319,17 @@ final class VaultStore {
         : DateTime.fromMillisecondsSinceEpoch(value, isUtc: true);
   }
 
+  /// En son silmenin anı (silme kayıtlarından); silme yoksa `null`.
+  Future<DateTime?> latestDeletion() async {
+    final latest = _database.tombstones.deletedAt.max();
+    final query = _database.selectOnly(_database.tombstones)
+      ..addColumns([latest]);
+    final value = await query.map((row) => row.read(latest)).getSingle();
+    return value == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(value, isUtc: true);
+  }
+
   /// Kaydı siler ve aynı işlemde silme kaydını yazar ([deletedAt] verilmezse
   /// şimdi). Aynı kimlikte silme kaydı varsa büyük zaman kalır. Ayar kaydı
   /// ve olmayan kayıt için silme kaydı yazılmaz.

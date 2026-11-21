@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/core/network/sync_transport.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
+import 'package:keykey/features/backup/application/auto_backup_controller.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
@@ -47,7 +48,10 @@ void main() {
     clock = DateTime.utc(2026, 11, 20, 12);
   });
 
+  late int forcedBackups;
+
   ProviderContainer open() {
+    forcedBackups = 0;
     final service = FakeVaultService(sodium);
     final container = ProviderContainer(
       overrides: [
@@ -70,6 +74,9 @@ void main() {
         ),
         syncServiceProvider.overrideWithValue(sync),
         syncClockProvider.overrideWithValue(() => clock),
+        autoBackupControllerProvider.overrideWith(
+          () => _RecordingAutoBackup(() => forcedBackups++),
+        ),
       ],
     );
     addTearDown(container.dispose);
@@ -337,4 +344,44 @@ void main() {
       expect(states.last, isA<OtpsLoaded>());
     });
   });
+
+  test(
+    'yerel veriyi değiştiren eşitlemeden sonra otomatik yedek yazılıyor',
+    () {
+      // N2: gelen kayıt öteki telefonun eski updatedAt'ini taşır; değişiklik
+      // ölçütü onu görmez. Eşitleme yerel veriyi değiştirdiyse yedek zorlanır.
+      fakeAsync((async) {
+        sync.changedLocal = true;
+        open();
+        async.elapse(const Duration(seconds: 1));
+        expect(sync.calls, 1);
+        expect(forcedBackups, 1);
+      });
+    },
+  );
+
+  test('yerel veriyi değiştirmeyen eşitleme yedek zorlamıyor', () {
+    fakeAsync((async) {
+      open();
+      async.elapse(const Duration(seconds: 1));
+      expect(sync.calls, 1);
+      expect(forcedBackups, 0);
+    });
+  });
+}
+
+/// Zorla yedek isteklerini sayar, dosya yazmaz.
+class _RecordingAutoBackup extends AutoBackupController {
+  _RecordingAutoBackup(this._onForced);
+
+  final void Function() _onForced;
+
+  @override
+  AutoBackupStatus build() => const AutoBackupStatus();
+
+  @override
+  Future<bool> backUpNow() async {
+    _onForced();
+    return true;
+  }
 }

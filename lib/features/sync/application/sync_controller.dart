@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/core/network/sync_transport.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
+import 'package:keykey/features/backup/application/auto_backup_controller.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/sync/application/sync_merger.dart';
@@ -266,6 +267,9 @@ class SyncController extends Notifier<SyncStatus> {
     }
     if (generation != _generation) return;
     if (result.changedLocal) {
+      // Gelen kayıtlar öteki telefonun eski zamanlarını taşır, silmeler de
+      // eski olabilir; otomatik yedeğin değişiklik ölçütü bunları görmez.
+      unawaited(ref.read(autoBackupControllerProvider.notifier).backUpNow());
       unawaited(ref.read(loginsControllerProvider.notifier).reload());
       ref
         ..invalidate(otpsControllerProvider)
