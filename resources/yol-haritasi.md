@@ -802,6 +802,7 @@ Kasanın kullanıcının kendi WebDAV klasörü üzerinden telefonlar arasında 
 | Gizli olmayan alanlarda normal klavye | 18 | Ad, site, klasör ve aramada büyük harf ve adres klavyesi. Bugün bütün kutular bilerek `visiblePassword` açıyor, çünkü klavyelerin çoğu öğrenme kapatma isteğini ancak böyle uyguluyor; normal klavyede kayıt adları ve siteler klavyenin sözlüğüne girebilir. Ayar olarak gelir ([ayrıntı](docs/kullanici-gozuyle.md#proje-sahibinin-kararına-bırakılanlar)). |
 | Toplu seçim | 18 | Çoklu silme ve klasöre taşıma. |
 | Steam Guard kodları | 18 | 2FA tarafı için. |
+| Navbar'da yalnızca simgeler | Sonraki sürüm | Proje sahibinin notu (2026-11-21): navbar yalnızca seçili sekmenin adını, o da sığarsa gösteriyor; beş sekmeyle telefonda yalnızca "2FA" sığdığı için tutarsız görünüyor. Görünen adlar kalkar, ekran okuyucu adları okumaya devam eder. Sonraki sürüme küçük bir düzeltme olarak girer ([#163](https://github.com/aaudraa/KeyKey/issues/163)). |
 | KeePass (`.kdbx`) içe aktarma | 20 | KDBX çoğunlukla Argon2d kullanır, libsodium'da yok; ayrı ve incelenmiş bir uygulama gerekir. |
 | Passkey ve Credential Manager sağlayıcısı | 21 | Android 14 ve üstü. Passkey'ler çoğunlukla P-256 (ES256) ister, libsodium'da yok; Android'in kendi kripto sağlayıcısı kullanılır. |
 | İşlemciye göre bölünmüş APK | 22 | Evrensel APK 80 MB. Bölünmüş APK'lar evrenselin yanına eklenir; Obtainium işlemciye uygun olanı seçebilir. |
