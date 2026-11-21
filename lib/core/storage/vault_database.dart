@@ -120,9 +120,12 @@ final class VaultDatabase extends _$VaultDatabase {
 
   static void _rejectNewerSchema(File file) {
     if (!file.existsSync()) return;
+    // Okuma-yazma açılır: yazma ortasında ölen bir süreç sıcak bir günlük
+    // bırakmışsa SQLite onu ilk okumada geri alır. Salt okunur bağlantı geri
+    // alamaz ve her açılışta hata verirdi. Sürüm okumak dosyaya yazmaz.
     final database = sqlite.sqlite3.open(
       file.path,
-      mode: sqlite.OpenMode.readOnly,
+      mode: sqlite.OpenMode.readWrite,
     );
     try {
       final found = database.userVersion;
