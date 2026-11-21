@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/features/authenticator/data/base32.dart';
 import 'package:keykey/features/authenticator/data/otp_content.dart';
@@ -206,13 +208,43 @@ void main() {
       expect(candidate.otpAlreadySaved, isTrue);
     });
 
-    test('dosyada aynı anahtar ikinci kez geçerse yalnızca ilki ekleniyor', () {
+    test(
+      'dosyada aynı anahtar iki kez geçse de plan ikisini de ekleyebilir',
+      () {
+        // Hangisinin seçileceği kaydederken belli olur; plan yalnızca kasada
+        // olanı sayar.
+        final plan = planLoginImport(
+          exportOf([forum, forum]),
+          existingLogins: const [],
+          existingOtps: const [],
+        );
+        expect(plan.candidates.map((c) => c.otpAlreadySaved), [false, false]);
+      },
+    );
+
+    test('seçilenler arasında aynı anahtar bir kez ekleniyor', () {
       final plan = planLoginImport(
         exportOf([forum, forum]),
         existingLogins: const [],
         existingOtps: const [],
       );
-      expect(plan.candidates.map((c) => c.otpAlreadySaved), [false, true]);
+      final ids = [Uint8List(16)..[15] = 1, Uint8List(16)..[15] = 2];
+      final otps = importedOtps(plan.candidates, ids);
+      expect(otps, hasLength(1));
+      expect(otps.single.loginId, ids.first);
+    });
+
+    test('ilk aday seçilmezse anahtar ikinciyle ekleniyor', () {
+      // N1: ilki kasadaki bir girişe benzediği için seçilmemişse 2FA
+      // anahtarı hiçbir yere kaydedilmiyordu.
+      final plan = planLoginImport(
+        exportOf([forum, forum]),
+        existingLogins: const [],
+        existingOtps: const [],
+      );
+      final id = Uint8List(16)..[15] = 2;
+      final otps = importedOtps([plan.candidates[1]], [id]);
+      expect(otps.single.loginId, id);
     });
 
     test("Bitwarden'ın steam:// anahtarı Steam hesabı oluyor", () {

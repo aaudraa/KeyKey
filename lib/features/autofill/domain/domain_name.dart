@@ -8,7 +8,7 @@ abstract final class DomainName {
   static final _ipv4 = RegExp(r'^[0-9]+(\.[0-9]+){3}$');
 
   static final _hostWithPort = RegExp(r'^[^:/?#\s]+:\d+(?:[/?#]|$)');
-  static final _scheme = RegExp(r'^([a-zA-Z][a-zA-Z0-9+.-]*):');
+  static final _scheme = RegExp('^([a-zA-Z][a-zA-Z0-9+.-]*):');
   static final _webScheme = RegExp('^https?://', caseSensitive: false);
 
   /// Bir adresin alan adı. Şema yoksa `https://` varsayılır. Şema yalnızca
