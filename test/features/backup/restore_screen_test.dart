@@ -442,6 +442,24 @@ void main() {
       expect(find.text('KeyKey kilitli'), findsOneWidget);
     });
 
+    testWidgets('değiştirme başarısız olursa parmak izi açık kalıyor', (
+      tester,
+    ) async {
+      // K2: parmak izi değiştirmeden önce kapatılıyordu; değiştirme düşünce
+      // kasa aynı kalıyor ama parmak izi sessizce gitmiş oluyordu.
+      service.biometricEnabled = true;
+      restores.onReplace = () => throw Exception('disk dolu');
+      await openFromSettings(tester);
+      await tester.tap(find.text('Kasanın yerine yedeği koy'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Değiştir'));
+      await tester.pumpAndSettle();
+
+      expect(restores.replaces, 1);
+      expect(service.biometricEnabled, isTrue);
+      expect(find.text('KeyKey kilitli'), findsNothing);
+    });
+
     testWidgets('birleştirmeden sonra yeni kartlar listede', (tester) async {
       final cards = FakeRecordRepository<CardContent>();
       restores.onMerge = () => cards.items.add(

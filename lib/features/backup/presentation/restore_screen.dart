@@ -228,8 +228,6 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
     final stampAt = _stampAt();
     setState(() => _busy = true);
     try {
-      // Önce parmak izi kapanır: yeni kasanın anahtarı eski yuvayla açılmaz.
-      await ref.read(vaultServiceProvider).disableBiometric();
       await ref
           .read(restoreServiceProvider)
           .replace(
@@ -238,6 +236,14 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
             sync: settings?.sync,
             stampAt: stampAt,
           );
+      // Parmak izi değiştirme bitince kapanır: yeni kasanın anahtarı eski
+      // yuvayla açılmaz. Değiştirme düşerse kasa da parmak izi de olduğu gibi
+      // kalır. Kapatılamazsa değiştirme geri alınmaz; yuva işlemde silindi.
+      try {
+        await ref.read(vaultServiceProvider).disableBiometric();
+      } on Exception {
+        // Yok sayılır.
+      }
       // Kilit ekranına gidilir; kasa artık yedeğin ana parolasıyla açılır.
       controller.lockReplaced(backup.header);
     } on Exception {
