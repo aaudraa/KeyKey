@@ -40,9 +40,46 @@ internal suspend fun <I, O> ComponentActivity.awaitActivityResult(
     }
 }
 
-/** En fazla [limit] bayt okur; akış daha uzunsa [limit] bayt döner. Ara bellek sıfırlanır. */
+/**
+ * Büyürken eski iç diziyi, [wipe] ile de son diziyi sıfırlayan çıkış akışı.
+ * `ByteArrayOutputStream` büyürken eski diziyi olduğu gibi çöp toplayıcıya
+ * bırakır; okunan dosya düz metin parolalar taşıyabilir.
+ */
+internal open class WipingByteArrayOutputStream(size: Int = 32) : ByteArrayOutputStream(size) {
+    @Synchronized
+    override fun write(b: ByteArray, off: Int, len: Int) {
+        ensureRoom(len)
+        super.write(b, off, len)
+    }
+
+    @Synchronized
+    override fun write(b: Int) {
+        ensureRoom(1)
+        super.write(b)
+    }
+
+    private fun ensureRoom(extra: Int) {
+        val needed = count + extra
+        if (needed <= buf.size) return
+        val old = buf
+        buf = old.copyOf(maxOf(needed, old.size * 2))
+        old.fill(0)
+    }
+
+    /** İç diziyi sıfırlar ve akışı boşaltır. */
+    @Synchronized
+    fun wipe() {
+        buf.fill(0)
+        count = 0
+    }
+}
+
+/**
+ * En fazla [limit] bayt okur; akış daha uzunsa [limit] bayt döner. Ara bellek
+ * ve iç diziler sıfırlanır; dönen kopyayı sıfırlamak çağıranın işi.
+ */
 internal fun readAtMost(stream: InputStream, limit: Long): ByteArray {
-    val out = ByteArrayOutputStream()
+    val out = WipingByteArrayOutputStream()
     val buffer = ByteArray(BUFFER_SIZE)
     var total = 0L
     try {
@@ -56,5 +93,6 @@ internal fun readAtMost(stream: InputStream, limit: Long): ByteArray {
         return out.toByteArray()
     } finally {
         buffer.fill(0)
+        out.wipe()
     }
 }
