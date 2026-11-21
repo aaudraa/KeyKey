@@ -2,7 +2,7 @@
 
 **Geçerlilik:** KeyKey 1.0 ve sonrası · **Son güncelleme:** 2026-11-20 · English: [privacy.md](privacy.md)
 
-KeyKey hiçbir veri toplamaz. Hesap ve sunucu yoktur; kasan yalnızca bu telefonda, şifreli durur. KeyKey 1.6.0'dan beri internet iznine sahiptir ve internete yalnızca senin başlattığın bir denetim için çıkar: parola raporundaki [sızıntı kontrolü](#sızıntı-kontrolü). Bu denetimde parolaların ve kasan cihazdan çıkmaz. Ağ kodu tek bir dosyadadır ve başka bir yerde ağ kodu olmadığını her derlemede bir test denetler; kaynak koddan herkes doğrulayabilir.
+KeyKey hiçbir veri toplamaz. Hesap ve KeyKey'in bir sunucusu yoktur; kasan bu telefonda, şifreli durur. KeyKey 1.6.0'dan beri internet iznine sahiptir ve internete yalnızca senin açtığın iki özellik için çıkar: parola raporundaki [sızıntı kontrolü](#sızıntı-kontrolü) ve açarsan [senkron](#senkron). Sızıntı kontrolünde parolaların ve kasan cihazdan çıkmaz; senkronda kasanın yalnızca ana parolanla şifrelenmiş bir kopyası senin seçtiğin sunucuya gider. Ağ kodu iki dosyadadır ve başka bir yerde ağ kodu olmadığını her derlemede bir test denetler; kaynak koddan herkes doğrulayabilir.
 
 ## Toplanmayanlar
 
@@ -15,6 +15,7 @@ KeyKey hiçbir veri toplamaz. Hesap ve sunucu yoktur; kasan yalnızca bu telefon
 
 - Girdiğin parolalar, kartlar, güvenli notlar, 2FA hesapları ve ayarlar yalnızca senin cihazında, ana parolandan türetilen anahtarla şifrelenmiş bir veritabanında durur. Şifreleme ayrıntıları [güvenlik tasarımında](guvenlik-tasarimi.md).
 - Android'in bulut yedeği kapalıdır; kasa Google hesabına yedeklenmez.
+- Senkronu açarsan klasör adresi, kullanıcı adı ve uygulama parolası kasanın içinde, ayar kaydında şifreli durur. Kasanın yedeğine de girer (yedek şifreli).
 - İki istisna var, ikisi de uygulamanın kendi klasöründe ayrı, şifresiz küçük birer dosya ve başka hiçbir bilgi içermez:
   - Tema seçimin (sistem, açık ya da koyu): kilit ekranı da seçtiğin temayla açılsın diye.
   - [Kullanım koşullarını](kosullar.md) kabul ettiğin: yalnızca kabul edilen koşulların sürüm numarası. Koşullar kasa açılmadan önce sorulduğu için kasanın içinde tutulamaz.
@@ -27,7 +28,7 @@ KeyKey hiçbir veri toplamaz. Hesap ve sunucu yoktur; kasan yalnızca bu telefon
 | Kamera | Yalnızca 2FA QR kodu tararken istenir. Görüntü kaydedilmez, cihazdan çıkmaz. |
 | Biyometri (parmak izi) | Kasayı parmak iziyle açmak için. Parmak izinin kendisi KeyKey'e hiç ulaşmaz; Android yalnızca "doğrulandı" bilgisini verir. |
 | Bindirme pencerelerini gizleme | KeyKey ekrandayken başka uygulamaların üstüne pencere çizip dokunuşları kandırmasını önlemek için. |
-| İnternet | Yalnızca parola raporundaki sızıntı kontrolü için, sen dokununca. Ne gittiği [aşağıda](#sızıntı-kontrolü). |
+| İnternet | Parola raporundaki sızıntı kontrolü için, sen dokununca; açarsan senkron için, yalnızca senin girdiğin sunucuyla. Ne gittiği aşağıda: [sızıntı kontrolü](#sızıntı-kontrolü), [senkron](#senkron). |
 
 Konum, rehber, depolama ve bütün uygulamaları görme (`QUERY_ALL_PACKAGES`) izinleri istenmez.
 
@@ -49,6 +50,15 @@ Parola raporunda **İnternetten denetle**'ye dokunursan KeyKey, parolalarının 
 - **Ne saklanır:** Hiçbir şey. Sonuç yalnızca bellekte durur; ekrandan çıkınca ya da kasa kilitlenince silinir.
 
 Veri Have I Been Pwned'ındır ve CC BY 4.0 lisansıyla kullanılır.
+
+## Senkron
+
+Ayarlar → **Senkron**'u açarsan KeyKey, kasanın şifreli bir kopyasını senin girdiğin WebDAV klasörüne (Nextcloud, ownCloud ya da başka bir WebDAV sunucusu) yazar ve aynı klasörü kullanan telefonlarının dosyalarını okur. Senkron kapalıyken hiçbir şey gönderilmez. Tasarım ayrıntıları [senkron tasarımında](senkron.md).
+
+- **Ne gider:** Kasanın, yedekle aynı biçimde ana parolanla şifrelenmiş kopyası: kayıtlar, silinen kayıtların kimlikleri ve zamanları, telefonun modeli (örneğin SM-G780G). Dosya adında bu kurulumun rastgele 6 karakterlik kimliği vardır (`keykey-sync-a1b2c3.keykey`). Kullanıcı adı ve uygulama parolası sunucuya giriş için her istekte HTTPS içinde gider; dosyaya yazılmaz.
+- **Kime gider:** Yalnızca senin girdiğin sunucuya, yalnızca HTTPS ile (yönlendirme izlenmez). KeyKey'in ya da geliştiricilerinin bir sunucusu yoktur; geliştiriciler dosyalara erişmez.
+- **Karşı taraf ne görür:** IP adresin, dosya adları, boyutları ve değişme zamanları. İçeriği ana parolan olmadan okuyamaz ve değiştiremez; ana parolanı çevrimdışı deneyebilir, bu yüzden ana parolanın güçlü olması önemlidir.
+- **Ne saklanır:** Sunucuda her telefonun bir dosyası. Senkronu kapatırken bu telefonun dosyasını da silebilirsin; sunucunun dosya geçmişi ve çöp kutusu KeyKey'in erişiminde değildir.
 
 ## Dosyalar
 
@@ -72,5 +82,5 @@ Dağıtım kararı (#100, 2026-11-09): 1.0 GitHub Releases'ta, sonra F-Droid. F-
 
 - **GitHub Releases ve Obtainium:** Gizlilik formu istemiyor; bu bildirim yeterli.
 
-- **Play Store veri güvenliği formu:** "Uygulama kullanıcı verisi toplamıyor." Sızıntı kontrolü Play'e gidilirse formda yeniden değerlendirilir: giden yalnızca 5 karakterlik özet öneki, HTTPS ile (aktarımda şifreli), kullanıcı dokununca; kimse saklamaz. Kullanıcı veri silme talebinde bulunabilir: uygulama içinden kayıt silme ve uygulamayı kaldırma.
-- **F-Droid:** `NonFreeNet` anti-özelliği: sızıntı kontrolü özgür olmayan bir ağ hizmetine (Have I Been Pwned) bağlanır. İzleme yok, özgür olmayan bağımlılık yok. SQLite ve libsodium kaynaktan derleniyor; Flutter motoru F-Droid'in izin verdiği hazır parçalardan. Başvuru Faz 10'da (#119): F-Droid kaynaktan derler, derlemesi bizimkiyle birebir aynı olduğu için bizim imzalı APK'mızı dağıtır.
+- **Play Store veri güvenliği formu:** "Uygulama kullanıcı verisi toplamıyor." Sızıntı kontrolü Play'e gidilirse formda yeniden değerlendirilir: giden yalnızca 5 karakterlik özet öneki, HTTPS ile (aktarımda şifreli), kullanıcı dokununca; kimse saklamaz. Senkron verisi geliştiriciye değil, kullanıcının kendi seçtiği sunucuya, uçtan uca şifreli gider. Kullanıcı veri silme talebinde bulunabilir: uygulama içinden kayıt silme ve uygulamayı kaldırma.
+- **F-Droid:** `NonFreeNet` anti-özelliği: sızıntı kontrolü özgür olmayan bir ağ hizmetine (Have I Been Pwned) bağlanır. Senkron kullanıcının kendi WebDAV sunucusuna bağlanır; yeni bir anti-özellik gerektirmez. İzleme yok, özgür olmayan bağımlılık yok. SQLite ve libsodium kaynaktan derleniyor; Flutter motoru F-Droid'in izin verdiği hazır parçalardan. Başvuru Faz 10'da (#119): F-Droid kaynaktan derler, derlemesi bizimkiyle birebir aynı olduğu için bizim imzalı APK'mızı dağıtır.

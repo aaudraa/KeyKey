@@ -146,6 +146,33 @@ void main() {
       opened.dispose();
     });
 
+    test('senkron dosyası yedek gibi açılıyor', () async {
+      await put(a, 1);
+      await put(a, 2, type: 'otp');
+      final records = await a.store.allRecords();
+      final bytes = await BackupCodec(sodium).encode(
+        header: a.session.header,
+        vaultKey: a.session.vaultKey,
+        records: records,
+        createdAt: DateTime.utc(2026, 11, 7),
+        sync: SyncInfo(
+          device: 'a1b2c3',
+          deleted: [
+            StoredTombstone(id: id(9), deletedAt: DateTime.utc(2026, 7)),
+          ],
+        ),
+      );
+
+      final opened = await restore.openWithPassword(
+        restore.parse(bytes),
+        passwordA,
+      );
+      expect(opened.loginCount, 1);
+      expect(opened.otpCount, 1);
+      expect(opened.records, hasLength(2));
+      opened.dispose();
+    });
+
     test('kart ve notlar sayılıyor', () async {
       await put(a, 1);
       await put(a, 2, type: 'card');
@@ -255,6 +282,141 @@ void main() {
         store: b.store,
       ).openWithPassword(file, passwordA);
     }
+
+    group('senkron dosyasından kurulum', () {
+      final sync = SyncSettings(
+        folder: Uri.parse('https://bulut.example.com/dav/KeyKey/'),
+        username: 'ayse',
+        appPassword: 'uygulama-parolasi',
+      );
+      final passwordAt = DateTime.utc(2026, 10, 3);
+      final recoveryAt = DateTime.utc(2026, 10, 4);
+      final deletedAt = DateTime.utc(2026, 9, 9);
+
+      Future<BackupFile> syncFileOf(_Vault vault) async {
+        await put(vault, 1);
+        await put(vault, 2, type: 'otp');
+        final bytes = await BackupCodec(sodium).encode(
+          header: vault.session.header,
+          vaultKey: vault.session.vaultKey,
+          records: await vault.store.allRecords(),
+          createdAt: DateTime.utc(2026, 11, 7),
+          sync: SyncInfo(
+            device: 'a1b2c3',
+            passwordChangedAt: passwordAt,
+            recoveryChangedAt: recoveryAt,
+            deleted: [StoredTombstone(id: id(9), deletedAt: deletedAt)],
+          ),
+        );
+        return RestoreService(sodium: sodium, store: vault.store).parse(bytes);
+      }
+
+      test('kayıtlar, silmeler ve zamanlar dosyadaki gibi', () async {
+        final file = await syncFileOf(a);
+        final database = VaultDatabase(NativeDatabase.memory());
+        addTearDown(database.close);
+        final store = VaultStore(database);
+        final restore = RestoreService(sodium: sodium, store: store);
+        final opened = await restore.openWithPassword(file, passwordA);
+
+        await restore.replace(opened, sync: sync, syncInfo: opened.sync);
+        opened.dispose();
+
+        final records = await store.allRecords();
+        final source = await a.store.allRecords();
+        expect(
+          [
+            for (final r in records)
+              if (r.type != 'settings') r.id[15],
+          ]..sort(),
+          [for (final r in source) r.id[15]]..sort(),
+        );
+        final tombstone = (await store.allTombstones()).single;
+        expect(tombstone.id[15], 9);
+        expect(tombstone.deletedAt, deletedAt);
+        final times = await store.readHeaderTimes();
+        expect(times.passwordChangedAt, passwordAt);
+        expect(times.recoveryChangedAt, recoveryAt);
+
+        final settingsRecord = records.singleWhere((r) => r.type == 'settings');
+        final settings = AppSettings.tryParse(
+          a.session.records.decrypt(
+            recordId: settingsRecord.id,
+            type: settingsRecord.type,
+            blob: settingsRecord.blob,
+          ),
+        )!;
+        expect(settings.sync!.folder, sync.folder);
+        expect(settings.sync!.username, 'ayse');
+        // Senkron dosyası yedek değildir: son yedek zamanı yazılmaz.
+        expect(settings.lastBackupAt, isNull);
+        expect(settings.otpRequireAuth, AppSettings.defaults.otpRequireAuth);
+        expect(settings.autoBackupFolder, isNull);
+      });
+
+      test("Geri yükle'de senkron bilgisi yok sayılıyor", () async {
+        final file = await syncFileOf(a);
+        final database = VaultDatabase(NativeDatabase.memory());
+        addTearDown(database.close);
+        final store = VaultStore(database);
+        final restore = RestoreService(sodium: sodium, store: store);
+        final opened = await restore.openWithPassword(file, passwordA);
+
+        await restore.replace(opened);
+        opened.dispose();
+
+        expect(await store.allTombstones(), isEmpty);
+        final times = await store.readHeaderTimes();
+        expect(times.passwordChangedAt, isNull);
+        expect(times.recoveryChangedAt, isNull);
+      });
+
+      test('yanlış parolada hiçbir şey yazılmıyor', () async {
+        final file = await syncFileOf(a);
+        final database = VaultDatabase(NativeDatabase.memory());
+        addTearDown(database.close);
+        final store = VaultStore(database);
+        final restore = RestoreService(sodium: sodium, store: store);
+
+        await expectLater(
+          restore.openWithPassword(file, passwordB),
+          throwsA(isA<WrongSecretException>()),
+        );
+        expect(await store.readHeader(), isNull);
+        expect(await store.allRecords(), isEmpty);
+      });
+
+      test('yedekteki başka telefonun senkron bilgisi alınmıyor', () async {
+        await put(a, 1);
+        await a.store.putRecord(
+          StoredRecord(
+            id: SettingsRepository.recordId,
+            type: 'settings',
+            blob: a.session.records.encrypt(
+              recordId: SettingsRepository.recordId,
+              type: 'settings',
+              plainText: AppSettings.defaults.withSync(sync).toJsonBytes(),
+            ),
+            createdAt: DateTime.utc(2026),
+            updatedAt: DateTime.utc(2026),
+          ),
+        );
+        final opened = await openA();
+        await RestoreService(sodium: sodium, store: b.store).replace(opened);
+        opened.dispose();
+        final record = (await b.store.allRecords()).singleWhere(
+          (r) => r.type == 'settings',
+        );
+        final settings = AppSettings.tryParse(
+          a.session.records.decrypt(
+            recordId: record.id,
+            type: record.type,
+            blob: record.blob,
+          ),
+        )!;
+        expect(settings.sync, isNull);
+      });
+    });
 
     test('boş telefona kurulan kasa yedeğin parolasıyla açılıyor', () async {
       await put(a, 1);

@@ -484,6 +484,129 @@ void main() {
     });
   });
 
+  group('yuva zamanları', () {
+    test('parola değişikliği yalnızca parola zamanını yazıyor', () async {
+      final (session, _) = await createVault();
+
+      await service.changePassword(
+        session,
+        currentPassword: password,
+        newPassword: newPassword,
+      );
+
+      final times = await store.readHeaderTimes();
+      expect(times.passwordChangedAt, now);
+      expect(times.recoveryChangedAt, isNull);
+    });
+
+    // Eşitleme bu arada öteki yuvayı diske yazmış olabilir; oturumun
+    // elindeki üst bilgi o anda eski kalır (ikinci oturum bunu taklit eder).
+    VaultSession staleCopy(VaultSession session) {
+      final copy = service.openRestoredSession(
+        session.header,
+        sodium.secureCopy(session.vaultKey.extractBytes()),
+      );
+      addTearDown(copy.dispose);
+      return copy;
+    }
+
+    test(
+      'parola değişikliği arada yenilenen kurtarma yuvasını koruyor',
+      () async {
+        final (session, _) = await createVault();
+        final other = staleCopy(session);
+        final (_, pending) = await service.prepareNewRecoveryKey(
+          other,
+          password,
+        );
+        now = now.add(const Duration(minutes: 1));
+        final renewedAt = now;
+        await service.confirmNewRecoveryKey(
+          other,
+          pending!,
+          pending.recoveryKeyText,
+        );
+        now = now.add(const Duration(minutes: 1));
+
+        await service.changePassword(
+          session,
+          currentPassword: password,
+          newPassword: newPassword,
+        );
+
+        final stored = (await service.readHeader())!;
+        service
+            .unlockWithRecoveryKey(stored, pending.recoveryKeyText)
+            .dispose();
+        final opened = await service.unlockWithPassword(stored, newPassword);
+        addTearDown(() => opened.session?.dispose());
+        expect(opened.attempt, isA<PasswordAccepted>());
+        expect((await store.readHeaderTimes()).recoveryChangedAt, renewedAt);
+        expect(session.header.toJsonString(), stored.toJsonString());
+      },
+    );
+
+    test('kurtarma yenilemesi arada değişen parola yuvasını koruyor', () async {
+      final (session, _) = await createVault();
+      final (_, pending) = await service.prepareNewRecoveryKey(
+        session,
+        password,
+      );
+      final other = staleCopy(session);
+      now = now.add(const Duration(minutes: 1));
+      final changedAt = now;
+      await service.changePassword(
+        other,
+        currentPassword: password,
+        newPassword: newPassword,
+      );
+      now = now.add(const Duration(minutes: 1));
+
+      await service.confirmNewRecoveryKey(
+        session,
+        pending!,
+        pending.recoveryKeyText,
+      );
+
+      final stored = (await service.readHeader())!;
+      final opened = await service.unlockWithPassword(stored, newPassword);
+      addTearDown(() => opened.session?.dispose());
+      expect(opened.attempt, isA<PasswordAccepted>());
+      service.unlockWithRecoveryKey(stored, pending.recoveryKeyText).dispose();
+      expect((await store.readHeaderTimes()).passwordChangedAt, changedAt);
+    });
+
+    test('kurtarma yenilemesi yalnızca kurtarma zamanını yazıyor', () async {
+      final (session, _) = await createVault();
+      final (_, pending) = await service.prepareNewRecoveryKey(
+        session,
+        password,
+      );
+
+      await service.confirmNewRecoveryKey(
+        session,
+        pending!,
+        pending.recoveryKeyText,
+      );
+
+      final times = await store.readHeaderTimes();
+      expect(times.passwordChangedAt, isNull);
+      expect(times.recoveryChangedAt, now);
+    });
+
+    test('kurtarma anahtarıyla yeni parola, parola zamanını yazıyor', () async {
+      final (session, text) = await createVault();
+      final recovered = service.unlockWithRecoveryKey(session.header, text);
+      addTearDown(recovered.dispose);
+
+      await service.setNewPassword(recovered, newPassword);
+
+      final times = await store.readHeaderTimes();
+      expect(times.passwordChangedAt, now);
+      expect(times.recoveryChangedAt, isNull);
+    });
+  });
+
   group('kurtarma anahtarıyla erişim', () {
     test('doğru anahtar açıyor, yeni parola belirlenebiliyor', () async {
       final (session, text) = await createVault();

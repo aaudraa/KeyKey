@@ -1,6 +1,6 @@
 # KeyKey Security Design: Summary in English
 
-KeyKey is an open-source password manager and TOTP/HOTP authenticator for Android with no account and no server, written in Flutter with small Kotlin parts. It needs Android 11 (API 30) or newer.
+KeyKey is an open-source password manager and TOTP/HOTP authenticator for Android with no account and no server of its own, written in Flutter with small Kotlin parts. Since 1.8.0 it can sync the vault, end-to-end encrypted, through a WebDAV folder the user provides. It needs Android 11 (API 30) or newer.
 
 This page summarises the security design for reviewers who don't read Turkish. The full and authoritative design is the Turkish [security design document](guvenlik-tasarimi.md); the [self-audit against OWASP MASVS](guvenlik-denetimi.md) is also in Turkish. Section links below point into those documents. If this summary and the Turkish document disagree, the Turkish document wins, and the disagreement is a bug worth reporting.
 
@@ -22,7 +22,7 @@ KeyKey does not protect against:
 
 **Principle:** we don't implement our own vault cryptography. All vault primitives come from [libsodium](https://libsodium.org) 1.0.22; KeyKey only composes them.
 
-**Network:** versions 1.0-1.5 had no `INTERNET` permission. Since 1.6.0 the only network traffic is the breach check the user starts in the password report: k-anonymity against Have I Been Pwned's Pwned Passwords API, sending only the first 5 hex characters of each password's SHA-1 hash, over HTTPS only. The vault, backups, autofill and the clipboard never go online. All network code lives in one file (`lib/core/network/pwned_passwords_client.dart`), and a test fails the build if network APIs appear anywhere else in the Dart or Kotlin sources; CI also checks the release APK's permission list. [Sızıntı kontrolü](guvenlik-tasarimi.md#sızıntı-kontrolü).
+**Network:** versions 1.0-1.5 had no `INTERNET` permission. Since 1.6.0 there is the breach check the user starts in the password report: k-anonymity against Have I Been Pwned's Pwned Passwords API, sending only the first 5 hex characters of each password's SHA-1 hash, over HTTPS only. Since 1.8.0 there is also [sync](#sync), only if the user turns it on, only with the WebDAV server the user enters, and only end-to-end encrypted files. Backups, autofill and the clipboard never go online. All network code lives in two files (`lib/core/network/pwned_passwords_client.dart` and `lib/core/network/webdav_client.dart`), and a test fails the build if network APIs appear anywhere else in the Dart or Kotlin sources; CI also checks the release APK's permission list. [Sızıntı kontrolü](guvenlik-tasarimi.md#sızıntı-kontrolü).
 
 ## Threat model (condensed)
 
@@ -36,8 +36,11 @@ Full table: [Tehdit modeli](guvenlik-tasarimi.md#tehdit-modeli).
 | Obtains a backup file (e.g. a compromised cloud account) | Protected if the password is strong; old backups open with the old password |
 | Can write to the vault file on disk | Can't read it, and modified records don't decrypt; but rollback and deletion aren't detected |
 | Malicious app on the device without special permissions | Protected by app sandboxing; only the launcher activity and the system-bound autofill service are exported |
-| Network attacker (same Wi-Fi, captive portal, ISP) on the breach check | Protected: no password in the traffic, only 5-character hash prefixes; HTTPS with system CAs only (Dart's client reads Android's system CA store itself and does not load user-added CAs), non-HTTPS addresses refused, redirects not followed; a malformed response such as a captive portal's HTML fails the check instead of reporting "not seen". The attacker can block the check |
+| Network attacker (same Wi-Fi, captive portal, ISP) on the breach check or sync | Protected: no password in the traffic, only 5-character hash prefixes; HTTPS with system CAs only (Dart's client reads Android's system CA store itself and does not load user-added CAs), non-HTTPS addresses refused, redirects not followed; a malformed response such as a captive portal's HTML fails the check instead of reporting "not seen". The attacker can block the check |
 | Have I Been Pwned or Cloudflare in front of it | Partly: sees the IP address, the prefixes asked for and the time; the set of prefixes can fingerprint a vault; a false "not seen" answer can't be detected |
+| The WebDAV server, or whoever controls it | Protected if the password is strong: sees file names (device IDs), sizes, modification times and the IP address, and can delete, withhold or roll back files, which only delays changes; can guess the master password offline as with a backup |
+| An unused phone's sync file or the server's file history | **Not protected**: opens with the old password and yields the vault key, which also opens later files; a password change is not a revocation |
+| Stolen phone with the vault unlocked and sync on | Partly: it keeps syncing until its app password is revoked on the server |
 | Malicious autofill target (fake app, fake site, app with a WebView) | Largely protected: signing-certificate check, trusted-browser list, warnings |
 | App with overlay permission (tapjacking) | Protected: overlays hidden on Android 12+, obscured touches dropped on Android 11 |
 | App with accessibility permission | Protected on Android 14+; **not protected on Android 11-13** |
@@ -156,6 +159,19 @@ chunk = length (4 bytes BE) || encrypted chunk
 
 Details: [Yedekleme](guvenlik-tasarimi.md#yedekleme).
 
+## Sync
+
+Sync (1.8.0) is off by default. The user enters a WebDAV folder (Nextcloud, ownCloud or another server), a username and an app password. Design: [senkron.md](senkron.md) (Turkish).
+
+- **Files.** Each phone writes one file, `keykey-sync-<6 hex>.keykey`, in the backup format above (payload version 4 with a `sync` object holding the device ID, model, deletion records and the password/recovery slot times). The settings record and the app password are never in it. The server sees names, sizes and times, not content.
+- **Client.** HTTPS with system CAs only (plain `http` only on loopback); no user info, query or fragment in the address; redirects are not followed; no cookies; HTTP Basic on every request; 10 s connect and 60 s request timeouts; 1 MiB listing and 64 MiB file limits. Writes go to a `.tmp` file, are read back and compared byte by byte, then moved into place. Error messages carry neither the path nor the credentials.
+- **App password** is stored only inside the vault, in the encrypted settings record; it is part of the (encrypted) backups.
+- **Merge** is per record: every remote record is decrypted with the open vault's key and validated, and one bad record makes the whole file ignored. The newest `updatedAt` wins; a deletion record wins when it is at least as new. A file with any time more than 24 hours in the future is ignored. A losing login password is kept in the winner's password history. Password and recovery slots merge separately by their own change times.
+- **Other vaults.** If the folder holds another vault's file, sync is not turned on and stops. The phone can join that vault only with that vault's master password or recovery key; its records are re-encrypted and merged in one transaction, and its old master password and recovery key stop working.
+- **Restore while sync is on** never deletes anything through sync: merged and replaced records are stamped with the current time so they win over older deletions elsewhere.
+
+Details: [Senkron](guvenlik-tasarimi.md#senkron).
+
 ## Autofill
 
 - **Apps.** A login is bound to a package name and the SHA-256 digest of the app's signing certificate, checked with `PackageManager.hasSigningCertificate`. The package name alone is never trusted.
@@ -189,6 +205,10 @@ These are accepted risks, numbered as in the [Turkish list](guvenlik-tasarimi.md
 7. **Strings stay in memory after lock.** The typed master password and values shown on screen can stay in Dart heap strings after locking; the audit still found them 2.5 minutes later. Keys, the recovery key and 2FA secrets were not found. Reading this memory requires root or code execution in the process.
 8. **The fill notification is outside the secure window.** After a fill, a notification with the entry's name appears outside KeyKey's `FLAG_SECURE` window, so screen recording and accessibility services can see it. Usernames and passwords are not in it.
 9. **The breach check trusts the service and leaves a trace.** Have I Been Pwned (and Cloudflare) see the IP address, the prefixes and the time. The set of prefixes from one IP can act as a fingerprint of a vault; it does not reveal a password on its own. A random password's 5-character prefix gives away 20 bits and leaves 140; a weak password's prefix narrows a dictionary search (weak passwords are already flagged in the report). "Not seen in breaches" does not mean "safe".
+10. **Sync trusts the clocks.** "Newest wins" uses each phone's clock; more than 24 hours ahead is refused, but a smaller skew can pick the wrong version. If the same record changes on two phones between syncs, the older change is lost (only a password is kept in the history).
+11. **Deletion records are unencrypted and spread.** Their count and times are visible in the database. Someone who can write to the database can affect a record on every phone through sync with a deletion or version up to 24 hours in the future; before sync it affected only that phone.
+12. **The server can delay.** By withholding, deleting or rolling back a phone's file the server can delay changes; an old file can't undo newer changes because merging only applies what is newer.
+13. **A password change is not a revocation.** An unused phone's sync file and the server's file history open with the old password, and the unchanged vault key also opens later files. A lost phone is stopped by revoking its app password on the server.
 
 Also: Android 11-13 offer no way to hide the app from accessibility services, and a malicious keyboard sees everything that is typed.
 

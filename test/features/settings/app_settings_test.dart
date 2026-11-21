@@ -388,7 +388,7 @@ void main() {
       final json = jsonDecode(
         utf8.decode(settings.toJsonBytes()),
       ) as Map<String, Object?>;
-      expect(json['version'], 6);
+      expect(json['version'], AppSettings.currentVersion);
       expect(json['backgroundLockSeconds'], 60);
       expect(json['plainKeyboard'], isTrue);
     });
@@ -429,6 +429,140 @@ void main() {
         expect(settings.otpRequireAuth, isTrue, reason: json);
         expect(settings.backgroundLock, BackgroundLock.immediately);
         expect(settings.plainKeyboard, isFalse);
+      }
+    });
+  });
+
+  group('sürüm 7: senkron', () {
+    const v6 =
+        '{"version":6,"otpRequireAuth":false,"autofillCopyOtp":true,'
+        '"lastBackupAt":null,"backupReminderSnoozedUntil":null,'
+        '"vaultSort":"name","generator":{"passphrase":false,"length":20,'
+        '"lowercase":true,"uppercase":true,"digits":true,"symbols":true,'
+        '"words":6},"autoBackupFolder":null,"backgroundLockSeconds":30,'
+        '"plainKeyboard":true}';
+    final digest = 'ab' * 32;
+    final sync = SyncSettings(
+      folder: Uri.parse(
+        'https://bulut.example.com/remote.php/dav/files/ayse/KeyKey',
+      ),
+      username: 'ayse',
+      appPassword: 'uygulama-parolasi-123',
+      lastSyncAt: DateTime.utc(2026, 11, 20, 18),
+      lastDigest: digest,
+    );
+
+    String v7(String syncJson) => v6
+        .replaceFirst('"version":6', '"version":7')
+        .replaceFirst(
+          '"plainKeyboard":true}',
+          '"plainKeyboard":true,'
+              '"sync":$syncJson}',
+        );
+
+    String syncJson({
+      String folder = '"https://bulut.example.com/KeyKey"',
+      String username = '"ayse"',
+      String appPassword = '"parola"',
+      String lastSyncAt = 'null',
+      String lastDigest = 'null',
+      String extra = '',
+    }) =>
+        '{"folder":$folder,"username":$username,"appPassword":$appPassword,'
+        '"lastSyncAt":$lastSyncAt,"lastDigest":$lastDigest$extra}';
+
+    test('sürüm 6 kaydı okunuyor, senkron kapalı', () async {
+      await putRaw(encrypt(v6));
+      final settings = await repository.load();
+      expect(settings.sync, isNull);
+      expect(settings.backgroundLock, BackgroundLock.seconds30);
+      expect(settings.plainKeyboard, isTrue);
+    });
+
+    test('senkron bilgileri yazılıp okunuyor', () async {
+      await repository.save(AppSettings.defaults.withSync(sync));
+
+      final settings = await repository.load();
+      expect(settings.sync?.folder, sync.folder);
+      expect(settings.sync?.username, 'ayse');
+      expect(settings.sync?.appPassword, 'uygulama-parolasi-123');
+      expect(settings.sync?.lastSyncAt, DateTime.utc(2026, 11, 20, 18));
+      expect(settings.sync?.lastDigest, digest);
+      final json = jsonDecode(
+        utf8.decode(settings.toJsonBytes()),
+      ) as Map<String, Object?>;
+      expect(json['version'], 7);
+      expect((json['sync']! as Map).keys, {
+        'folder',
+        'username',
+        'appPassword',
+        'lastSyncAt',
+        'lastDigest',
+      });
+    });
+
+    test('elle yazılmış sürüm 7 kaydı okunuyor', () async {
+      await putRaw(encrypt(v7(syncJson(lastSyncAt: '5'))));
+      final settings = await repository.load();
+      expect(settings.sync?.username, 'ayse');
+      expect(
+        settings.sync?.lastSyncAt,
+        DateTime.fromMillisecondsSinceEpoch(5, isUtc: true),
+      );
+      await putRaw(encrypt(v7('null')));
+      expect((await repository.load()).sync, isNull);
+    });
+
+    test('withSync değiştiriyor, öteki yollar koruyor', () {
+      final settings = AppSettings.defaults
+          .withSync(sync)
+          .copyWith(otpRequireAuth: true)
+          .withAutoBackupFolder(null);
+      expect(settings.sync?.username, 'ayse');
+      expect(settings.otpRequireAuth, isTrue);
+      expect(settings.withSync(null).sync, isNull);
+      expect(settings.withSync(null).otpRequireAuth, isTrue);
+    });
+
+    test('uygulama parolası metne dökülmüyor', () {
+      expect('$sync', isNot(contains('uygulama-parolasi-123')));
+      expect('$sync', isNot(contains('ayse')));
+    });
+
+    test('yerel adreste şifresiz bağlantıya izin var', () async {
+      for (final folder in [
+        '"http://127.0.0.1:8080/keykey"',
+        '"http://localhost/keykey"',
+        '"http://[::1]:8080/keykey"',
+      ]) {
+        await putRaw(encrypt(v7(syncJson(folder: folder))));
+        expect((await repository.load()).sync, isNotNull, reason: folder);
+      }
+    });
+
+    test('geçersiz senkron alanı kaydı okunamaz yapıyor', () async {
+      for (final json in [
+        v7(syncJson(folder: '"http://bulut.example.com/KeyKey"')),
+        v7(syncJson(folder: '"https://ayse:parola@bulut.example.com/K"')),
+        v7(syncJson(folder: '"https://bulut.example.com/K?a=1"')),
+        v7(syncJson(folder: '"https://bulut.example.com/K#a"')),
+        v7(syncJson(folder: '"ftp://bulut.example.com/K"')),
+        v7(syncJson(folder: '"https:///K"')),
+        v7(syncJson(folder: '3')),
+        v7(syncJson(username: '""')),
+        v7(syncJson(appPassword: '""')),
+        v7(syncJson(appPassword: 'null')),
+        v7(syncJson(lastSyncAt: '-1')),
+        v7(syncJson(lastDigest: '"abc"')),
+        v7(syncJson(lastDigest: '"${'AB' * 32}"')),
+        v7(syncJson(extra: ',"ek":1')),
+        v7('{"folder":"https://bulut.example.com/K"}'),
+        v6.replaceFirst('"version":6', '"version":7'),
+      ]) {
+        await putRaw(encrypt(json));
+        final settings = await repository.load();
+        expect(settings.otpRequireAuth, isTrue, reason: json);
+        expect(settings.sync, isNull, reason: json);
       }
     });
   });

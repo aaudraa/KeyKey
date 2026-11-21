@@ -187,10 +187,14 @@ void main() {
         ),
       );
 
+      now = now.add(const Duration(hours: 1));
+
       final kept = await cards.purgeExpiredTrash([old, recent]);
 
       expect(kept.single.content.name, 'Yeni');
       expect(await store.getRecord(old.id), isNull);
+      // Silme kaydı çöpe atılan sürümün zamanını taşıyor.
+      expect((await store.allTombstones()).single.deletedAt, old.updatedAt);
     });
   });
 

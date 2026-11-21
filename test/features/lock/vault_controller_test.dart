@@ -49,6 +49,40 @@ void main() {
     return text;
   }
 
+  group('oturumu değiştirme (senkron kasasına katılma)', () {
+    test('eski oturum kapanıyor, kasa yeni oturumla açık', () async {
+      final text = await controller().prepareVault(password);
+      await controller().confirmSetup(text);
+      final old = (status() as VaultOpen).session;
+      var notified = 0;
+      controller().addLockListener(() => notified++);
+      final fresh = service.openRestoredSession(
+        old.header,
+        sodium.secureRandom(32),
+      );
+
+      controller().replaceSession(fresh);
+
+      expect((status() as VaultOpen).session, same(fresh));
+      expect(old.isDisposed, isTrue);
+      expect(fresh.isDisposed, isFalse);
+      expect(notified, 1);
+    });
+
+    test('kasa açık değilken yeni oturum siliniyor', () async {
+      await setUpLockedVault();
+      final header = (status() as VaultLocked).header;
+      final fresh = service.openRestoredSession(
+        header,
+        sodium.secureRandom(32),
+      );
+
+      expect(() => controller().replaceSession(fresh), throwsStateError);
+      expect(fresh.isDisposed, isTrue);
+      expect(status(), isA<VaultLocked>());
+    });
+  });
+
   group('kurulum', () {
     test('doğrulanınca kasa açılıyor', () async {
       final text = await controller().prepareVault(password);

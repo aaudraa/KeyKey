@@ -1,14 +1,14 @@
 # Terms of use
 
-**Version:** 2 · **Date:** 2026-11-20 · Türkçe: [kosullar.md](kosullar.md)
+**Version:** 3 · **Date:** 2026-11-20 · Türkçe: [kosullar.md](kosullar.md)
 
 KeyKey shows these terms once before a vault is created or opened; you cannot continue without ticking "I have read and understood this, and I accept it." They can be read again under Settings → About → **Terms of use**. This file matches the text in the app; if the terms change, the version number goes up and the app asks once more. Data details are in the [privacy policy](privacy.md); the full license is in [LICENSE](../../LICENSE).
 
 Please read this before you start using KeyKey. We kept it short; every point describes how KeyKey actually works.
 
-## Your data stays on this phone
+## Your data is in your hands
 
-Your passwords, 2FA accounts and notes are kept in the vault on this phone. A backup or export file is only created when you ask for it, and saved where you choose. KeyKey has no account and no server, shows no ads and collects no usage data. It goes online only for checks you start yourself; today the only one is the breach check in the password report, and your passwords themselves are never sent. When you open a link, the page opens in your browser. The developers cannot see, collect or store your data.
+Your passwords, 2FA accounts, cards and notes are kept in the vault on this phone. A backup or export file is only created when you ask for it, and saved where you choose. KeyKey has no account and no server, shows no ads and collects no usage data. It goes online only for features you turn on yourself: the breach check in the password report (your passwords themselves are never sent) and, if you turn it on, sync. When you open a link, the page opens in your browser. The developers cannot see, collect or store your data.
 
 ## How the vault is protected
 
@@ -21,6 +21,10 @@ Only you know your master password and recovery key. If you lose both, your vaul
 ## Backups are up to you
 
 If the phone is lost or broken, or KeyKey is uninstalled, the vault is gone too. Taking regular encrypted backups and keeping them somewhere safe is your responsibility. An unencrypted export file is not protected; delete it when you are done.
+
+## If you turn on sync
+
+If you turn on sync, an encrypted copy of your vault is written to the WebDAV server you choose and synced with your phones that use the same folder. The copy is encrypted with your master password; the server cannot read it. KeyKey and its developers have no access to that server. Keeping the server secure and storing the app password are up to you or the server provider. Sync is not a backup: a record deleted on one phone is deleted on the other phones too, so keep taking backups.
 
 ## Your phone's security
 

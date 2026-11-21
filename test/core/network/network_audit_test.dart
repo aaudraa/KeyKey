@@ -2,10 +2,19 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-/// KeyKey'in internet izni yalnızca sızıntı kontrolü için. Ağ kodu tek bir
-/// dosyada durur; başka bir yerde ağ kodu görünürse bu test kırılır ve
-/// bilinçli bir karar ister (güvenlik tasarımı, "Ağ").
-const _allowed = 'lib/core/network/pwned_passwords_client.dart';
+/// KeyKey'in ağ trafiği sızıntı kontrolü ve senkron için. Ağ kodu yalnızca
+/// bu iki dosyada durur; başka bir yerde ağ kodu görünürse bu test kırılır
+/// ve bilinçli bir karar ister (güvenlik tasarımı, "Ağ").
+const _allowed = {
+  'lib/core/network/pwned_passwords_client.dart',
+  'lib/core/network/webdav_client.dart',
+};
+
+/// İzin verilen dosyalar dışındaki ağ kodu satırları.
+List<String> disallowedLines(Map<String, String> sources) => [
+  for (final MapEntry(key: path, value: text) in sources.entries)
+    if (!_allowed.contains(path)) ...networkLines(path, text),
+];
 
 final _patterns = [
   RegExp(
@@ -93,13 +102,25 @@ void main() {
     expect(auditedSources().any((path) => path.endsWith('.java')), isTrue);
   });
 
-  test('ağ kodu yalnızca Pwned Passwords istemcisinde', () {
-    final found = <String>[];
-    for (final path in auditedSources()) {
-      if (path == _allowed) continue;
-      found.addAll(networkLines(path, File(path).readAsStringSync()));
-    }
+  test('izin verilen iki dosya dışındaki ağ kodu yakalanır', () {
+    const line = 'final c = HttpClient();';
+    expect(
+      disallowedLines({
+        'lib/core/network/pwned_passwords_client.dart': line,
+        'lib/core/network/webdav_client.dart': line,
+        'lib/features/sync/data/other.dart': line,
+      }),
+      ['lib/features/sync/data/other.dart:1'],
+    );
+  });
+
+  test('ağ kodu yalnızca sızıntı kontrolü ve senkron istemcisinde', () {
+    final found = disallowedLines({
+      for (final path in auditedSources()) path: File(path).readAsStringSync(),
+    });
     expect(found, isEmpty);
-    expect(File(_allowed).existsSync(), isTrue);
+    for (final path in _allowed) {
+      expect(File(path).existsSync(), isTrue, reason: path);
+    }
   });
 }

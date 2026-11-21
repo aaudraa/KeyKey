@@ -59,6 +59,7 @@ void main() {
       expect(vaultRedirect(const VaultNotSetUp(), AppRoutes.intro), isNull);
       expect(vaultRedirect(const VaultNotSetUp(), AppRoutes.setup), isNull);
       expect(vaultRedirect(const VaultNotSetUp(), AppRoutes.restore), isNull);
+      expect(vaultRedirect(const VaultNotSetUp(), AppRoutes.syncSetup), isNull);
     });
 
     test('kasa açıkken tanıtım yeniden izlenebilir', () {

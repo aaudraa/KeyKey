@@ -100,6 +100,19 @@ class SettingsController extends Notifier<AppSettings?> {
   Future<void> setAutoBackupFolder(AutoBackupFolder? folder) =>
       _update((current) => current.withAutoBackupFolder(folder));
 
+  /// Senkron bilgileri; `null` senkronu kapatır.
+  Future<void> setSync(SyncSettings? sync) =>
+      _update((current) => current.withSync(sync));
+
+  /// Başarılı bir eşitlemenin zamanını ve yüklenen halin özetini yazar.
+  /// Senkron bu arada kapatıldıysa bir şey yazmaz.
+  Future<void> recordSync(DateTime at, String digest) => _update((current) {
+    final sync = current.sync;
+    return sync == null
+        ? current
+        : current.withSync(sync.withLastSync(at, digest));
+  });
+
   /// Değişiklikler sırayla yazılır ve her biri sırası geldiğindeki güncel
   /// ayarlara uygulanır; arka planda yazılan son yedek zamanı, kullanıcının
   /// o sırada yaptığı bir değişikliği ezmez.

@@ -1,1 +1,1 @@
-Passwords and 2FA codes. No account, no server; your vault stays on your phone.
+Passwords and 2FA codes. No account; optional end-to-end encrypted sync.

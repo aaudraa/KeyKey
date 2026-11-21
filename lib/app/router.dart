@@ -27,6 +27,9 @@ import 'package:keykey/features/settings/presentation/change_password_screen.dar
 import 'package:keykey/features/settings/presentation/licenses_screen.dart';
 import 'package:keykey/features/settings/presentation/new_recovery_key_screen.dart';
 import 'package:keykey/features/settings/presentation/settings_screen.dart';
+import 'package:keykey/features/sync/presentation/sync_join_screen.dart';
+import 'package:keykey/features/sync/presentation/sync_screen.dart';
+import 'package:keykey/features/sync/presentation/sync_setup_form.dart';
 import 'package:keykey/features/vault/application/vault_entries.dart';
 import 'package:keykey/features/vault/presentation/card_detail_screen.dart';
 import 'package:keykey/features/vault/presentation/card_edit_screen.dart';
@@ -56,6 +59,8 @@ abstract final class AppRoutes {
   static const authenticatorImport = '/2fa/ice-aktar';
   static const settings = '/ayarlar';
   static const changePassword = '/ayarlar/parola';
+  static const sync = '/ayarlar/senkron';
+  static const syncJoin = '/ayarlar/senkron-kat';
   static const newRecoveryKey = '/ayarlar/kurtarma-anahtari';
   static const loginImport = '/ayarlar/ice-aktar';
   static const licenses = '/ayarlar/lisanslar';
@@ -65,6 +70,7 @@ abstract final class AppRoutes {
   static const intro = '/tanitim';
   static const terms = '/kosullar';
   static const restore = '/geri-yukle';
+  static const syncSetup = '/senkrondan-kur';
   static const lock = '/kilit';
   static const recovery = '/kilit/kurtarma';
   static const newPassword = '/yeni-parola';
@@ -122,7 +128,9 @@ String? vaultRedirect(
     if (status is VaultNotSetUp) {
       // Önce tanıtım; kuruluma ya da yedekten dönüşe geçerken koşullar.
       if (location == AppRoutes.intro) return null;
-      return location == AppRoutes.setup || location == AppRoutes.restore
+      return location == AppRoutes.setup ||
+              location == AppRoutes.restore ||
+              location == AppRoutes.syncSetup
           ? AppRoutes.terms
           : AppRoutes.intro;
     }
@@ -138,7 +146,8 @@ String? vaultRedirect(
     VaultNotSetUp() =>
       location == AppRoutes.intro ||
               location == AppRoutes.setup ||
-              location == AppRoutes.restore
+              location == AppRoutes.restore ||
+              location == AppRoutes.syncSetup
           ? null
           : AppRoutes.intro,
     VaultLocked() =>
@@ -224,9 +233,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         // Yedek yalnızca seçiciden gelir; uygulama yeniden kurulurken
         // yol kalırsa kuruluma dönülür.
         redirect: (context, state) =>
-            state.extra is BackupFile ? null : AppRoutes.setup,
-        builder: (context, state) =>
-            RestoreScreen(file: state.extra! as BackupFile),
+            state.extra is BackupFile || state.extra is SyncRestoreRequest
+            ? null
+            : AppRoutes.setup,
+        builder: (context, state) => switch (state.extra) {
+          final SyncRestoreRequest request => RestoreScreen(
+            file: request.file,
+            sync: request.sync,
+          ),
+          final extra => RestoreScreen(file: extra! as BackupFile),
+        },
+      ),
+      kkRoute(
+        path: AppRoutes.syncSetup,
+        builder: (context, state) => const SyncSetupForm(newPhone: true),
       ),
       kkRoute(
         path: AppRoutes.lock,
@@ -420,6 +440,27 @@ final routerProvider = Provider<GoRouter>((ref) {
                     parentNavigatorKey: rootNavigatorKey,
                     path: 'kurtarma-anahtari',
                     builder: (context, state) => const NewRecoveryKeyScreen(),
+                  ),
+                  kkRoute(
+                    parentNavigatorKey: rootNavigatorKey,
+                    path: 'senkron',
+                    builder: (context, state) => const SyncScreen(),
+                  ),
+                  kkRoute(
+                    parentNavigatorKey: rootNavigatorKey,
+                    path: 'senkron-kat',
+                    // Dosya yalnızca senkron formundan gelir.
+                    redirect: (context, state) =>
+                        state.extra is SyncRestoreRequest
+                        ? null
+                        : AppRoutes.sync,
+                    builder: (context, state) {
+                      final request = state.extra! as SyncRestoreRequest;
+                      return SyncJoinScreen(
+                        file: request.file,
+                        sync: request.sync,
+                      );
+                    },
                   ),
                   kkRoute(
                     parentNavigatorKey: rootNavigatorKey,

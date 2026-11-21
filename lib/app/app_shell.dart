@@ -7,9 +7,12 @@ import 'package:keykey/app/router.dart';
 import 'package:keykey/app/ui/add_panel.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
+import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/app/ui/kk_unlock_reveal.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/presentation/scanned_code_handler.dart';
+import 'package:keykey/features/sync/application/sync_controller.dart';
+import 'package:keykey/features/sync/presentation/sync_screen.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
@@ -149,6 +152,13 @@ class _AppShellState extends ConsumerState<AppShell>
     final passwordEnabled = ref.watch(loginsControllerProvider) is LoginsLoaded;
     final otpEnabled = ref.watch(otpsControllerProvider) is OtpsLoaded;
     final showPanel = _open || _panel.isAnimating || _panel.value > 0;
+    // Ana parola ya da kurtarma anahtarı başka telefonda değişti: bir kez
+    // söylenir.
+    ref.listen(syncControllerProvider, (_, _) {
+      final notice = ref.read(syncControllerProvider.notifier).consumeNotice();
+      final text = notice == null ? null : syncNoticeText(l10n, notice);
+      if (text != null) showKkSnack(context, text);
+    });
 
     return PopScope(
       canPop: !_open,

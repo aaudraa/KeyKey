@@ -1,4 +1,4 @@
-KeyKey keeps your passwords and two-factor codes on your phone, encrypted, and nowhere else. There is no account and no server, and your vault is never sent anywhere. The only thing that goes online is the breach check you start yourself, and it sends the first 5 characters of a password's hash, never the password.
+KeyKey keeps your passwords and two-factor codes on your phone, encrypted. There is no account and KeyKey has no server. Only two features go online, and only if you turn them on: the breach check, which sends the first 5 characters of a password's hash, never the password; and sync, which keeps your vault in step across your phones through your own WebDAV server (Nextcloud, ownCloud and others), end-to-end encrypted with your master password.
 
 <b>Passwords</b>
 <ul>
@@ -21,10 +21,11 @@ KeyKey keeps your passwords and two-factor codes on your phone, encrypted, and n
 <li>Apps are matched by their signing certificate; suspicious cases show a warning</li>
 </ul>
 
-<b>Lock and backup</b>
+<b>Lock, backup and sync</b>
 <ul>
 <li>Master password, fingerprint unlock, auto-lock, recovery key</li>
 <li>Encrypted backup that you save wherever you like, and restore</li>
+<li>Optional end-to-end encrypted sync across phones through your own WebDAV server</li>
 <li>Import from Bitwarden, Chrome, Firefox and KeePassXC; unencrypted export if you want to leave</li>
 </ul>
 

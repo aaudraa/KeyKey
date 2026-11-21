@@ -68,6 +68,6 @@ void main() {
   }
 
   test('koşullar değişti, kabul yeniden soruluyor', () {
-    expect(currentTermsVersion, greaterThanOrEqualTo(2));
+    expect(currentTermsVersion, greaterThanOrEqualTo(3));
   });
 }

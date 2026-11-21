@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<D:multistatus xmlns:D="DAV:" xmlns:ns0="DAV:">
+<D:response xmlns:lp1="DAV:" xmlns:lp2="http://apache.org/dav/props/">
+<D:href>/dav/Key%20Kasa/</D:href>
+<D:propstat>
+<D:prop>
+<lp1:resourcetype><D:collection/></lp1:resourcetype>
+<lp1:getlastmodified>Fri, 20 Nov 2026 08:00:00 GMT</lp1:getlastmodified>
+<lp1:getetag>"1000-5d"</lp1:getetag>
+</D:prop>
+<D:status>HTTP/1.1 200 OK</D:status>
+</D:propstat>
+<D:propstat>
+<D:prop>
+<ns0:getcontentlength/>
+</D:prop>
+<D:status>HTTP/1.1 404 Not Found</D:status>
+</D:propstat>
+</D:response>
+<D:response xmlns:lp1="DAV:" xmlns:lp2="http://apache.org/dav/props/">
+<D:href>/dav/Key%20Kasa/keykey-sync-0f0f0f.keykey</D:href>
+<D:propstat>
+<D:prop>
+<lp1:resourcetype/>
+<lp1:getcontentlength>300</lp1:getcontentlength>
+<lp1:getlastmodified>Fri, 20 Nov 2026 10:00:00 GMT</lp1:getlastmodified>
+<lp1:getetag>"e2"</lp1:getetag>
+</D:prop>
+<D:status>HTTP/1.1 200 OK</D:status>
+</D:propstat>
+</D:response>
+<D:response xmlns:lp1="DAV:" xmlns:lp2="http://apache.org/dav/props/">
+<D:href>/dav/Key%20Kasa/keykey-sync-klasor.keykey/</D:href>
+<D:propstat>
+<D:prop>
+<lp1:resourcetype><D:collection/></lp1:resourcetype>
+</D:prop>
+<D:status>HTTP/1.1 200 OK</D:status>
+</D:propstat>
+</D:response>
+<D:response xmlns:lp1="DAV:" xmlns:lp2="http://apache.org/dav/props/">
+<D:href>/dav/Key%20Kasa/alt/keykey-sync-ffffff.keykey</D:href>
+<D:propstat>
+<D:prop>
+<lp1:resourcetype/>
+<lp1:getcontentlength>7</lp1:getcontentlength>
+</D:prop>
+<D:status>HTTP/1.1 200 OK</D:status>
+</D:propstat>
+</D:response>
+<D:response xmlns:lp1="DAV:" xmlns:lp2="http://apache.org/dav/props/">
+<D:href>/dav/Key%20Kasa/keykey-sync-a1b2c3.keykey</D:href>
+<D:propstat>
+<D:prop>
+<lp1:resourcetype/>
+<lp1:getcontentlength>200</lp1:getcontentlength>
+<lp1:getlastmodified>Fri, 20 Nov 2026 09:00:00 GMT</lp1:getlastmodified>
+<lp1:getetag>"e1"</lp1:getetag>
+</D:prop>
+<D:status>HTTP/1.1 200 OK</D:status>
+</D:propstat>
+</D:response>
+</D:multistatus>

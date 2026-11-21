@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<multistatus xmlns="DAV:">
+<response><href>http://localhost:8080/dav/Key%20Kasa/</href><propstat><prop><resourcetype><collection></collection></resourcetype><getlastmodified>Fri, 20 Nov 2026 08:00:00 GMT</getlastmodified></prop><status>HTTP/1.1 200 OK</status></propstat></response>
+<response><href>http://localhost:8080/dav/Key%20Kasa/keykey-sync-a1b2c3.keykey</href><propstat><prop><resourcetype></resourcetype><getcontentlength>200</getcontentlength><getlastmodified>Fri, 20 Nov 2026 09:00:00 GMT</getlastmodified><getetag>"e1"</getetag></prop><status>HTTP/1.1 200 OK</status></propstat></response>
+<response><href>http://localhost:8080/dav/Key%20Kasa/notlar.txt</href><propstat><prop><resourcetype></resourcetype><getcontentlength>5</getcontentlength></prop><status>HTTP/1.1 200 OK</status></propstat></response>
+<response><href>http://localhost:8080/dav/Baska/keykey-sync-eeeeee.keykey</href><propstat><prop><resourcetype></resourcetype><getcontentlength>9</getcontentlength></prop><status>HTTP/1.1 200 OK</status></propstat></response>
+<response><href>http://localhost:8080/dav/Key%20Kasa/keykey-sync-0f0f0f.keykey</href><propstat><prop><resourcetype></resourcetype><getcontentlength>300</getcontentlength><getlastmodified>Fri, 20 Nov 2026 10:00:00 GMT</getlastmodified><getetag>"e2"</getetag></prop><status>HTTP/1.1 200 OK</status></propstat></response>
+</multistatus>

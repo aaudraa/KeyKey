@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.os.Build
 import java.io.ByteArrayOutputStream
 
 /**
@@ -31,4 +32,6 @@ class AppPackages(private val context: Context) : AppPackagesApi {
 
     override fun versionName(): String =
         context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: ""
+
+    override fun deviceModel(): String = Build.MODEL ?: ""
 }

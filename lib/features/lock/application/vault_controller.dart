@@ -66,6 +66,7 @@ class VaultController extends Notifier<VaultStatus> {
   VaultSession? _session;
 
   final Set<void Function()> _lockListeners = {};
+  final Set<void Function()> _headerListeners = {};
 
   VaultService get _service => ref.read(vaultServiceProvider);
 
@@ -79,6 +80,21 @@ class VaultController extends Notifier<VaultStatus> {
 
   void removeLockListener(void Function() listener) =>
       _lockListeners.remove(listener);
+
+  /// Kasa açıkken ana parola ya da kurtarma anahtarı değişip üst bilgi
+  /// diske yazılınca çağrılır (senkron hemen yükler; eski parolayla açılan
+  /// dosya sunucuda beklemesin).
+  void addHeaderListener(void Function() listener) =>
+      _headerListeners.add(listener);
+
+  void removeHeaderListener(void Function() listener) =>
+      _headerListeners.remove(listener);
+
+  void _headerChanged() {
+    for (final listener in _headerListeners.toList()) {
+      listener();
+    }
+  }
 
   @override
   VaultStatus build() {
@@ -190,11 +206,15 @@ class VaultController extends Notifier<VaultStatus> {
     if (status is! VaultOpen) throw StateError('Kasa açık değil.');
     final generation = _lockGeneration;
     try {
-      return await _service.changePassword(
+      final attempt = await _service.changePassword(
         status.session,
         currentPassword: currentPassword,
         newPassword: newPassword,
       );
+      if (attempt is PasswordAccepted && generation == _lockGeneration) {
+        _headerChanged();
+      }
+      return attempt;
     } on Object {
       if (generation == _lockGeneration) rethrow;
       return const PasswordInterrupted();
@@ -242,6 +262,7 @@ class VaultController extends Notifier<VaultStatus> {
         pending,
         typedRecoveryKey,
       );
+      if (generation == _lockGeneration) _headerChanged();
     } finally {
       if (generation != _lockGeneration) _syncLockedHeader(status.session);
     }
@@ -342,6 +363,25 @@ class VaultController extends Notifier<VaultStatus> {
     state = VaultOpen(session);
   }
 
+  /// Senkron kasasına katılınca kasa anahtarı değişir: süren işler kilit
+  /// dinleyicileriyle bırakılır, eski oturum kapanır ve kasa [session] ile
+  /// açık kalır (kilit ekranına gidilmez). Kasa açık değilse oturumu siler
+  /// ve [StateError] fırlatır.
+  void replaceSession(VaultSession session) {
+    final old = _session;
+    if (state is! VaultOpen || old == null) {
+      session.dispose();
+      throw StateError('Kasa açık değil.');
+    }
+    _lockGeneration++;
+    for (final listener in _lockListeners.toList()) {
+      listener();
+    }
+    _session = session;
+    state = VaultOpen(session);
+    old.dispose();
+  }
+
   /// Kasa yedekle değiştirildikten sonra kilitler. Kasa artık yedeğin üst
   /// bilgisiyle, yani yedeğin ana parolasıyla açılır.
   void lockReplaced(VaultHeader header) {
@@ -365,6 +405,16 @@ class VaultController extends Notifier<VaultStatus> {
 
   /// Parola yazılırken kilitlendiyse kilit durumu yeni üst bilgiyi tutmalı,
   /// yoksa uygulama yeniden başlayana kadar eski parola çalışmaya devam eder.
+  /// Kasa kilitliyse diskteki üst bilgiyi kilit ekranına alır. Kilitten
+  /// hemen önce başlamış bir eşitleme yuvaları değiştirmiş olabilir; kilit
+  /// ekranı eski üst bilgiyle kalırsa eski parola bu telefonda bir kez daha
+  /// açardı.
+  Future<void> refreshLockedHeader() async {
+    if (state is! VaultLocked) return;
+    final header = await _service.readHeader();
+    if (header != null && state is VaultLocked) state = VaultLocked(header);
+  }
+
   void _syncLockedHeader(VaultSession session) {
     if (state is VaultLocked) state = VaultLocked(session.header);
   }

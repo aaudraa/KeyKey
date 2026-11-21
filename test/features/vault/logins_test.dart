@@ -130,6 +130,17 @@ void main() {
       expect(await store.allRecords(), isEmpty);
     });
 
+    test('kalıcı silme, deponun saatiyle silme kaydı bırakıyor', () async {
+      final item = await repository.add(const LoginContent(name: 'A'));
+      now = now.add(const Duration(hours: 3));
+
+      await repository.deletePermanently(item);
+
+      final tombstone = (await store.allTombstones()).single;
+      expect(tombstone.id, item.id);
+      expect(tombstone.deletedAt, now);
+    });
+
     test('bozuk kayıt listeyi düşürmüyor, dokunulmuyor', () async {
       await repository.add(const LoginContent(name: 'Sağlam'));
       final broken = await repository.add(const LoginContent(name: 'Bozuk'));
@@ -209,12 +220,19 @@ void main() {
             .copyWith(trashedAt: now.subtract(const Duration(days: 29))),
       );
       final live = await repository.add(const LoginContent(name: 'Canlı'));
+      now = now.add(const Duration(days: 2));
 
       final kept = await repository.purgeExpiredTrash([old, recent, live]);
 
-      expect(kept.map((item) => item.content.name), ['Yeni', 'Canlı']);
+      expect(kept.map((item) => item.content.name), ['Canlı']);
       expect(await store.getRecord(old.id), isNull);
-      expect(await store.getRecord(recent.id), isNotNull);
+      expect(await store.getRecord(live.id), isNotNull);
+      // Silme kaydı çöpe atılan sürümün zamanını taşıyor: başka telefonda
+      // daha sonra çöpten çıkarılan ya da değişen kayıt ona yeniliyor.
+      expect(
+        {for (final t in await store.allTombstones()) t.deletedAt},
+        {old.updatedAt, recent.updatedAt},
+      );
     });
 
     test('kilitlenince depo anahtara dokunamıyor, çökmüyor', () async {

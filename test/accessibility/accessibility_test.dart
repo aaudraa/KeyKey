@@ -12,8 +12,12 @@ import 'package:keykey/features/authenticator/data/import/import_result.dart';
 import 'package:keykey/features/authenticator/data/otp_content.dart';
 import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/backup/data/import/login_import.dart';
+import 'package:keykey/features/backup/presentation/restore_screen.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
+import 'package:keykey/features/sync/application/sync_controller.dart';
+import 'package:keykey/features/sync/application/sync_merger.dart';
+import 'package:keykey/features/sync/application/sync_service.dart';
 import 'package:keykey/features/vault/application/breach_check.dart';
 import 'package:keykey/features/vault/data/card_content.dart';
 import 'package:keykey/features/vault/data/card_number.dart';
@@ -24,6 +28,7 @@ import 'package:keykey/features/vault/presentation/password_report_screen.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../support/fake_range_source.dart';
+import '../support/fake_sync_service.dart';
 import '../support/fake_vault_service.dart';
 
 /// Ana ekranları Flutter'ın erişilebilirlik kurallarıyla denetler: dokunma
@@ -108,6 +113,7 @@ void main() {
     '2FA çöp kutusu': (AppRoutes.authenticatorTrash, null),
     'ayarlar': (AppRoutes.settings, null),
     'parola değiştirme': (AppRoutes.changePassword, null),
+    'senkron kurulumu': (AppRoutes.sync, null),
     'parola içe aktarma': (
       AppRoutes.loginImport,
       const LoginExport(
@@ -246,6 +252,67 @@ void main() {
         await settle(tester);
       }
 
+      testWidgets('senkron açıkken', (tester) async {
+        final service = await prepare(tester);
+        final sync = FakeSyncService()
+          ..devices = const [
+            SyncDevice(device: 'a1b2c3', name: 'SM-G780G', self: true),
+            SyncDevice(device: 'd4e5f6', name: 'Pixel 8'),
+          ]
+          ..issues = const [ClockAhead('d4e5f6')];
+        await pumpKeyKey(
+          tester,
+          status: VaultOpen(service.newSession()),
+          service: service,
+          settings: FakeSettingsRepository(
+            AppSettings.defaults.withSync(
+              SyncSettings(
+                folder: Uri.parse('https://bulut.example.com/dav/'),
+                username: 'ayse',
+                appPassword: 'p',
+              ),
+            ),
+          ),
+          extraOverrides: [syncServiceProvider.overrideWithValue(sync)],
+        );
+        GoRouter.of(tester.element(find.byType(Scaffold).first))
+            .go(AppRoutes.sync);
+        await settle(tester);
+        expect(find.text('Şimdi eşitle'), findsOneWidget);
+        await checkGuidelines(tester, location: AppRoutes.sync, scale: scale);
+      });
+
+      testWidgets('başka kasaya katılma', (tester) async {
+        final service = await prepare(tester);
+        final restores = FakeRestoreService(sodium);
+        final bytes = await tester.runAsync(
+          () => restores.backupBytes(service.header),
+        );
+        await pumpKeyKey(
+          tester,
+          status: VaultOpen(service.newSession()),
+          service: service,
+        );
+        GoRouter.of(tester.element(find.byType(Scaffold).first)).go(
+          AppRoutes.syncJoin,
+          extra: SyncRestoreRequest(
+            file: restores.parse(Uint8List.fromList(bytes!)),
+            sync: SyncSettings(
+              folder: Uri.parse('https://bulut.example.com/dav/'),
+              username: 'ayse',
+              appPassword: 'p',
+            ),
+          ),
+        );
+        await settle(tester);
+        expect(find.text('Kasaya katıl'), findsOneWidget);
+        await checkGuidelines(
+          tester,
+          location: AppRoutes.syncJoin,
+          scale: scale,
+        );
+      });
+
       testWidgets('parola raporu, sızıntı sonucu', (tester) async {
         final suffix = pwnedHash(login.content.password).substring(5);
         await openReportCheck(
@@ -373,6 +440,27 @@ void main() {
         await checkGuidelines(
           tester,
           location: AppRoutes.restore,
+          scale: scale,
+        );
+      });
+
+      testWidgets('senkrondan kurulum', (tester) async {
+        final service = await prepare(tester);
+        await pumpKeyKey(
+          tester,
+          status: const VaultNotSetUp(),
+          service: service,
+          extraOverrides: [
+            syncServiceProvider.overrideWithValue(FakeSyncService()),
+          ],
+        );
+        GoRouter.of(tester.element(find.byType(Scaffold).first))
+            .go(AppRoutes.syncSetup);
+        await tester.pumpAndSettle();
+        expect(find.text('Bağlan'), findsOneWidget);
+        await checkGuidelines(
+          tester,
+          location: AppRoutes.syncSetup,
           scale: scale,
         );
       });

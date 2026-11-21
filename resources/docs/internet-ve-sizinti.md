@@ -8,7 +8,7 @@ KeyKey 1.5.0'a kadar internet izni olmadan çalıştı. Proje sahibi 2026-11-19'
 
 - F-Droid başvurusu "benzersiz özellik yok" gerekçesiyle reddedildi; proje sahibi çevrimdışı nişin dışına çıkıp senkron ve sızıntı kontrolü gibi özellikleri istiyor.
 - Parola raporu bugün zayıf ve tekrar eden parolaları gösteriyor, ama güçlü görünen bir parola bir sızıntıda ele geçmişse onu bilemiyor. Saldırganlar önce sızıntı listelerini dener; sızmış bir parola ne kadar uzun olursa olsun zayıftır.
-- Sızıntı kontrolü küçük ve kendi içinde kapalı bir iş. Ağ altyapısını (izin, denetimler, metinler) senkrondan (Faz 18) önce küçük bir özellikle sınamış oluruz.
+- Sızıntı kontrolü küçük ve kendi içinde kapalı bir iş. Ağ altyapısını (izin, denetimler, metinler) senkrondan (Faz 19) önce küçük bir özellikle sınamış oluruz.
 
 ## Hedefler
 
@@ -23,7 +23,7 @@ KeyKey 1.5.0'a kadar internet izni olmadan çalıştı. Proje sahibi 2026-11-19'
 - Kayıt düzenleme ekranında tek parola denetimi. Rapor bütün kasayı tek dokunuşla denetliyor; düzenleme ekranına ikinci bir düğme sonra eklenebilir.
 - E-posta adresinin sızıntılarda aranması (HIBP'nin hesap API'si). Anahtar ister, ücretlidir ve e-postayı açıkça gönderir.
 - Sonuçların saklanması. Sonuç bellekte durur; ekran kapanınca ya da kasa kilitlenince gider.
-- Senkron ve başka internet özellikleri (Faz 18 ve sonrası).
+- Senkron ve başka internet özellikleri (Faz 19 ve sonrası).
 
 ## Karşı hedefler
 

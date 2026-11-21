@@ -28,8 +28,35 @@ class $VaultMetaTable extends VaultMeta
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _passwordChangedAtMeta = const VerificationMeta(
+    'passwordChangedAt',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, header];
+  late final GeneratedColumn<int> passwordChangedAt = GeneratedColumn<int>(
+    'password_changed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _recoveryChangedAtMeta = const VerificationMeta(
+    'recoveryChangedAt',
+  );
+  @override
+  late final GeneratedColumn<int> recoveryChangedAt = GeneratedColumn<int>(
+    'recovery_changed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    header,
+    passwordChangedAt,
+    recoveryChangedAt,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -53,6 +80,24 @@ class $VaultMetaTable extends VaultMeta
     } else if (isInserting) {
       context.missing(_headerMeta);
     }
+    if (data.containsKey('password_changed_at')) {
+      context.handle(
+        _passwordChangedAtMeta,
+        passwordChangedAt.isAcceptableOrUnknown(
+          data['password_changed_at']!,
+          _passwordChangedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('recovery_changed_at')) {
+      context.handle(
+        _recoveryChangedAtMeta,
+        recoveryChangedAt.isAcceptableOrUnknown(
+          data['recovery_changed_at']!,
+          _recoveryChangedAtMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -70,6 +115,14 @@ class $VaultMetaTable extends VaultMeta
         DriftSqlType.string,
         data['${effectivePrefix}header'],
       )!,
+      passwordChangedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}password_changed_at'],
+      ),
+      recoveryChangedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}recovery_changed_at'],
+      ),
     );
   }
 
@@ -82,17 +135,44 @@ class $VaultMetaTable extends VaultMeta
 class VaultMetaRow extends DataClass implements Insertable<VaultMetaRow> {
   final int id;
   final String header;
-  const VaultMetaRow({required this.id, required this.header});
+
+  /// Parola yuvasının son değiştiği an (şema 2). Senkron, öteki telefonlara
+  /// hangi yuvanın daha yeni olduğunu buna bakarak söyler.
+  final int? passwordChangedAt;
+
+  /// Kurtarma yuvasının son değiştiği an (şema 2).
+  final int? recoveryChangedAt;
+  const VaultMetaRow({
+    required this.id,
+    required this.header,
+    this.passwordChangedAt,
+    this.recoveryChangedAt,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['header'] = Variable<String>(header);
+    if (!nullToAbsent || passwordChangedAt != null) {
+      map['password_changed_at'] = Variable<int>(passwordChangedAt);
+    }
+    if (!nullToAbsent || recoveryChangedAt != null) {
+      map['recovery_changed_at'] = Variable<int>(recoveryChangedAt);
+    }
     return map;
   }
 
   VaultMetaCompanion toCompanion(bool nullToAbsent) {
-    return VaultMetaCompanion(id: Value(id), header: Value(header));
+    return VaultMetaCompanion(
+      id: Value(id),
+      header: Value(header),
+      passwordChangedAt: passwordChangedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(passwordChangedAt),
+      recoveryChangedAt: recoveryChangedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recoveryChangedAt),
+    );
   }
 
   factory VaultMetaRow.fromJson(
@@ -103,6 +183,8 @@ class VaultMetaRow extends DataClass implements Insertable<VaultMetaRow> {
     return VaultMetaRow(
       id: serializer.fromJson<int>(json['id']),
       header: serializer.fromJson<String>(json['header']),
+      passwordChangedAt: serializer.fromJson<int?>(json['passwordChangedAt']),
+      recoveryChangedAt: serializer.fromJson<int?>(json['recoveryChangedAt']),
     );
   }
   @override
@@ -111,15 +193,36 @@ class VaultMetaRow extends DataClass implements Insertable<VaultMetaRow> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'header': serializer.toJson<String>(header),
+      'passwordChangedAt': serializer.toJson<int?>(passwordChangedAt),
+      'recoveryChangedAt': serializer.toJson<int?>(recoveryChangedAt),
     };
   }
 
-  VaultMetaRow copyWith({int? id, String? header}) =>
-      VaultMetaRow(id: id ?? this.id, header: header ?? this.header);
+  VaultMetaRow copyWith({
+    int? id,
+    String? header,
+    Value<int?> passwordChangedAt = const Value.absent(),
+    Value<int?> recoveryChangedAt = const Value.absent(),
+  }) => VaultMetaRow(
+    id: id ?? this.id,
+    header: header ?? this.header,
+    passwordChangedAt: passwordChangedAt.present
+        ? passwordChangedAt.value
+        : this.passwordChangedAt,
+    recoveryChangedAt: recoveryChangedAt.present
+        ? recoveryChangedAt.value
+        : this.recoveryChangedAt,
+  );
   VaultMetaRow copyWithCompanion(VaultMetaCompanion data) {
     return VaultMetaRow(
       id: data.id.present ? data.id.value : this.id,
       header: data.header.present ? data.header.value : this.header,
+      passwordChangedAt: data.passwordChangedAt.present
+          ? data.passwordChangedAt.value
+          : this.passwordChangedAt,
+      recoveryChangedAt: data.recoveryChangedAt.present
+          ? data.recoveryChangedAt.value
+          : this.recoveryChangedAt,
     );
   }
 
@@ -127,44 +230,69 @@ class VaultMetaRow extends DataClass implements Insertable<VaultMetaRow> {
   String toString() {
     return (StringBuffer('VaultMetaRow(')
           ..write('id: $id, ')
-          ..write('header: $header')
+          ..write('header: $header, ')
+          ..write('passwordChangedAt: $passwordChangedAt, ')
+          ..write('recoveryChangedAt: $recoveryChangedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, header);
+  int get hashCode =>
+      Object.hash(id, header, passwordChangedAt, recoveryChangedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is VaultMetaRow &&
           other.id == this.id &&
-          other.header == this.header);
+          other.header == this.header &&
+          other.passwordChangedAt == this.passwordChangedAt &&
+          other.recoveryChangedAt == this.recoveryChangedAt);
 }
 
 class VaultMetaCompanion extends UpdateCompanion<VaultMetaRow> {
   final Value<int> id;
   final Value<String> header;
+  final Value<int?> passwordChangedAt;
+  final Value<int?> recoveryChangedAt;
   const VaultMetaCompanion({
     this.id = const Value.absent(),
     this.header = const Value.absent(),
+    this.passwordChangedAt = const Value.absent(),
+    this.recoveryChangedAt = const Value.absent(),
   });
   VaultMetaCompanion.insert({
     this.id = const Value.absent(),
     required String header,
+    this.passwordChangedAt = const Value.absent(),
+    this.recoveryChangedAt = const Value.absent(),
   }) : header = Value(header);
   static Insertable<VaultMetaRow> custom({
     Expression<int>? id,
     Expression<String>? header,
+    Expression<int>? passwordChangedAt,
+    Expression<int>? recoveryChangedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (header != null) 'header': header,
+      if (passwordChangedAt != null) 'password_changed_at': passwordChangedAt,
+      if (recoveryChangedAt != null) 'recovery_changed_at': recoveryChangedAt,
     });
   }
 
-  VaultMetaCompanion copyWith({Value<int>? id, Value<String>? header}) {
-    return VaultMetaCompanion(id: id ?? this.id, header: header ?? this.header);
+  VaultMetaCompanion copyWith({
+    Value<int>? id,
+    Value<String>? header,
+    Value<int?>? passwordChangedAt,
+    Value<int?>? recoveryChangedAt,
+  }) {
+    return VaultMetaCompanion(
+      id: id ?? this.id,
+      header: header ?? this.header,
+      passwordChangedAt: passwordChangedAt ?? this.passwordChangedAt,
+      recoveryChangedAt: recoveryChangedAt ?? this.recoveryChangedAt,
+    );
   }
 
   @override
@@ -176,6 +304,12 @@ class VaultMetaCompanion extends UpdateCompanion<VaultMetaRow> {
     if (header.present) {
       map['header'] = Variable<String>(header.value);
     }
+    if (passwordChangedAt.present) {
+      map['password_changed_at'] = Variable<int>(passwordChangedAt.value);
+    }
+    if (recoveryChangedAt.present) {
+      map['recovery_changed_at'] = Variable<int>(recoveryChangedAt.value);
+    }
     return map;
   }
 
@@ -183,7 +317,9 @@ class VaultMetaCompanion extends UpdateCompanion<VaultMetaRow> {
   String toString() {
     return (StringBuffer('VaultMetaCompanion(')
           ..write('id: $id, ')
-          ..write('header: $header')
+          ..write('header: $header, ')
+          ..write('passwordChangedAt: $passwordChangedAt, ')
+          ..write('recoveryChangedAt: $recoveryChangedAt')
           ..write(')'))
         .toString();
   }
@@ -1057,6 +1193,201 @@ class UnlockStateCompanion extends UpdateCompanion<UnlockStateRow> {
   }
 }
 
+class $TombstonesTable extends Tombstones
+    with TableInfo<$TombstonesTable, TombstoneRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TombstonesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<Uint8List> id = GeneratedColumn<Uint8List>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.blob,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (length(id) = 16)',
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<int> deletedAt = GeneratedColumn<int>(
+    'deleted_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, deletedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'tombstones';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TombstoneRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_deletedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TombstoneRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TombstoneRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.blob,
+        data['${effectivePrefix}id'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}deleted_at'],
+      )!,
+    );
+  }
+
+  @override
+  $TombstonesTable createAlias(String alias) {
+    return $TombstonesTable(attachedDatabase, alias);
+  }
+
+  @override
+  bool get withoutRowId => true;
+}
+
+class TombstoneRow extends DataClass implements Insertable<TombstoneRow> {
+  final Uint8List id;
+  final int deletedAt;
+  const TombstoneRow({required this.id, required this.deletedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<Uint8List>(id);
+    map['deleted_at'] = Variable<int>(deletedAt);
+    return map;
+  }
+
+  TombstonesCompanion toCompanion(bool nullToAbsent) {
+    return TombstonesCompanion(id: Value(id), deletedAt: Value(deletedAt));
+  }
+
+  factory TombstoneRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TombstoneRow(
+      id: serializer.fromJson<Uint8List>(json['id']),
+      deletedAt: serializer.fromJson<int>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<Uint8List>(id),
+      'deletedAt': serializer.toJson<int>(deletedAt),
+    };
+  }
+
+  TombstoneRow copyWith({Uint8List? id, int? deletedAt}) =>
+      TombstoneRow(id: id ?? this.id, deletedAt: deletedAt ?? this.deletedAt);
+  TombstoneRow copyWithCompanion(TombstonesCompanion data) {
+    return TombstoneRow(
+      id: data.id.present ? data.id.value : this.id,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TombstoneRow(')
+          ..write('id: $id, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash($driftBlobEquality.hash(id), deletedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TombstoneRow &&
+          $driftBlobEquality.equals(other.id, this.id) &&
+          other.deletedAt == this.deletedAt);
+}
+
+class TombstonesCompanion extends UpdateCompanion<TombstoneRow> {
+  final Value<Uint8List> id;
+  final Value<int> deletedAt;
+  const TombstonesCompanion({
+    this.id = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+  });
+  TombstonesCompanion.insert({required Uint8List id, required int deletedAt})
+    : id = Value(id),
+      deletedAt = Value(deletedAt);
+  static Insertable<TombstoneRow> custom({
+    Expression<Uint8List>? id,
+    Expression<int>? deletedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+    });
+  }
+
+  TombstonesCompanion copyWith({Value<Uint8List>? id, Value<int>? deletedAt}) {
+    return TombstonesCompanion(
+      id: id ?? this.id,
+      deletedAt: deletedAt ?? this.deletedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<Uint8List>(id.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<int>(deletedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TombstonesCompanion(')
+          ..write('id: $id, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$VaultDatabase extends GeneratedDatabase {
   _$VaultDatabase(QueryExecutor e) : super(e);
   $VaultDatabaseManager get managers => $VaultDatabaseManager(this);
@@ -1064,6 +1395,7 @@ abstract class _$VaultDatabase extends GeneratedDatabase {
   late final $RecordsTable records = $RecordsTable(this);
   late final $BiometricSlotTable biometricSlot = $BiometricSlotTable(this);
   late final $UnlockStateTable unlockState = $UnlockStateTable(this);
+  late final $TombstonesTable tombstones = $TombstonesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1073,16 +1405,21 @@ abstract class _$VaultDatabase extends GeneratedDatabase {
     records,
     biometricSlot,
     unlockState,
+    tombstones,
   ];
 }
 
 typedef $$VaultMetaTableCreateCompanionBuilder = VaultMetaCompanion Function({
   Value<int> id,
   required String header,
+  Value<int?> passwordChangedAt,
+  Value<int?> recoveryChangedAt,
 });
 typedef $$VaultMetaTableUpdateCompanionBuilder = VaultMetaCompanion Function({
   Value<int> id,
   Value<String> header,
+  Value<int?> passwordChangedAt,
+  Value<int?> recoveryChangedAt,
 });
 
 class $$VaultMetaTableFilterComposer
@@ -1101,6 +1438,16 @@ class $$VaultMetaTableFilterComposer
 
   ColumnFilters<String> get header => $composableBuilder(
     column: $table.header,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get passwordChangedAt => $composableBuilder(
+    column: $table.passwordChangedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get recoveryChangedAt => $composableBuilder(
+    column: $table.recoveryChangedAt,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -1123,6 +1470,16 @@ class $$VaultMetaTableOrderingComposer
     column: $table.header,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get passwordChangedAt => $composableBuilder(
+    column: $table.passwordChangedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get recoveryChangedAt => $composableBuilder(
+    column: $table.recoveryChangedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$VaultMetaTableAnnotationComposer
@@ -1139,6 +1496,16 @@ class $$VaultMetaTableAnnotationComposer
 
   GeneratedColumn<String> get header =>
       $composableBuilder(column: $table.header, builder: (column) => column);
+
+  GeneratedColumn<int> get passwordChangedAt => $composableBuilder(
+    column: $table.passwordChangedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get recoveryChangedAt => $composableBuilder(
+    column: $table.recoveryChangedAt,
+    builder: (column) => column,
+  );
 }
 
 class $$VaultMetaTableTableManager
@@ -1170,14 +1537,30 @@ class $$VaultMetaTableTableManager
               $$VaultMetaTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               $$VaultMetaTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> header = const Value.absent(),
-          }) => VaultMetaCompanion(id: id, header: header),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String header,
-          }) => VaultMetaCompanion.insert(id: id, header: header),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> header = const Value.absent(),
+                Value<int?> passwordChangedAt = const Value.absent(),
+                Value<int?> recoveryChangedAt = const Value.absent(),
+              }) => VaultMetaCompanion(
+                id: id,
+                header: header,
+                passwordChangedAt: passwordChangedAt,
+                recoveryChangedAt: recoveryChangedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String header,
+                Value<int?> passwordChangedAt = const Value.absent(),
+                Value<int?> recoveryChangedAt = const Value.absent(),
+              }) => VaultMetaCompanion.insert(
+                id: id,
+                header: header,
+                passwordChangedAt: passwordChangedAt,
+                recoveryChangedAt: recoveryChangedAt,
+              ),
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
@@ -1747,6 +2130,142 @@ typedef $$UnlockStateTableProcessedTableManager =
       UnlockStateRow,
       PrefetchHooks Function()
     >;
+typedef $$TombstonesTableCreateCompanionBuilder = TombstonesCompanion Function({
+  required Uint8List id,
+  required int deletedAt,
+});
+typedef $$TombstonesTableUpdateCompanionBuilder = TombstonesCompanion Function({
+  Value<Uint8List> id,
+  Value<int> deletedAt,
+});
+
+class $$TombstonesTableFilterComposer
+    extends Composer<_$VaultDatabase, $TombstonesTable> {
+  $$TombstonesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<Uint8List> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$TombstonesTableOrderingComposer
+    extends Composer<_$VaultDatabase, $TombstonesTable> {
+  $$TombstonesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<Uint8List> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TombstonesTableAnnotationComposer
+    extends Composer<_$VaultDatabase, $TombstonesTable> {
+  $$TombstonesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<Uint8List> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+}
+
+class $$TombstonesTableTableManager
+    extends
+        RootTableManager<
+          _$VaultDatabase,
+          $TombstonesTable,
+          TombstoneRow,
+          $$TombstonesTableFilterComposer,
+          $$TombstonesTableOrderingComposer,
+          $$TombstonesTableAnnotationComposer,
+          $$TombstonesTableCreateCompanionBuilder,
+          $$TombstonesTableUpdateCompanionBuilder,
+          (
+            TombstoneRow,
+            BaseReferences<_$VaultDatabase, $TombstonesTable, TombstoneRow>,
+          ),
+          TombstoneRow,
+          PrefetchHooks Function()
+        > {
+  $$TombstonesTableTableManager(_$VaultDatabase db, $TombstonesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TombstonesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TombstonesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TombstonesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<Uint8List> id = const Value.absent(),
+            Value<int> deletedAt = const Value.absent(),
+          }) => TombstonesCompanion(id: id, deletedAt: deletedAt),
+          createCompanionCallback: ({
+            required Uint8List id,
+            required int deletedAt,
+          }) => TombstonesCompanion.insert(id: id, deletedAt: deletedAt),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TombstonesTable, TombstoneRow>(table),
+                  BaseReferences<
+                    _$VaultDatabase,
+                    $TombstonesTable,
+                    TombstoneRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$TombstonesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$VaultDatabase,
+      $TombstonesTable,
+      TombstoneRow,
+      $$TombstonesTableFilterComposer,
+      $$TombstonesTableOrderingComposer,
+      $$TombstonesTableAnnotationComposer,
+      $$TombstonesTableCreateCompanionBuilder,
+      $$TombstonesTableUpdateCompanionBuilder,
+      (
+        TombstoneRow,
+        BaseReferences<_$VaultDatabase, $TombstonesTable, TombstoneRow>,
+      ),
+      TombstoneRow,
+      PrefetchHooks Function()
+    >;
 
 class $VaultDatabaseManager {
   final _$VaultDatabase _db;
@@ -1759,4 +2278,6 @@ class $VaultDatabaseManager {
       $$BiometricSlotTableTableManager(_db, _db.biometricSlot);
   $$UnlockStateTableTableManager get unlockState =>
       $$UnlockStateTableTableManager(_db, _db.unlockState);
+  $$TombstonesTableTableManager get tombstones =>
+      $$TombstonesTableTableManager(_db, _db.tombstones);
 }

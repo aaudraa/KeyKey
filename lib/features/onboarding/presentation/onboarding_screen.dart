@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:keykey/app/router.dart';
 import 'package:keykey/app/ui/keykey_logo.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
@@ -222,6 +224,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       TextButton(
         onPressed: _busy ? null : () => pickBackupToRestore(context, ref),
         child: Text(l10n.restoreTitle),
+      ),
+      TextButton(
+        onPressed: _busy ? null : () => context.push(AppRoutes.syncSetup),
+        child: Text(l10n.setupFromSync),
       ),
     ];
   }

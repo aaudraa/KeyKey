@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/core/backup/backup_codec.dart';
@@ -7,13 +9,9 @@ import 'package:keykey/core/crypto/vault_crypto.dart';
 import 'package:keykey/core/crypto/vault_header.dart';
 import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/core/vault/vault_session.dart';
-import 'package:keykey/features/authenticator/data/otp_content.dart';
+import 'package:keykey/features/backup/application/record_validation.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
-import 'package:keykey/features/vault/data/card_content.dart';
-import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
-import 'package:keykey/features/vault/data/note_content.dart';
-import 'package:keykey/features/vault/data/record_content.dart';
 import 'package:keykey/features/vault/data/vault_record_repository.dart';
 import 'package:sodium/sodium_sumo.dart';
 
@@ -30,6 +28,7 @@ final class OpenedBackup {
     required this.otpCount,
     this.cardCount = 0,
     this.noteCount = 0,
+    this.sync,
   });
 
   /// Ekran testleri için; kayıt içermez.
@@ -63,6 +62,9 @@ final class OpenedBackup {
   final int otpCount;
   final int cardCount;
   final int noteCount;
+
+  /// Senkron dosyasıysa silme kayıtları ve yuva zamanları; yedekte `null`.
+  final SyncInfo? sync;
 
   /// Yedekte kart ya da not var mı; özet metni buna göre seçilir.
   bool get hasCardsOrNotes => cardCount > 0 || noteCount > 0;
@@ -127,10 +129,30 @@ class RestoreService {
   /// [autoBackupFolder] bu cihazda seçili otomatik yedek klasörüdür. Klasörün
   /// izni cihaza bağlı olduğu için, verilirse yedekteki klasörün yerine geçer;
   /// `null` ise yedekteki değer kalır.
+  ///
+  /// [sync] bu telefonun senkron bilgisidir ve her zaman yedektekinin yerine
+  /// geçer (`null` kapalı): yedek başka bir telefonda, başka bir klasörle
+  /// alınmış olabilir. Kasa varken yedeğin kasa kimliği farklıysa senkron
+  /// kapanır (klasör başka kasanın); aynıysa açık kalır ve [stampAt]
+  /// verilmişse kayıtların `updatedAt` değeri o an yapılır, böylece yedekteki
+  /// haller bütün telefonlarda en yeni olur.
+  ///
+  /// [syncInfo] yalnızca senkrondan kurulumda (yeni telefon) verilir: silme
+  /// kayıtları ve yuva zamanları dosyadan yazılır, son yedek zamanı yazılmaz.
+  /// Geri yükle'de senkron dosyası yedek gibidir; içindeki bilgi yok sayılır.
   Future<void> replace(
     OpenedBackup backup, {
     AutoBackupFolder? autoBackupFolder,
+    SyncSettings? sync,
+    SyncInfo? syncInfo,
+    DateTime? stampAt,
   }) async {
+    final info = syncInfo;
+    final previous = await _store.readHeader();
+    final sameVault =
+        previous == null || listEquals(previous.vaultId, backup.header.vaultId);
+    final keptSync = sameVault ? sync : null;
+    final stamp = keptSync == null ? null : stampAt;
     final cipher = _cipherFor(backup);
     final List<StoredRecord> records;
     try {
@@ -143,15 +165,25 @@ class RestoreService {
               cipher,
               backup.createdAt,
               autoBackupFolder,
+              keptSync,
             )
+          else if (stamp == null)
+            record
           else
-            record,
+            StoredRecord(
+              id: record.id,
+              type: record.type,
+              blob: record.blob,
+              createdAt: record.createdAt,
+              updatedAt: stamp,
+            ),
         if (!backup.records.any((record) => listEquals(record.id, settingsId)))
           _settingsRecord(
             cipher,
             AppSettings.defaults
-                .copyWith(lastBackupAt: backup.createdAt)
-                .withAutoBackupFolder(autoBackupFolder),
+                .copyWith(lastBackupAt: info == null ? backup.createdAt : null)
+                .withAutoBackupFolder(autoBackupFolder)
+                .withSync(keptSync),
             id: settingsId,
             createdAt: backup.createdAt,
             updatedAt: backup.createdAt,
@@ -160,7 +192,15 @@ class RestoreService {
     } finally {
       cipher.dispose();
     }
-    await _store.replaceVault(backup.header, records);
+    await _store.replaceVault(
+      backup.header,
+      records,
+      tombstones: info?.deleted ?? const [],
+      times: HeaderTimes(
+        passwordChangedAt: info?.passwordChangedAt,
+        recoveryChangedAt: info?.recoveryChangedAt,
+      ),
+    );
   }
 
   StoredRecord _withDeviceSettings(
@@ -168,6 +208,7 @@ class RestoreService {
     RecordCipher cipher,
     DateTime createdAt,
     AutoBackupFolder? autoBackupFolder,
+    SyncSettings? sync,
   ) {
     final plain = cipher.decrypt(
       recordId: record.id,
@@ -187,11 +228,13 @@ class RestoreService {
     final keepFolder =
         autoBackupFolder == null ||
         autoBackupFolder.uri == settings.autoBackupFolder?.uri;
-    if (keepTime && keepFolder) return record;
+    final keepSync = _sameSync(settings.sync, sync);
+    if (keepTime && keepFolder && keepSync) return record;
     var patched = keepTime
         ? settings
         : settings.copyWith(lastBackupAt: createdAt);
     if (!keepFolder) patched = patched.withAutoBackupFolder(autoBackupFolder);
+    if (!keepSync) patched = patched.withSync(sync);
     return _settingsRecord(
       cipher,
       patched,
@@ -200,6 +243,12 @@ class RestoreService {
       updatedAt: record.updatedAt,
     );
   }
+
+  static bool _sameSync(SyncSettings? a, SyncSettings? b) =>
+      (a == null && b == null) ||
+      (a != null &&
+          b != null &&
+          jsonEncode(a.toJson()) == jsonEncode(b.toJson()));
 
   StoredRecord _settingsRecord(
     RecordCipher cipher,
@@ -229,7 +278,13 @@ class RestoreService {
   /// Yedeğin parola ve 2FA kayıtlarını açık kasaya ekler. Ayar kaydı alınmaz.
   ///
   /// Kayıtlar açık kasanın anahtarıyla yeniden şifrelenir, kimlikleri korunur.
-  Future<MergeCounts> merge(OpenedBackup backup, VaultSession session) async {
+  /// Senkron açıksa çağıran [stampAt] olarak şimdiyi verir; kurallar
+  /// [VaultStore.mergeRecords]'ta.
+  Future<MergeCounts> merge(
+    OpenedBackup backup,
+    VaultSession session, {
+    DateTime? stampAt,
+  }) async {
     final source = _cipherFor(backup);
     final records = <StoredRecord>[];
     try {
@@ -261,7 +316,102 @@ class RestoreService {
     } finally {
       source.dispose();
     }
-    return await _store.mergeRecords(records);
+    return await _store.mergeRecords(records, stampAt: stampAt);
+  }
+
+  /// Bu telefonun kasasını [remote] senkron dosyasının kasasına katar.
+  ///
+  /// Bu telefonun kayıtları [current]'ın anahtarıyla çözülür, dosyanın
+  /// anahtarıyla şifrelenir ve dosyanın kayıtlarına birleştirilir: aynı
+  /// kimlikte yeni olan kalır (türü farklıysa dosyanınki); dosyanın silme
+  /// kaydı kayıttan yeniyse ya da aynı andaysa kayıt gelmez, değilse silme
+  /// kaydı düşer. Ayar kaydı bu telefonunkidir, [sync] eklenir. Tek işlemde
+  /// yazılır: kasa dosyanın üst bilgisi, silme kayıtları ve yuva
+  /// zamanlarıyla değişir; parmak izi yuvası ve bu telefonun eski silme
+  /// kayıtları gider. Bir kayıt açılmazsa hiçbir şey yazılmaz.
+  Future<void> join(
+    OpenedBackup remote,
+    VaultSession current,
+    SyncSettings sync,
+  ) async {
+    final info = remote.sync;
+    const settingsType = SettingsRepository.recordType;
+    final byId = <String, StoredRecord>{
+      for (final record in remote.records)
+        if (record.type != settingsType) base64.encode(record.id): record,
+    };
+    final tombstones = <String, StoredTombstone>{
+      for (final tombstone in info?.deleted ?? const <StoredTombstone>[])
+        base64.encode(tombstone.id): tombstone,
+    };
+    final local = await _store.allRecords();
+    final target = _cipherFor(remote);
+    final List<StoredRecord> records;
+    try {
+      StoredRecord? settingsRecord;
+      AppSettings? settings;
+      for (final record in local) {
+        final plain = current.records.decrypt(
+          recordId: record.id,
+          type: record.type,
+          blob: record.blob,
+        );
+        try {
+          if (record.type == settingsType) {
+            settingsRecord = record;
+            settings = AppSettings.tryParse(plain);
+            continue;
+          }
+          final key = base64.encode(record.id);
+          final existing = byId[key];
+          if (existing != null &&
+              (existing.type != record.type ||
+                  !record.updatedAt.isAfter(existing.updatedAt))) {
+            continue;
+          }
+          final tombstone = tombstones[key];
+          if (tombstone != null &&
+              !tombstone.deletedAt.isBefore(record.updatedAt)) {
+            continue;
+          }
+          tombstones.remove(key);
+          byId[key] = StoredRecord(
+            id: record.id,
+            type: record.type,
+            blob: target.encrypt(
+              recordId: record.id,
+              type: record.type,
+              plainText: plain,
+            ),
+            createdAt: record.createdAt,
+            updatedAt: record.updatedAt,
+          );
+        } finally {
+          plain.fillRange(0, plain.length, 0);
+        }
+      }
+      records = [
+        ...byId.values,
+        _settingsRecord(
+          target,
+          (settings ?? AppSettings.defaults).withSync(sync),
+          id: SettingsRepository.recordId,
+          createdAt: settingsRecord?.createdAt ?? remote.createdAt,
+          updatedAt: settingsRecord?.updatedAt ?? remote.createdAt,
+        ),
+      ];
+    } finally {
+      target.dispose();
+    }
+    await _store.replaceVault(
+      remote.header,
+      records,
+      tombstones: tombstones.values.toList(),
+      times: HeaderTimes(
+        passwordChangedAt: info?.passwordChangedAt,
+        recoveryChangedAt: info?.recoveryChangedAt,
+      ),
+    );
   }
 
   RecordCipher _cipherFor(OpenedBackup backup) {
@@ -290,42 +440,19 @@ class RestoreService {
             blob: record.blob,
           );
           try {
-            switch (record.type) {
-              case LoginRepository.recordType:
-                LoginContent.fromJsonBytes(plain);
-                logins++;
-              case RecordCipher.otpType:
-                OtpContent.fromJsonBytes(plain);
-                otps++;
-              case VaultRecordRepository.cardType:
-                try {
-                  CardContent.fromJsonBytes(plain);
-                } on InvalidRecordContentException {
-                  throw const InvalidBackupException('Okunamayan kart kaydı.');
-                }
-                cards++;
-              case VaultRecordRepository.noteType:
-                try {
-                  NoteContent.fromJsonBytes(plain);
-                } on InvalidRecordContentException {
-                  throw const InvalidBackupException('Okunamayan not kaydı.');
-                }
-                notes++;
-              case SettingsRepository.recordType:
-                if (AppSettings.tryParse(plain) == null) {
-                  throw const InvalidBackupException('Okunamayan ayar kaydı.');
-                }
-              default:
-                throw const InvalidBackupException(
-                  'Desteklenmeyen kayıt türü.',
-                );
-            }
-          } on InvalidLoginContentException {
-            throw const InvalidBackupException('Okunamayan parola kaydı.');
-          } on InvalidOtpContentException {
-            throw const InvalidBackupException('Okunamayan 2FA kaydı.');
+            validateRecordContent(record.type, plain);
           } finally {
             plain.fillRange(0, plain.length, 0);
+          }
+          switch (record.type) {
+            case LoginRepository.recordType:
+              logins++;
+            case RecordCipher.otpType:
+              otps++;
+            case VaultRecordRepository.cardType:
+              cards++;
+            case VaultRecordRepository.noteType:
+              notes++;
           }
         }
       } finally {
@@ -340,6 +467,7 @@ class RestoreService {
         otpCount: otps,
         cardCount: cards,
         noteCount: notes,
+        sync: contents.sync,
       );
     } on Object {
       key.dispose();

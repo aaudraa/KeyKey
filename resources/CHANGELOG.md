@@ -2,6 +2,28 @@
 
 KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesinde](docs/yayin.md#sürüm-numarası). `v1.0.0`'dan önceki sürümler fazların sonunu işaretler ve hata ayıklama anahtarıyla imzalıdır; kalıcı bir kurulum için kullanılmamalıdır.
 
+## 1.8.0 (2026-11-20): Senkron
+
+Faz 19 ([tasarım](docs/senkron.md)).
+
+### Önemli
+
+- **1.8.0'ın yedeklerini 1.7.0 ve öncesi açamaz.** Yedeğin içerik sürümü 4 oldu (senkron ayarları). Eski sürüm "daha yeni bir yedek" der; yedek bozuk değildir, KeyKey'i güncellemek yeter.
+- **Kullanım koşulları sürüm 3.** Senkronu açarsan kasanın şifreli bir kopyası senin seçtiğin sunucuya gider; koşullar ve [gizlilik bildirimi](docs/gizlilik.md#senkron) bunu anlatıyor. Güncellemeden sonraki ilk açılışta koşullar bir kez yeniden sorulur.
+- Veritabanı şeması 2: kalıcı silinen kayıtların kimliği ve silinme anı (silme kaydı), ana parolanın ve kurtarma anahtarının son değiştiği an. Silme kayıtları senkron kapalıyken de yazılır.
+
+### Eklenenler
+
+- **Senkron (WebDAV):** Ayarlar → Telefonlar arası → **Senkron**. Kasa, kendi WebDAV klasörün (Nextcloud, ownCloud ya da başka bir sunucu) üzerinden aynı kasayı kullanan telefonların arasında eşitlenir: eklenen, değiştirilen, çöpe atılan ve kalıcı silinen kayıtlar öteki telefonlara geçer. Her telefon klasöre kendi dosyasını yazar; dosya yedekle aynı biçimde ana parolayla şifrelidir, sunucu içeriği göremez. Kasa açılınca, bir kayıt değişince, uygulamaya dönünce ve **Şimdi eşitle** ile eşitlenir. Aynı kayıtta en son değişen kalır; kaybeden parola geçmişe eklenir. Ana parola ya da kurtarma anahtarı bir telefonda değişince öteki telefonlar da yenisine geçer ve bunu bir kez söyler. Cihaz listesi, telefon kaldırma ve senkronu kapatırken bu telefonun dosyasını silme.
+- **Senkrondan kur:** Yeni telefonda ilk ekrandan; kasa klasördeki en yeni dosyadan kurulur, senkron açık gelir.
+- **Bu telefonu o kasaya kat:** Klasörde başka bir kasa varsa, o kasanın ana parolasıyla bu telefonun kayıtları o kasaya eklenir.
+- **Senkron açıkken geri yükleme** hiçbir kaydı silmez: birleştirilen ve değiştirilen kayıtlar bütün telefonlarda yedekteki haline döner.
+
+### Değişenler
+
+- Birleştirerek geri yüklemede geri gelen kaydın silme kaydı kaldırılır.
+- Gizlilik bildirimi, güvenlik tasarımı (tehdit modeli, bilinen sınırlar 10-13), güvenlik özeti ve kılavuz senkronu anlatıyor. Ağ kodu artık iki dosyada.
+
 ## 1.7.0 (2026-11-20): Kullanım kolaylıkları
 
 Faz 18 ([tasarım](docs/kullanim-kolayligi.md)).

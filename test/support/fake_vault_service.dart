@@ -107,7 +107,10 @@ class FakeVaultService implements VaultService {
   }
 
   @override
-  Future<VaultHeader?> readHeader() async => header;
+  Future<VaultHeader?> readHeader() async => storedHeader ?? header;
+
+  /// Diskte duran üst bilgi; verilmezse [header].
+  VaultHeader? storedHeader;
 
   @override
   Future<PendingVault> prepareVault(String password) async {
@@ -317,6 +320,9 @@ class FakeAppPackages implements AppPackages {
 
   @override
   Future<String> versionName() async => version;
+
+  @override
+  Future<String> deviceModel() async => 'Test Telefonu';
 }
 
 /// Kopyalananları kaydeder. Gerçek panoyu cihaz testi sınar.
@@ -721,19 +727,47 @@ class FakeRestoreService implements RestoreService {
   /// Son değiştirmede verilen, bu cihazın otomatik yedek klasörü.
   AutoBackupFolder? replacedFolder;
 
+  /// Son değiştirmede verilen senkron bilgisi.
+  SyncSettings? replacedSync;
+
+  /// Değiştirme sırasında kasaya yazılıyormuş gibi çağrılır.
+  void Function()? onReplace;
+
+  /// Son değiştirme ve birleştirmede verilen damga zamanı.
+  DateTime? replacedStampAt;
+  DateTime? mergedStampAt;
+
   @override
   Future<void> replace(
     OpenedBackup backup, {
     AutoBackupFolder? autoBackupFolder,
+    SyncSettings? sync,
+    SyncInfo? syncInfo,
+    DateTime? stampAt,
   }) async {
     replaces++;
     replacedFolder = autoBackupFolder;
+    replacedSync = sync;
+    replacedStampAt = stampAt;
+    onReplace?.call();
   }
 
   @override
-  Future<MergeCounts> merge(OpenedBackup backup, VaultSession session) async {
+  Future<void> join(
+    OpenedBackup remote,
+    VaultSession current,
+    SyncSettings sync,
+  ) async => throw UnimplementedError('Katılma bu sahte serviste yok.');
+
+  @override
+  Future<MergeCounts> merge(
+    OpenedBackup backup,
+    VaultSession session, {
+    DateTime? stampAt,
+  }) async {
     if (session.isDisposed) throw const VaultLockedException();
     merges++;
+    mergedStampAt = stampAt;
     onMerge?.call();
     return mergeResult;
   }

@@ -109,7 +109,7 @@ class VaultRecordRepository<C extends VaultItemContent<C>> {
   }
 
   Future<void> deletePermanently(VaultRecord<C> item) =>
-      _store.deleteRecord(item.id);
+      _store.deleteRecord(item.id, deletedAt: _clock());
 
   /// Süresi dolmuş çöp kutusu kayıtlarını siler, kalanları döndürür.
   Future<List<VaultRecord<C>>> purgeExpiredTrash(
@@ -121,7 +121,10 @@ class VaultRecordRepository<C extends VaultItemContent<C>> {
       final trashedAt = item.content.trashedAt;
       if (trashedAt != null &&
           now.difference(trashedAt) >= LoginRepository.trashRetention) {
-        await deletePermanently(item);
+        // Silme kaydı çöpe atılan sürümün zamanını taşır, şimdiyi değil:
+        // uzun süre eşitlenmemiş bir telefonun süresi dolan çöpü, başka
+        // telefonda sonradan çöpten çıkarılan ya da değişen kaydı silmesin.
+        await _store.deleteRecord(item.id, deletedAt: item.updatedAt);
       } else {
         kept.add(item);
       }

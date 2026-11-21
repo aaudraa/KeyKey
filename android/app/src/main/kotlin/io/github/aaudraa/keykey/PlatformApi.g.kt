@@ -1204,6 +1204,8 @@ interface AppPackagesApi {
   fun appIcon(packageName: String, sizePx: Long): ByteArray?
   /** KeyKey'in sürüm adı. */
   fun versionName(): String
+  /** Telefonun modeli (`Build.MODEL`); senkron cihaz listesinde gösterilir. */
+  fun deviceModel(): String
 
   companion object {
     /** The codec used by AppPackagesApi. */
@@ -1238,6 +1240,21 @@ interface AppPackagesApi {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
               listOf(api.versionName())
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.AppPackagesApi.deviceModel$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.deviceModel())
             } catch (exception: Throwable) {
               PlatformApiPigeonUtils.wrapError(exception)
             }

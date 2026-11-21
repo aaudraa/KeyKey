@@ -28,6 +28,63 @@ final class StoredBiometricSlot {
   final Uint8List cipherText;
 }
 
+/// Kalıcı silinen bir kaydın izi: kimlik ve silinme anı. İçerik ve tür
+/// taşımaz. Senkronda başka telefonun dosyası silinen kaydı geri getirmesin
+/// diye tutulur.
+final class StoredTombstone {
+  const new({required this.id, required this.deletedAt});
+
+  final Uint8List id;
+  final DateTime deletedAt;
+}
+
+/// Üst bilgideki yuvaların son değiştiği anlar; 1.8.0'dan beri
+/// değişmediyse `null`. Senkron iki yuvayı bunlara bakarak ayrı ayrı
+/// birleştirir.
+final class HeaderTimes {
+  const new({this.passwordChangedAt, this.recoveryChangedAt});
+
+  final DateTime? passwordChangedAt;
+  final DateTime? recoveryChangedAt;
+}
+
+/// Senkronun kasaya tek işlemde yazdığı değişiklikler.
+final class StoreChanges {
+  const new({
+    this.put = const [],
+    this.delete = const [],
+    this.addTombstones = const [],
+    this.removeTombstones = const [],
+    this.header,
+    this.times,
+  });
+
+  /// Yazılacak kayıtlar; aynı kimlikte kayıt varsa üzerine yazılır.
+  final List<StoredRecord> put;
+
+  /// Silinecek kayıtlar. Bu yolda ek silme kaydı yazılmaz; gerekenler
+  /// [addTombstones]'ta gelir.
+  final List<Uint8List> delete;
+
+  /// Yazılacak silme kayıtları; aynı kimlikte daha yenisi varsa o kalır.
+  final List<StoredTombstone> addTombstones;
+
+  /// Kaldırılacak silme kayıtları (silindikten sonra yeniden değişen kayıt).
+  final List<Uint8List> removeTombstones;
+
+  /// Verilirse üst bilgi; [times] ile birlikte yazılır.
+  final VaultHeader? header;
+  final HeaderTimes? times;
+
+  bool get isEmpty =>
+      put.isEmpty &&
+      delete.isEmpty &&
+      addTombstones.isEmpty &&
+      removeTombstones.isEmpty &&
+      header == null &&
+      times == null;
+}
+
 /// Birleştirmenin sonucu.
 final class MergeCounts {
   const new({required this.added, required this.updated, required this.kept});
@@ -58,11 +115,20 @@ final class VaultStore {
 
   static const _singleRowId = 1;
 
+  /// Ayar kaydının türü (`SettingsRepository.recordType`). Ayar kaydı cihaza
+  /// aittir, senkrona girmez; silinince silme kaydı yazılmaz.
+  static const _settingsType = 'settings';
+
   final VaultDatabase _database;
 
   /// Kurulu değilse `null` döner.
   ///
   /// Üst bilgi bozuksa `InvalidVaultHeaderException` fırlatır.
+  /// [action] tek SQLite işleminde çalışır; içindeki okumalar ve yazmalar
+  /// arasına başka bir yazma giremez, hata olursa hiçbiri kalmaz.
+  Future<T> transaction<T>(Future<T> Function() action) =>
+      _database.transaction(action);
+
   Future<VaultHeader?> readHeader() async {
     final row = await _database.select(_database.vaultMeta).getSingleOrNull();
     return row == null ? null : VaultHeader.fromJsonString(row.header);
@@ -86,23 +152,54 @@ final class VaultStore {
     });
   }
 
-  /// Üst bilgiyi tek işlemde değiştirir.
+  /// Üst bilgiyi tek işlemde değiştirir. Verilen yuva zamanları aynı
+  /// yazmada kaydedilir, verilmeyenlere dokunulmaz.
   ///
   /// Kurulu değilse [VaultNotFoundException] fırlatır.
-  Future<void> updateHeader(VaultHeader header) async {
+  Future<void> updateHeader(
+    VaultHeader header, {
+    DateTime? passwordChangedAt,
+    DateTime? recoveryChangedAt,
+  }) async {
     final changed = await _database
         .update(_database.vaultMeta)
-        .write(VaultMetaCompanion(header: Value(header.toJsonString())));
+        .write(
+          VaultMetaCompanion(
+            header: Value(header.toJsonString()),
+            passwordChangedAt: passwordChangedAt == null
+                ? const Value.absent()
+                : Value(passwordChangedAt.millisecondsSinceEpoch),
+            recoveryChangedAt: recoveryChangedAt == null
+                ? const Value.absent()
+                : Value(recoveryChangedAt.millisecondsSinceEpoch),
+          ),
+        );
     if (changed == 0) throw const VaultNotFoundException();
+  }
+
+  /// Yuvaların son değiştiği anlar. Kasa kurulu değilse ikisi de `null`.
+  Future<HeaderTimes> readHeaderTimes() async {
+    final row = await _database.select(_database.vaultMeta).getSingleOrNull();
+    return HeaderTimes(
+      passwordChangedAt: _timeOrNull(row?.passwordChangedAt),
+      recoveryChangedAt: _timeOrNull(row?.recoveryChangedAt),
+    );
   }
 
   /// Kasayı tek işlemde [header] ve [records] ile değiştirir.
   ///
-  /// Kasa yoksa kurar. Var olan bütün kayıtlar, parmak izi yuvası ve hatalı
-  /// deneme sayacı silinir. Yarıda kalırsa hiçbir şey değişmez.
-  Future<void> replaceVault(VaultHeader header, List<StoredRecord> records) {
+  /// Kasa yoksa kurar. Var olan bütün kayıtlar, silme kayıtları, parmak izi
+  /// yuvası ve hatalı deneme sayacı silinir; [tombstones] ve [times] yazılır.
+  /// Yarıda kalırsa hiçbir şey değişmez.
+  Future<void> replaceVault(
+    VaultHeader header,
+    List<StoredRecord> records, {
+    List<StoredTombstone> tombstones = const [],
+    HeaderTimes times = const HeaderTimes(),
+  }) {
     return _database.transaction(() async {
       await _database.delete(_database.records).go();
+      await _database.delete(_database.tombstones).go();
       await _database.delete(_database.biometricSlot).go();
       await _database.delete(_database.unlockState).go();
       await _database
@@ -111,33 +208,63 @@ final class VaultStore {
             VaultMetaCompanion.insert(
               id: const Value(_singleRowId),
               header: header.toJsonString(),
+              passwordChangedAt: Value(
+                times.passwordChangedAt?.millisecondsSinceEpoch,
+              ),
+              recoveryChangedAt: Value(
+                times.recoveryChangedAt?.millisecondsSinceEpoch,
+              ),
             ),
           );
       for (final record in records) {
         await _database.into(_database.records).insert(_companion(record));
+      }
+      for (final tombstone in tombstones) {
+        await _putTombstone(tombstone);
       }
     });
   }
 
   /// Kayıtları tek işlemde ekler. Aynı kimlikte kayıt varsa `updatedAt`
   /// değeri yeni olan kalır; türü farklıysa var olana dokunulmaz.
-  Future<MergeCounts> mergeRecords(List<StoredRecord> records) {
+  ///
+  /// Eklenen ya da güncellenen kaydın silme kaydı kaldırılır: geri gelen
+  /// kayıt senkronda yeniden silinmez. [stampAt] verilirse (senkron açık)
+  /// bu kayıtların `updatedAt` değeri o an yapılır; karşılaştırma yine
+  /// kaydın kendi zamanıyladır. Zaman şifreli içerikte değildir.
+  Future<MergeCounts> mergeRecords(
+    List<StoredRecord> records, {
+    DateTime? stampAt,
+  }) {
     return _database.transaction(() async {
       var added = 0;
       var updated = 0;
       var kept = 0;
       for (final record in records) {
         final existing = await getRecord(record.id);
+        final stamped = stampAt == null
+            ? record
+            : StoredRecord(
+                id: record.id,
+                type: record.type,
+                blob: record.blob,
+                createdAt: record.createdAt,
+                updatedAt: stampAt,
+              );
         if (existing == null) {
-          await _database.into(_database.records).insert(_companion(record));
+          await _database.into(_database.records).insert(_companion(stamped));
           added++;
         } else if (existing.type == record.type &&
             record.updatedAt.isAfter(existing.updatedAt)) {
-          await putRecord(record);
+          await putRecord(stamped);
           updated++;
         } else {
           kept++;
+          continue;
         }
+        final query = _database.delete(_database.tombstones)
+          ..where((row) => row.id.equals(record.id));
+        await query.go();
       }
       return MergeCounts(added: added, updated: updated, kept: kept);
     });
@@ -192,11 +319,97 @@ final class VaultStore {
         : DateTime.fromMillisecondsSinceEpoch(value, isUtc: true);
   }
 
-  Future<void> deleteRecord(Uint8List id) async {
-    final query = _database.delete(_database.records)
-      ..where((row) => row.id.equals(id));
-    await query.go();
+  /// Kaydı siler ve aynı işlemde silme kaydını yazar ([deletedAt] verilmezse
+  /// şimdi). Aynı kimlikte silme kaydı varsa büyük zaman kalır. Ayar kaydı
+  /// ve olmayan kayıt için silme kaydı yazılmaz.
+  Future<void> deleteRecord(Uint8List id, {DateTime? deletedAt}) {
+    return _database.transaction(() async {
+      final existing = await getRecord(id);
+      if (existing == null) return;
+      final query = _database.delete(_database.records)
+        ..where((row) => row.id.equals(id));
+      await query.go();
+      if (existing.type == _settingsType) return;
+      await _putTombstone(
+        StoredTombstone(id: id, deletedAt: deletedAt ?? DateTime.now()),
+      );
+    });
   }
+
+  /// Senkronun değişikliklerini tek işlemde yazar. Yarıda kalırsa hiçbir şey
+  /// değişmez.
+  Future<void> applyChanges(StoreChanges changes) {
+    return _database.transaction(() async {
+      for (final record in changes.put) {
+        await putRecord(record);
+      }
+      for (final id in changes.delete) {
+        final query = _database.delete(_database.records)
+          ..where((row) => row.id.equals(id));
+        await query.go();
+      }
+      for (final tombstone in changes.addTombstones) {
+        await _putTombstone(tombstone);
+      }
+      for (final id in changes.removeTombstones) {
+        final query = _database.delete(_database.tombstones)
+          ..where((row) => row.id.equals(id));
+        await query.go();
+      }
+      final header = changes.header;
+      final times = changes.times;
+      if (header != null || times != null) {
+        await _database
+            .update(_database.vaultMeta)
+            .write(
+              VaultMetaCompanion(
+                header: header == null
+                    ? const Value.absent()
+                    : Value(header.toJsonString()),
+                passwordChangedAt: times == null
+                    ? const Value.absent()
+                    : Value(times.passwordChangedAt?.millisecondsSinceEpoch),
+                recoveryChangedAt: times == null
+                    ? const Value.absent()
+                    : Value(times.recoveryChangedAt?.millisecondsSinceEpoch),
+              ),
+            );
+      }
+    });
+  }
+
+  /// Bütün silme kayıtları.
+  Future<List<StoredTombstone>> allTombstones() async {
+    final rows = await _database.select(_database.tombstones).get();
+    return [
+      for (final row in rows)
+        StoredTombstone(
+          id: row.id,
+          deletedAt: DateTime.fromMillisecondsSinceEpoch(
+            row.deletedAt,
+            isUtc: true,
+          ),
+        ),
+    ];
+  }
+
+  /// Silme kaydını yazar; aynı kimlikte daha yenisi varsa ona dokunmaz.
+  Future<void> _putTombstone(StoredTombstone tombstone) async {
+    final query = _database.select(_database.tombstones)
+      ..where((row) => row.id.equals(tombstone.id));
+    final existing = await query.getSingleOrNull();
+    final at = tombstone.deletedAt.millisecondsSinceEpoch;
+    if (existing != null && existing.deletedAt >= at) return;
+    await _database
+        .into(_database.tombstones)
+        .insertOnConflictUpdate(
+          TombstonesCompanion.insert(id: tombstone.id, deletedAt: at),
+        );
+  }
+
+  static DateTime? _timeOrNull(int? value) => value == null
+      ? null
+      : DateTime.fromMillisecondsSinceEpoch(value, isUtc: true);
 
   Future<StoredBiometricSlot?> readBiometricSlot() async {
     final row = await _database

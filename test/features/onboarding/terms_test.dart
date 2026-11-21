@@ -65,6 +65,16 @@ void main() {
       );
     });
 
+    test('2. sürümü kabul etmiş kullanıcıya yeniden sorulur', () async {
+      // Sürüm 3: senkron açılırsa şifreli kopya kullanıcının sunucusuna gider.
+      final file = File('${dir.path}/terms')..writeAsStringSync('2');
+      final store = FileTermsAcceptanceStore(file);
+      expect(await store.accepted(), isFalse);
+      await store.write(currentTermsVersion);
+      expect(await store.accepted(), isTrue);
+      expect(currentTermsVersion, 3);
+    });
+
     test('bozuk içerik kabul edilmemiş sayılır', () async {
       File('${dir.path}/terms').writeAsStringSync('evet');
       final store = FileTermsAcceptanceStore(File('${dir.path}/terms'));
@@ -86,6 +96,7 @@ void main() {
       expect(go(const VaultNotSetUp(), AppRoutes.terms), isNull);
       expect(go(const VaultNotSetUp(), AppRoutes.setup), AppRoutes.terms);
       expect(go(const VaultNotSetUp(), AppRoutes.restore), AppRoutes.terms);
+      expect(go(const VaultNotSetUp(), AppRoutes.syncSetup), AppRoutes.terms);
       expect(go(VaultLocked(header), AppRoutes.lock), AppRoutes.terms);
       expect(go(VaultLocked(header), AppRoutes.terms), isNull);
       expect(go(VaultOpen(session), AppRoutes.vault), AppRoutes.terms);
@@ -208,10 +219,13 @@ void main() {
       for (final text in [
         // Yedek ve dışa aktarma da var: veriler yalnızca telefonda değil.
         'senin seçtiğin yere',
-        'senin başlattığın denetimler',
+        'senin açtığın özellikler',
         'Argon2id',
         'kimse verilerini kurtaramaz',
         'şifreli yedek',
+        // Senkron: kopya kullanıcının sunucusunda, yedek yerine geçmez.
+        'senin seçtiğin WebDAV sunucusuna',
+        'Senkron yedek yerine geçmez',
         // Pano 30 saniyede silinir ama klavyenin geçmişi tutabilir.
         'pano geçmişi',
         'yapay zekâ',
@@ -232,10 +246,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(TermsScreen), findsOneWidget);
-      expect(
-        find.textContaining('senin başlattığın denetimler'),
-        findsOneWidget,
-      );
+      expect(find.textContaining('senin açtığın özellikler'), findsOneWidget);
       expect(continueButton(), findsNothing);
       expect(find.byType(Checkbox), findsNothing);
     });

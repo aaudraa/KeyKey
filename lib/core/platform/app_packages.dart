@@ -4,14 +4,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show FutureProviderFamily;
 import 'package:keykey/core/platform/platform_api.g.dart';
 
-/// Telefondaki uygulamaların simgeleri ve KeyKey'in sürümü.
+/// Telefondaki uygulamaların simgeleri, KeyKey'in sürümü ve telefonun
+/// modeli.
 abstract interface class AppPackages {
   /// Simgeler bu boyutta (piksel) okunur.
   static const iconSizePx = 144;
 
+  /// Telefon modeli en çok bu kadar karakter (senkron dosyasının sınırı).
+  static const maxDeviceModelLength = 64;
+
   Future<Uint8List?> appIcon(String packageName);
 
   Future<String> versionName();
+
+  /// Telefonun modeli, örneğin "SM-G780G"; bilinmiyorsa boş.
+  Future<String> deviceModel();
 }
 
 final class PigeonAppPackages implements AppPackages {
@@ -25,6 +32,14 @@ final class PigeonAppPackages implements AppPackages {
 
   @override
   Future<String> versionName() => _api.versionName();
+
+  @override
+  Future<String> deviceModel() async {
+    final model = (await _api.deviceModel()).trim();
+    return model.length > AppPackages.maxDeviceModelLength
+        ? model.substring(0, AppPackages.maxDeviceModelLength)
+        : model;
+  }
 }
 
 /// Simge göstermeyen uygulama; varsayılan. Simgeler yalnızca görünüş için
@@ -37,6 +52,9 @@ final class NoAppPackages implements AppPackages {
 
   @override
   Future<String> versionName() async => '';
+
+  @override
+  Future<String> deviceModel() async => '';
 }
 
 /// `main` ve `autofillMain` Pigeon uygulamasıyla doldurur.
@@ -58,4 +76,9 @@ final FutureProviderFamily<Uint8List?, String> appIconProvider = FutureProvider
 
 final appVersionProvider = FutureProvider<String>(
   (ref) => ref.watch(appPackagesProvider).versionName(),
+);
+
+/// Telefonun modeli; senkron dosyasında cihaz adı olarak gider.
+final deviceModelProvider = FutureProvider<String>(
+  (ref) => ref.watch(appPackagesProvider).deviceModel(),
 );

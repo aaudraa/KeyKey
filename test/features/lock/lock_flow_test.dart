@@ -14,11 +14,13 @@ import 'package:keykey/features/lock/application/lock_clock.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/lock_screen.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
+import 'package:keykey/features/sync/application/sync_controller.dart';
 import 'package:keykey/features/vault/data/card_content.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/presentation/card_detail_screen.dart';
 import 'package:sodium/sodium_sumo.dart';
 
+import '../../support/fake_sync_service.dart';
 import '../../support/fake_vault_service.dart';
 
 void main() {
@@ -816,6 +818,49 @@ void main() {
         await resume(tester);
         expect(find.text(vaultText), findsOneWidget);
         expect(find.text(lockedTitle), findsNothing);
+      });
+
+      testWidgets('kasa açık kalan dönüşte bir dakika sonra eşitleniyor', (
+        tester,
+      ) async {
+        final sync = FakeSyncService();
+        var syncNow = DateTime.utc(2026, 11, 20, 12);
+        await pumpKeyKey(
+          tester,
+          status: VaultOpen(service.newSession()),
+          service: service,
+          settings: FakeSettingsRepository(
+            AppSettings.defaults
+                .copyWith(backgroundLock: BackgroundLock.seconds30)
+                .withSync(
+                  SyncSettings(
+                    folder: Uri.parse('https://bulut.example.com/dav/'),
+                    username: 'ayse',
+                    appPassword: 'p',
+                  ),
+                ),
+          ),
+          extraOverrides: [
+            lockClockProvider.overrideWithValue(clock),
+            syncServiceProvider.overrideWithValue(sync),
+            syncClockProvider.overrideWithValue(() => syncNow),
+          ],
+        );
+        await tester.pumpAndSettle();
+        expect(sync.calls, 1);
+
+        setLifecycle(tester, AppLifecycleState.paused);
+        clock.advance(const Duration(seconds: 10));
+        syncNow = syncNow.add(const Duration(seconds: 10));
+        await resume(tester);
+        expect(sync.calls, 1);
+
+        setLifecycle(tester, AppLifecycleState.paused);
+        clock.advance(const Duration(seconds: 20));
+        syncNow = syncNow.add(const Duration(minutes: 1));
+        await resume(tester);
+        expect(find.text(vaultText), findsOneWidget);
+        expect(sync.calls, 2);
       });
 
       testWidgets('süre dolduysa dönüşte kilitli (uygulama donmuştu)', (

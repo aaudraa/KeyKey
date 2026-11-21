@@ -14,7 +14,7 @@ KeyKey GPL-3.0 ile yayımlanır. Bu yüzden içine giren her şeyin lisansı GPL
 | Güncellik | Doğrudan bağımlılıkların hepsi son kararlı sürümde, biri hariç: `androidx.biometric`'in 1.1.0'dan yeni kararlı sürümü yok. Bekleyen dolaylı paketler ve nedenleri [Güncellik](#güncellik) bölümünde. |
 | Derlemede indirilen | Uygulamaya giren hazır yerel kütüphane yok. SQLite, Faz 9'dan beri repodaki kaynaktan derleniyor (#99). Ayrıntı: [Derlemede indirilenler](#derlemede-indirilenler). |
 | Lisanslar ekranı | Android kütüphaneleri ve SQLite eksikti, eklendi. Ayrıntı: [Lisanslar ekranı](#lisanslar-ekranı). |
-| Ağ (1.6.0) | Hiçbir bağımlılık ağa çıkmıyor; yeni paket eklenmedi. Tek ağ kodu KeyKey'in kendi `lib/core/network/pwned_passwords_client.dart` dosyası, Dart'ın `dart:io` `HttpClient`'ıyla. Başka yerde ağ kodu olmadığını `test/core/network/network_audit_test.dart` denetler. Pwned Passwords verisi uygulamaya gömülmez; atıfı (CC BY 4.0) parola raporunda. |
+| Ağ (1.6.0, 1.8.0) | Hiçbir bağımlılık ağa çıkmıyor. Ağ kodu KeyKey'in kendi iki dosyasında, Dart'ın `dart:io` `HttpClient`'ıyla: `lib/core/network/pwned_passwords_client.dart` (sızıntı kontrolü) ve 1.8.0'dan beri `lib/core/network/webdav_client.dart` (senkron). Senkron için yalnızca XML okuyucu `xml` eklendi (saf Dart). Başka yerde ağ kodu olmadığını `test/core/network/network_audit_test.dart` denetler. Pwned Passwords verisi uygulamaya gömülmez; atıfı (CC BY 4.0) parola raporunda. |
 | Bilinen açıklar | Bir tane vardı (Guava), düzeltilmiş sürüme geçildi. Şu an bilinen açık yok. Ayrıntı: [Bilinen açıklar](#bilinen-açıklar). |
 
 ## Doğrudan Dart bağımlılıkları
@@ -33,13 +33,14 @@ KeyKey GPL-3.0 ile yayımlanır. Bu yüzden içine giren her şeyin lisansı GPL
 | `image_picker` | 1.2.4 | BSD-3-Clause, Apache-2.0 | QR kodunu galerideki görselden okuma |
 | `file_selector` | 1.1.0 | BSD-3-Clause | Yedek ve içe aktarma dosyası seçme, dışa aktarmayı kaydetme |
 | `path_provider` | 2.1.6 | BSD-3-Clause | Kasa dosyasının uygulama klasöründeki yeri |
+| `xml` | 7.1.0 | MIT; getirdiği `petitparser` 7.1.0 MIT | Senkronda WebDAV klasör listesinin (`PROPFIND` yanıtı) okunması. Saf Dart, ağa çıkmaz, yerel kod yok (1.8.0) |
 | `flutter`, `flutter_localizations` | SDK | BSD-3-Clause | Arayüz çerçevesi |
 
 Geliştirme bağımlılıkları uygulamaya girmez: `build_runner` ve `drift_dev` (drift kodu üretimi), `pigeon` (Dart-Kotlin köprüsünün üretimi), `very_good_analysis` (kod kuralları), `flutter_test` ve `integration_test`.
 
 ## Bütün Dart paketleri
 
-Uygulamanın normal bağımlılıklarından ulaşılan 104 paket. Liste [`dart-lisanslari.mjs`](../scripts/dart-lisanslari.mjs) betiğiyle üretilir:
+Uygulamanın normal bağımlılıklarından ulaşılan 106 paket. Liste [`dart-lisanslari.mjs`](../scripts/dart-lisanslari.mjs) betiğiyle üretilir:
 
 ```sh
 flutter pub deps --json > deps.json
@@ -133,6 +134,7 @@ Okurken bilinmesi gerekenler:
 | `path_provider_linux` | 2.2.2 | dolaylı | BSD-3-Clause |
 | `path_provider_platform_interface` | 2.1.3 | dolaylı | BSD-3-Clause |
 | `path_provider_windows` | 2.3.0 | dolaylı | BSD-3-Clause |
+| `petitparser` | 7.1.0 | dolaylı | MIT |
 | `platform` | 3.2.0 | dolaylı | BSD-3-Clause |
 | `plugin_platform_interface` | 2.1.8 | dolaylı | BSD-3-Clause |
 | `posix` | 6.5.4 | dolaylı | MIT |
@@ -157,6 +159,7 @@ Okurken bilinmesi gerekenler:
 | `vm_service` | 15.4.0 | dolaylı | BSD-3-Clause |
 | `web` | 1.1.2 | dolaylı | BSD-3-Clause |
 | `xdg_directories` | 1.1.0 | dolaylı | BSD-3-Clause |
+| `xml` | 7.1.0 | doğrudan | MIT |
 | `yaml` | 3.1.4 | dolaylı | MIT |
 
 ## Android (Gradle) bağımlılıkları

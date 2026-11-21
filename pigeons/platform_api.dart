@@ -193,6 +193,9 @@ abstract class AppPackagesApi {
 
   /// KeyKey'in sürüm adı.
   String versionName();
+
+  /// Telefonun modeli (`Build.MODEL`); senkron cihaz listesinde gösterilir.
+  String deviceModel();
 }
 
 /// Web sayfasını sistemin tarayıcısında açar. Sayfayı KeyKey indirmez;

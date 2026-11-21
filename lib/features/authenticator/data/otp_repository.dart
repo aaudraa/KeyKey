@@ -95,7 +95,8 @@ class OtpRepository {
     return updated;
   }
 
-  Future<void> deletePermanently(OtpItem item) => _store.deleteRecord(item.id);
+  Future<void> deletePermanently(OtpItem item) =>
+      _store.deleteRecord(item.id, deletedAt: _clock());
 
   /// Süresi dolmuş çöp kutusu kayıtlarını siler, kalanları döndürür.
   Future<List<OtpItem>> purgeExpiredTrash(List<OtpItem> items) async {
@@ -104,7 +105,10 @@ class OtpRepository {
     for (final item in items) {
       final trashedAt = item.content.trashedAt;
       if (trashedAt != null && now.difference(trashedAt) >= trashRetention) {
-        await deletePermanently(item);
+        // Silme kaydı çöpe atılan sürümün zamanını taşır, şimdiyi değil:
+        // uzun süre eşitlenmemiş bir telefonun süresi dolan çöpü, başka
+        // telefonda sonradan çöpten çıkarılan ya da değişen kaydı silmesin.
+        await _store.deleteRecord(item.id, deletedAt: item.updatedAt);
       } else {
         kept.add(item);
       }

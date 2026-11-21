@@ -304,6 +304,27 @@ final class LoginContent {
     );
   }
 
+  /// Senkronda kaybeden sürümün parolasını geçmişin başına ekler: iki
+  /// telefonda aynı anda yapılan değişikliklerden kazanan bu içerik olunca
+  /// öteki telefonun kaydettiği parola kaybolmasın. [password] boşsa, şimdiki
+  /// parolaysa ya da geçmişte zaten varsa `null`.
+  LoginContent? withRescuedPassword(String password, DateTime changedAt) {
+    if (password.isEmpty ||
+        password == this.password ||
+        passwordHistory.any((entry) => entry.password == password)) {
+      return null;
+    }
+    final history = [
+      PasswordHistoryEntry(password: password, changedAt: changedAt),
+      ...passwordHistory,
+    ];
+    return copyWith(
+      passwordHistory: history.length > maxPasswordHistory
+          ? history.sublist(0, maxPasswordHistory)
+          : history,
+    );
+  }
+
   static LoginApp _app(Object? value) {
     final app = _object(value, const {'package', 'certsSha256'});
     final packageName = _string(app['package'], 'apps.package');

@@ -41,6 +41,10 @@ regexes = [
   '''^yedek-Parolasi-55$''',
   '''^yedek-Alan-Parola-61$''',
   '''^yeni-Telefon-Parola-73$''',
+  '''^Yeni-Ana-Parola-2027$''',
+  '''^Telefon-B-Parola-2026$''',
+  # Senkron testlerindeki deneme uygulama parolası (WebDAV).
+  '''^uygulama-parolasi-123$''',
   # Bitwarden'ın içe aktarma testlerindeki herkese açık deneme değerleri.
   '''^wpC9qFvsbWQK5Z$''',
   '''^Qh6W4Wz55YGFNU$''',

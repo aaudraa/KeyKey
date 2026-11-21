@@ -27,6 +27,7 @@ import 'package:keykey/features/settings/application/recovery_renewal_notice.dar
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/settings/application/theme_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
+import 'package:keykey/features/sync/presentation/sync_screen.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -373,6 +374,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ],
               ),
               const BackupSection(),
+              const SyncSection(),
               AutofillSetupSection(
                 children: [
                   KkSwitchTile(
