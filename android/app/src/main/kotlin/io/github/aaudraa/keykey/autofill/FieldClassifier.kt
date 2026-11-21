@@ -54,6 +54,12 @@ data class FieldInfo(
     val options: List<String> = emptyList(),
     /** Kutunun uzunluk sınırı; 0 bilinmiyor demek. */
     val maxLength: Int = 0,
+    /**
+     * Alanın içinde durduğu çerçevenin alan adı: kendisinin ya da en yakın
+     * atasının `webDomain` değeri. Uygulamalarda `null`.
+     */
+    val frameDomain: String? = null,
+    val frameScheme: String? = null,
 ) {
     companion object {
         const val AUTOFILL_TYPE_TEXT = 1
