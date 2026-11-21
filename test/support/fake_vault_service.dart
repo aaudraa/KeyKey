@@ -516,11 +516,17 @@ class FakeSettingsRepository implements SettingsRepository {
 
   AppSettings settings;
 
+  /// Doluysa kaydetme bu hatayı fırlatır (dolu disk, meşgul veritabanı).
+  Exception? saveError;
+
   @override
   Future<AppSettings> load() async => settings;
 
   @override
-  Future<void> save(AppSettings settings) async => this.settings = settings;
+  Future<void> save(AppSettings settings) async {
+    if (saveError case final error?) throw error;
+    this.settings = settings;
+  }
 }
 
 /// Belge seçicinin yerine: kaydedilen baytları tutar, açmada [nextOpen] döner.

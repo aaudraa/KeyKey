@@ -209,7 +209,9 @@ class SyncController extends Notifier<SyncStatus> {
     if (queued != null) return queued;
     final running = _running;
     if (running == null) return _start();
-    final next = running.then((_) {
+    // Önceki çalışma beklenmedik biçimde düşse de kuyruk ilerler; yoksa
+    // _queued hiç temizlenmez ve senkron oturum boyunca durur.
+    final next = running.then<void>((_) {}, onError: (Object _) {}).then((_) {
       _queued = null;
       return _start();
     });
@@ -264,6 +266,9 @@ class SyncController extends Notifier<SyncStatus> {
           .recordSync(result.at, result.digest);
     } on VaultLockedException {
       return;
+    } on Exception {
+      // Ayar kaydı yazılamadı (dolu disk, meşgul veritabanı). Eşitleme yine
+      // de oldu; sonraki eşitleme özeti yeniden hesaplar.
     }
     if (generation != _generation) return;
     if (result.changedLocal) {

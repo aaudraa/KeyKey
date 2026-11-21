@@ -345,6 +345,30 @@ void main() {
     });
   });
 
+  test('ayar yazılamasa da senkron oturum boyunca ölmüyor', () {
+    // N4: recordSync başka bir hatayla düşünce _run fırlatıyor, kuyruktaki
+    // istek hiç temizlenmiyordu; sonraki her istek aynı hatayı alıyordu.
+    fakeAsync((async) {
+      sync.gate = Completer();
+      final container = open();
+      async.elapse(const Duration(seconds: 1));
+      settings.saveError = Exception('disk dolu');
+      // İlk eşitleme sürerken ikinci istek kuyruğa girer.
+      unawaited(controller(container).syncNow());
+      sync.gate!.complete();
+      async.elapse(const Duration(seconds: 1));
+      expect(sync.calls, 2);
+      expect(container.read(syncControllerProvider).running, isFalse);
+
+      settings.saveError = null;
+      unawaited(controller(container).syncNow());
+      async.elapse(const Duration(seconds: 1));
+      expect(sync.calls, 3);
+      expect(settings.settings.sync!.lastSyncAt, sync.at);
+      expect(container.read(syncControllerProvider).running, isFalse);
+    });
+  });
+
   test(
     'yerel veriyi değiştiren eşitlemeden sonra otomatik yedek yazılıyor',
     () {
