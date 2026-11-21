@@ -205,7 +205,7 @@ Senkron, kasanı aynı kasayı kullanan telefonların (ya da telefon ve tabletin
 
 **Açmak için:** Ayarlar → Telefonlar arası → **Senkron**.
 
-1. Sunucunda KeyKey için boş bir klasör aç. Nextcloud'da klasörün WebDAV adresi Dosyalar → sol alttaki **Dosya ayarları** → **WebDAV** altında yazar; sonuna klasörün adını ekle (örneğin `https://bulut.ornek.com/remote.php/dav/files/ayse/KeyKey/`).
+1. Sunucunda KeyKey için boş bir klasör aç. Nextcloud'da klasörün WebDAV adresi Dosyalar → sol alttaki **Dosya ayarları** → **WebDAV** altında yazar; sonuna klasörün adını ekle (örneğin `https://bulut.ornek.com/remote.php/dav/files/furkan/KeyKey/`).
 2. Sunucuda KeyKey için ayrı bir **uygulama parolası** oluştur (Nextcloud: Ayarlar → Güvenlik → **Yeni uygulama parolası oluştur**). Hesabının asıl parolasını kullanma: uygulama parolası tek başına iptal edilebilir.
 3. KeyKey'de adresi, kullanıcı adını ve uygulama parolasını yaz, **Bağlan**'a dokun. Klasör boşsa ya da bu kasanınsa açıklamayı okuyup **Aç**'a dokun.
 

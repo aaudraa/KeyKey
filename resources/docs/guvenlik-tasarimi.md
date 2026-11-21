@@ -590,8 +590,8 @@ Biçim [Google Authenticator'ın Key Uri Format'ıdır](https://github.com/googl
   "backgroundLockSeconds": 0,
   "plainKeyboard": false,
   "sync": {
-    "folder": "https://bulut.example.com/remote.php/dav/files/ayse/KeyKey",
-    "username": "ayse",
+    "folder": "https://bulut.example.com/remote.php/dav/files/furkan/KeyKey",
+    "username": "furkan",
     "appPassword": "<uygulama parolası>",
     "lastSyncAt": 1730000000000,
     "lastDigest": "<64 onaltılık karakter>"
