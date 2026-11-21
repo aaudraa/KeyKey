@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- README başlığı için KeyKey simgesi. K yolu keykey-simge.svg'den
+     birebir kopyalandı; zemin köşeleri yuvarlatılmış ve ince çerçeveli, koyu
+     temada beyaz bir kare gibi durmasın diye. Asıl simge değişirse bu da
+     yenilenir. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="108" height="108" viewBox="0 0 108 108">
+  <rect x="0.5" y="0.5" width="107" height="107" rx="24" fill="#FFFFFF" stroke="#E6DFD6"/>
+  <g transform="translate(17.52 22) scale(0.64)">
+    <path fill="#F26B1D" d="M24 14h16v30l28-30h20L57 47l33 39H69L46 58l-6 6v22H24z"/>
+  </g>
+</svg>

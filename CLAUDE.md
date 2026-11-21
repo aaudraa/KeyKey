@@ -1,6 +1,6 @@
 # KeyKey için Claude Code kuralları
 
-KeyKey, Android için çevrimdışı ve açık kaynak bir parola yöneticisi ve 2FA uygulaması (Flutter).
+KeyKey, Android için hesapsız, sunucusuz ve açık kaynak bir parola yöneticisi ve 2FA uygulaması (Flutter).
 
 Bu dosya yalnızca kuralları içerir. Durum, plan ve kararların tek kaynağı [`resources/yol-haritasi.md`](resources/yol-haritasi.md), işe başlamadan onu oku. Kripto işlerinde kod [`resources/docs/guvenlik-tasarimi.md`](resources/docs/guvenlik-tasarimi.md) ile çelişemez.
 
