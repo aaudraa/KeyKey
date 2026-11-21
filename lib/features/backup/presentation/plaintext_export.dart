@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -7,25 +6,15 @@ import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/vault/vault_session.dart';
-import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/presentation/confirm_identity.dart';
 import 'package:keykey/features/backup/application/backup_service.dart';
-import 'package:keykey/features/backup/data/export/bitwarden_csv_export.dart';
-import 'package:keykey/features/backup/data/export/bitwarden_json_export.dart';
+import 'package:keykey/features/backup/application/plaintext_exporter.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
-import 'package:keykey/features/vault/application/logins_controller.dart';
-import 'package:keykey/features/vault/application/records_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
-/// Şifresiz dışa aktarmanın biçimi.
-enum ExportFormat {
-  /// Bitwarden CSV: parolalar, 2FA ve notlar; kartlar yazılmaz.
-  csv,
-
-  /// Bitwarden JSON: kartlar dahil her şey.
-  json,
-}
+export 'package:keykey/features/backup/application/plaintext_exporter.dart'
+    show ExportFormat;
 
 /// Önerilen dosya adı: `keykey-disa-aktarma-2026-11-07.csv`. [prefix]
 /// arayüz dilinden gelir (`keykey-export`).
@@ -104,12 +93,10 @@ Future<void> exportPlaintext(BuildContext context, WidgetRef ref) async {
   final snack = kkSnackFor(context);
   final opened = ref.read(vaultControllerProvider);
   if (opened is! VaultOpen) return;
+  final exporter = ref.read(plaintextExporterProvider);
   final bool hasCards;
   try {
-    final cards = await ref
-        .read(cardRepositoryFactoryProvider)(opened.session)
-        .loadAll();
-    hasCards = cards.items.any((item) => !item.content.isTrashed);
+    hasCards = await exporter.hasCards(opened.session);
   } on VaultLockedException {
     return;
   }
@@ -131,33 +118,7 @@ Future<void> exportPlaintext(BuildContext context, WidgetRef ref) async {
   if (status is! VaultOpen) return;
   final Uint8List bytes;
   try {
-    final logins = await ref
-        .read(loginRepositoryFactoryProvider)(status.session)
-        .loadAll();
-    final otps = await ref
-        .read(otpRepositoryFactoryProvider)(status.session)
-        .loadAll();
-    final notes = await ref
-        .read(noteRepositoryFactoryProvider)(status.session)
-        .loadAll();
-    final text = switch (format) {
-      ExportFormat.csv => BitwardenCsvExport.build(
-        logins: logins.items,
-        otps: otps.items,
-        notes: notes.items,
-      ),
-      ExportFormat.json => BitwardenJsonExport.build(
-        logins: logins.items,
-        otps: otps.items,
-        cards:
-            (await ref
-                    .read(cardRepositoryFactoryProvider)(status.session)
-                    .loadAll())
-                .items,
-        notes: notes.items,
-      ),
-    };
-    bytes = Uint8List.fromList(utf8.encode(text));
+    bytes = await exporter.build(status.session, format);
   } on VaultLockedException {
     return;
   }

@@ -7,8 +7,6 @@ import 'package:keykey/app/ui/kk_card.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
-import 'package:keykey/features/authenticator/application/otp_clock.dart';
-import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/autofill/application/autofill_bridge.dart';
 import 'package:keykey/features/autofill/application/autofill_matches.dart';
 import 'package:keykey/features/autofill/application/autofill_otp.dart';
@@ -18,7 +16,6 @@ import 'package:keykey/features/autofill/presentation/autofill_app.dart';
 import 'package:keykey/features/autofill/presentation/autofill_sheet_frame.dart';
 import 'package:keykey/features/autofill/presentation/fill_confirm.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
-import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/vault/application/login_search.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
@@ -191,20 +188,8 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
 
   /// Ayar açıksa kayda bağlı TOTP hesabının güncel kodu. Hata doldurmayı
   /// engellemez.
-  Future<String?> _linkedOtpCode(LoginItem item) async {
-    final status = ref.read(vaultControllerProvider);
-    if (status is! VaultOpen) return null;
-    try {
-      return await linkedOtpCodeForFill(
-        settings: ref.read(settingsRepositoryFactoryProvider)(status.session),
-        otps: ref.read(otpRepositoryFactoryProvider)(status.session),
-        loginId: item.id,
-        now: ref.read(otpClockProvider)(),
-      );
-    } on Exception {
-      return null;
-    }
-  }
+  Future<String?> _linkedOtpCode(LoginItem item) =>
+      ref.read(linkedOtpCodeProvider)(item.id);
 
   @override
   Widget build(BuildContext context) {
