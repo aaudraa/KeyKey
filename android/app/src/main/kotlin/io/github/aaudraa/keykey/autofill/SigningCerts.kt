@@ -28,15 +28,41 @@ object SigningCerts {
      * imza anahtarını döndürmüş uygulamalarda eski sertifikaları da kabul eder.
      */
     fun hasAll(pm: PackageManager, packageName: String, digests: List<String>): Boolean {
-        if (digests.isEmpty()) return false
-        return digests.all { digest ->
-            val bytes = fromHex(digest) ?: return false
+        val signing = try {
+            pm.getPackageInfo(packageName, PackageManager.GET_SIGNING_CERTIFICATES).signingInfo
+        } catch (error: PackageManager.NameNotFoundException) {
+            return false
+        } ?: return false
+        val multiple = signing.hasMultipleSigners()
+        return matches(
+            stored = digests,
+            multipleSigners = multiple,
+            currentSigners = if (multiple) digestsOf(pm, packageName) else emptyList(),
+        ) { digest ->
+            val bytes = fromHex(digest) ?: return@matches false
             try {
                 pm.hasSigningCertificate(packageName, bytes, PackageManager.CERT_INPUT_SHA256)
             } catch (error: IllegalArgumentException) {
                 false
             }
         }
+    }
+
+    /**
+     * Karar. Çok imzacılı uygulamada `hasSigningCertificate` AOSP'de hep
+     * `false` döner; orada şu anki imzacı kümesi saklanan kümeyle tam
+     * karşılaştırılır. Tek imzacıda sistem sorulur ([hasCertificate]), çünkü
+     * imza anahtarı döndürülmüşse eski sertifikayı da o kabul eder.
+     */
+    internal fun matches(
+        stored: List<String>,
+        multipleSigners: Boolean,
+        currentSigners: List<String>,
+        hasCertificate: (String) -> Boolean,
+    ): Boolean {
+        if (stored.isEmpty()) return false
+        if (multipleSigners) return stored.toSet() == currentSigners.toSet()
+        return stored.all(hasCertificate)
     }
 
     internal fun sha256(bytes: ByteArray): ByteArray =
