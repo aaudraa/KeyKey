@@ -1,7 +1,12 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:keykey/features/backup/data/import/kdbx/kdbx_header.dart';
 import 'package:keykey/features/backup/data/import/kdbx/kdbx_key.dart';
+import 'package:keykey/features/backup/data/import/kdbx/kdbx_payload.dart';
+import 'package:keykey/features/backup/data/import/kdbx/kdbx_xml.dart';
+
+import 'dart_kdbx_kdf.dart';
 
 /// `test/fixtures/import/kdbx/` altındaki bir dosya, ör. `pykeepass/test4.kdbx`.
 Uint8List kdbxFixture(String path) =>
@@ -151,5 +156,21 @@ Uint8List kdbxFixtureComposite(String path) {
     keyFileKey: key.keyFile == null
         ? null
         : keyFileKey(kdbxFixture(key.keyFile!)),
+  );
+}
+
+/// Test dosyasını tablodaki anahtarla açıp XML'ini okur.
+Future<KdbxDatabase> kdbxFixtureDatabase(String path) async {
+  final file = kdbxFixture(path);
+  final header = KdbxHeader.parse(file);
+  final transformed = await transformKey(
+    header,
+    kdbxFixtureComposite(path),
+    const DartKdbxKdf(),
+  );
+  return parseKdbxXml(
+    decryptPayload(file, header, transformed),
+    headerBytes: header.bytes,
+    majorVersion: header.majorVersion,
   );
 }

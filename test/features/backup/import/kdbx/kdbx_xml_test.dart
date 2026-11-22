@@ -7,21 +7,7 @@ import 'package:keykey/features/backup/data/import/kdbx/kdbx_xml.dart';
 import '../../../../support/dart_kdbx_kdf.dart';
 import '../../../../support/kdbx_fixtures.dart';
 
-Future<KdbxDatabase> _database(String path) async {
-  final file = kdbxFixture(path);
-  final header = KdbxHeader.parse(file);
-  final transformed = await transformKey(
-    header,
-    kdbxFixtureComposite(path),
-    const DartKdbxKdf(),
-  );
-  final payload = decryptPayload(file, header, transformed);
-  return parseKdbxXml(
-    payload,
-    headerBytes: header.bytes,
-    majorVersion: header.majorVersion,
-  );
-}
+Future<KdbxDatabase> _database(String path) => kdbxFixtureDatabase(path);
 
 String? _value(KdbxEntry entry, String key) => entry.strings[key]?.value;
 

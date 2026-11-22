@@ -335,6 +335,7 @@ String _sourceName(LoginExportSource source) => switch (source) {
   LoginExportSource.chromeCsv => 'Chrome (CSV)',
   LoginExportSource.firefoxCsv => 'Firefox (CSV)',
   LoginExportSource.keepassxcCsv => 'KeePassXC (CSV)',
+  LoginExportSource.keepassKdbx => 'KeePass (KDBX)',
 };
 
 /// Önizleme listesinin bir satırı.

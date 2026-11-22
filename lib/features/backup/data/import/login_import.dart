@@ -23,6 +23,7 @@ enum LoginExportSource {
   chromeCsv,
   firefoxCsv,
   keepassxcCsv,
+  keepassKdbx,
 }
 
 /// Başka bir uygulamadan okunan bir giriş kaydı.
@@ -90,6 +91,8 @@ final class LoginExport {
     required this.skipped,
     this.cards = const [],
     this.notes = const [],
+    this.withAttachments = 0,
+    this.inRecycleBin = 0,
   });
 
   final LoginExportSource source;
@@ -99,6 +102,12 @@ final class LoginExport {
 
   /// Desteklenmeyen (kimlik, SSH anahtarı) veya bozuk satırların sayısı.
   final int skipped;
+
+  /// Eki olan ve ekleri alınmayan kayıtların sayısı (KeePass).
+  final int withAttachments;
+
+  /// Çöp kutusunda olduğu için alınmayan kayıtların sayısı (KeePass).
+  final int inRecycleBin;
 }
 
 /// Bitwarden (JSON, CSV), Chrome (CSV), Firefox (CSV) ve KeePassXC (CSV) dışa
@@ -210,17 +219,17 @@ abstract final class LoginExportReader {
       }
       final cells = {for (final (i, name) in header.indexed) name: row[i]};
       if (cells['type']!.trim().toLowerCase() == 'note') {
-        final note = _note(
+        final content = cleanNote(
           name: cells['name']!,
           text: cells['notes'] ?? '',
           fields: _bitwardenCsvFields(cells['fields'] ?? ''),
           folder: cells['folder'],
           favorite: (cells['favorite'] ?? '').trim() == '1',
         );
-        if (note == null) {
+        if (content == null) {
           skipped++;
         } else {
-          notes.add(note);
+          notes.add(content);
         }
         continue;
       }
@@ -240,7 +249,7 @@ abstract final class LoginExportReader {
   }
 
   static ImportedLogin? _bitwardenRow(Map<String, String> row) {
-    return _login(
+    return cleanLogin(
       name: row['name']!,
       username: row['login_username']!,
       password: row['login_password']!,
@@ -253,7 +262,7 @@ abstract final class LoginExportReader {
     );
   }
 
-  static ImportedLogin? _keepassRow(Map<String, String> row) => _login(
+  static ImportedLogin? _keepassRow(Map<String, String> row) => cleanLogin(
     name: row['title']!,
     username: row['username']!,
     password: row['password']!,
@@ -263,7 +272,7 @@ abstract final class LoginExportReader {
     totp: row['totp'],
   );
 
-  static ImportedLogin? _chromeRow(Map<String, String> row) => _login(
+  static ImportedLogin? _chromeRow(Map<String, String> row) => cleanLogin(
     name: row['name']!,
     username: row['username']!,
     password: row['password']!,
@@ -271,7 +280,7 @@ abstract final class LoginExportReader {
     notes: row['note'] ?? '',
   );
 
-  static ImportedLogin? _firefoxRow(Map<String, String> row) => _login(
+  static ImportedLogin? _firefoxRow(Map<String, String> row) => cleanLogin(
     name: '',
     username: row['username']!,
     password: row['password']!,
@@ -364,7 +373,7 @@ abstract final class LoginExportReader {
   static NoteContent? _bitwardenNote(
     Map<String, Object?> item,
     Map<String, String> folders,
-  ) => _note(
+  ) => cleanNote(
     name: _text(item['name']),
     text: _text(item['notes']),
     fields: _bitwardenFields(item),
@@ -492,7 +501,7 @@ abstract final class LoginExportReader {
 
   /// Notun metni ve sonuna eklenen özel alanları. Hiçbir şey yoksa ya da
   /// metin sınırı aşıyorsa `null`.
-  static NoteContent? _note({
+  static NoteContent? cleanNote({
     required String name,
     required String text,
     required List<({String name, String value, bool hidden})> fields,
@@ -541,7 +550,7 @@ abstract final class LoginExportReader {
             (name: name ?? '', value: value ?? '', hidden: type == 1),
     ];
     final folderId = item['folderId'];
-    return _login(
+    return cleanLogin(
       name: _text(item['name']),
       username: _text(login['username']),
       password: _text(login['password']),
@@ -562,8 +571,9 @@ abstract final class LoginExportReader {
 
   static String _text(Object? value) => value is String ? value : '';
 
-  /// Ortak temizlik. Hiçbir bilgi yoksa satır atlanır.
-  static ImportedLogin? _login({
+  /// Ortak temizlik; KeePass okuyucusu da kullanır. Hiçbir bilgi yoksa satır
+  /// atlanır.
+  static ImportedLogin? cleanLogin({
     required String name,
     required String username,
     required String password,
