@@ -5,10 +5,12 @@ import 'package:keykey/app/ui/kk_motion.dart';
 
 void main() {
   test('tema tahmini geri hareketini korur (madde 1.4, kural 7)', () {
+    // Kök gezgindeki sayfalarda parmağı izler; sekme sayfalarında hareket
+    // yönlendiriciye düşer (#173, S1).
     for (final theme in [AppTheme.light, AppTheme.dark]) {
       expect(
         theme.pageTransitionsTheme.builders[TargetPlatform.android],
-        isA<PredictiveBackPageTransitionsBuilder>(),
+        isA<RootPredictiveBackTransitions>(),
       );
     }
   });
