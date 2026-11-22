@@ -323,6 +323,22 @@
   "@newRecoveryInterruptedBody": {
     "description": "Body of the not-saved note."
   },
+  "newRecoveryLeaveTitle": "Leave without renewing?",
+  "@newRecoveryLeaveTitle": {
+    "description": "Asks before leaving the new recovery key screen after the key was shown but not verified."
+  },
+  "newRecoveryLeaveBody": "The new key is not verified yet. If you leave, it is not saved: your old recovery key stays valid and the new key you noted does not open this vault.",
+  "@newRecoveryLeaveBody": {
+    "description": "Explains that leaving keeps the old recovery key."
+  },
+  "newRecoveryLeave": "Leave",
+  "@newRecoveryLeave": {
+    "description": "Leaves without saving the new key."
+  },
+  "newRecoveryStay": "Stay",
+  "@newRecoveryStay": {
+    "description": "Stays on the screen to verify the new key."
+  },
   "newRecoveryRetry": "Try again",
   "@newRecoveryRetry": {
     "description": "Opens the new recovery key screen again."
@@ -641,6 +657,11 @@
         "type": "int"
       }
     }
+  },
+  "trashFailed": "{failed} of {total} items could not be processed.",
+  "@trashFailed": {
+    "description": "Shown when restoring or emptying the trash fails for some items.",
+    "placeholders": {"failed": {"type": "int"}, "total": {"type": "int"}}
   },
   "trashEmptyConfirm": "Empty",
   "@trashEmptyConfirm": {

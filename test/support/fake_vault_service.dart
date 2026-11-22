@@ -85,6 +85,9 @@ class FakeVaultService implements VaultService {
   /// Verilirse parola değişimi bu tamamlanana kadar sürer.
   Completer<void>? changeGate;
 
+  /// Verilirse parmak izi açma penceresi bu tamamlanana kadar açık kalır.
+  Completer<void>? biometricGate;
+
   VaultSession newSession() {
     final key = sodium.secureRandom(32);
     return VaultSession(
@@ -251,6 +254,7 @@ class FakeVaultService implements VaultService {
     BiometricTexts texts,
   ) async {
     biometricPrompts++;
+    await biometricGate?.future;
     if (nextBiometric is BiometricSuccess) biometricEnabled = true;
     return nextBiometric;
   }
@@ -344,6 +348,9 @@ class FakeRecordRepository<C extends VaultItemContent<C>>
   DateTime now = DateTime.utc(2026, 11, 5, 12);
   var _nextId = 1;
 
+  /// Verilirse ekleme ve güncelleme bu tamamlanana kadar sürer.
+  Completer<void>? writeGate;
+
   @override
   String get type => C == CardContent
       ? VaultRecordRepository.cardType
@@ -367,6 +374,7 @@ class FakeRecordRepository<C extends VaultItemContent<C>>
 
   @override
   Future<VaultRecord<C>> add(C content) async {
+    await writeGate?.future;
     final created = VaultRecord(
       id: Uint8List(16)
         ..[0] = 201
@@ -381,6 +389,7 @@ class FakeRecordRepository<C extends VaultItemContent<C>>
 
   @override
   Future<VaultRecord<C>> update(VaultRecord<C> item, C content) async {
+    await writeGate?.future;
     final updated = VaultRecord(
       id: item.id,
       content: content,
@@ -412,6 +421,9 @@ class FakeLoginRepository implements LoginRepository {
   DateTime now = DateTime.utc(2026, 11, 5, 12);
   var _nextId = 1;
 
+  /// Verilirse ekleme ve güncelleme bu tamamlanana kadar sürer.
+  Completer<void>? writeGate;
+
   static LoginItem item(
     LoginContent content, {
     int id = 0,
@@ -432,6 +444,7 @@ class FakeLoginRepository implements LoginRepository {
 
   @override
   Future<LoginItem> add(LoginContent content) async {
+    await writeGate?.future;
     final created = LoginItem(
       id: Uint8List(16)
         ..[0] = 200
@@ -454,8 +467,12 @@ class FakeLoginRepository implements LoginRepository {
 
   @override
   Future<void> deletePermanently(LoginItem item) async {
+    await deleteGate?.future;
     items.removeWhere((other) => listEquals(other.id, item.id));
   }
+
+  /// Verilirse kalıcı silme bu tamamlanana kadar sürer.
+  Completer<void>? deleteGate;
 
   @override
   Future<List<LoginItem>> purgeExpiredTrash(List<LoginItem> items) async =>

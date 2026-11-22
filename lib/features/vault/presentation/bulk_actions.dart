@@ -41,6 +41,16 @@ final class BulkVault {
     },
   );
 
+  /// Çöp kutusundakileri kalıcı olarak siler.
+  Future<int> deletePermanently(List<VaultEntry> entries) => _each(
+    entries,
+    (entry) => switch (entry) {
+      LoginEntry(:final item) => _logins.deletePermanently(item),
+      CardEntry(:final item) => _cards.deletePermanently(item),
+      NoteEntry(:final item) => _notes.deletePermanently(item),
+    },
+  );
+
   /// `null` klasörden çıkarır.
   Future<int> moveToFolder(List<VaultEntry> entries, String? folder) => _each(
     entries,

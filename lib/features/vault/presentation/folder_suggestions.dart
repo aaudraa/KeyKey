@@ -1,6 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:keykey/features/vault/application/login_search.dart';
 
+/// Yazılan klasör adı var olan bir klasörle yalnızca harf büyüklüğünde
+/// (Türkçe İ/ı dahil) ayrışıyorsa var olanı döner; yoksa yazılanı. Böylece
+/// "iş" yazılınca ikinci bir "İş" klasörü açılmaz. Aramadaki gibi Türkçe
+/// harfler düzleştirilmez: "Kür" ile "Kur" ayrı klasörlerdir.
+String matchExistingFolder(String typed, Iterable<String> folders) {
+  final key = _caseFolded(typed);
+  for (final folder in folders) {
+    if (_caseFolded(folder) == key) return folder;
+  }
+  return typed;
+}
+
+String _caseFolded(String text) =>
+    text.replaceAll('I', 'ı').replaceAll('İ', 'i').toLowerCase();
+
 /// Klasör kutusunun altında, yazılana uyan var olan klasörler.
 class FolderSuggestions extends StatelessWidget {
   const new({

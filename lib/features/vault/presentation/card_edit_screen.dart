@@ -126,7 +126,7 @@ class _CardEditScreenState extends ConsumerState<CardEditScreen> {
   };
 
   CardContent _collect() {
-    final folder = _folder.text.trim();
+    final folder = matchExistingFolder(_folder.text.trim(), _folders);
     final base = CardContent(
       name: _name.text.trim(),
       cardholder: _cardholder.text.trim(),
@@ -137,12 +137,7 @@ class _CardEditScreenState extends ConsumerState<CardEditScreen> {
       notes: _notes.text,
       folder: folder.isEmpty ? null : folder,
     );
-    final original = _original?.content;
-    if (original == null) return base;
-    return base.copyWith(
-      favorite: original.favorite,
-      trashedAt: original.trashedAt,
-    );
+    return base;
   }
 
   Future<void> _save() async {
@@ -155,17 +150,26 @@ class _CardEditScreenState extends ConsumerState<CardEditScreen> {
     final l10n = AppLocalizations.of(context);
     final snack = kkSnackFor(context);
     final controller = ref.read(cardsControllerProvider.notifier);
+    // Kayıt sürerken ekran kapanabilir (kilit); ref sonra kullanılamaz.
+    final lastSaved = ref.read(lastSavedProvider.notifier);
     setState(() => _saving = true);
     try {
       final content = _collect();
       final original = _original;
-      final saved = original == null
-          ? await controller.add(content)
-          : await controller.update(original, content);
+      final VaultRecord<CardContent> saved;
+      if (original == null) {
+        saved = await controller.add(content);
+      } else {
+        // Form açıkken kayıt değişmiş olabilir; dokunulmayan alanlar en son
+        // hâlindeki gibi kalır.
+        final latest = controller.latest(original);
+        saved = await controller.update(
+          latest,
+          content.rebase(original: original.content, latest: latest.content),
+        );
+      }
       _dirty = false;
-      ref
-          .read(lastSavedProvider.notifier)
-          .mark(savedCardKey(loginIdHex(saved.id)));
+      lastSaved.mark(savedCardKey(loginIdHex(saved.id)));
       if (mounted) setState(() => _done = true);
     } on VaultLockedException {
       // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.

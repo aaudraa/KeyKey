@@ -87,12 +87,12 @@ abstract final class OtpauthUri {
     final (labelIssuer, account) = _splitLabel(label, issuerParameter);
     return OtpauthAccount(
       parameters: parameters.otp,
-      issuer: _clean(
+      issuer: cleanName(
         issuerParameter != null && issuerParameter.trim().isNotEmpty
             ? issuerParameter
             : labelIssuer,
       ),
-      account: _clean(account),
+      account: cleanName(account),
     );
   }
 
@@ -243,7 +243,7 @@ abstract final class OtpauthUri {
 
   /// Baştaki ve sondaki boşlukları, denetim karakterlerini ve metnin yönünü
   /// değiştirip adı başka bir servis gibi gösterebilecek karakterleri atar.
-  static String _clean(String text) {
+  static String cleanName(String text) {
     final out = StringBuffer();
     for (final rune in text.runes) {
       final control = rune < 0x20 || (rune >= 0x7f && rune < 0xa0);

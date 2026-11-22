@@ -13,7 +13,6 @@ import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/generator/presentation/generator_sheet.dart';
 import 'package:keykey/features/generator/presentation/password_strength_meter.dart';
-import 'package:keykey/features/vault/application/login_search.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/application/records_controller.dart';
 import 'package:keykey/features/vault/application/vault_entries.dart';
@@ -133,7 +132,11 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
   List<String> get _folders => foldersOfEntries([
     if (ref.read(loginsControllerProvider) case LoginsLoaded(:final items))
       for (final item in items)
-        if (item.id != _original?.id) LoginEntry(item),
+        // Kimlikler baytlarıyla karşılaştırılır: yeniden okumadan sonra
+        // aynı kayıt yeni bir Uint8List taşır.
+        if (_original == null ||
+            loginIdHex(item.id) != loginIdHex(_original!.id))
+          LoginEntry(item),
     if (ref.read(cardsControllerProvider) case RecordsLoaded<CardContent>(
       :final items,
     ))
@@ -146,17 +149,9 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
 
   /// Harf büyüklüğü farklı yazılmış ad var olan klasöre bağlanır; "İş" ve
   /// "iş" iki klasör olmasın.
-  String _matchingFolder(String typed) {
-    final key = foldForSearch(typed);
-    for (final folder in _folders) {
-      if (foldForSearch(folder) == key) return folder;
-    }
-    return typed;
-  }
-
   LoginContent _collect() {
     final base = _original?.content ?? const LoginContent(name: '');
-    final folder = _matchingFolder(_folder.text.trim());
+    final folder = matchExistingFolder(_folder.text.trim(), _folders);
     return base.copyWith(
       name: _name.text.trim(),
       username: _username.text.trim(),
@@ -185,6 +180,8 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
     final l10n = AppLocalizations.of(context);
     final snack = kkSnackFor(context);
     final controller = ref.read(loginsControllerProvider.notifier);
+    // Kayıt sürerken ekran kapanabilir (kilit); ref sonra kullanılamaz.
+    final lastSaved = ref.read(lastSavedProvider.notifier);
     setState(() => _saving = true);
     try {
       final content = _collect();
@@ -203,9 +200,7 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
         );
       }
       _dirty = false;
-      ref
-          .read(lastSavedProvider.notifier)
-          .mark(savedLoginKey(loginIdHex(saved.id)));
+      lastSaved.mark(savedLoginKey(loginIdHex(saved.id)));
       if (mounted) setState(() => _done = true);
     } on VaultLockedException {
       // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.

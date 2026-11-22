@@ -125,6 +125,51 @@ void main() {
     expect(systemCopies(), isEmpty);
   });
 
+  Future<void> pressWithControl(
+    WidgetTester tester,
+    LogicalKeyboardKey key,
+  ) async {
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+    await tester.sendKeyEvent(key);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('klavyeyle Ctrl+C hassas panoya yazar', (tester) async {
+    // Bluetooth klavye, DeX ya da Chromebook.
+    await pump(tester);
+    await tester.tap(find.byType(TextField));
+    await tester.pump();
+    controller.selection = TextSelection(
+      baseOffset: 0,
+      extentOffset: controller.text.length,
+    );
+    await tester.pump();
+
+    await pressWithControl(tester, LogicalKeyboardKey.keyC);
+
+    expect(clipboard.copied, ['kapi kodu 4821']);
+    expect(systemCopies(), isEmpty);
+    expect(controller.text, 'kapi kodu 4821');
+  });
+
+  testWidgets('klavyeyle Ctrl+X hassas panoya yazar ve metni siler', (
+    tester,
+  ) async {
+    await pump(tester);
+    await tester.tap(find.byType(TextField));
+    await tester.pump();
+    controller.selection = const TextSelection(baseOffset: 5, extentOffset: 9);
+    await tester.pump();
+
+    await pressWithControl(tester, LogicalKeyboardKey.keyX);
+
+    expect(clipboard.copied, ['kodu']);
+    expect(systemCopies(), isEmpty);
+    expect(controller.text, 'kapi  4821');
+    expect(changes, ['kapi  4821']);
+  });
+
   testWidgets('menüde metni başka uygulamaya gönderen düğme yok', (
     tester,
   ) async {

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/last_saved.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
@@ -10,6 +11,7 @@ import 'package:keykey/app/ui/kk_card.dart';
 import 'package:keykey/app/ui/kk_done_mark.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/app/ui/kk_shake.dart';
+import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/data/base32.dart';
 import 'package:keykey/features/authenticator/data/otp_content.dart';
 import 'package:keykey/features/authenticator/data/otp_parameters.dart';
@@ -504,6 +506,90 @@ void main() {
       await tester.tap(find.text('287 082'));
       await settle(tester);
       expect(clipboard.copied, ['287082']);
+    });
+
+    testWidgets('düzenlenen HOTP hesabında eski kod kalmıyor', (tester) async {
+      otps.items
+        ..clear()
+        ..add(
+          FakeOtpRepository.item(
+            OtpContent(
+              parameters: OtpParameters.hotp(secret: rfcSecret),
+              issuer: 'Sayaçlı',
+            ),
+            id: 9,
+          ),
+        );
+      await openAuthenticator(tester);
+      await tester.tap(find.widgetWithText(TextButton, 'Kod üret'));
+      await settle(tester);
+      expect(find.text('755 224'), findsOneWidget);
+
+      // Yanlış yazılan anahtar düzeltildi; eski kod artık geçersiz.
+      final controller = ProviderScope.containerOf(
+        tester.element(find.byType(AuthenticatorScreen)),
+      ).read(otpsControllerProvider.notifier);
+      final item = otps.items.single;
+      await controller.update(
+        item,
+        item.content.copyWith(
+          parameters: OtpParameters.hotp(secret: utf8.encode('başka anahtar')),
+        ),
+      );
+      await settle(tester);
+
+      expect(find.text('755 224'), findsNothing);
+    });
+
+    testWidgets('kayıttaki düzenlenen HOTP hesabında eski kod kalmıyor', (
+      tester,
+    ) async {
+      final login = FakeLoginRepository.item(
+        const LoginContent(name: 'Banka'),
+        id: 7,
+      );
+      otps.items
+        ..clear()
+        ..add(
+          FakeOtpRepository.item(
+            OtpContent(
+              parameters: OtpParameters.hotp(secret: rfcSecret),
+              issuer: 'Banka',
+              loginId: login.id,
+            ),
+            id: 9,
+          ),
+        );
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        otps: otps,
+        logins: FakeLoginRepository(items: [login]),
+        clock: () => now,
+        clipboard: clipboard,
+      );
+      await settle(tester);
+      await tester.tap(find.text('Banka'));
+      await settle(tester);
+      await tester.ensureVisible(find.byTooltip('Kod üret'));
+      await tester.tap(find.byTooltip('Kod üret'));
+      await settle(tester);
+      expect(find.text('755 224'), findsOneWidget);
+
+      final controller = ProviderScope.containerOf(
+        tester.element(find.text('755 224')),
+      ).read(otpsControllerProvider.notifier);
+      final item = otps.items.single;
+      await controller.update(
+        item,
+        item.content.copyWith(
+          parameters: OtpParameters.hotp(secret: utf8.encode('başka anahtar')),
+        ),
+      );
+      await settle(tester);
+
+      expect(find.text('755 224'), findsNothing);
     });
 
     testWidgets('saat yardımı cihaz saatini gösteriyor', (tester) async {

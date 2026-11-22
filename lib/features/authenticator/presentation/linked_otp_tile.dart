@@ -9,6 +9,7 @@ import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otp_generator.dart';
 import 'package:keykey/features/authenticator/application/otp_visibility.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
+import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/authenticator/presentation/otp_clock_builder.dart';
 import 'package:keykey/features/authenticator/presentation/otp_display.dart';
@@ -41,6 +42,10 @@ class LinkedOtpTile extends ConsumerStatefulWidget {
 class _LinkedOtpTileState extends ConsumerState<LinkedOtpTile> {
   String? _hotpCode;
 
+  /// Kodun üretildiği andan sonraki parametreler. Hesap düzenlenirse kod
+  /// artık geçersizdir ve gösterilmez.
+  OtpParameters? _hotpShownFor;
+
   Future<bool> _copy(String code) => copySensitive(context, ref, code);
 
   Future<void> _generate() async {
@@ -48,7 +53,15 @@ class _LinkedOtpTileState extends ConsumerState<LinkedOtpTile> {
       final code = await ref
           .read(otpsControllerProvider.notifier)
           .nextHotpCode(widget.item);
-      if (mounted) setState(() => _hotpCode = code);
+      if (!mounted) return;
+      final shownFor = switch (ref.read(otpsControllerProvider)) {
+        OtpsLoaded(:final byId) => byId(widget.item.id)?.content.parameters,
+        OtpsLoading() => null,
+      };
+      setState(() {
+        _hotpCode = code;
+        _hotpShownFor = shownFor;
+      });
     } on VaultLockedException {
       // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.
     } on OtpNotFoundException {
@@ -79,7 +92,11 @@ class _LinkedOtpTileState extends ConsumerState<LinkedOtpTile> {
     return OtpClockBuilder(
       active: isTotp,
       builder: (context, now) {
-        final code = isTotp ? OtpGenerator.codeFor(parameters, now) : _hotpCode;
+        final code = isTotp
+            ? OtpGenerator.codeFor(parameters, now)
+            : _hotpShownFor == parameters
+            ? _hotpCode
+            : null;
         return ListTile(
           title: Text(l10n.loginOtpCode, style: theme.textTheme.labelMedium),
           subtitle: Semantics(

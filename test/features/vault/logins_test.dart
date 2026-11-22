@@ -370,6 +370,39 @@ void main() {
       expect(saved.content.isTrashed, isTrue);
     });
 
+    test('yeniden okuma sürerken yapılan değişiklik kaybolmuyor', () async {
+      // Senkron bitip liste yeniden okunurken kullanıcı parolayı değiştirdi
+      // ve bir kayıt ekledi; okuma eski hali getirse de ikisi de kalmalı.
+      await loaded();
+      final item = await controller().add(
+        const LoginContent(name: 'A', password: 'eski'),
+      );
+      // Süresi dolan çöp, okumanın içinde bir yazma daha yapar; kullanıcının
+      // yazması o arada biter.
+      final old = await controller().add(const LoginContent(name: 'Eski'));
+      await controller().moveToTrash(old, now);
+      now = now.add(const Duration(days: 31));
+
+      final reloading = controller().reload();
+      await controller().update(item, item.content.copyWith(password: 'yeni'));
+      await controller().add(const LoginContent(name: 'B'));
+      await reloading;
+
+      final state = container.read(loginsControllerProvider) as LoginsLoaded;
+      final names = state.items.map((i) => i.content.name).toList()..sort();
+      expect(names, ['A', 'B']);
+      final shown = state.items.firstWhere((i) => i.content.name == 'A');
+      expect(shown.content.password, 'yeni');
+
+      // Eski kopya geri yazılmıyor.
+      await controller().setFavorite(shown, favorite: true);
+      final saved = (await repositoryFor(session).loadAll()).items;
+      expect(
+        saved.firstWhere((i) => i.content.name == 'A').content.password,
+        'yeni',
+      );
+    });
+
     test('ekleme, düzenleme ve silme durumu güncelliyor', () async {
       await loaded();
 

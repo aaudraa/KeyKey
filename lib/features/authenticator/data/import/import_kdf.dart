@@ -27,7 +27,9 @@ abstract final class ImportKdf {
     if (n < 2 || n & (n - 1) != 0 || r < 1 || p < 1 || p > maxScryptP) {
       return false;
     }
-    // Bölerek karşılaştırılır; çarpım 64 biti taşabilir.
+    // Bölerek karşılaştırılır; çarpım 64 biti taşabilir. 128·r de taşmasın
+    // diye r önce sınırlanır.
+    if (r > maxScryptMemory ~/ 128) return false;
     final blockBytes = 128 * r;
     return blockBytes <= maxScryptMemory ~/ (n + p) &&
         blockBytes <= maxScryptWork ~/ n ~/ p;

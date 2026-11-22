@@ -174,6 +174,40 @@ void main() {
     expect(find.byType(KkSnack), findsNothing);
   });
 
+  testWidgets('aynı içe aktarmada aynı anahtar bir kez seçili geliyor', (
+    tester,
+  ) async {
+    // Aynı hesap dışa aktarmada iki kez var (ör. iki adla kaydedilmiş).
+    final secret = utf8.encode('12345678901234567890');
+    List<int> account(String name) => [
+      0x0a, secret.length, ...secret, //
+      0x12, name.length, ...utf8.encode(name),
+      0x20, 0x01, 0x28, 0x01, 0x30, 0x02,
+    ];
+    final first = account('ali');
+    final second = account('veli');
+    final payload = [
+      0x0a, first.length, ...first, //
+      0x0a, second.length, ...second,
+    ];
+    final uri =
+        'otpauth-migration://offline?data='
+        '${Uri.encodeQueryComponent(base64.encode(payload))}';
+    await chooseAddOption(tester, 'QR kodu tara');
+
+    camera.scan(uri);
+    await settle(tester);
+
+    expect(find.text('1 hesabı ekle'), findsOneWidget);
+    // İkincisini de seçse düğme yine bir hesap söyler; o kadar eklenir.
+    await tester.tap(find.text('veli'));
+    await settle(tester);
+    expect(find.text('1 hesabı ekle'), findsOneWidget);
+    await tester.tap(find.text('1 hesabı ekle'));
+    await settle(tester);
+    expect(otps.items, hasLength(1));
+  });
+
   testWidgets("Google Authenticator QR'ı içe aktarma ekranını açıyor", (
     tester,
   ) async {

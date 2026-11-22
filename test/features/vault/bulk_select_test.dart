@@ -174,6 +174,61 @@ void main() {
     expect(find.textContaining('seçildi'), findsNothing);
   });
 
+  testWidgets('yeni klasör adı harf farkıyla var olana bağlanıyor', (
+    tester,
+  ) async {
+    await pumpVault(tester);
+    await longPress(tester, 'Posta');
+    await tester.tap(find.byTooltip('Klasöre taşı'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Yeni klasör'),
+      'BANKA',
+    );
+    await tester.pump();
+    await tester.tap(find.text('Taşı'));
+    await tester.pumpAndSettle();
+
+    expect(login(1).folder, 'Banka');
+  });
+
+  testWidgets('klasörün bütün kayıtları seçilince adının harfi düzeltiliyor', (
+    tester,
+  ) async {
+    // "Banka" klasöründeki tek kayıt seçildi; "BANKA" yazılınca kendi klasörü
+    // eşleşmeye sayılmamalı.
+    await pumpVault(tester);
+    await longPress(tester, 'Banka');
+    await tester.tap(find.byTooltip('Klasöre taşı'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Yeni klasör'),
+      'BANKA',
+    );
+    await tester.pump();
+    await tester.tap(find.text('Taşı'));
+    await tester.pumpAndSettle();
+
+    expect(login(2).folder, 'BANKA');
+  });
+
+  testWidgets('başka sekmedeki klasör de eşleşiyor', (tester) async {
+    cards.items[0] = FakeRecordRepository.item(
+      CardContent(name: 'Maaş kartı', folder: 'İş'),
+      id: 4,
+    );
+    await pumpVault(tester);
+    await longPress(tester, 'Posta');
+    await tester.tap(find.byTooltip('Klasöre taşı'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextField, 'Yeni klasör'), 'iş');
+    await tester.pump();
+    await tester.tap(find.text('Taşı'));
+    await tester.pumpAndSettle();
+
+    expect(login(1).folder, 'İş');
+  });
+
   testWidgets('yeni klasör ve klasörden çıkarma', (tester) async {
     await pumpVault(tester);
     await longPress(tester, 'Posta');
@@ -204,6 +259,34 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('seçildi'), findsNothing);
     expect(find.text('Posta'), findsOneWidget);
+  });
+
+  testWidgets('sekme değişince açık menü öteki sekmede kalmıyor', (
+    tester,
+  ) async {
+    // Menü sekmenin gezgininde açılınca perdesi alt menüyü örtmüyordu;
+    // sekme değişip dönülünce menü hâlâ açıktı.
+    await pumpVault(tester);
+    final cardsTab = tester.getCenter(find.byIcon(Icons.credit_card_outlined));
+    await tester.tap(find.byTooltip('Diğer işlemler'));
+    await tester.pumpAndSettle();
+    expect(find.text('Ada göre sırala'), findsOneWidget);
+
+    // Kullanıcı menü açıkken Kartlar sekmesine dokunur, sonra Kasa'ya döner.
+    await tester.tapAt(cardsTab);
+    await tester.pumpAndSettle();
+    if (find
+        .byIcon(Icons.credit_card_outlined)
+        .hitTestable()
+        .evaluate()
+        .isNotEmpty) {
+      await tester.tap(find.byIcon(Icons.credit_card_outlined));
+      await tester.pumpAndSettle();
+    }
+    await tester.tap(find.byIcon(Icons.key_outlined));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ada göre sırala'), findsNothing);
   });
 
   testWidgets('sekme değişince seçim bırakılıyor', (tester) async {

@@ -232,11 +232,11 @@ void main() {
     });
   }
 
-  test("Android'de sayfalar tahmini geri hareketiyle kayar", () {
+  test("Android'de form sayfaları tahmini geri hareketiyle kayar", () {
     for (final theme in [AppTheme.light, AppTheme.dark]) {
       expect(
         theme.pageTransitionsTheme.builders[TargetPlatform.android],
-        isA<PredictiveBackPageTransitionsBuilder>(),
+        isA<RootPredictiveBackTransitions>(),
       );
     }
   });

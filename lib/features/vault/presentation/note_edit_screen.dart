@@ -85,14 +85,11 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
   };
 
   NoteContent _collect() {
-    final folder = _folder.text.trim();
-    final original = _original?.content;
+    final folder = matchExistingFolder(_folder.text.trim(), _folders);
     return NoteContent(
       name: _name.text.trim(),
       text: _text.text,
       folder: folder.isEmpty ? null : folder,
-      favorite: original?.favorite ?? false,
-      trashedAt: original?.trashedAt,
     );
   }
 
@@ -101,17 +98,26 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
     final l10n = AppLocalizations.of(context);
     final snack = kkSnackFor(context);
     final controller = ref.read(notesControllerProvider.notifier);
+    // Kayıt sürerken ekran kapanabilir (kilit); ref sonra kullanılamaz.
+    final lastSaved = ref.read(lastSavedProvider.notifier);
     setState(() => _saving = true);
     try {
       final content = _collect();
       final original = _original;
-      final saved = original == null
-          ? await controller.add(content)
-          : await controller.update(original, content);
+      final VaultRecord<NoteContent> saved;
+      if (original == null) {
+        saved = await controller.add(content);
+      } else {
+        // Form açıkken kayıt değişmiş olabilir; dokunulmayan alanlar en son
+        // hâlindeki gibi kalır.
+        final latest = controller.latest(original);
+        saved = await controller.update(
+          latest,
+          content.rebase(original: original.content, latest: latest.content),
+        );
+      }
       _dirty = false;
-      ref
-          .read(lastSavedProvider.notifier)
-          .mark(savedNoteKey(loginIdHex(saved.id)));
+      lastSaved.mark(savedNoteKey(loginIdHex(saved.id)));
       if (mounted) setState(() => _done = true);
     } on VaultLockedException {
       // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.

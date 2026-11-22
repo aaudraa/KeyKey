@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -931,6 +932,34 @@ void main() {
       expect(logins.items.single.content.folder, 'İş');
     });
 
+    testWidgets(
+      'liste yeniden okunduktan sonra da harf büyüklüğü düzeltiliyor',
+      (tester) async {
+        const content = LoginContent(name: 'Tek', password: 'p', folder: 'is');
+        logins = FakeLoginRepository(
+          items: [FakeLoginRepository.item(content, id: 1)],
+        );
+        await pumpVault(tester);
+        await tester.tap(find.text('Tek'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byTooltip('Düzenle'));
+        await tester.pumpAndSettle();
+        // Senkron ya da öne gelme listeyi yeniden okudu: kimlik aynı baytlar,
+        // yeni bir nesne.
+        logins.items[0] = FakeLoginRepository.item(content, id: 1);
+        await ProviderScope.containerOf(
+          tester.element(find.byType(LoginEditScreen)),
+        ).read(loginsControllerProvider.notifier).reload();
+        await tester.pumpAndSettle();
+
+        await tester.enterText(find.widgetWithText(TextField, 'Klasör'), 'İş');
+        await tester.pumpAndSettle();
+        await tapVisible(tester, find.widgetWithText(FilledButton, 'Kaydet'));
+
+        expect(logins.items.single.content.folder, 'İş');
+      },
+    );
+
     testWidgets('harf büyüklüğü farklı klasör adı var olana bağlanıyor', (
       tester,
     ) async {
@@ -1075,6 +1104,24 @@ void main() {
       expect(content.password, 'degisen-parola');
       expect(content.passwordHistory.single.password, 'posta-parolasi');
       expect(find.text('Parola geçmişi (1)'), findsOneWidget);
+    });
+
+    testWidgets('kayıt sürerken kilitlenirse hata çıkmıyor', (tester) async {
+      final gate = logins.writeGate = Completer<void>();
+      await pumpVault(tester);
+      await openAddPassword(tester);
+      await tester.enterText(find.widgetWithText(TextField, 'Ad'), 'Yeni');
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Kaydet'));
+      await tester.pump();
+      ProviderScope.containerOf(tester.element(find.byType(LoginEditScreen)))
+          .read(vaultControllerProvider.notifier)
+          .lock();
+      await tester.pumpAndSettle();
+
+      gate.complete();
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('kaydedilmeden çıkarken onay isteniyor', (tester) async {
@@ -1304,6 +1351,26 @@ void main() {
       await tester.pumpAndSettle();
       expect(logins.items, isEmpty);
       expect(find.text('Çöp kutusu boş.'), findsOneWidget);
+    });
+
+    testWidgets('boşaltırken ekrandan çıkılsa da hepsi siliniyor', (
+      tester,
+    ) async {
+      await openTrashWithAll(tester);
+      final gate = logins.deleteGate = Completer<void>();
+      await openTrashMenu(tester);
+      await tester.tap(find.text('Çöpü boşalt'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Boşalt'));
+      await tester.pump();
+
+      await tester.tap(find.byTooltip('Geri'));
+      await tester.pumpAndSettle();
+      gate.complete();
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(logins.items, isEmpty);
     });
 
     testWidgets('çöp boşken toplu işlemler kapalı', (tester) async {

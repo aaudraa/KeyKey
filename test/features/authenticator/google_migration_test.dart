@@ -116,6 +116,26 @@ void main() {
     expect(batch.accounts.single.account, 'ayşe');
   });
 
+  test('adlardaki yön ve denetim karakterleri atılıyor', () {
+    // U+202E metni ters çevirir: "elgoog" ekranda "google" görünürdü.
+    final batch = GoogleMigration.parse(
+      _uri([_account(name: 'ali\u0007', issuer: '\u202Eelgoog')]),
+    );
+    expect(batch.accounts.single.issuer, 'elgoog');
+    expect(batch.accounts.single.account, 'ali');
+  });
+
+  test('Aegis ve 2FAS hesapları da aynı temizlikten geçiyor', () {
+    // Üç içe aktarıcı da ImportedAccount kurar.
+    final account = ImportedAccount(
+      parameters: OtpParameters.totp(secret: Uint8List.fromList([1, 2, 3])),
+      issuer: ' \u2066Banka\u2069 ',
+      account: 'ay\u200Fşe\n',
+    );
+    expect(account.issuer, 'Banka');
+    expect(account.account, 'ayşe');
+  });
+
   test('belirtilmemiş değerler varsayılana dönüyor', () {
     final batch = GoogleMigration.parse(
       _uri([_account(algorithm: 0, digits: 0, type: 0)]),
@@ -162,6 +182,9 @@ void main() {
       'otpauth-migration://offline': 'data yok',
       'otpauth-migration://offline?data=': 'boş data',
       'otpauth-migration://offline?data=%ZZ': 'kodlama',
+      // int.tryParse işareti kabul eder; -1 karakter kodu RangeError verirdi.
+      'otpauth-migration://offline?data=%-1AAA': 'işaretli kodlama',
+      'otpauth-migration://offline?data=%+1AAA': 'artı işaretli kodlama',
       'otpauth-migration://offline?data=!!!!': 'Base64',
       'otpauth-migration://offline?data=CgU&data=CgU': 'iki data',
       // Alan 1, uzunluk 100 ama veri yok.

@@ -6,12 +6,15 @@ import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_card.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
+import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/app/ui/record_avatar.dart';
+import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/vault/application/login_search.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/application/records_controller.dart';
 import 'package:keykey/features/vault/application/vault_entries.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
+import 'package:keykey/features/vault/presentation/bulk_actions.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
 import 'package:keykey/features/vault/presentation/trash_actions.dart';
 import 'package:keykey/features/vault/presentation/vault_entry_tiles.dart';
@@ -45,16 +48,20 @@ class TrashScreen extends ConsumerWidget {
           TrashActions(
             count: trashed.length,
             emptyMessage: l10n.trashEmptyMessage(trashed.length),
-            onRestoreAll: () async {
-              for (final entry in [...trashed]) {
-                await _restore(ref, entry);
-              }
-            },
-            onEmptyAll: () async {
-              for (final entry in [...trashed]) {
-                await _delete(ref, entry);
-              }
-            },
+            // Denetleyiciler baştan alınır: kullanıcı işlem sürerken ekrandan
+            // çıkabilir, ref ondan sonra kullanılamaz (#173, V6).
+            onRestoreAll: () => _all(
+              context,
+              ref,
+              (bulk) => bulk.restore([...trashed]),
+              trashed.length,
+            ),
+            onEmptyAll: () => _all(
+              context,
+              ref,
+              (bulk) => bulk.deletePermanently([...trashed]),
+              trashed.length,
+            ),
           ),
         ],
       ),
@@ -135,6 +142,22 @@ class TrashScreen extends ConsumerWidget {
   /// Listede ve silme onayında aynı ad görünür.
   static String _title(VaultEntry entry) =>
       entry.title.trim().isEmpty ? '—' : entry.title.trim();
+
+  static Future<void> _all(
+    BuildContext context,
+    WidgetRef ref,
+    Future<int> Function(BulkVault bulk) action,
+    int total,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final snack = kkSnackFor(context);
+    try {
+      final failed = await action(BulkVault(ref));
+      if (failed > 0) snack(l10n.trashFailed(failed, total));
+    } on VaultLockedException {
+      // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.
+    }
+  }
 
   static Future<void> _restore(WidgetRef ref, VaultEntry entry) =>
       switch (entry) {

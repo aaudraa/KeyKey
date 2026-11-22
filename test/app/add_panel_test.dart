@@ -129,6 +129,29 @@ void main() {
     });
   }
 
+  testWidgets('yatay ekranda ve büyük yazıda kutu ekrana sığıyor', (
+    tester,
+  ) async {
+    // Yön kilitli değil; yatay telefonda yükseklik ~360 dp.
+    tester.view
+      ..physicalSize = const Size(720, 360)
+      ..devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 1.3;
+    addTearDown(tester.view.reset);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await pumpApp(tester);
+    await openPanel(tester);
+
+    final box = tester.getRect(find.byKey(AddPanel.boxKey));
+    expect(box.top, greaterThanOrEqualTo(0));
+    // Üstteki satıra kaydırıp dokunulabiliyor.
+    await tester.ensureVisible(find.text('Parola'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Parola'));
+    await tester.pumpAndSettle();
+    expect(_location(tester), isNot(AppRoutes.vault));
+  });
+
   testWidgets('"+" kutusu alt menünün parçası: cam kalır', (tester) async {
     await pumpApp(tester);
     await openPanel(tester);

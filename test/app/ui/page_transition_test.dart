@@ -5,12 +5,26 @@ import 'package:keykey/app/ui/kk_motion.dart';
 
 void main() {
   test('tema tahmini geri hareketini korur (madde 1.4, kural 7)', () {
+    // Kök gezgindeki sayfalarda parmağı izler; sekme sayfalarında hareket
+    // yönlendiriciye düşer (#173, S1).
     for (final theme in [AppTheme.light, AppTheme.dark]) {
       expect(
         theme.pageTransitionsTheme.builders[TargetPlatform.android],
-        isA<PredictiveBackPageTransitionsBuilder>(),
+        isA<RootPredictiveBackTransitions>(),
       );
     }
+  });
+
+  test('geçiş süresi tahmini geri geçişininki gibi kalıyor', () {
+    // S1 düzeltmesi geçişi değiştirmemeli; MaterialPage süreyi temadaki
+    // kurucudan alır.
+    const predictive = PredictiveBackPageTransitionsBuilder();
+    const builder = RootPredictiveBackTransitions();
+    expect(builder.transitionDuration, predictive.transitionDuration);
+    expect(
+      builder.reverseTransitionDuration,
+      predictive.reverseTransitionDuration,
+    );
   });
 
   testWidgets('yeni sayfa sağdan kayarak açılır', (tester) async {

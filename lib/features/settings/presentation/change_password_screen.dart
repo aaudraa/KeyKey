@@ -41,8 +41,26 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
   Duration _wait = Duration.zero;
   late final _countdown = WaitCountdown((left) => setState(() => _wait = left));
 
+  late final VaultController _vault;
+
+  @override
+  void initState() {
+    super.initState();
+    _vault = ref.read(vaultControllerProvider.notifier)
+      ..addLockListener(_onLock);
+  }
+
+  /// Arka planda kare çizilmez, ekran ancak öne gelince kapanır; yazılan
+  /// parolalar o ana kadar alanlarda kalmasın.
+  void _onLock() {
+    _current.clear();
+    _password.clear();
+    _confirmation.clear();
+  }
+
   @override
   void dispose() {
+    _vault.removeLockListener(_onLock);
     _countdown.dispose();
     _current.dispose();
     _password.dispose();
@@ -126,6 +144,12 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    // Değişim sürerken ekrandan çıkılmaz: sonuç ve eski yedeklerle ilgili not
+    // ancak bu ekranda söylenebilir.
+    return PopScope(canPop: !_busy, child: _scaffold(l10n));
+  }
+
+  Widget _scaffold(AppLocalizations l10n) {
     return KkScaffold(
       appBar: kkAppBar(context, title: l10n.changePasswordTitle),
       bottomNavigationBar: ListenableBuilder(

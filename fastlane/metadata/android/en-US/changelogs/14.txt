@@ -1,0 +1,1 @@
+Fixes from a review of the app's screens. The Android back gesture only closes the topmost page. Changes made during a sync are no longer lost. Passwords copied with a hardware keyboard are also cleared after 30 seconds. An unreadable vault file no longer freezes startup. Imported 2FA names are cleaned up.

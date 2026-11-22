@@ -150,6 +150,8 @@ void main() {
       );
       expect(ImportKdf.isValidScrypt(n: 1 << 16, r: 8, p: 8), isTrue);
       expect(ImportKdf.isValidScrypt(n: 1 << 62, r: 1, p: 16), isFalse);
+      // 128·r 64 biti taşıp 128'e döner; sınır yine de tutmalı.
+      expect(ImportKdf.isValidScrypt(n: 2, r: (1 << 57) + 1, p: 1), isFalse);
       expect(
         () => ImportKdf.pbkdf2Sha256(
           password: const [1],

@@ -118,9 +118,33 @@ void main() {
 
     await tester.tap(find.byTooltip('Geri'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Çık'));
+    await tester.pumpAndSettle();
 
     expect(service.confirmedRecoveryKey, isNull);
     expect(find.text('Ana parolayı değiştir'), findsOneWidget);
+  });
+
+  testWidgets('anahtar gösterildikten sonra çıkmadan önce soruluyor', (
+    tester,
+  ) async {
+    // Not alınan anahtar doğrulanmadan geçerli olmaz; sessizce çıkılırsa
+    // kullanıcı yeni anahtarın geçerli olduğunu sanıp eskisini atabilir.
+    await open(tester);
+    await enterPassword(tester, FakeVaultService.correctPassword);
+
+    await tester.tap(find.byTooltip('Geri'));
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining('eski kurtarma anahtarın geçerli kalır'),
+      findsOne,
+    );
+    await tester.tap(find.text('Kal'));
+    await tester.pumpAndSettle();
+
+    expect(find.text(FakeVaultService.newRecoveryKey), findsOneWidget);
+    await typeKey(tester, FakeVaultService.newRecoveryKey);
+    expect(service.confirmedRecoveryKey, isNotNull);
   });
 
   testWidgets('dosyaya kaydederken arka plan kilidi beklemede', (tester) async {
@@ -165,6 +189,23 @@ void main() {
 
     expect(find.text('Kopyala'), findsNothing);
     expect(find.textContaining('yenileme iptal olur'), findsOneWidget);
+  });
+
+  testWidgets('kilitte yazılan ana parola alandan hemen siliniyor', (
+    tester,
+  ) async {
+    await open(tester);
+    await tester.enterText(find.byType(TextField), 'yazilan-parola');
+    final controller = tester
+        .widget<TextField>(find.byType(TextField))
+        .controller!;
+
+    ProviderScope.containerOf(tester.element(find.byType(TextField)))
+        .read(vaultControllerProvider.notifier)
+        .lock();
+
+    expect(controller.text, isEmpty);
+    await tester.pumpAndSettle();
   });
 
   testWidgets('doğrulanmadan kilitlenirse kilit açılınca söyleniyor', (

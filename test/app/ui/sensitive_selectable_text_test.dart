@@ -66,6 +66,25 @@ void main() {
     );
   }
 
+  testWidgets('klavyeyle Ctrl+C hassas panoya yazar', (tester) async {
+    await pump(tester);
+    await tester.longPress(find.byType(SelectableText));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tümünü seç'));
+    await tester.pumpAndSettle();
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyC);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+    await tester.pumpAndSettle();
+
+    expect((clipboard as RecordingClipboard).copied, ['kapi kodu 4821']);
+    expect(
+      platformCalls.where((call) => call.method == 'Clipboard.setData'),
+      isEmpty,
+    );
+  });
+
   testWidgets('seçim menüsünde yalnızca kopyala ve tümünü seç var', (
     tester,
   ) async {
