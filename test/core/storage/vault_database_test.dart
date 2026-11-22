@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:drift/native.dart';
@@ -156,6 +157,22 @@ void main() {
       expect(await pragma(database, 'journal_mode'), 'delete');
     });
 
+    test('öteki motor yazarken ön denetim bekliyor, hemen düşmüyor', () async {
+      // Doldurma ekranı açılırken ana uygulama büyük bir yazmanın ortasında
+      // olabilir; ön denetim SQLITE_BUSY ile düşerse doldurma açılmaz.
+      sqlite.sqlite3.open(file.path)
+        ..execute(readFixtureSchema())
+        ..execute('PRAGMA user_version = 2')
+        ..close();
+      final locked = ReceivePort();
+      await Isolate.spawn(_holdExclusiveLock, (file.path, locked.sendPort));
+      await locked.first;
+
+      final database = VaultDatabase.openFile(file);
+      addTearDown(database.close);
+      expect(await database.select(database.vaultMeta).get(), isEmpty);
+    });
+
     test(
       'yazma ortasında ölen sürecin günlüğü açılışta geri alınıyor',
       () async {
@@ -276,4 +293,16 @@ void main() {
       );
     });
   });
+}
+
+/// Ayrı bir isolate'te dosyayı yarım saniye özel kilitte tutar; kilit
+/// alınınca haber verir.
+void _holdExclusiveLock((String, SendPort) args) {
+  final (path, locked) = args;
+  final database = sqlite.sqlite3.open(path)..execute('BEGIN EXCLUSIVE');
+  locked.send(null);
+  sleep(const Duration(milliseconds: 500));
+  database
+    ..execute('COMMIT')
+    ..close();
 }

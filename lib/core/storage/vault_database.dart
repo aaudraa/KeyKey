@@ -128,6 +128,9 @@ final class VaultDatabase extends _$VaultDatabase {
       mode: sqlite.OpenMode.readWrite,
     );
     try {
+      // Öteki motor (ana uygulama ya da doldurma ekranı) o an yazıyorsa
+      // hemen düşmek yerine bağlantı ayarındaki kadar beklenir.
+      database.execute('PRAGMA busy_timeout = 5000');
       final found = database.userVersion;
       if (found > currentSchemaVersion) {
         throw UnsupportedSchemaException(from: found, to: currentSchemaVersion);
