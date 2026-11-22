@@ -22,6 +22,7 @@ import 'package:keykey/features/vault/application/login_search.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/application/vault_entries.dart';
 import 'package:keykey/features/vault/presentation/bulk_actions.dart';
+import 'package:keykey/features/vault/presentation/folder_suggestions.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
 import 'package:keykey/features/vault/presentation/vault_entry_tiles.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
@@ -496,7 +497,10 @@ class _FolderSheetState extends State<_FolderSheet> {
   void _submitNew() {
     final name = _name.text.trim();
     if (name.isEmpty) return;
-    Navigator.pop(context, _FolderChoice(name));
+    Navigator.pop(
+      context,
+      _FolderChoice(matchExistingFolder(name, widget.folders)),
+    );
   }
 
   @override

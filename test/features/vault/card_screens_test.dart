@@ -348,6 +348,28 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('klasör adı harf farkıyla var olana bağlanıyor', (
+      tester,
+    ) async {
+      final other = cards.items[1];
+      cards.items[1] = FakeRecordRepository.item(
+        other.content.copyWith(folder: 'İş'),
+        id: 2,
+      );
+      await pumpApp(tester);
+      await go(
+        tester,
+        AppRoutes.cardItemEdit(loginIdHex(cards.items.first.id)),
+      );
+      await tester.ensureVisible(field('Klasör'));
+      await tester.enterText(field('Klasör'), 'iş');
+      await tester.pump();
+      await tester.tap(find.text('Kaydet'));
+      await tester.pumpAndSettle();
+
+      expect(cards.items.first.content.folder, 'İş');
+    });
+
     testWidgets('var olan kart düzenlenir', (tester) async {
       await pumpApp(tester);
       await go(

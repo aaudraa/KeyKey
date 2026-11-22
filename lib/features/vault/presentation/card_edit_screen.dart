@@ -126,7 +126,7 @@ class _CardEditScreenState extends ConsumerState<CardEditScreen> {
   };
 
   CardContent _collect() {
-    final folder = _folder.text.trim();
+    final folder = matchExistingFolder(_folder.text.trim(), _folders);
     final base = CardContent(
       name: _name.text.trim(),
       cardholder: _cardholder.text.trim(),

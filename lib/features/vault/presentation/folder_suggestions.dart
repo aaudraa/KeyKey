@@ -1,6 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:keykey/features/vault/application/login_search.dart';
 
+/// Yazılan klasör adı var olan bir klasörle yalnızca harf büyüklüğünde
+/// (Türkçe İ/ı dahil) ayrışıyorsa var olanı döner; yoksa yazılanı. Böylece
+/// "iş" yazılınca ikinci bir "İş" klasörü açılmaz.
+String matchExistingFolder(String typed, Iterable<String> folders) {
+  final key = foldForSearch(typed);
+  for (final folder in folders) {
+    if (foldForSearch(folder) == key) return folder;
+  }
+  return typed;
+}
+
 /// Klasör kutusunun altında, yazılana uyan var olan klasörler.
 class FolderSuggestions extends StatelessWidget {
   const new({

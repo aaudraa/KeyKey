@@ -13,7 +13,6 @@ import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/generator/presentation/generator_sheet.dart';
 import 'package:keykey/features/generator/presentation/password_strength_meter.dart';
-import 'package:keykey/features/vault/application/login_search.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/application/records_controller.dart';
 import 'package:keykey/features/vault/application/vault_entries.dart';
@@ -150,17 +149,9 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
 
   /// Harf büyüklüğü farklı yazılmış ad var olan klasöre bağlanır; "İş" ve
   /// "iş" iki klasör olmasın.
-  String _matchingFolder(String typed) {
-    final key = foldForSearch(typed);
-    for (final folder in _folders) {
-      if (foldForSearch(folder) == key) return folder;
-    }
-    return typed;
-  }
-
   LoginContent _collect() {
     final base = _original?.content ?? const LoginContent(name: '');
-    final folder = _matchingFolder(_folder.text.trim());
+    final folder = matchExistingFolder(_folder.text.trim(), _folders);
     return base.copyWith(
       name: _name.text.trim(),
       username: _username.text.trim(),

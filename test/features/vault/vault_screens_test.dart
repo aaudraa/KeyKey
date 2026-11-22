@@ -932,32 +932,33 @@ void main() {
       expect(logins.items.single.content.folder, 'İş');
     });
 
-    testWidgets('liste yeniden okunduktan sonra da harf büyüklüğü düzeltiliyor', (
-      tester,
-    ) async {
-      const content = LoginContent(name: 'Tek', password: 'p', folder: 'is');
-      logins = FakeLoginRepository(
-        items: [FakeLoginRepository.item(content, id: 1)],
-      );
-      await pumpVault(tester);
-      await tester.tap(find.text('Tek'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Düzenle'));
-      await tester.pumpAndSettle();
-      // Senkron ya da öne gelme listeyi yeniden okudu: kimlik aynı baytlar,
-      // yeni bir nesne.
-      logins.items[0] = FakeLoginRepository.item(content, id: 1);
-      await ProviderScope.containerOf(
-        tester.element(find.byType(LoginEditScreen)),
-      ).read(loginsControllerProvider.notifier).reload();
-      await tester.pumpAndSettle();
+    testWidgets(
+      'liste yeniden okunduktan sonra da harf büyüklüğü düzeltiliyor',
+      (tester) async {
+        const content = LoginContent(name: 'Tek', password: 'p', folder: 'is');
+        logins = FakeLoginRepository(
+          items: [FakeLoginRepository.item(content, id: 1)],
+        );
+        await pumpVault(tester);
+        await tester.tap(find.text('Tek'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byTooltip('Düzenle'));
+        await tester.pumpAndSettle();
+        // Senkron ya da öne gelme listeyi yeniden okudu: kimlik aynı baytlar,
+        // yeni bir nesne.
+        logins.items[0] = FakeLoginRepository.item(content, id: 1);
+        await ProviderScope.containerOf(
+          tester.element(find.byType(LoginEditScreen)),
+        ).read(loginsControllerProvider.notifier).reload();
+        await tester.pumpAndSettle();
 
-      await tester.enterText(find.widgetWithText(TextField, 'Klasör'), 'İş');
-      await tester.pumpAndSettle();
-      await tapVisible(tester, find.widgetWithText(FilledButton, 'Kaydet'));
+        await tester.enterText(find.widgetWithText(TextField, 'Klasör'), 'İş');
+        await tester.pumpAndSettle();
+        await tapVisible(tester, find.widgetWithText(FilledButton, 'Kaydet'));
 
-      expect(logins.items.single.content.folder, 'İş');
-    });
+        expect(logins.items.single.content.folder, 'İş');
+      },
+    );
 
     testWidgets('harf büyüklüğü farklı klasör adı var olana bağlanıyor', (
       tester,

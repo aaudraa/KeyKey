@@ -174,6 +174,24 @@ void main() {
     expect(find.textContaining('seçildi'), findsNothing);
   });
 
+  testWidgets('yeni klasör adı harf farkıyla var olana bağlanıyor', (
+    tester,
+  ) async {
+    await pumpVault(tester);
+    await longPress(tester, 'Posta');
+    await tester.tap(find.byTooltip('Klasöre taşı'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Yeni klasör'),
+      'BANKA',
+    );
+    await tester.pump();
+    await tester.tap(find.text('Taşı'));
+    await tester.pumpAndSettle();
+
+    expect(login(1).folder, 'Banka');
+  });
+
   testWidgets('yeni klasör ve klasörden çıkarma', (tester) async {
     await pumpVault(tester);
     await longPress(tester, 'Posta');

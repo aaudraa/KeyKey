@@ -85,7 +85,7 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
   };
 
   NoteContent _collect() {
-    final folder = _folder.text.trim();
+    final folder = matchExistingFolder(_folder.text.trim(), _folders);
     return NoteContent(
       name: _name.text.trim(),
       text: _text.text,
