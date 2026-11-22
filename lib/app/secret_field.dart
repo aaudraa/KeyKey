@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
+import 'package:keykey/app/ui/sensitive_copy_shortcuts.dart';
 import 'package:keykey/features/lock/presentation/auto_lock_scope.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
@@ -162,6 +163,38 @@ class _SecretFieldState extends ConsumerState<SecretField> {
         ? null
         : widget.plain;
     final usePlain = plain != null && ref.watch(plainKeyboardProvider);
+    return SensitiveCopyShortcuts(
+      onCopy: () => _copyByKeyboard(cut: false),
+      onCut: () => _copyByKeyboard(cut: true),
+      child: _field(l10n, usePlain: usePlain, plain: plain),
+    );
+  }
+
+  /// Donanım klavyesiyle kopyalama ve kesme; menüdeki gibi hassas panoya.
+  /// Gizli parola görünmüyorken bir şey yapmaz, Flutter da kopyalamaz.
+  void _copyByKeyboard({required bool cut}) {
+    if (widget.obscure && !_visible) return;
+    final controller = widget.controller;
+    final value = controller.value;
+    final selection = value.selection;
+    if (!selection.isValid || selection.isCollapsed) return;
+    final selected = selection.textInside(value.text);
+    if (cut && widget.enabled) {
+      controller.value = TextEditingValue(
+        text:
+            selection.textBefore(value.text) + selection.textAfter(value.text),
+        selection: TextSelection.collapsed(offset: selection.start),
+      );
+      widget.onChanged?.call(controller.text);
+    }
+    unawaited(copySensitive(context, ref, selected));
+  }
+
+  Widget _field(
+    AppLocalizations l10n, {
+    required bool usePlain,
+    required PlainKeyboard? plain,
+  }) {
     return TextField(
       controller: widget.controller,
       focusNode: widget.focusNode,
