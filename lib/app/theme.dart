@@ -145,11 +145,8 @@ abstract final class AppTheme {
       extensions: [glass],
       scaffoldBackgroundColor: Colors.transparent,
       canvasColor: surface,
-      // Android 14+ kenardan geri hareketinde sayfa parmağı izler.
       pageTransitionsTheme: const PageTransitionsTheme(
-        builders: {
-          TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
-        },
+        builders: {TargetPlatform.android: RootPredictiveBackTransitions()},
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
@@ -287,6 +284,40 @@ abstract final class AppTheme {
       ),
       listTileTheme: ListTileThemeData(iconColor: muted),
       iconTheme: IconThemeData(color: ink),
+    );
+  }
+}
+
+/// Android 14+ kenardan geri hareketinde yalnızca kök gezgindeki sayfalar
+/// (formlar, kilit) parmağı izler.
+///
+/// Flutter hareketi kabul eden bütün sayfalara verir ve her birini kapatır;
+/// sekmelerdeki gezginlerde ve formun altında görünmeyen sayfalar da kabul
+/// ediyordu (#173, S1). Sekme sayfaları aynı geçişi düğmeyle gelmiş gibi
+/// oynar; hareket yönlendiriciye düşer, o da yalnızca en üstteki sayfayı
+/// kapatır ve PopScope sorularını sorar.
+class RootPredictiveBackTransitions extends PageTransitionsBuilder {
+  const new();
+
+  static const _predictive = PredictiveBackPageTransitionsBuilder();
+  static const _plain = FadeForwardsPageTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    final root = Navigator.maybeOf(context, rootNavigator: true);
+    final builder = route.navigator == root ? _predictive : _plain;
+    return builder.buildTransitions(
+      route,
+      context,
+      animation,
+      secondaryAnimation,
+      child,
     );
   }
 }
