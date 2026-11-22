@@ -46,11 +46,13 @@ final autofillMatchesProvider = FutureProvider<LoginMatches>((ref) async {
       hasSigningCertificates: bridge.hasSigningCertificates,
     );
   }
-  final appSites = target.certsSha256.isEmpty
-      ? const <AppDomain>[]
-      : await _appDomains(bridge, target.packageName);
-  final verifyOnline =
-      target.certsSha256.isNotEmpty && await _verifyOnlineEnabled(ref);
+  // Web sayfası gösteren formda uygulamanın siteleri kullanılmaz (sayfa
+  // başka bir siteye ait olabilir); ağa da çıkılmaz.
+  final usesAppSites = target.certsSha256.isNotEmpty && !target.showsWebPage;
+  final appSites = usesAppSites
+      ? await _appDomains(bridge, target.packageName)
+      : const <AppDomain>[];
+  final verifyOnline = usesAppSites && await _verifyOnlineEnabled(ref);
   if (appSites.isEmpty && !verifyOnline) {
     return await matchLogins(
       target: target,

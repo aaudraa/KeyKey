@@ -858,6 +858,37 @@ void main() {
       expect(bridge.filled?.password, 'github-parolasi-20');
     });
 
+    testWidgets('uygulamanın web sayfasında uyarı kalıyor, bağlanmıyor', (
+      tester,
+    ) async {
+      settings.settings = verifyOnline();
+      addGithub();
+      final links = FakeAssetLinks({'github.com': approving});
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: const AutofillTarget(
+          packageName: 'com.github.android',
+          appLabel: 'GitHub',
+          certsSha256: [githubCert],
+          inWebView: true,
+        ),
+        domains: [AppDomain(host: 'github.com', verified: true)],
+        assetLinks: links,
+      );
+
+      expect(bridge.filled, isNull);
+      expect(links.asked, isEmpty);
+      await searchFor(tester, 'github');
+      await tester.tap(find.text('GitHub'));
+      await tester.pumpAndSettle();
+      expect(find.text('Doldurmadan önce'), findsOneWidget);
+      await tester.tap(find.text('Yine de doldur'));
+      await tester.pumpAndSettle();
+      expect(bridge.filled?.password, 'github-parolasi-20');
+      expect(githubItem().content.apps, isEmpty);
+    });
+
     testWidgets('imzası tutmayan bağlı kayıt doğrulanmış sitede de uyarıyor', (
       tester,
     ) async {

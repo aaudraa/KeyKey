@@ -76,7 +76,7 @@ Mevcut `hasSigningCertificates` köprüsü tek imzacıda her özet için ayrı �
 
 - **İmza tutmuyor her zaman kazanır.** Kayıt, bağlı uygulamasının paket adı aynı ama imzası farklı olduğu için `signatureMismatches` içindeyse doğrulanmış site yüzünden eşleşmiş sayılmaz; uyarı bugünkü gibi "bu uygulama sahte olabilir" der. Sitenin yeni imzayı onaylaması anahtar değişikliği olabilir, ama aynı paket adında iki farklı imza görmek tam da saldırının görüntüsüdür; kullanıcı kaydı düzenleyip eski bağlamayı kaldırabilir.
 - **Kesin eşleşme:** Doğrulanmış site eşleşmesi kesin eşleşme sayılır. Tek eşleşme, uyarı yok, `signatureMismatches` boş ve uygulama web sayfası göstermiyorsa liste açılmadan doldurulur ([Akış](guvenlik-tasarimi.md#akış), 4. adım).
-- **WebView:** Bugünkü kural değişmez. Eşleşmiş kayıtta WebView uyarısı yoktur (site, uygulamayı kendisi onaylamıştır; sayfayı barındıran uygulamanın parolayı görebilmesi AutoSpill'in tehlikesiydi ve burada uygulama sitenin sahibidir); ama uygulama web sayfası gösteriyorsa liste yine de açılır.
+- **WebView:** Uygulama web sayfası gösteriyorsa (`showsWebPage`) doğrulanmış site hiç kullanılmaz ve ağa çıkılmaz; orada bugünkü gibi yalnızca uygulamaya bağlı kayıtlar eşleşir. İlk taslakta eşleşmiş kayıtta WebView uyarısı kalkıyordu; son gözden geçirme bunun açığını buldu: Instagram gibi sitesi doğrulanmış bir uygulama kendi tarayıcısında başka birinin sahte giriş sayfasını açarsa, uygulamanın sitesinin kaydı uyarısız eşleşmiş görünürdü.
 
 ### Neden güvenli
 

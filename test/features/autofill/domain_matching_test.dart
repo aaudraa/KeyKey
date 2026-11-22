@@ -409,6 +409,24 @@ void main() {
         expect(names(result), [('Başka', LoginMatchKind.exactHost)]);
       });
 
+      test(
+        'web sayfası gösteren formda doğrulanmış site kullanılmıyor',
+        () async {
+          // Uygulamanın kendi tarayıcısında açılan başka bir sitenin sahte
+          // giriş sayfası, uygulamanın sitesinin kaydını uyarısız almasın.
+          for (final target in const [
+            AutofillTarget(packageName: 'com.banka.mobil', inWebView: true),
+            AutofillTarget(
+              packageName: 'com.banka.mobil',
+              untrustedWebDomain: 'banka.com.tr',
+            ),
+          ]) {
+            final result = await verified(target);
+            expect(names(result), [('Uygulama', LoginMatchKind.app)]);
+          }
+        },
+      );
+
       test('eşleşmeyen kaydın türü yok', () async {
         final other = item('Başka site', urls: ['https://x.com']);
         final result = await verified(

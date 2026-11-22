@@ -63,7 +63,9 @@ typedef SignatureCheck = Future<bool> Function(
 /// - Uygulamada, bağlı olmayan kayıt, adreslerinden birinin sitesi
 ///   [verifiedSites] içindeyse (uygulamanın doğrulanmış siteleri, kayıt
 ///   edilebilir alan adı olarak) eşleşir. İmzası tutmayan kayıt bu yolla
-///   eşleşmez.
+///   eşleşmez. Uygulama web sayfası gösteriyorsa bu yol kullanılmaz:
+///   uygulamanın kendi tarayıcısında açılan başka bir sitenin sahte giriş
+///   sayfası, uygulamanın sitesinin kaydını uyarısız almasın.
 /// - Güvenilen tarayıcıda yalnızca adresler karşılaştırılır.
 ///
 /// [suffixes] web hedefinde ve [verifiedSites] doluyken gerekir; uygulama
@@ -93,7 +95,7 @@ Future<LoginMatches> matchLogins({
         (app) => app.packageName == target.packageName,
       );
       if (bound.isEmpty) {
-        if (verifiedSites.isNotEmpty) {
+        if (verifiedSites.isNotEmpty && !target.showsWebPage) {
           final list = suffixes ?? (throw ArgumentError.notNull('suffixes'));
           if (_onVerifiedSite(item, verifiedSites, list)) {
             matches.add(LoginMatch(item, LoginMatchKind.verifiedSite));
