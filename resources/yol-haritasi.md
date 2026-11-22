@@ -2,7 +2,7 @@
 
 KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. 1.5.0'a kadar tamamen çevrimdışıydı; 2026-11-19'da internet gerektiren özelliklere de açılma kararı alındı ([İnternet](#temel-kararlar)). Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-22 · **Şu anki faz:** 20 bitti; sıradaki 25, uygulama ve site eşleştirme ([#178](https://github.com/aaudraa/KeyKey/issues/178)). [1.9.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.9.0) yayında (KeePass `.kdbx` dosyalarını doğrudan açıp içe aktarma, [#177](https://github.com/aaudraa/KeyKey/issues/177); Argon2 yerel kodda, F-Droid karşılaştırması yeşil). [1.8.2](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.2) yayında (düzeltme sürümü: ultra review'a girmeyen arayüz kodunun incelemesi, [#173](https://github.com/aaudraa/KeyKey/issues/173); kalan dört küçük bulgu [#174](https://github.com/aaudraa/KeyKey/issues/174)'te). [1.8.1](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.1) (düzeltme sürümü: projenin bütününün ultra review bulguları, [#168](https://github.com/aaudraa/KeyKey/issues/168); gömülü çerçeveye parola yazılmaması N9 gerçek Chrome'da denendi; navbar yalnızca simge, #163). [1.8.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.0) (kendi WebDAV sunucusu üzerinden uçtan uca şifreli senkron, senkrondan kurma, başka kasası olan telefonu katma; Nextcloud ile ilk deneme ve 1.4.0'dan beri gelenlerle birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
+**Son güncelleme:** 2026-11-23 · **Şu anki faz:** 25 bitti; sıradaki 21, passkey sağlayıcısı. [1.10.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.10.0) yayında (uygulama ve site eşleştirme: Android'in doğruladığı siteler ve isteğe bağlı `assetlinks.json` doğrulaması, [#178](https://github.com/aaudraa/KeyKey/issues/178); koşullar sürüm 4, yedek içerik sürümü 5; küçük bulgular [#182](https://github.com/aaudraa/KeyKey/issues/182)'de). [1.9.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.9.0) yayında (KeePass `.kdbx` dosyalarını doğrudan açıp içe aktarma, [#177](https://github.com/aaudraa/KeyKey/issues/177); Argon2 yerel kodda, F-Droid karşılaştırması yeşil). [1.8.2](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.2) yayında (düzeltme sürümü: ultra review'a girmeyen arayüz kodunun incelemesi, [#173](https://github.com/aaudraa/KeyKey/issues/173); kalan dört küçük bulgu [#174](https://github.com/aaudraa/KeyKey/issues/174)'te). [1.8.1](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.1) (düzeltme sürümü: projenin bütününün ultra review bulguları, [#168](https://github.com/aaudraa/KeyKey/issues/168); gömülü çerçeveye parola yazılmaması N9 gerçek Chrome'da denendi; navbar yalnızca simge, #163). [1.8.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.0) (kendi WebDAV sunucusu üzerinden uçtan uca şifreli senkron, senkrondan kurma, başka kasası olan telefonu katma; Nextcloud ile ilk deneme ve 1.4.0'dan beri gelenlerle birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
 
 > [!IMPORTANT]
 > **KeyKey 1.0 yayında.** Projenin kendi güvenlik denetimi tamamlandı, ama bağımsız bir denetim yapılmadı. Şifreli yedeğini düzenli al ve telefonun dışında da sakla.
@@ -34,11 +34,11 @@ KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uyg
 | 18 | Kilit süresi, klavye, toplu seçim, Steam Guard | M | 14 | `faz/18-kullanim-kolayligi` | Tamamlandı (1.7.0) |
 | 19 | Senkron (WebDAV; Google Drive ayrı) | XL | 16 | `faz/19-senkron` | Tamamlandı (1.8.0) |
 | 20 | KeePass (`.kdbx`) içe aktarma | L | 14 | `faz/20-keepass` | Bitti (1.9.0) |
-| 21 | Passkey sağlayıcısı | XL | 15 | `faz/21-passkey` | Planlandı |
+| 21 | Passkey sağlayıcısı | XL | 15 | `faz/21-passkey` | Sıradaki |
 | 22 | İşlemciye göre APK ve kendi F-Droid deposu | M | — | `faz/22-dagitim` | Planlandı |
 | 23 | KeyKey klavyesi | XL | 15 | `faz/23-klavye` | Planlandı |
 | 24 | Windows sürümü | XL | 19 | `faz/24-windows` | Planlandı |
-| 25 | Uygulama ve site eşleştirme | M | 16 | `faz/25-uygulama-site` | Sürüyor (1.10.0) |
+| 25 | Uygulama ve site eşleştirme | M | 16 | `faz/25-uygulama-site` | Bitti (1.10.0) |
 
 Büyüklük göreli iş miktarını gösterir, takvim sözü değildir. Faz 4 ve 5 aynı anda ilerleyebilir. Faz 14'ten sonraki sıra ve gerekçesi [1.0 sonrası](#10-sonrası) bölümünde; dal adları faz başlayınca kesinleşir. İlerlemeyi [milestone'lardan](https://github.com/aaudraa/KeyKey/milestones) da izleyebilirsin.
 
@@ -818,9 +818,13 @@ Proje sahibi soru istemedi; kararlar benim. Tasarım: [`uygulama-site-eslestirme
 - [x] Doldurma ekranı: internet adayları, önbellek, kendiliğinden bağlama
 - [x] Cihazda: sistemin doğrulaması ve internet yolu (Android 17, Wikipedia)
 - [x] Güvenlik tasarımı, gizlilik, koşullar sürüm 4, kılavuz, değişiklik günlüğü
-- [ ] Son gözden geçirme, 1.10.0
+- [x] Son gözden geçirme, 1.10.0
 
 Bir karar plandan saptı: ayar kaydının sürümü artınca yedeğin içerik sürümü de artmalı (bunu bir test sabitliyor). Yedekler 5 ile yazılıyor, eski sürüm "daha yeni yedek" der. Senkron dosyası ayar kaydı taşımadığı için 4'te kaldı; böylece 1.9.x telefonlarla eşitleme kırılmıyor. Kullanım koşullarındaki "internete yalnızca … için çıkar" cümlesi yeni özellikle eksik kalacağı için koşullar sürüm 4 oldu.
+
+**Son gözden geçirme:** Taze bir alt ajan (Opus) kritik bulgu bulmadı. Bir önemli bulgu düzeltildi: sitesi doğrulanmış bir uygulama (Instagram gibi) kendi tarayıcısında başka birinin sahte giriş sayfasını açarsa, uygulamanın sitesinin kaydı uyarısız eşleşmiş görünüyordu; artık web sayfası gösteren formda doğrulanmış site kullanılmıyor. Dört küçük bulgu [#182](https://github.com/aaudraa/KeyKey/issues/182)'de.
+
+1.10.0 olarak yayımlandı (2026-11-23, [#183](https://github.com/aaudraa/KeyKey/pull/183)). İmza sertifikası aynı (`66ff7b5c…`); F-Droid'in kendi derlemesi APK'yla bayt bayt aynı çıktı. Android 17 emülatöründe bütün entegrasyon testleri geçti (40 test). Yeni izin yok.
 
 **Cihazda (2026-11-22, Android 17 emülatörü):** Örnek giriş uygulamasının `autoVerify` alan adı sistemde "approved" yapıldı; bağsız `example.com` kaydı liste açılmadan doldu ve uygulama kayda bağlandı. F-Droid'deki Wikipedia'nın imzası `wikipedia.org` dosyasında listeli; sistemin doğrulaması geri alınıp ayar açıldı, `en.wikipedia.org` kaydı giriş ekranında liste açılmadan doldu ve `org.wikipedia` bağlandı.
 
