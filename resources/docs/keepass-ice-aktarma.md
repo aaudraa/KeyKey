@@ -13,14 +13,14 @@ KeePass ailesi (KeePass 2, KeePassXC, KeePassDX, Keepass2Android, Strongbox) en 
 ## Hedefler
 
 - "Parolaları içe aktar" ile seçilen `.kdbx` dosyası tanınır; ana parola ve isteğe bağlı anahtar dosyası istenir, dosya açılır, kayıtlar bugünkü önizleme ekranında gösterilir.
-- Desteklenen biçimler bugünkü KeePass uygulamalarının yazdığı her şeyi kapsar: KDBX 3.1 ve 4.x; AES-KDF, Argon2d ve Argon2id; AES-256, ChaCha20 ve Twofish; sıkıştırmalı ve sıkıştırmasız.
+- Desteklenen biçimler bugünkü KeePass uygulamalarının yazdığı her şeyi kapsar: KDBX 2.x, 3.x ve 4.x; AES-KDF, Argon2d ve Argon2id; AES-256, ChaCha20 ve Twofish; sıkıştırmalı ve sıkıştırmasız.
 - Gruplar klasör, TOTP alanları bağlı 2FA hesabı, ek alanlar özel alan olur. Çöp kutusundaki kayıtlar alınmaz.
 - Yanlış parola, desteklenmeyen biçim ve bozuk dosya birbirinden ayrı ve anlaşılır biçimde söylenir.
 
 ## Hedef olmayanlar
 
 - **KeePass'a yazmak ya da `.kdbx` ile eşitlemek.** Yalnızca içe aktarma. KeyKey'in kendi senkronu var.
-- **KeePass 1 (`.kdb`) ve KDBX 2.** 2012'den önceki biçimler; KeePass 2 bunları açıp yeni biçimde kaydedebilir. Dosya tanınır ve kullanıcıya bu söylenir.
+- **KeePass 1 (`.kdb`).** KeePass 2 bunu açıp yeni biçimde kaydedebilir. Dosya tanınır ve kullanıcıya bu söylenir.
 - **YubiKey (challenge-response) ve Windows kullanıcı hesabı ile korunan dosyalar.** İkisi de anahtarın bir parçasını dosyanın dışından, cihazdan alır. Dosya bunları ayırt ettirmez; yanlış parola mesajı bu ihtimali de anar.
 - **Ekler.** KeyKey'de dosya eki yok. Eki olan kayıtların sayısı önizlemede söylenir, ekler alınmaz.
 - **Kayıt geçmişi, simgeler, etiketler, son kullanma tarihleri, otomatik yazma ayarları.** KeyKey'de karşılıkları yok ya da başka anlamdalar. Kayıtlar eklendikleri anın tarihiyle oluşur (bugünkü bütün içe aktarmalar gibi).
@@ -53,7 +53,7 @@ Bunlardan biri olursa iş çalışsa bile başarısızdır:
 ### Akış
 
 1. Kullanıcı bugünkü gibi Ayarlar → Yedekleme → **Parolaları içe aktar**'a dokunur ve bir dosya seçer.
-2. Dosyanın ilk 8 baytı KDBX imzasıysa (`03 D9 A2 9A 67 FB 4B B5`) **KeePass dosyasını aç** ekranı açılır. Değilse bugünkü CSV/JSON okuyucusuna gider. KeePass 1 imzası (`…65 FB 4B B5`) ve KDBX 2'den eski sürümler bu ekranı açmaz, "eski bir KeePass biçimi" mesajı çıkar.
+2. Dosyanın ilk 8 baytı KDBX imzasıysa (`03 D9 A2 9A 67 FB 4B B5`) **KeePass dosyasını aç** ekranı açılır. Değilse bugünkü CSV/JSON okuyucusuna gider. KeePass 1 imzası (`03 D9 A2 9A 65 FB 4B B5`) bu ekranı açmaz, "eski bir KeePass biçimi" mesajı çıkar.
 3. Ekranda ana parola kutusu (gizli, öğrenme kapalı; kasadaki parola kutularıyla aynı bileşen), **Anahtar dosyası seç** düğmesi (seçilince "Anahtar dosyası seçildi" ve kaldırma düğmesi görünür; belge seçici dosya adını vermiyor) ve **Aç** düğmesi var. Parola boş bırakılabilir; anahtar dosyası yalnız da kullanılabilir ([Anahtar](#anahtar)).
 4. **Aç**'a basılınca anahtar türetilir. Ekranda ilerleme ve "KeePass dosyaları parola denemelerini yavaşlatmak için bilerek yavaş açılır" yazar. Geri tuşu beklemeyi bırakır; arka planda süren hesap bitince sonucu atılır.
 5. Açılınca bugünkü önizleme ekranı (`LoginImportScreen`) gelir. Kaynak adı "KeePass (KDBX)" olur, KeePass'a özgü bilgi kartları eklenir (eki olan kayıtlar, çöp kutusu).
@@ -65,7 +65,7 @@ Dosya ekran açıkken bellekte durur (yanlış parolada yeniden seçmek gerekmes
 
 ### Biçim
 
-| | KDBX 3.1 | KDBX 4.0 / 4.1 |
+| | KDBX 2.x ve 3.x | KDBX 4.0 / 4.1 |
 |---|---|---|
 | Başlık alanı uzunluğu | 2 bayt | 4 bayt |
 | Anahtar türetme | AES-KDF (`TransformSeed`, `TransformRounds`) | `KdfParameters` sözlüğü: AES-KDF, Argon2d, Argon2id |
@@ -74,7 +74,7 @@ Dosya ekran açıkken bellekte durur (yanlış parolada yeniden seçmek gerekmes
 | Korumalı değerler | Salsa20 | ChaCha20 (iç başlıkta) |
 | Ekler | XML'de `Meta/Binaries` | İç başlıkta |
 
-- Sürüm: ana sürüm 3 ya da 4 kabul edilir (3.0 ve 4.1 dahil), başka ana sürüm "desteklenmeyen sürüm" olur. 3.0 ile 3.1 arasındaki fark okumayı etkilemez.
+- Sürüm: ana sürüm 2, 3 ya da 4 kabul edilir, başka ana sürüm "desteklenmeyen sürüm" olur. 2.x ve 3.x'in yapısı aynı, aynı okuyucuyla açılır (KeePassXC de böyle yapıyor; onun anahtar dosyası test örnekleri 2.4 sürümünde). Aradaki farklar okumayı etkilemez.
 - Şifre: AES-256-CBC (`31c1f2e6-…`), ChaCha20 (`d6038a2b-…`, 12 baytlık IETF nonce), Twofish-CBC (`ad68f29f-…`). Başka bir şifre "desteklenmeyen şifre" olur.
 - Anahtar türetme: AES-KDF (`c9d9f39a-…`), Argon2d (`ef636ddf-…`), Argon2id (`9e298b19-…`). KDBX 4'te AES-KDF sözlükte `R` ve `S`'dir.
 - Sıkıştırma: yok ya da gzip. Başka değer bozuk dosyadır.
