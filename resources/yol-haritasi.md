@@ -2,7 +2,7 @@
 
 KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. 1.5.0'a kadar tamamen çevrimdışıydı; 2026-11-19'da internet gerektiren özelliklere de açılma kararı alındı ([İnternet](#temel-kararlar)). Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-22 · **Şu anki faz:** 20, KeePass içe aktarma ([#177](https://github.com/aaudraa/KeyKey/issues/177)); ardından 25, uygulama ve site eşleştirme ([#178](https://github.com/aaudraa/KeyKey/issues/178)). [1.8.2](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.2) yayında (düzeltme sürümü: ultra review'a girmeyen arayüz kodunun incelemesi, [#173](https://github.com/aaudraa/KeyKey/issues/173); kalan dört küçük bulgu [#174](https://github.com/aaudraa/KeyKey/issues/174)'te). [1.8.1](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.1) (düzeltme sürümü: projenin bütününün ultra review bulguları, [#168](https://github.com/aaudraa/KeyKey/issues/168); gömülü çerçeveye parola yazılmaması N9 gerçek Chrome'da denendi; navbar yalnızca simge, #163). [1.8.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.0) (kendi WebDAV sunucusu üzerinden uçtan uca şifreli senkron, senkrondan kurma, başka kasası olan telefonu katma; Nextcloud ile ilk deneme ve 1.4.0'dan beri gelenlerle birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
+**Son güncelleme:** 2026-11-22 · **Şu anki faz:** 20 bitti; sıradaki 25, uygulama ve site eşleştirme ([#178](https://github.com/aaudraa/KeyKey/issues/178)). [1.9.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.9.0) yayında (KeePass `.kdbx` dosyalarını doğrudan açıp içe aktarma, [#177](https://github.com/aaudraa/KeyKey/issues/177); Argon2 yerel kodda, F-Droid karşılaştırması yeşil). [1.8.2](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.2) yayında (düzeltme sürümü: ultra review'a girmeyen arayüz kodunun incelemesi, [#173](https://github.com/aaudraa/KeyKey/issues/173); kalan dört küçük bulgu [#174](https://github.com/aaudraa/KeyKey/issues/174)'te). [1.8.1](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.1) (düzeltme sürümü: projenin bütününün ultra review bulguları, [#168](https://github.com/aaudraa/KeyKey/issues/168); gömülü çerçeveye parola yazılmaması N9 gerçek Chrome'da denendi; navbar yalnızca simge, #163). [1.8.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.0) (kendi WebDAV sunucusu üzerinden uçtan uca şifreli senkron, senkrondan kurma, başka kasası olan telefonu katma; Nextcloud ile ilk deneme ve 1.4.0'dan beri gelenlerle birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
 
 > [!IMPORTANT]
 > **KeyKey 1.0 yayında.** Projenin kendi güvenlik denetimi tamamlandı, ama bağımsız bir denetim yapılmadı. Şifreli yedeğini düzenli al ve telefonun dışında da sakla.
@@ -33,12 +33,12 @@ KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uyg
 | 17 | Kartlar ve notlar için gezinme | S | 14 | `faz/17-gezinme` | Tamamlandı (1.6.0) |
 | 18 | Kilit süresi, klavye, toplu seçim, Steam Guard | M | 14 | `faz/18-kullanim-kolayligi` | Tamamlandı (1.7.0) |
 | 19 | Senkron (WebDAV; Google Drive ayrı) | XL | 16 | `faz/19-senkron` | Tamamlandı (1.8.0) |
-| 20 | KeePass (`.kdbx`) içe aktarma | L | 14 | `faz/20-keepass` | Sürüyor |
+| 20 | KeePass (`.kdbx`) içe aktarma | L | 14 | `faz/20-keepass` | Bitti (1.9.0) |
 | 21 | Passkey sağlayıcısı | XL | 15 | `faz/21-passkey` | Planlandı |
 | 22 | İşlemciye göre APK ve kendi F-Droid deposu | M | — | `faz/22-dagitim` | Planlandı |
 | 23 | KeyKey klavyesi | XL | 15 | `faz/23-klavye` | Planlandı |
 | 24 | Windows sürümü | XL | 19 | `faz/24-windows` | Planlandı |
-| 25 | Uygulama ve site eşleştirme | M | 16 | `faz/25-uygulama-site` | Planlandı (Faz 20'den sonra) |
+| 25 | Uygulama ve site eşleştirme | M | 16 | `faz/25-uygulama-site` | Sıradaki |
 
 Büyüklük göreli iş miktarını gösterir, takvim sözü değildir. Faz 4 ve 5 aynı anda ilerleyebilir. Faz 14'ten sonraki sıra ve gerekçesi [1.0 sonrası](#10-sonrası) bölümünde; dal adları faz başlayınca kesinleşir. İlerlemeyi [milestone'lardan](https://github.com/aaudraa/KeyKey/milestones) da izleyebilirsin.
 
@@ -793,7 +793,9 @@ KeePass 2, KeePassXC, KeePassDX ve Keepass2Android'in `.kdbx` dosyalarını ana 
 - [x] KeePass dosyasını aç ekranı ve önizlemeye bağlama
 - [x] Bozuk girdi testleri, cihaz testleri (Android 11 ve 17)
 - [x] Güvenlik tasarımı, bağımlılıklar, lisanslar, kılavuz, değişiklik günlüğü
-- [ ] Son gözden geçirme, 1.9.0
+- [x] Son gözden geçirme, 1.9.0
+
+Son gözden geçirme taze bir alt ajanla yapıldı: kritik bulgu yok; iki önemli bulgu (bozuk bir `otp` değerinin ekranı "açılıyor"da bırakması, çözülmüş verinin sıfırlanmayan tamponları) ve önemliye yükseltilen iki küçük bulgu (yarım inmiş KDBX 3 dosyasına "yanlış parola" denmesi, sıfırlanmayan ara anahtarlar) düzeltildi. Dosya sınırı 64'ten 32 MiB'a indi: dosya Kotlin'den Pigeon'la geçerken Java yığınında birkaç kopya oluyor. Ertelenen küçük bulgular [#180](https://github.com/aaudraa/KeyKey/issues/180)'de.
 
 Ölçümler (emülatör, x86_64): Argon2d 64 MiB, 10 geçiş, 2 şerit 0,35 saniye; AES-KDF on milyon tur 0,33 saniye (ilk Kotlin sürümü ECB ile 11,6 saniyeydi; sıfırlar üstünde CBC zinciriyle 35 kat hızlandı).
 
