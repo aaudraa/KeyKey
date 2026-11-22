@@ -1034,6 +1034,18 @@ interface ImportCryptoApi {
    * doğrulanmazsa `null` döner.
    */
   fun aesGcmDecrypt(key: ByteArray, nonce: ByteArray, cipherTextWithTag: ByteArray): ByteArray?
+  /**
+   * KeePass AES-KDF: [key] (32 bayt), [seed] anahtarıyla AES-256-ECB'den
+   * [rounds] kez geçer; dönen değer sonucun SHA-256'sı. Donanım hızlandırmalı
+   * AES; arka plan iş parçacığında.
+   */
+  fun kdbxAesKdf(key: ByteArray, seed: ByteArray, rounds: Long): ByteArray
+  /**
+   * Argon2 başvuru uygulaması (C), 32 baytlık çıktı. [type] 0 Argon2d,
+   * 2 Argon2id. Bellek ayrılamazsa `out-of-memory`, başka hata `failed`
+   * koduyla hata. Arka plan iş parçacığında.
+   */
+  fun kdbxArgon2(type: Long, password: ByteArray, salt: ByteArray, iterations: Long, memoryKiB: Long, parallelism: Long, version: Long, secret: ByteArray?, associatedData: ByteArray?): ByteArray
 
   companion object {
     /** The codec used by ImportCryptoApi. */
@@ -1044,6 +1056,7 @@ interface ImportCryptoApi {
     @JvmOverloads
     fun setUp(binaryMessenger: BinaryMessenger, api: ImportCryptoApi?, messageChannelSuffix: String = "") {
       val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      val taskQueue = binaryMessenger.makeBackgroundTaskQueue()
       run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.ImportCryptoApi.aesGcmDecrypt$separatedMessageChannelSuffix", codec)
         if (api != null) {
@@ -1054,6 +1067,50 @@ interface ImportCryptoApi {
             val cipherTextWithTagArg = args[2] as ByteArray
             val wrapped: List<Any?> = try {
               listOf(api.aesGcmDecrypt(keyArg, nonceArg, cipherTextWithTagArg))
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.ImportCryptoApi.kdbxAesKdf$separatedMessageChannelSuffix", codec, taskQueue)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val keyArg = args[0] as ByteArray
+            val seedArg = args[1] as ByteArray
+            val roundsArg = args[2] as Long
+            val wrapped: List<Any?> = try {
+              listOf(api.kdbxAesKdf(keyArg, seedArg, roundsArg))
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.ImportCryptoApi.kdbxArgon2$separatedMessageChannelSuffix", codec, taskQueue)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val typeArg = args[0] as Long
+            val passwordArg = args[1] as ByteArray
+            val saltArg = args[2] as ByteArray
+            val iterationsArg = args[3] as Long
+            val memoryKiBArg = args[4] as Long
+            val parallelismArg = args[5] as Long
+            val versionArg = args[6] as Long
+            val secretArg = args[7] as ByteArray?
+            val associatedDataArg = args[8] as ByteArray?
+            val wrapped: List<Any?> = try {
+              listOf(api.kdbxArgon2(typeArg, passwordArg, saltArg, iterationsArg, memoryKiBArg, parallelismArg, versionArg, secretArg, associatedDataArg))
             } catch (exception: Throwable) {
               PlatformApiPigeonUtils.wrapError(exception)
             }

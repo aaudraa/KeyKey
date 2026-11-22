@@ -64,6 +64,13 @@ android {
         includeInBundle = false
     }
 
+    // KeePass içe aktarmanın Argon2'si (C başvuru uygulaması).
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+        }
+    }
+
     packaging {
         resources {
             // kotlinx-coroutines'in hata ayıklama aracı dosyası; uygulamada işe yaramaz.

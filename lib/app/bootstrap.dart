@@ -25,6 +25,7 @@ import 'package:keykey/features/backup/application/auto_backup_controller.dart';
 import 'package:keykey/features/backup/application/backup_service.dart';
 import 'package:keykey/features/backup/application/restore_service.dart';
 import 'package:keykey/features/backup/data/auto_backup_device.dart';
+import 'package:keykey/features/backup/data/import/kdbx/platform_kdbx_kdf.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/onboarding/application/terms_controller.dart';
@@ -122,6 +123,7 @@ Future<List<Override>> bootstrap() async {
       ),
     ),
     aesGcmProvider.overrideWithValue(PlatformAesGcm()),
+    kdbxKdfProvider.overrideWithValue(PlatformKdbxKdf()),
     vaultServiceProvider.overrideWithValue(service),
     loginRepositoryFactoryProvider.overrideWithValue(
       (session) =>

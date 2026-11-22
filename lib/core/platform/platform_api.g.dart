@@ -944,6 +944,76 @@ class ImportCryptoApi {
     );
     return pigeonVar_replyValue as Uint8List?;
   }
+
+  /// KeePass AES-KDF: [key] (32 bayt), [seed] anahtarıyla AES-256-ECB'den
+  /// [rounds] kez geçer; dönen değer sonucun SHA-256'sı. Donanım hızlandırmalı
+  /// AES; arka plan iş parçacığında.
+  Future<Uint8List> kdbxAesKdf(
+    Uint8List key,
+    Uint8List seed,
+    int rounds,
+  ) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.ImportCryptoApi.kdbxAesKdf$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[key, seed, rounds],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as Uint8List;
+  }
+
+  /// Argon2 başvuru uygulaması (C), 32 baytlık çıktı. [type] 0 Argon2d,
+  /// 2 Argon2id. Bellek ayrılamazsa `out-of-memory`, başka hata `failed`
+  /// koduyla hata. Arka plan iş parçacığında.
+  Future<Uint8List> kdbxArgon2(
+    int type,
+    Uint8List password,
+    Uint8List salt,
+    int iterations,
+    int memoryKiB,
+    int parallelism,
+    int version,
+    Uint8List? secret,
+    Uint8List? associatedData,
+  ) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.ImportCryptoApi.kdbxArgon2$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[
+        type,
+        password,
+        salt,
+        iterations,
+        memoryKiB,
+        parallelism,
+        version,
+        secret,
+        associatedData,
+      ],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as Uint8List;
+  }
 }
 
 /// Otomatik doldurma ekranının Kotlin tarafı.

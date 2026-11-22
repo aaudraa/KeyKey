@@ -49,6 +49,9 @@ regexes = [
   '''^wpC9qFvsbWQK5Z$''',
   '''^Qh6W4Wz55YGFNU$''',
   '''^ABCD1234EFGH5678$''',
+  # KeePass içe aktarma testlerinin herkese açık deneme TOTP anahtarı
+  # (RFC 4226'daki "12345678901234567890"ın ilk 10 baytı, Base32).
+  '''^GEZDGNBVGY3TQOJQ$''',
 ]
 
 # SQLite'ın değiştirilmemiş kaynağı. "sqlite3_api->xxx" ve "iKey==xxx" gibi C
