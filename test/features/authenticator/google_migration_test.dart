@@ -162,6 +162,9 @@ void main() {
       'otpauth-migration://offline': 'data yok',
       'otpauth-migration://offline?data=': 'boş data',
       'otpauth-migration://offline?data=%ZZ': 'kodlama',
+      // int.tryParse işareti kabul eder; -1 karakter kodu RangeError verirdi.
+      'otpauth-migration://offline?data=%-1AAA': 'işaretli kodlama',
+      'otpauth-migration://offline?data=%+1AAA': 'artı işaretli kodlama',
       'otpauth-migration://offline?data=!!!!': 'Base64',
       'otpauth-migration://offline?data=CgU&data=CgU': 'iki data',
       // Alan 1, uzunluk 100 ama veri yok.

@@ -34,15 +34,18 @@ abstract final class GoogleMigration {
 
   /// Yüzde kodlamasını çözer ve Base64'ü hoşgörüyle okur: URL'ye uygun
   /// alfabe, eksik dolgu ve `+` yerine boşluk kabul edilir.
+  static final _hexPair = RegExp(r'^[0-9a-fA-F]{2}$');
+
   static Uint8List _base64(String text) {
     final decoded = StringBuffer();
     for (var i = 0; i < text.length; i++) {
       final char = text[i];
       if (char == '%') {
         if (i + 2 >= text.length) _fail('Geçersiz kodlama.');
-        final value = int.tryParse(text.substring(i + 1, i + 3), radix: 16);
-        if (value == null) _fail('Geçersiz kodlama.');
-        decoded.writeCharCode(value);
+        final digits = text.substring(i + 1, i + 3);
+        // int.tryParse işaret de kabul eder ("-1"); yalnız iki onaltılık hane.
+        if (!_hexPair.hasMatch(digits)) _fail('Geçersiz kodlama.');
+        decoded.writeCharCode(int.parse(digits, radix: 16));
         i += 2;
       } else {
         decoded.write(char);
