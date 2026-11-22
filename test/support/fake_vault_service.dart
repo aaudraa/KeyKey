@@ -35,6 +35,7 @@ import 'package:keykey/features/autofill/application/autofill_setup.dart';
 import 'package:keykey/features/backup/application/auto_backup_controller.dart';
 import 'package:keykey/features/backup/application/backup_service.dart';
 import 'package:keykey/features/backup/application/restore_service.dart';
+import 'package:keykey/features/backup/data/import/kdbx/platform_kdbx_kdf.dart';
 import 'package:keykey/features/generator/data/wordlists.dart';
 import 'package:keykey/features/lock/application/lock_clock.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
@@ -51,6 +52,7 @@ import 'package:keykey/features/vault/data/vault_record_repository.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../core/storage/test_data.dart';
+import 'dart_kdbx_kdf.dart';
 import 'vector_aes_gcm.dart';
 
 /// Ekran testleri için anında yanıt veren kasa servisi. Argon2id çalıştırmaz.
@@ -551,6 +553,12 @@ class FakeDocumentFiles implements DocumentFiles {
   DocumentSaveResult nextSave = DocumentSaveResult.saved;
   DocumentOpenResult nextOpen = const DocumentOpenCancelled();
 
+  /// Doluysa sıradaki seçimler bunlardan, sırayla; boşalınca [nextOpen].
+  final queuedOpens = <DocumentOpenResult>[];
+
+  /// Son seçimde istenen en büyük boyut.
+  int? lastMaxBytes;
+
   /// Son kaydedilen dosyanın adı ve baytlarının kopyası.
   String? savedName;
   String? savedMimeType;
@@ -583,8 +591,9 @@ class FakeDocumentFiles implements DocumentFiles {
     required int maxBytes,
   }) async {
     opens++;
+    lastMaxBytes = maxBytes;
     gateWasActive = readGate?.call();
-    return nextOpen;
+    return queuedOpens.isEmpty ? nextOpen : queuedOpens.removeAt(0);
   }
 }
 
@@ -990,6 +999,7 @@ Future<void> pumpKeyKey(
         ),
         backupFoldersProvider.overrideWithValue(folders ?? FakeBackupFolders()),
         autoBackupDeviceProvider.overrideWithValue('a1b2c3'),
+        kdbxKdfProvider.overrideWithValue(const DartKdbxKdf()),
         backupServiceProvider.overrideWithValue(backups ?? FakeBackupService()),
         restoreServiceProvider.overrideWithValue(
           restores ?? FakeRestoreService(service.sodium),

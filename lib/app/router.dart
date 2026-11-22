@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -12,6 +14,7 @@ import 'package:keykey/features/authenticator/presentation/otp_import_screen.dar
 import 'package:keykey/features/authenticator/presentation/otp_trash_screen.dart';
 import 'package:keykey/features/authenticator/presentation/qr_scan_screen.dart';
 import 'package:keykey/features/backup/data/import/login_import.dart';
+import 'package:keykey/features/backup/presentation/keepass_open_screen.dart';
 import 'package:keykey/features/backup/presentation/login_import_screen.dart';
 import 'package:keykey/features/backup/presentation/restore_screen.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
@@ -63,6 +66,7 @@ abstract final class AppRoutes {
   static const syncJoin = '/ayarlar/senkron-kat';
   static const newRecoveryKey = '/ayarlar/kurtarma-anahtari';
   static const loginImport = '/ayarlar/ice-aktar';
+  static const keepassOpen = '/ayarlar/keepass';
   static const licenses = '/ayarlar/lisanslar';
   static const settingsTerms = '/ayarlar/kosullar';
   static const licensesAll = '/ayarlar/lisanslar/tum';
@@ -472,6 +476,16 @@ final routerProvider = Provider<GoRouter>((ref) {
                         state.extra is LoginExport ? null : AppRoutes.settings,
                     builder: (context, state) =>
                         LoginImportScreen(export: state.extra! as LoginExport),
+                  ),
+                  kkRoute(
+                    parentNavigatorKey: rootNavigatorKey,
+                    path: 'keepass',
+                    // KeePass dosyası yalnızca bellekte, ekrana doğrudan
+                    // verilir; yoksa ayarlara dönülür.
+                    redirect: (context, state) =>
+                        state.extra is Uint8List ? null : AppRoutes.settings,
+                    builder: (context, state) =>
+                        KeepassOpenScreen(file: state.extra! as Uint8List),
                   ),
                   kkRoute(
                     parentNavigatorKey: rootNavigatorKey,

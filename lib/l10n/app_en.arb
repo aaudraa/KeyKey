@@ -2055,7 +2055,7 @@
   "@loginImportTitle": {
     "description": "Settings tile and screen title for importing passwords."
   },
-  "loginImportHelp": "Bitwarden, Chrome, Firefox or KeePassXC export file",
+  "loginImportHelp": "Bitwarden, Chrome, Firefox or KeePassXC export, or a KeePass file (.kdbx)",
   "@loginImportHelp": {
     "description": "Subtitle of the password import tile."
   },
@@ -2067,7 +2067,7 @@
   "@otpImportSettingsHelp": {
     "description": "Subtitle of the 2FA import tile in settings."
   },
-  "loginImportUnknown": "This file was not recognised. Choose a Bitwarden (JSON or CSV), Chrome (CSV), Firefox (CSV) or KeePassXC (CSV) export.",
+  "loginImportUnknown": "This file was not recognised. Choose a Bitwarden (JSON or CSV), Chrome (CSV), Firefox (CSV) or KeePassXC (CSV) export, or a KeePass file (.kdbx).",
   "@loginImportUnknown": {
     "description": "Error when the import file format is unknown."
   },
@@ -2154,6 +2154,89 @@
   "loginImportDeleteOk": "OK",
   "@loginImportDeleteOk": {
     "description": "Closes the delete reminder."
+  },
+  "keepassOpenTitle": "Open KeePass file",
+  "@keepassOpenTitle": {
+    "description": "Title of the screen that opens a KeePass .kdbx file."
+  },
+  "keepassOpenIntro": "This file is encrypted by KeePass. Enter the master password you use in KeePass and, if you have one, the key file. Neither is saved anywhere.",
+  "@keepassOpenIntro": {
+    "description": "Introduction on the KeePass open screen."
+  },
+  "keepassPassword": "Master password",
+  "@keepassPassword": {
+    "description": "Label of the KeePass master password field."
+  },
+  "keepassKeyFile": "Choose key file",
+  "@keepassKeyFile": {
+    "description": "Button that picks a KeePass key file."
+  },
+  "keepassKeyFileChosen": "Key file chosen",
+  "@keepassKeyFileChosen": {
+    "description": "Shown after a key file was picked; the picker does not give the file name."
+  },
+  "keepassKeyFileRemove": "Remove key file",
+  "@keepassKeyFileRemove": {
+    "description": "Tooltip of the button that forgets the chosen key file."
+  },
+  "keepassOpen": "Open",
+  "@keepassOpen": {
+    "description": "Button that opens the KeePass file."
+  },
+  "keepassOpening": "Opening… KeePass files open slowly on purpose, to slow down password guessing.",
+  "@keepassOpening": {
+    "description": "Progress text while the KeePass key is derived."
+  },
+  "keepassWrongKey": "The password or key file is wrong. If the file is protected with a YubiKey or a Windows account, KeyKey cannot open it.",
+  "@keepassWrongKey": {
+    "description": "Error under the password field."
+  },
+  "keepassUnsupported": "This KeePass file uses a setting KeyKey does not support: {what}",
+  "@keepassUnsupported": {
+    "description": "Error for an unsupported cipher, key derivation or version.",
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+  "keepassOld": "This is an old KeePass format (KeePass 1). Open it in KeePass 2 or KeePassXC, save it again, then choose the new file.",
+  "@keepassOld": {
+    "description": "Shown when a KeePass 1 .kdb file is chosen."
+  },
+  "keepassTooHeavy": "This file is set up too heavily to open on a phone (key derivation memory, rounds or file size).",
+  "@keepassTooHeavy": {
+    "description": "Error when key derivation parameters or size exceed the phone limits."
+  },
+  "keepassOutOfMemory": "The phone does not have enough memory to open this file.",
+  "@keepassOutOfMemory": {
+    "description": "Error when Argon2 cannot allocate memory."
+  },
+  "keepassCorrupt": "The file is damaged or has been modified.",
+  "@keepassCorrupt": {
+    "description": "Error for a damaged KeePass file."
+  },
+  "keepassKeyFileCorrupt": "The key file is damaged.",
+  "@keepassKeyFileCorrupt": {
+    "description": "Error for a damaged key file."
+  },
+  "loginImportAttachments": "{count, plural, =1{The attachments of 1 entry were not imported; KeyKey has no file attachments.} other{The attachments of {count} entries were not imported; KeyKey has no file attachments.}}",
+  "@loginImportAttachments": {
+    "description": "Notice in the import list for KeePass entries with attachments.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "loginImportRecycleBin": "{count, plural, =1{1 entry in the recycle bin was not imported.} other{{count} entries in the recycle bin were not imported.}}",
+  "@loginImportRecycleBin": {
+    "description": "Notice in the import list for KeePass entries in the recycle bin.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "exportTitle": "Export unencrypted",
   "@exportTitle": {
