@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -780,6 +780,25 @@ void main() {
       await tester.pump(const Duration(minutes: 1, seconds: 1));
       await tester.pumpAndSettle();
       expect(find.text(lockedTitle), findsOneWidget);
+    });
+
+    testWidgets('klavyeyle kesmek de süreyi yeniden başlatıyor', (
+      tester,
+    ) async {
+      await pumpOpen(tester);
+      final search = find.widgetWithText(TextField, 'Ara');
+      await tester.enterText(search, 'posta');
+      await tester.pump(const Duration(minutes: 4));
+      tester.widget<TextField>(search).controller!.selection =
+          const TextSelection(baseOffset: 0, extentOffset: 5);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyX);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await tester.pump(const Duration(minutes: 4));
+      await tester.pump();
+
+      expect(find.text(lockedTitle), findsNothing);
+      expect(tester.widget<TextField>(search).controller!.text, isEmpty);
     });
 
     testWidgets('kilitten sonra kasa ekranına doğrudan dönülemiyor', (

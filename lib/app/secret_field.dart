@@ -170,6 +170,13 @@ class _SecretFieldState extends ConsumerState<SecretField> {
     );
   }
 
+  void _changed(String value) {
+    // Yazmak (klavyeyle kesmek de) kullanım sayılır, otomatik kilit süresi
+    // yenilenir.
+    AutoLockScope.reportActivity(context);
+    widget.onChanged?.call(value);
+  }
+
   /// Donanım klavyesiyle kopyalama ve kesme; menüdeki gibi hassas panoya.
   /// Gizli parola görünmüyorken bir şey yapmaz, Flutter da kopyalamaz.
   void _copyByKeyboard({required bool cut}) {
@@ -185,7 +192,7 @@ class _SecretFieldState extends ConsumerState<SecretField> {
             selection.textBefore(value.text) + selection.textAfter(value.text),
         selection: TextSelection.collapsed(offset: selection.start),
       );
-      widget.onChanged?.call(controller.text);
+      _changed(controller.text);
     }
     unawaited(copySensitive(context, ref, selected));
   }
@@ -230,11 +237,7 @@ class _SecretFieldState extends ConsumerState<SecretField> {
       smartDashesType: SmartDashesType.disabled,
       smartQuotesType: SmartQuotesType.disabled,
       onSubmitted: widget.onSubmitted,
-      onChanged: (value) {
-        // Yazmak da kullanım sayılır, otomatik kilit süresi yenilenir.
-        AutoLockScope.reportActivity(context);
-        widget.onChanged?.call(value);
-      },
+      onChanged: _changed,
       decoration: InputDecoration(
         labelText: widget.search ? null : widget.label,
         hintText: widget.search ? widget.label : null,

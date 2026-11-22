@@ -221,10 +221,7 @@ void main() {
     await longPress(tester, 'Posta');
     await tester.tap(find.byTooltip('Klasöre taşı'));
     await tester.pumpAndSettle();
-    await tester.enterText(
-      find.widgetWithText(TextField, 'Yeni klasör'),
-      'iş',
-    );
+    await tester.enterText(find.widgetWithText(TextField, 'Yeni klasör'), 'iş');
     await tester.pump();
     await tester.tap(find.text('Taşı'));
     await tester.pumpAndSettle();
