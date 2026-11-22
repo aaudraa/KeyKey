@@ -44,6 +44,9 @@ class _NewRecoveryKeyScreenState extends ConsumerState<NewRecoveryKeyScreen> {
   bool _busy = false;
   String? _error;
 
+  /// Yeni anahtar kaydedildi; ekran artık sormadan kapanır.
+  bool _saved = false;
+
   /// Doğrulama sürüyor: kilit bu sırada gelirse sonuç yazmanın bitip
   /// bitmediğine bağlı, işareti doğrulamanın sonucu koyar.
   bool _confirming = false;
@@ -69,6 +72,7 @@ class _NewRecoveryKeyScreenState extends ConsumerState<NewRecoveryKeyScreen> {
       _interrupted.mark();
     }
     _pending = null;
+    _password.clear();
     _typedKey.clear();
   }
 
@@ -139,6 +143,7 @@ class _NewRecoveryKeyScreenState extends ConsumerState<NewRecoveryKeyScreen> {
     try {
       await _vault.confirmNewRecoveryKey(pending, _typedKey.text);
       _confirming = false;
+      _saved = true;
       // En yeni otomatik yedek yeni anahtarla açılsın; bu sırada kilitlendiyse
       // kasa açılınca yazılır. Kapalıysa bir şey yapmaz.
       unawaited(autoBackup.backUpNowOrOnOpen());
@@ -193,7 +198,27 @@ class _NewRecoveryKeyScreenState extends ConsumerState<NewRecoveryKeyScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     // Doğrulama sürerken çıkılmaz: yazma bitince sonuç ekranda söylenir.
-    return PopScope(canPop: !_busy, child: _scaffold(l10n));
+    // Anahtar gösterildiyse çıkmadan önce sorulur: not alınan anahtar
+    // doğrulanmadan geçerli olmaz.
+    final unsaved = _pending != null && !_saved;
+    return PopScope(
+      canPop: !_busy && !unsaved,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop || _busy || !unsaved) return;
+        final leave = await showKkConfirm(
+          context,
+          title: l10n.newRecoveryLeaveTitle,
+          message: l10n.newRecoveryLeaveBody,
+          confirmLabel: l10n.newRecoveryLeave,
+          cancelLabel: l10n.newRecoveryStay,
+          destructive: true,
+        );
+        if (!leave || !mounted) return;
+        setState(() => _pending = null);
+        context.pop();
+      },
+      child: _scaffold(l10n),
+    );
   }
 
   Widget _scaffold(AppLocalizations l10n) {

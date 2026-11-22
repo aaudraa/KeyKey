@@ -611,6 +611,29 @@ void main() {
     },
   );
 
+  testWidgets('kilitte yazılan parolalar alanlardan hemen siliniyor', (
+    tester,
+  ) async {
+    // Arka planda kare çizilmez; ekran ancak öne gelince kapanır. Parolalar
+    // o ana kadar alanlarda kalmamalı.
+    await openChangePassword(tester);
+    final fields = find.byType(TextField);
+    await tester.enterText(fields.at(0), FakeVaultService.correctPassword);
+    await tester.enterText(fields.at(1), newPassword);
+    await tester.enterText(fields.at(2), newPassword);
+    final controllers = [
+      for (var i = 0; i < 3; i++)
+        tester.widget<TextField>(fields.at(i)).controller!,
+    ];
+
+    ProviderScope.containerOf(tester.element(fields.first))
+        .read(vaultControllerProvider.notifier)
+        .lock();
+
+    expect(controllers.map((c) => c.text), everyElement(isEmpty));
+    await tester.pumpAndSettle();
+  });
+
   testWidgets('mevcut parola yanlışsa değişmiyor', (tester) async {
     await openChangePassword(tester);
 

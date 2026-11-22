@@ -41,8 +41,26 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
   Duration _wait = Duration.zero;
   late final _countdown = WaitCountdown((left) => setState(() => _wait = left));
 
+  late final VaultController _vault;
+
+  @override
+  void initState() {
+    super.initState();
+    _vault = ref.read(vaultControllerProvider.notifier)
+      ..addLockListener(_onLock);
+  }
+
+  /// Arka planda kare çizilmez, ekran ancak öne gelince kapanır; yazılan
+  /// parolalar o ana kadar alanlarda kalmasın.
+  void _onLock() {
+    _current.clear();
+    _password.clear();
+    _confirmation.clear();
+  }
+
   @override
   void dispose() {
+    _vault.removeLockListener(_onLock);
     _countdown.dispose();
     _current.dispose();
     _password.dispose();
