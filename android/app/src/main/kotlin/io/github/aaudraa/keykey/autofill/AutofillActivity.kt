@@ -13,6 +13,7 @@ import android.widget.Toast
 import io.flutter.embedding.android.FlutterActivityLaunchConfigs.BackgroundMode
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
+import io.github.aaudraa.keykey.AppDomain
 import io.github.aaudraa.keykey.AppPackages
 import io.github.aaudraa.keykey.AppPackagesApi
 import io.github.aaudraa.keykey.AutofillApi
@@ -103,6 +104,9 @@ class AutofillActivity : FlutterFragmentActivity(), AutofillApi {
 
     override fun hasSigningCertificates(packageName: String, certsSha256: List<String>): Boolean =
         SigningCerts.hasAll(packageManager, packageName, certsSha256)
+
+    override fun appDomains(packageName: String): List<AppDomain> =
+        AppDomains.of(this, packageName)
 
     override fun fill(username: String, password: String, notice: String) {
         val form = parsed

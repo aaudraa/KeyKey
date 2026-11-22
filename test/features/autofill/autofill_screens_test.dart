@@ -35,9 +35,12 @@ import '../../support/fake_vault_service.dart';
 
 /// Android tarafının yerine geçer; doldurulanı ve kapatılmayı kaydeder.
 class FakeAutofillBridge implements AutofillBridge {
-  new(this.target);
+  new(this.target, {this.domains = const []});
 
   final AutofillTarget? target;
+
+  /// Uygulamanın bildirdiği alan adları ve doğrulama durumu.
+  final List<AppDomain> domains;
   ({String username, String password})? filled;
   String? notice;
   int fillCount = 0;
@@ -54,6 +57,10 @@ class FakeAutofillBridge implements AutofillBridge {
   ) async =>
       packageName == target?.packageName &&
       certs.every(target!.certsSha256.contains);
+
+  @override
+  Future<List<AppDomain>> appDomains(String packageName) async =>
+      packageName == target?.packageName ? domains : const [];
 
   @override
   Future<void> fill({

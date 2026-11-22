@@ -108,6 +108,16 @@ abstract class ImportCryptoApi {
   );
 }
 
+/// Uygulamanın manifestinde `autoVerify` ile bildirdiği bir `https` alan
+/// adı. [verified] yalnızca sistem alan adını doğruladıysa
+/// (`DOMAIN_STATE_VERIFIED`) doğrudur. Joker `*.` ile başlar.
+class AppDomain {
+  AppDomain({required this.host, required this.verified});
+
+  String host;
+  bool verified;
+}
+
 /// Doldurma ekranını açan isteğin, kasaya bakmadan bilinen özeti.
 ///
 /// Kurallar güvenlik tasarımı belgesinin Otomatik doldurma bölümündedir.
@@ -192,6 +202,10 @@ abstract class AutofillApi {
   /// Kayıtların uygulamaya bağlanabilmesi için verilen paketin imzası
   /// kayıttaki özetlerin hepsiyle tutuyor mu. İmza geçmişi de kabul edilir.
   bool hasSigningCertificates(String packageName, List<String> certsSha256);
+
+  /// [packageName]'in bildirdiği alan adları ve sistemin doğrulama durumu
+  /// (Android 12+). Daha eski sürümde ya da okunamazsa boş.
+  List<AppDomain> appDomains(String packageName);
 
   /// Değerleri forma verir, [notice] bildirimini gösterir ve ekranı kapatır.
   void fill(String username, String password, String notice);

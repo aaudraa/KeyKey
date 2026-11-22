@@ -397,6 +397,53 @@ data class BiometricUnwrapResult (
 }
 
 /**
+ * Uygulamanın manifestinde `autoVerify` ile bildirdiği bir `https` alan
+ * adı. [verified] yalnızca sistem alan adını doğruladıysa
+ * (`DOMAIN_STATE_VERIFIED`) doğrudur. Joker `*.` ile başlar.
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class AppDomain (
+  val host: String,
+  val verified: Boolean
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): AppDomain {
+      val host = pigeonVar_list[0] as String
+      val verified = pigeonVar_list[1] as Boolean
+      return AppDomain(host, verified)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      host,
+      verified,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as AppDomain
+    return PlatformApiPigeonUtils.deepEquals(this.host, other.host) && PlatformApiPigeonUtils.deepEquals(this.verified, other.verified)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.host)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.verified)
+    return result
+  }
+  override fun toString(): String {
+    return "AppDomain(host=$host, verified=$verified)"
+  }
+}
+
+/**
  * Doldurma ekranını açan isteğin, kasaya bakmadan bilinen özeti.
  *
  * Kurallar güvenlik tasarımı belgesinin Otomatik doldurma bölümündedir.
@@ -788,30 +835,35 @@ private open class PlatformApiPigeonCodec : StandardMessageCodec() {
       }
       136.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          AutofillRequestInfo.fromList(it)
+          AppDomain.fromList(it)
         }
       }
       137.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          AutofillSaveValues.fromList(it)
+          AutofillRequestInfo.fromList(it)
         }
       }
       138.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          CardFillValues.fromList(it)
+          AutofillSaveValues.fromList(it)
         }
       }
       139.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          AutofillSetupStatus.fromList(it)
+          CardFillValues.fromList(it)
         }
       }
       140.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          DocumentResult.fromList(it)
+          AutofillSetupStatus.fromList(it)
         }
       }
       141.toByte() -> {
+        (readValue(buffer) as? List<Any?>)?.let {
+          DocumentResult.fromList(it)
+        }
+      }
+      142.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
           FolderPickResult.fromList(it)
         }
@@ -849,28 +901,32 @@ private open class PlatformApiPigeonCodec : StandardMessageCodec() {
         stream.write(135)
         writeValue(stream, value.toList())
       }
-      is AutofillRequestInfo -> {
+      is AppDomain -> {
         stream.write(136)
         writeValue(stream, value.toList())
       }
-      is AutofillSaveValues -> {
+      is AutofillRequestInfo -> {
         stream.write(137)
         writeValue(stream, value.toList())
       }
-      is CardFillValues -> {
+      is AutofillSaveValues -> {
         stream.write(138)
         writeValue(stream, value.toList())
       }
-      is AutofillSetupStatus -> {
+      is CardFillValues -> {
         stream.write(139)
         writeValue(stream, value.toList())
       }
-      is DocumentResult -> {
+      is AutofillSetupStatus -> {
         stream.write(140)
         writeValue(stream, value.toList())
       }
-      is FolderPickResult -> {
+      is DocumentResult -> {
         stream.write(141)
+        writeValue(stream, value.toList())
+      }
+      is FolderPickResult -> {
+        stream.write(142)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -1136,6 +1192,11 @@ interface AutofillApi {
    * kayıttaki özetlerin hepsiyle tutuyor mu. İmza geçmişi de kabul edilir.
    */
   fun hasSigningCertificates(packageName: String, certsSha256: List<String>): Boolean
+  /**
+   * [packageName]'in bildirdiği alan adları ve sistemin doğrulama durumu
+   * (Android 12+). Daha eski sürümde ya da okunamazsa boş.
+   */
+  fun appDomains(packageName: String): List<AppDomain>
   /** Değerleri forma verir, [notice] bildirimini gösterir ve ekranı kapatır. */
   fun fill(username: String, password: String, notice: String)
   /**
@@ -1181,6 +1242,23 @@ interface AutofillApi {
             val certsSha256Arg = args[1] as List<String>
             val wrapped: List<Any?> = try {
               listOf(api.hasSigningCertificates(packageNameArg, certsSha256Arg))
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.AutofillApi.appDomains$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val packageNameArg = args[0] as String
+            val wrapped: List<Any?> = try {
+              listOf(api.appDomains(packageNameArg))
             } catch (exception: Throwable) {
               PlatformApiPigeonUtils.wrapError(exception)
             }
