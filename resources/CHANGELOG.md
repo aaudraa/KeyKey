@@ -2,6 +2,29 @@
 
 KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesinde](docs/yayin.md#sürüm-numarası). `v1.0.0`'dan önceki sürümler fazların sonunu işaretler ve hata ayıklama anahtarıyla imzalıdır; kalıcı bir kurulum için kullanılmamalıdır.
 
+## 1.8.2 (2026-11-22): Arayüz incelemesi
+
+1.8.1'deki incelemeye girmeyen arayüz kodu (kasa, 2FA, uygulama kabuğu, ayarlar ve ilk kurulum) incelendi; bulgular ve kararlar [#173](https://github.com/aaudraa/KeyKey/issues/173)'te. Her düzeltme önce bulguyu gösteren bir testle doğrulandı. Yedek biçimi ve veritabanı şeması değişmedi.
+
+### Güvenlik
+
+- **Donanım klavyesiyle kopyalama da hassas panodan geçiyor.** Bluetooth klavye, DeX ya da Chromebook'ta Ctrl+C / Ctrl+X ile kopyalanan parola ve not 30 saniye sonra silinmiyor, klavyenin pano geçmişine düşüyordu.
+- **İçe aktarılan 2FA hesaplarının adlarında yön ve denetim karakterleri atılıyor.** Google, Aegis ya da 2FAS'tan gelen bir ad, metni ters çeviren işaretle başka bir servis gibi görünebiliyordu.
+- Kasa kilitlenince parola değiştirme ve kurtarma anahtarı ekranlarında yazılan parolalar hemen siliniyor.
+
+### Düzeltilenler
+
+- **Android 14+ kenardan geri hareketi yalnızca en üstteki sayfayı kapatıyor.** Öteki sekmedeki ya da formun altındaki sayfa da kapanıyor, değişmiş formda "değişiklikler silinsin mi" sorusu atlanıyordu.
+- **Senkron ya da öne gelme sırasında yapılan değişiklik kaybolmuyor.** Kart ve not formu açıkken gelen değişikliği (yeni PIN, çöpe atma) ezmiyor; liste yeniden okunurken kaydedilen değişiklik ekrandan silinip sonra eski haliyle geri yazılmıyor.
+- **Kasa dosyası okunamazsa uygulama açılış ekranında donmuyor**, hata ekranı geliyor.
+- Parola değişirken ekrandan çıkılmıyor; sonuç ve eski yedeklerle ilgili not her zaman gösteriliyor.
+- Gösterilen yeni kurtarma anahtarından doğrulamadan çıkmadan önce soruluyor; eski anahtarın geçerli kaldığı söyleniyor.
+- Bozuk bir Google Authenticator QR'ı tarayıcıyı dondurmuyor; scrypt parametre sınırı çok büyük değerlerde taşmıyor.
+- Düzenlenen HOTP hesabında eski kod gösterilmiyor; aynı içe aktarmada aynı anahtar bir kez ekleniyor.
+- Kart, not ve toplu taşımada "iş" yazılınca "İş"in yanına ikinci klasör açılmıyor; klasör adının harf büyüklüğü yeniden okumadan sonra da düzeltilebiliyor.
+- Çöpü boşaltırken ya da kayıt sürerken ekrandan çıkılınca işlem yarıda kalmıyor.
+- "+" kutusu yatay ekranda ve büyük yazıda ekrana sığıyor; "⋮" menüsü sekme değişince açık kalmıyor.
+
 ## 1.8.1 (2026-11-22): Düzeltmeler
 
 Projenin bütünü ultra review ile incelendi; bulgular ve kararlar [#168](https://github.com/aaudraa/KeyKey/issues/168)'de. Her düzeltme önce bulguyu gösteren bir testle doğrulandı. Yedek biçimi ve veritabanı şeması değişmedi; 1.8.0 ile aynı yedekler.

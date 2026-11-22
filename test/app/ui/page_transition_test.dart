@@ -15,6 +15,18 @@ void main() {
     }
   });
 
+  test('geçiş süresi tahmini geri geçişininki gibi kalıyor', () {
+    // S1 düzeltmesi geçişi değiştirmemeli; MaterialPage süreyi temadaki
+    // kurucudan alır.
+    const predictive = PredictiveBackPageTransitionsBuilder();
+    const builder = RootPredictiveBackTransitions();
+    expect(builder.transitionDuration, predictive.transitionDuration);
+    expect(
+      builder.reverseTransitionDuration,
+      predictive.reverseTransitionDuration,
+    );
+  });
+
   testWidgets('yeni sayfa sağdan kayarak açılır', (tester) async {
     await tester.pumpWidget(
       MaterialApp(

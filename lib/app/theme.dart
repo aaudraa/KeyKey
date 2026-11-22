@@ -302,6 +302,14 @@ class RootPredictiveBackTransitions extends PageTransitionsBuilder {
   static const _predictive = PredictiveBackPageTransitionsBuilder();
   static const _plain = FadeForwardsPageTransitionsBuilder();
 
+  // Süre her sayfada aynı kalır; MaterialPage bunu kurucudan okur.
+  @override
+  Duration get transitionDuration => _predictive.transitionDuration;
+
+  @override
+  Duration get reverseTransitionDuration =>
+      _predictive.reverseTransitionDuration;
+
   @override
   Widget buildTransitions<T>(
     PageRoute<T> route,
