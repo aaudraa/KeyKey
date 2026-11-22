@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/features/backup/application/backup_reminder.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
+import 'package:keykey/features/vault/application/records_controller.dart';
+import 'package:keykey/features/vault/data/card_content.dart';
+import 'package:keykey/features/vault/data/note_content.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../../support/fake_vault_service.dart';
@@ -149,6 +153,35 @@ void main() {
       expect(documents.saves, 1);
       expect(settings.settings.lastBackupAt, now);
       expect(find.text(staleText), findsNothing);
+    });
+
+    testWidgets('yalnızca kart eklenince de hatırlatılıyor', (tester) async {
+      // K1: hatırlatıcı yalnızca parola ve 2FA listelerini dinliyordu.
+      await pump(tester);
+      expect(find.text(neverText), findsNothing);
+
+      backups.latest = DateTime(2026, 11, 20, 11);
+      await ProviderScope.containerOf(
+        tester.element(find.byType(Scaffold).first),
+      ).read(cardsControllerProvider.notifier).addAll([
+        CardContent(name: 'Banka kartı', number: '4111111111111111'),
+      ]);
+      await tester.pumpAndSettle();
+
+      expect(find.text(neverText), findsOneWidget);
+    });
+
+    testWidgets('yalnızca not eklenince de hatırlatılıyor', (tester) async {
+      await pump(tester);
+      backups.latest = DateTime(2026, 11, 20, 11);
+      await ProviderScope.containerOf(
+            tester.element(find.byType(Scaffold).first),
+          )
+          .read(notesControllerProvider.notifier)
+          .addAll([NoteContent(name: 'Wi-Fi', text: 'parola')]);
+      await tester.pumpAndSettle();
+
+      expect(find.text(neverText), findsOneWidget);
     });
 
     testWidgets('yeni yedekte görünmüyor', (tester) async {

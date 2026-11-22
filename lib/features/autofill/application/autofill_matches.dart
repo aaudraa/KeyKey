@@ -25,7 +25,12 @@ final autofillMatchesProvider = FutureProvider<LoginMatches>((ref) async {
       : null;
   return await matchLogins(
     target: target,
-    items: logins.items,
+    // Çöpteki kayıt doldurulmaz, kaydetme ekranında güncellenecek kayıt
+    // olarak da önerilmez; arama çöpü zaten süzüyor.
+    items: [
+      for (final item in logins.items)
+        if (!item.content.isTrashed) item,
+    ],
     suffixes: suffixes,
     hasSigningCertificates: bridge.hasSigningCertificates,
   );

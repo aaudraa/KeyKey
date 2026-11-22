@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:drift/native.dart';
@@ -19,6 +20,13 @@ void main() {
   tearDown(() {
     directory.deleteSync(recursive: true);
   });
+
+  /// Sürüm 2 şemasının sabit dosyası.
+  String readFixtureSchema() =>
+      File('test/fixtures/storage/schema-v2.sql')
+          .readAsStringSync()
+          .replaceAll('\r\n', '\n')
+          .trim();
 
   /// Şemayı `sqlite_master`'dan sıralı ve karşılaştırılabilir biçimde okur.
   Future<String> readSchema(VaultDatabase database) async {
@@ -148,6 +156,62 @@ void main() {
       expect(await pragma(database, 'secure_delete'), 1);
       expect(await pragma(database, 'journal_mode'), 'delete');
     });
+
+    test('öteki motor yazarken ön denetim bekliyor, hemen düşmüyor', () async {
+      // Doldurma ekranı açılırken ana uygulama büyük bir yazmanın ortasında
+      // olabilir; ön denetim SQLITE_BUSY ile düşerse doldurma açılmaz.
+      sqlite.sqlite3.open(file.path)
+        ..execute(readFixtureSchema())
+        ..execute('PRAGMA user_version = 2')
+        ..close();
+      final locked = ReceivePort();
+      await Isolate.spawn(_holdExclusiveLock, (file.path, locked.sendPort));
+      await locked.first;
+
+      final database = VaultDatabase.openFile(file);
+      addTearDown(database.close);
+      expect(await database.select(database.vaultMeta).get(), isEmpty);
+    });
+
+    test(
+      'yazma ortasında ölen sürecin günlüğü açılışta geri alınıyor',
+      () async {
+        // Çökmüş bir yazmanın izini üretir: işlem sürerken veritabanı dosyası
+        // ve sıcak günlük başka bir yere kopyalanır, işlem hiç bitmemiş olur.
+        final source = File('${directory.path}/kaynak.db');
+        sqlite.sqlite3.open(source.path)
+          ..execute(readFixtureSchema())
+          ..execute('PRAGMA user_version = 2')
+          ..execute("INSERT INTO vault_meta (id, header) VALUES (1, 'eski')")
+          ..close();
+        final writer = sqlite.sqlite3.open(source.path)
+          ..execute('PRAGMA journal_mode = DELETE')
+          ..execute('PRAGMA cache_size = 2')
+          ..execute('BEGIN IMMEDIATE')
+          ..execute("UPDATE vault_meta SET header = 'yarım' WHERE id = 1");
+        for (var i = 0; i < 200; i++) {
+          writer.execute(
+            'INSERT INTO records (id, type, blob, created_at, updated_at) '
+            "VALUES (randomblob(16), 'login', randomblob(1000), 1, 2)",
+          );
+        }
+        final journal = File('${source.path}-journal');
+        expect(journal.existsSync(), isTrue);
+        source.copySync(file.path);
+        journal.copySync('${file.path}-journal');
+        writer
+          ..execute('ROLLBACK')
+          ..close();
+
+        final database = VaultDatabase.openFile(file);
+        addTearDown(database.close);
+        final row = await database.select(database.vaultMeta).getSingle();
+
+        expect(row.header, 'eski');
+        expect(await database.select(database.records).get(), isEmpty);
+        expect(File('${file.path}-journal').existsSync(), isFalse);
+      },
+    );
   });
 
   group('kurallar veritabanında da zorlanıyor', () {
@@ -229,4 +293,16 @@ void main() {
       );
     });
   });
+}
+
+/// Ayrı bir isolate'te dosyayı yarım saniye özel kilitte tutar; kilit
+/// alınınca haber verir.
+void _holdExclusiveLock((String, SendPort) args) {
+  final (path, locked) = args;
+  final database = sqlite.sqlite3.open(path)..execute('BEGIN EXCLUSIVE');
+  locked.send(null);
+  sleep(const Duration(milliseconds: 500));
+  database
+    ..execute('COMMIT')
+    ..close();
 }

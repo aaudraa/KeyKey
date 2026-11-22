@@ -165,6 +165,22 @@ void main() {
       });
     }
 
+    test('adı UTF-8 olmayan başka bir dosya listeyi bozmuyor', () async {
+      // N7: Latin-1 bir sistemden gelen "café.txt" (caf%E9) çözülürken
+      // FormatException fırlıyor, kurulum ve senkron kalıcı olarak düşüyordu.
+      dav.propfindBody = '''
+<?xml version="1.0"?>
+<d:multistatus xmlns:d="DAV:">
+<d:response><d:href>/dav/Key%20Kasa/</d:href><d:propstat><d:prop><d:resourcetype><d:collection/></d:resourcetype></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response>
+<d:response><d:href>/dav/Key%20Kasa/caf%E9.txt</d:href><d:propstat><d:prop><d:resourcetype/><d:getcontentlength>3</d:getcontentlength></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response>
+<d:response><d:href>/dav/Key%20Kasa/keykey-sync-a1b2c3.keykey</d:href><d:propstat><d:prop><d:resourcetype/><d:getcontentlength>200</d:getcontentlength></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response>
+</d:multistatus>''';
+
+      final files = await client().list();
+
+      expect([for (final f in files) f.name], ['keykey-sync-a1b2c3.keykey']);
+    });
+
     test('klasör yoksa oluşturuluyor', () async {
       dav.folderExists = false;
       await client().ensureFolder();

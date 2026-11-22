@@ -124,15 +124,16 @@ LoginImportPlan planLoginImport(
       otp = otpFromImport(totp, issuer: login.name, account: login.username);
       if (otp == null) skippedOtps++;
     }
-    // Aynı dosyada aynı anahtar ikinci kez geçerse o da eklenmez.
+    // Yalnızca kasadaki anahtar sayılır. Dosyada iki kez geçen anahtarı
+    // hangisinin taşıyacağı seçime bağlı; kaydederken [importedOtps] seçer.
     final otpAlreadySaved =
-        otp != null && !secrets.add(_secretKey(otp.parameters.secret));
+        otp != null && secrets.contains(_secretKey(otp.parameters.secret));
+    // Kasadaki her girişle karşılaştırılır; bir kez hesaplanır.
+    final fingerprint = _fingerprint(content);
     candidates.add(
       LoginImportCandidate(
         content: content,
-        duplicate: known.any(
-          (fingerprint) => fingerprint.matches(_fingerprint(content)),
-        ),
+        duplicate: known.any((other) => other.matches(fingerprint)),
         otp: otp,
         otpAlreadySaved: otpAlreadySaved,
       ),
@@ -162,6 +163,23 @@ LoginImportPlan planLoginImport(
     skipped: export.skipped,
     skippedOtps: skippedOtps,
   );
+}
+
+/// Seçilen adayların 2FA hesapları, sırasıyla eklenen kayıtlara ([loginIds])
+/// bağlı. Kasada zaten olan anahtar eklenmez; seçilenler arasında aynı anahtar
+/// bir kez, ilk seçilenle eklenir.
+List<OtpContent> importedOtps(
+  List<LoginImportCandidate> chosen,
+  List<Uint8List> loginIds,
+) {
+  final added = <String>{};
+  return [
+    for (final (index, candidate) in chosen.indexed)
+      if (candidate.otp case final otp?
+          when !candidate.otpAlreadySaved &&
+              added.add(_secretKey(otp.parameters.secret)))
+        otp.copyWith(loginId: loginIds[index]),
+  ];
 }
 
 /// `otpauth://` bağlantısını, Bitwarden'ın `steam://` Steam anahtarını veya

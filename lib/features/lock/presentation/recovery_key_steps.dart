@@ -5,9 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
-import 'package:keykey/core/crypto/recovery_key.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
+import 'package:keykey/features/lock/application/recovery_key_text.dart';
 import 'package:keykey/features/lock/presentation/recovery_key_formatter.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
@@ -139,8 +139,8 @@ class RecoveryKeyEntry extends ConsumerWidget {
             enabled: enabled,
             errorText: errorText,
             helperText: l10n.recoveryKeyProgress(
-              RecoveryKeyCodec.symbolsOf(controller.text).length,
-              RecoveryKeyCodec.textLength,
+              RecoveryKeyText.symbolsOf(controller.text).length,
+              RecoveryKeyText.textLength,
             ),
             // Tireler kendiliğinden gelir; uzun anahtar satıra sığmazsa alta
             // geçer.
@@ -186,12 +186,12 @@ String recoveryKeyMismatchHint(
   required String fallback,
 }) {
   if (shown == null) return fallback;
-  final typedSymbols = RecoveryKeyCodec.symbolsOf(typed);
-  final expected = RecoveryKeyCodec.symbolsOf(shown);
+  final typedSymbols = RecoveryKeyText.symbolsOf(typed);
+  final expected = RecoveryKeyText.symbolsOf(shown);
   if (typedSymbols.length != expected.length) {
     return l10n.recoveryKeyLength(typedSymbols.length, expected.length);
   }
-  const size = RecoveryKeyCodec.groupLength;
+  const size = RecoveryKeyText.groupLength;
   for (var start = 0; start < expected.length; start += size) {
     final end = (start + size).clamp(0, expected.length);
     if (typedSymbols.substring(start, end) != expected.substring(start, end)) {
@@ -261,8 +261,8 @@ Future<bool> readRecoveryKeyFile(
     final text = utf8.decode(result.bytes, allowMalformed: true);
     result.bytes.fillRange(0, result.bytes.length, 0);
     for (final candidate in const LineSplitter().convert(text)) {
-      if (RecoveryKeyCodec.symbolsOf(candidate).length ==
-          RecoveryKeyCodec.textLength) {
+      if (RecoveryKeyText.symbolsOf(candidate).length ==
+          RecoveryKeyText.textLength) {
         line = candidate;
         break;
       }

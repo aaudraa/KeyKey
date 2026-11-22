@@ -4,6 +4,7 @@ import 'package:keykey/features/backup/application/backup_service.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
+import 'package:keykey/features/vault/application/records_controller.dart';
 
 /// Hatırlatmanın türü.
 enum BackupReminder {
@@ -25,8 +26,8 @@ abstract final class BackupReminderRule {
 
   /// Gösterilecek hatırlatma; gerekmiyorsa `null`.
   ///
-  /// [latestChange], parola ve 2FA kayıtlarının en son değiştiği an; kasa
-  /// boşsa `null`.
+  /// [latestChange], parola, 2FA, kart ve not kayıtlarının en son değiştiği
+  /// ya da silindiği an; hiç kayıt ve silme yoksa `null`.
   static BackupReminder? due({
     required DateTime now,
     required DateTime? latestChange,
@@ -51,7 +52,9 @@ final backupReminderProvider = FutureProvider<BackupReminder?>((ref) async {
   // Listeler değişince (ekleme, silme, içe aktarma) yeniden bakılır.
   ref
     ..watch(loginsControllerProvider)
-    ..watch(otpsControllerProvider);
+    ..watch(otpsControllerProvider)
+    ..watch(cardsControllerProvider)
+    ..watch(notesControllerProvider);
   final latestChange = await ref.read(backupServiceProvider).latestChange();
   return BackupReminderRule.due(
     now: ref.read(backupClockProvider)(),

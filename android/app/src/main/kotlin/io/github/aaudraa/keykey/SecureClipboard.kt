@@ -26,8 +26,6 @@ import java.security.MessageDigest
  */
 class SecureClipboard(context: Context) : ClipboardApi {
     private val context = context.applicationContext
-    private val handler = Handler(Looper.getMainLooper())
-    private var pendingClear: Runnable? = null
 
     override fun copySensitive(text: String, clearAfterMillis: Long) {
         val clip = ClipData.newPlainText(LABEL, text)
@@ -44,10 +42,7 @@ class SecureClipboard(context: Context) : ClipboardApi {
         clipboard(context).setPrimaryClip(clip)
         copiedDigest = digest(text)
 
-        pendingClear?.let(handler::removeCallbacks)
-        val clear = Runnable { clearIfStillOurs(context) }
-        pendingClear = clear
-        handler.postDelayed(clear, clearAfterMillis)
+        schedule.replace(clearAfterMillis) { clearIfStillOurs(context) }
         // Zamanlayıcı önce çalışsın diye alarm paylı kurulur. Aynı ana kurulunca
         // Android 11'de alarm önce çalışıp kullanıcının yeni kopyasını sildi.
         scheduleAlarm(context, clearAfterMillis + ALARM_MARGIN_MILLIS)
@@ -63,6 +58,16 @@ class SecureClipboard(context: Context) : ClipboardApi {
         // çıkmadı: kopyalar kopyalamaz okunan değer sonradan okunanla
         // eşleşmeyebiliyor.
         @Volatile private var copiedDigest: ByteArray? = null
+
+        // Ana uygulama ve doldurma ekranı ayrı nesneler kurar; özet gibi
+        // bekleyen temizlik de süreç genelinde tek olmalı. Yoksa birinin
+        // zamanlayıcısı ötekinin kopyasını erken, ardından kullanıcının kendi
+        // kopyasını da siler.
+        private val handler = Handler(Looper.getMainLooper())
+        private val schedule = ClearSchedule(
+            post = { runnable, delay -> handler.postDelayed(runnable, delay) },
+            cancel = handler::removeCallbacks,
+        )
 
         /** Panoda hâlâ bizim kopyamız varsa veya bunu bilemiyorsak siler. */
         fun clearIfStillOurs(context: Context) {
@@ -108,6 +113,32 @@ class SecureClipboard(context: Context) : ClipboardApi {
         private fun cancelAlarm(context: Context) {
             context.getSystemService(AlarmManager::class.java).cancel(pendingIntent(context))
         }
+    }
+}
+
+/**
+ * Süreçteki tek bekleyen pano temizliği. Yeni bir kopya öncekinin
+ * zamanlayıcısını iptal eder; iptal edilmiş bir temizlik çalışmaya başlamış
+ * olsa bile bir şey yapmaz.
+ */
+class ClearSchedule(
+    private val post: (Runnable, Long) -> Unit,
+    private val cancel: (Runnable) -> Unit,
+) {
+    private var pending: Runnable? = null
+
+    @Synchronized
+    fun replace(delayMillis: Long, action: () -> Unit) {
+        pending?.let(cancel)
+        lateinit var clear: Runnable
+        clear = Runnable {
+            val current = synchronized(this) {
+                (pending === clear).also { if (it) pending = null }
+            }
+            if (current) action()
+        }
+        pending = clear
+        post(clear, delayMillis)
     }
 }
 

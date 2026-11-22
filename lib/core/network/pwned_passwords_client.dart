@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:keykey/core/network/secure_url.dart';
 
 /// Have I Been Pwned'ın Pwned Passwords aralık sorgusu.
 ///
@@ -55,12 +56,10 @@ final class PwnedPasswordsClient implements PwnedRangeSource {
 
   static final RegExp _prefix = RegExp(r'^[0-9A-F]{5}$');
 
-  static const Set<String> _loopbackHosts = {'127.0.0.1', 'localhost', '::1'};
-
+  /// Kural senkron istemcisiyle aynı ([isSecureServiceUrl]); iki ağ
+  /// istemcisi farklı kural uygulamasın diye kopyası tutulmaz.
   static Uri _checked(Uri uri) {
-    final secure = uri.scheme == 'https';
-    final loopback = uri.scheme == 'http' && _loopbackHosts.contains(uri.host);
-    if (!secure && !loopback) {
+    if (!isSecureServiceUrl(uri)) {
       throw ArgumentError.value(uri, 'baseUri', 'yalnızca https');
     }
     return uri;

@@ -134,6 +134,19 @@ void main() {
     expect(await backups.latestChange(), DateTime.utc(2026, 2, 9));
   });
 
+  test('son değişiklik silmeleri de sayıyor', () async {
+    // N2: silme en büyük updatedAt'i artırmıyordu; silmeden sonra otomatik
+    // yedek "değişiklik yok" deyip yazmıyordu.
+    final backups = BackupService(sodium: sodium, store: store);
+    await putLogin(3);
+    await putLogin(5);
+    await store.deleteRecord(
+      Uint8List(16)..[0] = 5,
+      deletedAt: DateTime.utc(2026, 3),
+    );
+    expect(await backups.latestChange(), DateTime.utc(2026, 3));
+  });
+
   test('önerilen dosya adı yerel tarihi taşıyor', () {
     expect(
       BackupService.fileNameFor(DateTime(2026, 3, 9, 23, 59)),

@@ -29,11 +29,21 @@ class BackupService {
   final VaultStore _store;
   final BackupCodec _codec;
 
-  /// Parola, 2FA, kart ve not kayıtlarının en son değiştiği an; kasa boşsa
-  /// `null`.
+  /// Parola, 2FA, kart ve not kayıtlarının en son değiştiği ya da silindiği
+  /// an; hiç kayıt ve silme yoksa `null`.
   /// Ayar kaydı sayılmaz, çünkü yedek zamanı da orada yazılıyor.
-  Future<DateTime?> latestChange() =>
-      _store.latestUpdate(const {'login', 'otp', 'card', 'note'});
+  Future<DateTime?> latestChange() async {
+    final updated = await _store.latestUpdate(const {
+      'login',
+      'otp',
+      'card',
+      'note',
+    });
+    // Silme en büyük güncelleme anını artırmaz; silme kayıtları da sayılır.
+    final deleted = await _store.latestDeletion();
+    if (updated == null || deleted == null) return updated ?? deleted;
+    return deleted.isAfter(updated) ? deleted : updated;
+  }
 
   /// Açık kasanın yedeğini üretir. Kasa kilitlenirse `VaultLockedException`.
   Future<Uint8List> create(VaultSession session, DateTime now) async {

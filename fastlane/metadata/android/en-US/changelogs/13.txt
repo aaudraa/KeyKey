@@ -1,0 +1,1 @@
+Fixes from a full review of the project. The app no longer fails to start after being killed mid-write. Autofill no longer fills passwords into embedded frames of other sites, ignores trashed logins and handles app links safely. The vault locks after the phone slept with a file picker open. Automatic backups follow sync and deletions. The bottom bar shows icons only.

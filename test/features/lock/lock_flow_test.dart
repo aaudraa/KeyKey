@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +10,7 @@ import 'package:keykey/app/app_shell.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/ui/keykey_logo.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
+import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/vault/biometric_bridge.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/features/lock/application/lock_clock.dart';
@@ -460,6 +463,33 @@ void main() {
 
       expect(service.changedPassword, 'yepyeni-Ana-Parola-58');
       expect(find.text(vaultText), findsOneWidget);
+    });
+
+    testWidgets('anahtar dosyadan okunabiliyor', (tester) async {
+      // K7: anahtarı "Dosyaya kaydet" ile saklayan kullanıcı, tam gereken
+      // yerde (parolayı unutunca) 55 karakteri elle yazmak zorundaydı.
+      final documents = FakeDocumentFiles()
+        ..nextOpen = DocumentOpened(
+          Uint8List.fromList(
+            utf8.encode('KeyKey kurtarma\n${FakeVaultService.recoveryKey}\n'),
+          ),
+        );
+      await pumpKeyKey(
+        tester,
+        status: VaultLocked(service.header),
+        service: service,
+        documents: documents,
+      );
+      await tester.tap(find.text('Parolamı unuttum'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Dosyadan oku'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Devam et'));
+      await tester.pumpAndSettle();
+
+      expect(documents.opens, 1);
+      expect(find.text('YENİ ANA PAROLA'), findsOneWidget);
     });
 
     testWidgets('yazım hatası ayrı bir mesaj veriyor', (tester) async {
@@ -1067,6 +1097,25 @@ void main() {
         expect(await result, 'dosya');
         // Seçici kendi 3 dakikalık sınırını uygular; dönüşte açık.
         expect(find.text(vaultText), findsOneWidget);
+      });
+
+      testWidgets('dosya seçicisi açıkken telefon uyuduysa dönüşte kilitli', (
+        tester,
+      ) async {
+        // Telefon uyurken Dart zamanlayıcıları ilerlemez; seçicinin 3
+        // dakikalık sınırı dönüşte iki saatle denetlenmeli.
+        await pumpWithDelay(tester, BackgroundLock.seconds30);
+        final picker = Completer<String>();
+        final result = ProviderScope.containerOf(
+          tester.element(find.text(vaultText)),
+        ).read(externalActivityGateProvider.notifier).run(() => picker.future);
+
+        setLifecycle(tester, AppLifecycleState.paused);
+        clock.advance(const Duration(hours: 4));
+        picker.complete('dosya');
+        await resume(tester);
+        await result;
+        expect(find.text(lockedTitle), findsOneWidget);
       });
     });
 

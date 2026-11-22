@@ -62,6 +62,42 @@ void main() {
       expect(DomainName.hostOfUrl('192.168.1.1'), '192.168.1.1');
       expect(DomainName.hostOfUrl('  '), isNull);
       expect(DomainName.hostOfUrl('https://'), isNull);
+      expect(DomainName.hostOfUrl('HTTPS://Site.com'), 'site.com');
+      expect(DomainName.hostOfUrl('nas.example:5001/giris'), 'nas.example');
+    });
+
+    test('web dışı şemalar alan adı vermiyor', () {
+      // androidapp:// bir uygulama paketidir; alan adı sayılırsa
+      // com.amazon.mshop.android.shopping kayıtlı alan adı olarak
+      // android.shopping'e indirgenir ve o siteyi alan herkes eşleşir.
+      for (final url in [
+        'androidapp://com.amazon.mShop.android.shopping',
+        'android://hash@com.example.app/',
+        'ftp://site.com/',
+        'javascript:alert(1)',
+        'intent://site.com#Intent;end',
+        'file:///sdcard/a.html',
+      ]) {
+        expect(DomainName.hostOfUrl(url), isNull, reason: url);
+      }
+    });
+
+    test('ters eğik çizgi tarayıcıdaki gibi yolu başlatıyor', () {
+      // Tarayıcılar http(s) adreslerinde "\" işaretini "/" sayar:
+      // https://evil.com\@bank.com evil.com'u açar.
+      expect(DomainName.hostOfUrl(r'https://evil.com\@bank.com'), 'evil.com');
+      expect(DomainName.hostOfUrl(r'evil.com\giris'), 'evil.com');
+    });
+
+    test('şema yalnızca başta tanınıyor', () {
+      expect(
+        DomainName.hostOfUrl('site.com/git?adres=https://banka.com'),
+        'site.com',
+      );
+      expect(
+        DomainName.hostOfUrl('https://site.com/git?adres=https://banka.com'),
+        'site.com',
+      );
     });
   });
 

@@ -442,6 +442,24 @@ void main() {
       expect(find.text('KeyKey kilitli'), findsOneWidget);
     });
 
+    testWidgets('değiştirme başarısız olursa parmak izi açık kalıyor', (
+      tester,
+    ) async {
+      // K2: parmak izi değiştirmeden önce kapatılıyordu; değiştirme düşünce
+      // kasa aynı kalıyor ama parmak izi sessizce gitmiş oluyordu.
+      service.biometricEnabled = true;
+      restores.onReplace = () => throw Exception('disk dolu');
+      await openFromSettings(tester);
+      await tester.tap(find.text('Kasanın yerine yedeği koy'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Değiştir'));
+      await tester.pumpAndSettle();
+
+      expect(restores.replaces, 1);
+      expect(service.biometricEnabled, isTrue);
+      expect(find.text('KeyKey kilitli'), findsNothing);
+    });
+
     testWidgets('birleştirmeden sonra yeni kartlar listede', (tester) async {
       final cards = FakeRecordRepository<CardContent>();
       restores.onMerge = () => cards.items.add(
@@ -478,6 +496,37 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(restores.merges, 1);
+      expect(folders.files[folder.uri], hasLength(1));
+    });
+
+    testWidgets('değiştirdikten sonra kasa açılınca otomatik yedek yazılıyor', (
+      tester,
+    ) async {
+      // N3'ün ikinci yarısı: klasördeki en yeni otomatik yedekler eski
+      // kasanın; değişiklik ölçütü yedeğin eski kayıtlarını yeni saymaz.
+      final folders = FakeBackupFolders()..granted.add(folder.uri);
+      await openFromSettings(
+        tester,
+        folders: folders,
+        settings: FakeSettingsRepository(
+          AppSettings.defaults.withAutoBackupFolder(folder),
+        ),
+      );
+      await tester.tap(find.text('Kasanın yerine yedeği koy'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Değiştir'));
+      await tester.pumpAndSettle();
+      expect(find.text('KeyKey kilitli'), findsOneWidget);
+      expect(folders.writes, 0);
+
+      await tester.enterText(
+        find.byType(TextField),
+        FakeVaultService.correctPassword,
+      );
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Aç'));
+      await tester.pumpAndSettle();
+
       expect(folders.files[folder.uri], hasLength(1));
     });
 

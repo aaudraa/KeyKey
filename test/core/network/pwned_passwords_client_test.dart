@@ -146,6 +146,11 @@ void main() {
         'http://example.com/range/',
         'ftp://api.pwnedpasswords.com/range/',
         'http://127.0.0.1.example.com/range/',
+        // K8: kural senkron istemcisiyle aynı (isSecureServiceUrl); kimlik
+        // bilgisi, sorgu ve parça taşıyan taban adres de reddedilir.
+        'https://ali:parola@api.pwnedpasswords.com/range/',
+        'https://api.pwnedpasswords.com/range/?x=1',
+        'https:///range/',
       ]) {
         expect(
           () => PwnedPasswordsClient(baseUri: Uri.parse(address)),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
 import 'package:keykey/core/vault/password_policy.dart';
-import 'package:keykey/features/generator/data/wordlists.dart';
+import 'package:keykey/features/generator/application/wordlists.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Parolanın kaba güç tahmini. Yaygın parola listesi yüklenene kadar yalnızca

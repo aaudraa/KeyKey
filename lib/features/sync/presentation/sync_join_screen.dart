@@ -11,7 +11,7 @@ import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/backup/backup_codec.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
-import 'package:keykey/core/crypto/recovery_key.dart';
+import 'package:keykey/features/lock/application/recovery_key_text.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/recovery_key_formatter.dart';
 import 'package:keykey/features/settings/data/app_settings.dart';
@@ -121,8 +121,8 @@ class _SyncJoinScreenState extends ConsumerState<SyncJoinScreen> {
                         enabled: !_busy,
                         errorText: _error,
                         helperText: l10n.recoveryKeyProgress(
-                          RecoveryKeyCodec.symbolsOf(_secret.text).length,
-                          RecoveryKeyCodec.textLength,
+                          RecoveryKeyText.symbolsOf(_secret.text).length,
+                          RecoveryKeyText.textLength,
                         ),
                         inputFormatters: [RecoveryKeyFormatter()],
                         style: const TextStyle(fontFamily: 'monospace'),

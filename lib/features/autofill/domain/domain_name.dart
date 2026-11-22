@@ -7,14 +7,25 @@ abstract final class DomainName {
   static final _asciiLabel = RegExp(r'^[a-z0-9_]([a-z0-9_-]*[a-z0-9_])?$');
   static final _ipv4 = RegExp(r'^[0-9]+(\.[0-9]+){3}$');
 
-  /// Bir adresin alan adı. Şema yoksa `https://` varsayılır. Alan adı
-  /// çıkarılamazsa `null`.
+  static final _hostWithPort = RegExp(r'^[^:/?#\s]+:\d+(?:[/?#]|$)');
+  static final _scheme = RegExp('^([a-zA-Z][a-zA-Z0-9+.-]*):');
+  static final _webScheme = RegExp('^https?://', caseSensitive: false);
+
+  /// Bir adresin alan adı. Şema yoksa `https://` varsayılır. Şema yalnızca
+  /// başta tanınır ve yalnızca http ile https kabul edilir: `androidapp://`
+  /// gibi bir paket adı alan adı sayılırsa saldırganın alabileceği bir
+  /// siteyle eşleşebilir. Alan adı çıkarılamazsa `null`.
   static String? hostOfUrl(String url) {
     var rest = url.trim();
     if (rest.isEmpty) return null;
-    final scheme = rest.indexOf('://');
-    if (scheme >= 0) rest = rest.substring(scheme + 3);
-    final end = rest.indexOf(RegExp('[/?#]'));
+    // "nas.example:5001" şema değil, port taşıyan ad.
+    if (!_hostWithPort.hasMatch(rest) && _scheme.hasMatch(rest)) {
+      final web = _webScheme.firstMatch(rest);
+      if (web == null) return null;
+      rest = rest.substring(web.end);
+    }
+    // Tarayıcılar http(s) adreslerinde ters eğik çizgiyi de yol başı sayar.
+    final end = rest.indexOf(RegExp(r'[/?#\\]'));
     if (end >= 0) rest = rest.substring(0, end);
     // Kullanıcı bilgisi ve kapı numarası atılır.
     final at = rest.lastIndexOf('@');

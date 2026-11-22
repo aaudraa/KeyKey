@@ -35,6 +35,8 @@
 
 Seçilen 1. Ekranın başlığı zaten sekmenin adını büyük yazıyor; seçili sekme kapsülle işaretli. Geniş ekranda (tablet, yatay) seçili sekmenin adı yine kapsülde görünür.
 
+**1.8.1'den beri ([#163](https://github.com/aaudraa/KeyKey/issues/163)):** sekme adı hiçbir genişlikte görünmez. Telefonda yalnızca kısa `2FA` sığdığı için ad bir sekmede görünüp ötekilerde görünmüyordu; proje sahibi bunu tutarsız buldu. Seçili sekme dolu simge ve kapsülle ayrılır; ekran okuyucu adı ve sırasını (`Parolalar, Sekme 1/5`) okumaya devam eder.
+
 ## Tasarım
 
 ### Menü

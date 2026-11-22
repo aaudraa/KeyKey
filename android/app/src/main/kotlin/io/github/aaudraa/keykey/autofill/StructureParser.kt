@@ -55,13 +55,15 @@ object StructureParser {
         var webScheme: String? = null
         var hasWebContent = false
 
-        fun visit(node: AssistStructure.ViewNode, parentVisible: Boolean) {
+        fun visit(node: AssistStructure.ViewNode, parentVisible: Boolean, parentFrame: Pair<String, String?>?) {
             val visible = parentVisible && node.visibility == View.VISIBLE
             if (node.className == "android.webkit.WebView" || node.htmlInfo != null) hasWebContent = true
             if (webDomain == null && !node.webDomain.isNullOrEmpty()) {
                 webDomain = node.webDomain
                 webScheme = node.webScheme
             }
+            // Gömülü çerçeve kendi alan adını bildirir; alt düğümler onu devralır.
+            val frame = node.webDomain?.takeIf { it.isNotEmpty() }?.let { it to node.webScheme } ?: parentFrame
             val id = node.autofillId
             if (id != null && node.autofillType != View.AUTOFILL_TYPE_NONE) {
                 val html = node.htmlInfo
@@ -85,21 +87,27 @@ object StructureParser {
                     isEnabled = node.isEnabled,
                     options = node.autofillOptions?.map { it.toString() }.orEmpty(),
                     maxLength = maxLengthOf(node, attributes),
+                    frameDomain = frame?.first,
+                    frameScheme = frame?.second,
+                    isFocused = node.isFocused,
                 )
             }
-            for (i in 0 until node.childCount) visit(node.getChildAt(i), visible)
+            for (i in 0 until node.childCount) visit(node.getChildAt(i), visible, frame)
         }
 
         for (i in 0 until structure.windowNodeCount) {
-            visit(structure.getWindowNodeAt(i).rootViewNode, true)
+            visit(structure.getWindowNodeAt(i).rootViewNode, true, null)
         }
+        // Giriş alanları tek çerçeveyle sınırlanır; eşleştirme o çerçevenin
+        // alan adıyla yapılır (N9). Çerçeve bilinmiyorsa sayfanınki kullanılır.
+        val scoped = CredentialFrame.restrict(FormParser.parse(fields), fields)
         return ParsedStructure(
             packageName = structure.activityComponent.packageName,
-            webDomain = webDomain,
-            webScheme = webScheme,
+            webDomain = scoped.frameDomain ?: webDomain,
+            webScheme = if (scoped.frameDomain != null) scoped.frameScheme else webScheme,
             ids = ids,
             fields = fields,
-            form = FormParser.parse(fields),
+            form = scoped.form,
             values = values,
             hasWebContent = hasWebContent || webDomain != null,
         )

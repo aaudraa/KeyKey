@@ -2,6 +2,36 @@
 
 KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesinde](docs/yayin.md#sürüm-numarası). `v1.0.0`'dan önceki sürümler fazların sonunu işaretler ve hata ayıklama anahtarıyla imzalıdır; kalıcı bir kurulum için kullanılmamalıdır.
 
+## 1.8.1 (2026-11-22): Düzeltmeler
+
+Projenin bütünü ultra review ile incelendi; bulgular ve kararlar [#168](https://github.com/aaudraa/KeyKey/issues/168)'de. Her düzeltme önce bulguyu gösteren bir testle doğrulandı. Yedek biçimi ve veritabanı şeması değişmedi; 1.8.0 ile aynı yedekler.
+
+### Güvenlik
+
+- **Otomatik doldurma, sayfaya gömülü başka bir sitenin çerçevesine (iframe) parola yazmıyor.** Parola alanının çerçevesi seçiliyor, eşleştirme o çerçevenin alan adıyla yapılıyor, başka çerçevelerdeki giriş alanları doldurulmuyor.
+- **Kayıttaki adreste şema yalnızca başta tanınıyor ve yalnızca http/https alan adı veriyor.** `androidapp://com.amazon.mShop.android.shopping` gibi bir paket adı `android.shopping` sitesiyle eşleşebiliyordu.
+- **Dosya seçici açıkken telefon uyursa dönüşte kasa kilitli.** Seçicinin 3 dakikalık sınırı artık iki saatle denetleniyor.
+- Dosya okurken (CSV, yedek, dışa aktarma doğrulaması) düz metin kopyaları bellekte sıfırlanıyor. Sızıntı kontrolü istemcisi senkronla aynı güvenli adres kuralını kullanıyor.
+
+### Düzeltilenler
+
+- **Yazma sırasında uygulama ölürse (düşük bellek, pil) sonraki açılışlar başarısız olmuyor.** Kalan günlük açılışta geri alınıyor; bu hata 0.3.0'dan beri vardı.
+- Çöpteki girişler otomatik doldurmada eşleşmiyor.
+- Ana uygulama ve doldurma ekranı birbirinin pano kopyasını erken silmiyor; kullanıcının kendi kopyaladığı da silinmiyor.
+- İçe aktarmada aynı 2FA anahtarını taşıyan iki girişten biri seçilmezse anahtar kaybolmuyor.
+- Otomatik yedek silmelerden ve senkronla gelen değişikliklerden sonra da yazılıyor; yedek hatırlatıcısı kart ve not değişikliklerini de görüyor.
+- Başka bir kasaya katılınca eski kasanın yedek zamanı taşınmıyor; otomatik yedek katılınan kasayı yazıyor.
+- Ayar kaydı yazılamazsa senkron oturum boyunca durmuyor, otomatik yedek de dosya biriktirmiyor.
+- Klasörde adı UTF-8 olmayan başka bir dosya varsa senkron ve kurulum bozulmuyor.
+- Değiştirerek geri yükleme başarısız olursa parmak izi kapanmıyor.
+- Çok imzacılı uygulamalarda otomatik doldurma her seferinde "sahte olabilir" demiyor.
+
+### Değişenler
+
+- **Alttaki menüde yalnızca simgeler** ([#163](https://github.com/aaudraa/KeyKey/issues/163)). Ekran okuyucu sekme adlarını okumaya devam ediyor.
+- Kilit ekranındaki kurtarmada anahtar **Dosyadan oku** ile okunabiliyor.
+- Ekranların veritabanına ve kriptoya doğrudan erişmeme kuralı bir testle denetleniyor.
+
 ## 1.8.0 (2026-11-20): Senkron
 
 Faz 19 ([tasarım](docs/senkron.md)).

@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:keykey/app/secret_field.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
-import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
-import 'package:keykey/core/crypto/recovery_key.dart';
+import 'package:keykey/features/lock/application/recovery_key_text.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
-import 'package:keykey/features/lock/presentation/recovery_key_formatter.dart';
+import 'package:keykey/features/lock/presentation/recovery_key_steps.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 
 /// Ana parola unutulunca kurtarma anahtarıyla giriş.
@@ -31,11 +29,11 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
   void _submit() {
     if (_key.text.trim().isEmpty) return;
     final l10n = AppLocalizations.of(context);
-    final count = RecoveryKeyCodec.symbolsOf(_key.text).length;
-    if (count != RecoveryKeyCodec.textLength) {
+    final count = RecoveryKeyText.symbolsOf(_key.text).length;
+    if (count != RecoveryKeyText.textLength) {
       setState(
         () =>
-            _error = l10n.recoveryKeyLength(count, RecoveryKeyCodec.textLength),
+            _error = l10n.recoveryKeyLength(count, RecoveryKeyText.textLength),
       );
       return;
     }
@@ -68,24 +66,17 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
             children: [
               Text(l10n.recoveryIntro),
               const SizedBox(height: 16),
-              GlassSurface(
-                padding: const EdgeInsets.all(4),
-                child: SecretField(
-                  controller: _key,
-                  label: l10n.recoveryKeyLabel,
-                  obscure: false,
-                  autofocus: true,
-                  errorText: _error,
-                  helperText: l10n.recoveryKeyProgress(
-                    RecoveryKeyCodec.symbolsOf(_key.text).length,
-                    RecoveryKeyCodec.textLength,
-                  ),
-                  inputFormatters: [RecoveryKeyFormatter()],
-                  style: const TextStyle(fontFamily: 'monospace'),
-                  maxLines: 3,
-                  onChanged: (_) => setState(() {}),
-                  onSubmitted: (_) => _submit(),
-                ),
+              // Ortak kutu: anahtarı "Dosyaya kaydet" ile saklayan kullanıcı
+              // burada dosyadan okuyabilir. Kasa kilitli; arka plan kilidinin
+              // beklemesine gerek yok.
+              RecoveryKeyEntry(
+                controller: _key,
+                enabled: true,
+                gated: false,
+                errorText: _error,
+                onChanged: () => setState(() {}),
+                onRead: () => setState(() {}),
+                onSubmitted: _submit,
               ),
             ],
           ),

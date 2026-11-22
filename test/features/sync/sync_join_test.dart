@@ -197,7 +197,10 @@ void main() {
       ),
     )!;
     expect(settings.sync!.folder, sync.folder);
-    expect(settings.lastBackupAt, lastBackup);
+    // N3: bu telefonun yedekleri eski kasanın; katılınan kasa hiç
+    // yedeklenmemiş sayılır, otomatik yedek ilk fırsatta yazar.
+    expect(settings.lastBackupAt, isNull);
+    expect(settings.backupReminderSnoozedUntil, isNull);
 
     // Eski silme kayıtları gitti, dosyanınkiler geldi; zamanlar dosyadan.
     expect([for (final t in await b.store.allTombstones()) t.id[15]], [9]);

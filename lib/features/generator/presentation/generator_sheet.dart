@@ -8,7 +8,7 @@ import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/app/ui/kk_switch.dart';
 import 'package:keykey/features/generator/application/generator_preferences.dart';
 import 'package:keykey/features/generator/application/password_generator.dart';
-import 'package:keykey/features/generator/data/wordlists.dart';
+import 'package:keykey/features/generator/application/wordlists.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/l10n/generated/app_localizations.dart';
 

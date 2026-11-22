@@ -13,13 +13,13 @@ import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/backup/backup_codec.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
-import 'package:keykey/core/crypto/recovery_key.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/backup/application/auto_backup_controller.dart';
 import 'package:keykey/features/backup/application/restore_service.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
+import 'package:keykey/features/lock/application/recovery_key_text.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/lock/presentation/recovery_key_formatter.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
@@ -228,8 +228,6 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
     final stampAt = _stampAt();
     setState(() => _busy = true);
     try {
-      // Önce parmak izi kapanır: yeni kasanın anahtarı eski yuvayla açılmaz.
-      await ref.read(vaultServiceProvider).disableBiometric();
       await ref
           .read(restoreServiceProvider)
           .replace(
@@ -238,8 +236,23 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
             sync: settings?.sync,
             stampAt: stampAt,
           );
+      // Parmak izi değiştirme bitince kapanır: yeni kasanın anahtarı eski
+      // yuvayla açılmaz. Değiştirme düşerse kasa da parmak izi de olduğu gibi
+      // kalır. Kapatılamazsa değiştirme geri alınmaz; yuva işlemde silindi.
+      try {
+        await ref.read(vaultServiceProvider).disableBiometric();
+      } on Exception {
+        // Yok sayılır.
+      }
       // Kilit ekranına gidilir; kasa artık yedeğin ana parolasıyla açılır.
       controller.lockReplaced(backup.header);
+      // Klasördeki en yeni otomatik yedekler değiştirilen kasanın; yedeğin
+      // kayıtları eski zamanlar taşıdığı için değişiklik ölçütü yazmazdı.
+      // Kasa açılınca bir kez yazılır (kilit, bekleyen isteği silmeden önce
+      // geçti).
+      unawaited(
+        ref.read(autoBackupControllerProvider.notifier).backUpNowOrOnOpen(),
+      );
     } on Exception {
       _fail(l10n.restoreFailed);
       if (mounted) setState(() => _busy = false);
@@ -287,8 +300,8 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
                 enabled: !_busy,
                 errorText: _error,
                 helperText: l10n.recoveryKeyProgress(
-                  RecoveryKeyCodec.symbolsOf(_secret.text).length,
-                  RecoveryKeyCodec.textLength,
+                  RecoveryKeyText.symbolsOf(_secret.text).length,
+                  RecoveryKeyText.textLength,
                 ),
                 inputFormatters: [RecoveryKeyFormatter()],
                 style: const TextStyle(fontFamily: 'monospace'),

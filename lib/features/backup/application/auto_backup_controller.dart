@@ -254,6 +254,10 @@ class AutoBackupController extends Notifier<AutoBackupStatus> {
         await ref.read(settingsControllerProvider.notifier).recordBackup(now);
       } on VaultLockedException {
         // Dosya yazıldı; kasa kilitlendiği için zaman yazılamadı.
+      } on Exception {
+        // Dosya yazıldı; ayar kaydı yazılamadı (dolu disk, meşgul
+        // veritabanı). Durum ve budama yalnızca dosyaya bağlı; yoksa her
+        // tetikte yeni dosya birikirdi.
       }
     }
     _report(generation, null);

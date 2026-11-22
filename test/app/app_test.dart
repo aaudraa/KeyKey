@@ -105,21 +105,30 @@ void main() {
 
   group('dil cihaz diline göre seçiliyor', () {
     testWidgets('Türkçe', (tester) async {
+      final semantics = tester.ensureSemantics();
       await pumpApp(tester, locale: const Locale('tr', 'TR'));
 
-      expect(find.text('Parolalar'), findsWidgets);
+      // Sekme adı görünmez (#163); ekran okuyucu etiketi dili gösterir.
+      expect(find.bySemanticsLabel(RegExp(r'^Parolalar\n')), findsOneWidget);
+      semantics.dispose();
     });
 
     testWidgets('İngilizce', (tester) async {
+      final semantics = tester.ensureSemantics();
       await pumpApp(tester, locale: const Locale('en', 'US'));
 
-      expect(find.text('Passwords'), findsWidgets);
+      // Sekme adı görünmez (#163); ekran okuyucu etiketi dili gösterir.
+      expect(find.bySemanticsLabel(RegExp(r'^Passwords\n')), findsOneWidget);
+      semantics.dispose();
     });
 
     testWidgets('desteklenmeyen dilde İngilizceye düşüyor', (tester) async {
+      final semantics = tester.ensureSemantics();
       await pumpApp(tester, locale: const Locale('de', 'DE'));
 
-      expect(find.text('Passwords'), findsWidgets);
+      // Sekme adı görünmez (#163); ekran okuyucu etiketi dili gösterir.
+      expect(find.bySemanticsLabel(RegExp(r'^Passwords\n')), findsOneWidget);
+      semantics.dispose();
     });
   });
 }

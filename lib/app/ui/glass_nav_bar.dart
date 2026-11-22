@@ -83,40 +83,6 @@ class GlassNavBar extends StatelessWidget {
       '${items[i].label}\n'
       '${l.tabLabel(tabIndex: i + 1, tabCount: items.length)}';
 
-  /// Seçili sekmenin adı şeride sığıyor mu? Büyük yazıda ya da dar ekranda
-  /// ad gizlenir, sekme yalnızca simgeyle kalır.
-  bool _showLabel(BuildContext context, double maxWidth, double inner) {
-    final scaler = MediaQuery.textScalerOf(context);
-    if (scaler.scale(10) > 13) return false;
-    final style = _labelStyle(context);
-    final painter = TextPainter(
-      text: TextSpan(text: items[selectedIndex].label, style: style),
-      textDirection: Directionality.of(context),
-      textScaler: scaler,
-      maxLines: 1,
-    )..layout();
-    final labelWidth = painter.width;
-    painter.dispose();
-    final needed =
-        _tabWidth * items.length +
-        labelWidth +
-        16 +
-        1 +
-        inner * 4 +
-        _addSize +
-        inner * 2;
-    return needed <= maxWidth;
-  }
-
-  static TextStyle? _labelStyle(BuildContext context) {
-    final theme = Theme.of(context);
-    return theme.textTheme.labelLarge?.copyWith(
-      fontSize: 16,
-      fontWeight: FontWeight.w800,
-      color: theme.colorScheme.onSurface,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final glass = KkGlass.of(context);
@@ -137,60 +103,54 @@ class GlassNavBar extends StatelessWidget {
         left: side,
         right: side,
       ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final showLabel = _showLabel(context, constraints.maxWidth, inner);
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              KkRiseIn(
-                child: GlassSurface(
-                  key: pillKey,
-                  blur: true,
-                  vibrant: true,
-                  sheen: true,
-                  fill: glass.navFill,
-                  borderRadius: radius,
-                  child: SizedBox(
-                    height: height,
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: inner),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          for (var i = 0; i < items.length; i++)
-                            ExcludeSemantics(
-                              excluding: tabsHidden,
-                              child: _NavTab(
-                                item: items[i],
-                                selected: i == selectedIndex,
-                                showLabel: showLabel,
-                                semanticLabel: _semanticLabel(localizations, i),
-                                onTap: () => onSelected(i),
-                              ),
-                            ),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: inner),
-                            child: SizedBox(
-                              width: 1,
-                              height: 28,
-                              child: ColoredBox(color: glass.hairline),
-                            ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          KkRiseIn(
+            child: GlassSurface(
+              key: pillKey,
+              blur: true,
+              vibrant: true,
+              sheen: true,
+              fill: glass.navFill,
+              borderRadius: radius,
+              child: SizedBox(
+                height: height,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: inner),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (var i = 0; i < items.length; i++)
+                        ExcludeSemantics(
+                          excluding: tabsHidden,
+                          child: _NavTab(
+                            item: items[i],
+                            selected: i == selectedIndex,
+                            semanticLabel: _semanticLabel(localizations, i),
+                            onTap: () => onSelected(i),
                           ),
-                          _AddButton(
-                            open: addOpen,
-                            label: addOpen ? closeLabel : addLabel,
-                            onTap: onAdd,
-                          ),
-                        ],
+                        ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: inner),
+                        child: SizedBox(
+                          width: 1,
+                          height: 28,
+                          child: ColoredBox(color: glass.hairline),
+                        ),
                       ),
-                    ),
+                      _AddButton(
+                        open: addOpen,
+                        label: addOpen ? closeLabel : addLabel,
+                        onTap: onAdd,
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ],
-          );
-        },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -200,14 +160,12 @@ class _NavTab extends StatefulWidget {
   const new({
     required this.item,
     required this.selected,
-    required this.showLabel,
     required this.semanticLabel,
     required this.onTap,
   });
 
   final GlassNavItem item;
   final bool selected;
-  final bool showLabel;
   final String semanticLabel;
   final VoidCallback onTap;
 
@@ -249,7 +207,6 @@ class _NavTabState extends State<_NavTab> with SingleTickerProviderStateMixin {
     final theme = Theme.of(context);
     final glass = KkGlass.of(context);
     final duration = KkMotion.of(context, KkMotion.base);
-    final withLabel = selected && widget.showLabel;
     return Semantics(
       label: widget.semanticLabel,
       selected: selected,
@@ -271,42 +228,25 @@ class _NavTabState extends State<_NavTab> with SingleTickerProviderStateMixin {
                 constraints: const BoxConstraints(
                   minWidth: GlassNavBar._tabWidth,
                 ),
-                padding: EdgeInsets.symmetric(horizontal: withLabel ? 14 : 0),
                 decoration: BoxDecoration(
                   color: selected
                       ? glass.tint
                       : glass.tint.withValues(alpha: 0),
                   borderRadius: BorderRadius.circular(KkMetrics.navTab / 2),
                 ),
-                child: AnimatedSize(
-                  duration: duration,
-                  curve: Curves.easeOutCubic,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      AnimatedBuilder(
-                        animation: _jump,
-                        builder: (context, child) => Transform.scale(
-                          scale: 1 + _bounce * math.sin(math.pi * _jump.value),
-                          child: child,
-                        ),
-                        child: Icon(
-                          selected ? item.selectedIcon : item.icon,
-                          color: selected
-                              ? glass.accent
-                              : theme.colorScheme.onSurface,
-                        ),
-                      ),
-                      if (withLabel) ...[
-                        const SizedBox(width: 8),
-                        Text(
-                          item.label,
-                          maxLines: 1,
-                          style: GlassNavBar._labelStyle(context),
-                        ),
-                      ],
-                    ],
+                // Ad gösterilmez (#163); seçili sekme dolu simge ve vurguyla
+                // ayrılır, ekran okuyucu adı Semantics'ten okur.
+                child: AnimatedBuilder(
+                  animation: _jump,
+                  builder: (context, child) => Transform.scale(
+                    scale: 1 + _bounce * math.sin(math.pi * _jump.value),
+                    child: child,
+                  ),
+                  child: Icon(
+                    selected ? item.selectedIcon : item.icon,
+                    color: selected
+                        ? glass.accent
+                        : theme.colorScheme.onSurface,
                   ),
                 ),
               ),

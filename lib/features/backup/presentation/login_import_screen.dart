@@ -10,7 +10,6 @@ import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
-import 'package:keykey/features/authenticator/data/otp_content.dart';
 import 'package:keykey/features/backup/application/login_import_plan.dart';
 import 'package:keykey/features/backup/data/import/login_import.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
@@ -117,11 +116,7 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
               for (final candidate in chosen) candidate.content,
             ]);
       // 2FA hesapları eklenen kayıtlara bağlanır.
-      final otps = <OtpContent>[
-        for (final (index, candidate) in chosen.indexed)
-          if (candidate.otp case final otp? when !candidate.otpAlreadySaved)
-            otp.copyWith(loginId: items[index].id),
-      ];
+      final otps = importedOtps(chosen, [for (final item in items) item.id]);
       if (otps.isNotEmpty) {
         await ref.read(otpsControllerProvider.notifier).addAll(otps);
       }

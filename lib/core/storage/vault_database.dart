@@ -120,12 +120,15 @@ final class VaultDatabase extends _$VaultDatabase {
 
   static void _rejectNewerSchema(File file) {
     if (!file.existsSync()) return;
+    // Okuma-yazma açılır: yazma ortasında ölen bir süreç sıcak bir günlük
+    // bırakmışsa SQLite onu ilk okumada geri alır. Salt okunur bağlantı geri
+    // alamaz ve her açılışta hata verirdi. Sürüm okumak dosyaya yazmaz.
     final database = sqlite.sqlite3.open(
       file.path,
-      mode: sqlite.OpenMode.readOnly,
+      mode: sqlite.OpenMode.readWrite,
     );
     try {
-      final found = database.userVersion;
+      final found = _readUserVersion(database);
       if (found > currentSchemaVersion) {
         throw UnsupportedSchemaException(from: found, to: currentSchemaVersion);
       }
@@ -133,6 +136,28 @@ final class VaultDatabase extends _$VaultDatabase {
       database.close();
     }
   }
+
+  /// Öteki motor (ana uygulama ya da doldurma ekranı) o an yazıyorsa hemen
+  /// düşmek yerine en çok bağlantı ayarındaki kadar (5 sn) bekler.
+  ///
+  /// Bekleme SQLite'ın `busy_timeout`una bırakılmaz: Dart VM'in sinyalleri
+  /// (hata ayıklama ve test modunda) SQLite'ın uykusunu kesiyor, 5 saniyelik
+  /// bekleme Linux'ta 65 ms'de bitiyordu. Dart'ın `sleep`i kesilince kalan
+  /// süreyi tamamlar.
+  static int _readUserVersion(sqlite.Database database) {
+    const busy = 5; // SQLITE_BUSY
+    final waited = Stopwatch()..start();
+    while (true) {
+      try {
+        return database.userVersion;
+      } on sqlite.SqliteException catch (error) {
+        if (error.resultCode != busy || waited.elapsed >= _busyLimit) rethrow;
+        sleep(const Duration(milliseconds: 50));
+      }
+    }
+  }
+
+  static const _busyLimit = Duration(seconds: 5);
 
   @override
   MigrationStrategy get migration => MigrationStrategy(

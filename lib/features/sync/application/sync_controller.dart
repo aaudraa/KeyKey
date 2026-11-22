@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/core/network/sync_transport.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
+import 'package:keykey/features/backup/application/auto_backup_controller.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/settings/application/settings_controller.dart';
 import 'package:keykey/features/sync/application/sync_merger.dart';
@@ -208,7 +209,9 @@ class SyncController extends Notifier<SyncStatus> {
     if (queued != null) return queued;
     final running = _running;
     if (running == null) return _start();
-    final next = running.then((_) {
+    // Önceki çalışma beklenmedik biçimde düşse de kuyruk ilerler; yoksa
+    // _queued hiç temizlenmez ve senkron oturum boyunca durur.
+    final next = running.then<void>((_) {}, onError: (Object _) {}).then((_) {
       _queued = null;
       return _start();
     });
@@ -263,9 +266,15 @@ class SyncController extends Notifier<SyncStatus> {
           .recordSync(result.at, result.digest);
     } on VaultLockedException {
       return;
+    } on Exception {
+      // Ayar kaydı yazılamadı (dolu disk, meşgul veritabanı). Eşitleme yine
+      // de oldu; sonraki eşitleme özeti yeniden hesaplar.
     }
     if (generation != _generation) return;
     if (result.changedLocal) {
+      // Gelen kayıtlar öteki telefonun eski zamanlarını taşır, silmeler de
+      // eski olabilir; otomatik yedeğin değişiklik ölçütü bunları görmez.
+      unawaited(ref.read(autoBackupControllerProvider.notifier).backUpNow());
       unawaited(ref.read(loginsControllerProvider.notifier).reload());
       ref
         ..invalidate(otpsControllerProvider)
