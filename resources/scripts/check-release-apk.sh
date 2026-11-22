@@ -91,10 +91,13 @@ trap 'rm -rf "$work"' EXIT
 unzip -q -o "$apk" -d "$work"
 
 # R8: kendi paketimizden adı korunan sınıflar yalnızca manifestteki
-# bileşenler olabilir (Android onları adıyla bulur). R8 kapanırsa bütün sınıf
-# adları görünür ve bu denetim düşer.
+# bileşenler olabilir (Android onları adıyla bulur). Tek istisna JNI
+# sınıfları: yerel kod onları ve `native` yöntemlerini adıyla bağlar
+# (Argon2Native: KeePass dosyaları, 1.9.0). R8 kapanırsa bütün sınıf adları
+# görünür ve bu denetim düşer.
 components="$(grep -oE ':name\([^)]*\)="io\.github\.aaudraa\.keykey\.[A-Za-z0-9_.$]+"' <<< "$manifest" \
   | sed -E 's/.*="([^"]+)"/\1/' | sort -u)"
+components+=$'\nio.github.aaudraa.keykey.Argon2Native'
 kept="$(cat "$work"/classes*.dex | grep -aoE 'Lio/github/aaudraa/keykey/[A-Za-z0-9_/$]+;' \
   | sed -E 's/^L//; s/;$//; s|/|.|g' | sort -u || true)"
 echo "Adı korunan sınıflar:"

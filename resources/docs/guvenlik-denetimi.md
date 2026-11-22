@@ -98,7 +98,7 @@ TalkBack'in korumalı pencerede çalışmaya devam ettiği [Erişilebilirlik](#e
 | İzinler yalnızca izin listesindekiler; `INTERNET` 1.6.0'dan beri listede, gerekçesiyle | Tamam |
 | `usesCleartextTraffic` kapalı, ağ güvenliği yapılandırması tanımlı (1.6.0) | Tamam |
 | `debuggable` kapalı, `allowBackup` kapalı, `dataExtractionRules` tanımlı | Tamam |
-| R8 açık: kendi paketimizden adı korunan sınıflar yalnızca manifestteki dört bileşen (`MainActivity`, `AutofillActivity`, `KeyKeyAutofillService`, `ClipboardClearReceiver`); geri kalanların adı kısaltılmış | Tamam |
+| R8 açık: kendi paketimizden adı korunan sınıflar yalnızca manifestteki dört bileşen (`MainActivity`, `AutofillActivity`, `KeyKeyAutofillService`, `ClipboardClearReceiver`) ve 1.9.0'dan beri yerel kodun adıyla bağladığı JNI sınıfı `Argon2Native`; geri kalanların adı kısaltılmış | Tamam |
 | Yerel kütüphanelerde (`libapp`, `libflutter`, `libsodium`, `libsqlite3`, `libflutter_zxing` ve diğerleri, 3 mimari, 24 dosya) hata ayıklama bölümü (`.debug_*`) ve tam sembol tablosu (`.symtab`) yok. Kalan dinamik semboller kütüphanenin Dart'tan çağrılabilmesi için gerekli | Tamam |
 | Anahtar deposu, `.env`, `.keykey` yedeği, test fixture'ı veya `DebugProbesKt.bin` yok | `DebugProbesKt.bin` (kotlinx-coroutines'in hata ayıklama dosyası) vardı, paketten çıkarıldı |
 | [Deneme değerlerinden](../scripts/deneme-degerleri.txt) (test parolaları, kurtarma anahtarı, 2FA anahtarı, kullanıcı adları) hiçbiri APK'nın hiçbir dosyasında yok | Tamam |
