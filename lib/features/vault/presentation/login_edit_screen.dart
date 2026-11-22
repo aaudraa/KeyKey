@@ -133,7 +133,11 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
   List<String> get _folders => foldersOfEntries([
     if (ref.read(loginsControllerProvider) case LoginsLoaded(:final items))
       for (final item in items)
-        if (item.id != _original?.id) LoginEntry(item),
+        // Kimlikler baytlarıyla karşılaştırılır: yeniden okumadan sonra
+        // aynı kayıt yeni bir Uint8List taşır.
+        if (_original == null ||
+            loginIdHex(item.id) != loginIdHex(_original!.id))
+          LoginEntry(item),
     if (ref.read(cardsControllerProvider) case RecordsLoaded<CardContent>(
       :final items,
     ))
