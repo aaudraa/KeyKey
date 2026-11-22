@@ -350,6 +350,28 @@ void main() {
       expect(service.biometricEnabled, isFalse);
     });
 
+    testWidgets('pencere açıkken ekran kapanırsa hata çıkmıyor', (
+      tester,
+    ) async {
+      // Parmak izi penceresi açıkken uygulama arka plana gidip kilitlendi;
+      // pencere sonra iptal döndü.
+      final gate = service.biometricGate = Completer<void>();
+      service.biometricSupportValue = BiometricSupport.available;
+      await pumpSettings(tester);
+
+      await tester.tap(biometricSwitch);
+      await tester.pump();
+      ProviderScope.containerOf(tester.element(biometricSwitch))
+          .read(vaultControllerProvider.notifier)
+          .lock();
+      await tester.pumpAndSettle();
+      expect(find.text('KeyKey kilitli'), findsOneWidget);
+
+      gate.complete();
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('vazgeçilirse kapalı kalıyor', (tester) async {
       service.biometricSupportValue = BiometricSupport.available;
       await pumpSettings(tester);

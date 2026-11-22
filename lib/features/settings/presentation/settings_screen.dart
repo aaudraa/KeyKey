@@ -108,7 +108,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     } on Exception {
       snack(l10n.biometricEnableFailed);
     } finally {
-      await _loadBiometric();
+      // Pencere açıkken kasa kilitlenip ekran kapanmış olabilir.
+      if (mounted) await _loadBiometric();
       if (mounted) setState(() => _busy = false);
     }
   }

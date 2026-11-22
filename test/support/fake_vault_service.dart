@@ -85,6 +85,9 @@ class FakeVaultService implements VaultService {
   /// Verilirse parola değişimi bu tamamlanana kadar sürer.
   Completer<void>? changeGate;
 
+  /// Verilirse parmak izi açma penceresi bu tamamlanana kadar açık kalır.
+  Completer<void>? biometricGate;
+
   VaultSession newSession() {
     final key = sodium.secureRandom(32);
     return VaultSession(
@@ -251,6 +254,7 @@ class FakeVaultService implements VaultService {
     BiometricTexts texts,
   ) async {
     biometricPrompts++;
+    await biometricGate?.future;
     if (nextBiometric is BiometricSuccess) biometricEnabled = true;
     return nextBiometric;
   }
