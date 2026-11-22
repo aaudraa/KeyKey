@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:drift/isolate.dart' show DriftRemoteException;
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_riverpod/misc.dart';
 import 'package:keykey/core/backup/backup_codec.dart';
 import 'package:keykey/core/crypto/crypto_exceptions.dart';
@@ -39,6 +41,7 @@ import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:keykey/features/vault/data/vault_record_repository.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sodium/sodium_sumo.dart';
+import 'package:sqlite3/sqlite3.dart' as sqlite;
 
 /// Uygulamayı başlatır: libsodium'u yükler, kasa dosyasını açar ve başlangıç
 /// durumunu belirler.
@@ -63,10 +66,8 @@ Future<List<Override>> bootstrap() async {
     initialTermsAcceptedProvider.overrideWithValue(await termsStore.accepted()),
   ];
 
-  final VaultDatabase database;
-  try {
-    database = VaultDatabase.openFile(File('${directory.path}/keykey.db'));
-  } on UnsupportedSchemaException {
+  final database = openVaultDatabase(File('${directory.path}/keykey.db'));
+  if (database == null) {
     return [
       ...theme,
       ...terms,
@@ -141,15 +142,48 @@ Future<List<Override>> bootstrap() async {
       (session) =>
           OtpRepository(store: store, session: session, sodium: sodium),
     ),
-    initialVaultStatusProvider.overrideWithValue(await _loadStatus(service)),
+    initialVaultStatusProvider.overrideWithValue(
+      await loadVaultStatus(service),
+    ),
   ];
 }
 
-Future<VaultStatus> _loadStatus(VaultService service) async {
+/// Kasa dosyasını açar; açılamıyorsa `null` döner ve hata ekranı gösterilir.
+@visibleForTesting
+VaultDatabase? openVaultDatabase(File file) {
+  try {
+    return VaultDatabase.openFile(file);
+  } on UnsupportedSchemaException {
+    return null;
+  } on Exception catch (error) {
+    if (_isUnreadable(error)) return null;
+    rethrow;
+  }
+}
+
+/// Başlangıç durumu: kurulmamış, kilitli ya da okunamıyor.
+@visibleForTesting
+Future<VaultStatus> loadVaultStatus(VaultService service) async {
   try {
     final header = await service.readHeader();
     return header == null ? const VaultNotSetUp() : VaultLocked(header);
   } on InvalidVaultHeaderException {
     return const VaultUnavailable();
+  } on Exception catch (error) {
+    if (_isUnreadable(error)) return const VaultUnavailable();
+    rethrow;
   }
+}
+
+/// Dosya SQLite değil ya da sayfaları bozuk. Hata yakalanmazsa uygulama
+/// açılış ekranında kalırdı; bunun yerine hata ekranı gösterilir. Meşgul
+/// gibi geçici hatalar buraya girmez: hata ekranı depolamayı temizlemeyi
+/// önerir.
+bool _isUnreadable(Object error) {
+  const corrupt = 11; // SQLITE_CORRUPT
+  const notADatabase = 26; // SQLITE_NOTADB
+  final cause = error is DriftRemoteException ? error.remoteCause : error;
+  if (cause is! sqlite.SqliteException) return false;
+  final code = cause.resultCode & 0xff;
+  return code == corrupt || code == notADatabase;
 }
