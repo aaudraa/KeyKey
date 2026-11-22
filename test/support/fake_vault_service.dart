@@ -348,6 +348,9 @@ class FakeRecordRepository<C extends VaultItemContent<C>>
   DateTime now = DateTime.utc(2026, 11, 5, 12);
   var _nextId = 1;
 
+  /// Verilirse ekleme ve güncelleme bu tamamlanana kadar sürer.
+  Completer<void>? writeGate;
+
   @override
   String get type => C == CardContent
       ? VaultRecordRepository.cardType
@@ -371,6 +374,7 @@ class FakeRecordRepository<C extends VaultItemContent<C>>
 
   @override
   Future<VaultRecord<C>> add(C content) async {
+    await writeGate?.future;
     final created = VaultRecord(
       id: Uint8List(16)
         ..[0] = 201
@@ -385,6 +389,7 @@ class FakeRecordRepository<C extends VaultItemContent<C>>
 
   @override
   Future<VaultRecord<C>> update(VaultRecord<C> item, C content) async {
+    await writeGate?.future;
     final updated = VaultRecord(
       id: item.id,
       content: content,
@@ -416,6 +421,9 @@ class FakeLoginRepository implements LoginRepository {
   DateTime now = DateTime.utc(2026, 11, 5, 12);
   var _nextId = 1;
 
+  /// Verilirse ekleme ve güncelleme bu tamamlanana kadar sürer.
+  Completer<void>? writeGate;
+
   static LoginItem item(
     LoginContent content, {
     int id = 0,
@@ -436,6 +444,7 @@ class FakeLoginRepository implements LoginRepository {
 
   @override
   Future<LoginItem> add(LoginContent content) async {
+    await writeGate?.future;
     final created = LoginItem(
       id: Uint8List(16)
         ..[0] = 200

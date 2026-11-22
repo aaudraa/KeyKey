@@ -170,6 +170,24 @@ void main() {
     expect(saved.favorite, isTrue);
   });
 
+  testWidgets('kayıt sürerken kilitlenirse hata çıkmıyor', (tester) async {
+    final gate = notes.writeGate = Completer<void>();
+    await pumpApp(tester);
+    await go(tester, AppRoutes.noteItemEdit(loginIdHex(notes.items.first.id)));
+    await tester.enterText(field('Metin'), 'yeni metin');
+    await tester.pump();
+    await tester.tap(find.text('Kaydet'));
+    await tester.pump();
+    ProviderScope.containerOf(tester.element(find.byType(NoteEditScreen)))
+        .read(vaultControllerProvider.notifier)
+        .lock();
+    await tester.pumpAndSettle();
+
+    gate.complete();
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('menüden çöp kutusuna taşınır', (tester) async {
     await pumpApp(tester);
     await go(tester, AppRoutes.noteItem(loginIdHex(notes.items.first.id)));

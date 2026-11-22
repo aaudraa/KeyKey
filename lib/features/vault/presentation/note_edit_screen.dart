@@ -98,6 +98,8 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
     final l10n = AppLocalizations.of(context);
     final snack = kkSnackFor(context);
     final controller = ref.read(notesControllerProvider.notifier);
+    // Kayıt sürerken ekran kapanabilir (kilit); ref sonra kullanılamaz.
+    final lastSaved = ref.read(lastSavedProvider.notifier);
     setState(() => _saving = true);
     try {
       final content = _collect();
@@ -115,9 +117,7 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
         );
       }
       _dirty = false;
-      ref
-          .read(lastSavedProvider.notifier)
-          .mark(savedNoteKey(loginIdHex(saved.id)));
+      lastSaved.mark(savedNoteKey(loginIdHex(saved.id)));
       if (mounted) setState(() => _done = true);
     } on VaultLockedException {
       // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.

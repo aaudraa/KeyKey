@@ -150,6 +150,8 @@ class _CardEditScreenState extends ConsumerState<CardEditScreen> {
     final l10n = AppLocalizations.of(context);
     final snack = kkSnackFor(context);
     final controller = ref.read(cardsControllerProvider.notifier);
+    // Kayıt sürerken ekran kapanabilir (kilit); ref sonra kullanılamaz.
+    final lastSaved = ref.read(lastSavedProvider.notifier);
     setState(() => _saving = true);
     try {
       final content = _collect();
@@ -167,9 +169,7 @@ class _CardEditScreenState extends ConsumerState<CardEditScreen> {
         );
       }
       _dirty = false;
-      ref
-          .read(lastSavedProvider.notifier)
-          .mark(savedCardKey(loginIdHex(saved.id)));
+      lastSaved.mark(savedCardKey(loginIdHex(saved.id)));
       if (mounted) setState(() => _done = true);
     } on VaultLockedException {
       // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -1075,6 +1076,24 @@ void main() {
       expect(content.password, 'degisen-parola');
       expect(content.passwordHistory.single.password, 'posta-parolasi');
       expect(find.text('Parola geçmişi (1)'), findsOneWidget);
+    });
+
+    testWidgets('kayıt sürerken kilitlenirse hata çıkmıyor', (tester) async {
+      final gate = logins.writeGate = Completer<void>();
+      await pumpVault(tester);
+      await openAddPassword(tester);
+      await tester.enterText(find.widgetWithText(TextField, 'Ad'), 'Yeni');
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Kaydet'));
+      await tester.pump();
+      ProviderScope.containerOf(tester.element(find.byType(LoginEditScreen)))
+          .read(vaultControllerProvider.notifier)
+          .lock();
+      await tester.pumpAndSettle();
+
+      gate.complete();
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('kaydedilmeden çıkarken onay isteniyor', (tester) async {

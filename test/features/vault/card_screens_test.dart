@@ -327,6 +327,27 @@ void main() {
       expect(saved.isTrashed, isTrue);
     });
 
+    testWidgets('kayıt sürerken kilitlenirse hata çıkmıyor', (tester) async {
+      final gate = cards.writeGate = Completer<void>();
+      await pumpApp(tester);
+      await go(
+        tester,
+        AppRoutes.cardItemEdit(loginIdHex(cards.items.first.id)),
+      );
+      await tester.enterText(field('Ad'), 'Yeni ad');
+      await tester.pump();
+      await tester.tap(find.text('Kaydet'));
+      await tester.pump();
+      ProviderScope.containerOf(tester.element(find.byType(CardEditScreen)))
+          .read(vaultControllerProvider.notifier)
+          .lock();
+      await tester.pumpAndSettle();
+
+      gate.complete();
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('var olan kart düzenlenir', (tester) async {
       await pumpApp(tester);
       await go(
