@@ -14,9 +14,7 @@ void main() {
       ..close();
     final out = StringBuffer()
       ..writeln('sürüm ${sqlite.sqlite3.version}')
-      ..writeln(
-        'seçenekler ${sqlite.sqlite3.openInMemory().select('PRAGMA compile_options').map((r) => r.values.single).where((o) => '$o'.contains(RegExp('THREAD|USLEEP|LOCK|BUSY'))).join(',')}',
-      );
+      ..writeln(options());
 
     for (final mode in ['ayrı isolate', 'ayrı isolate, okuyucu önce açık']) {
       final events = ReceivePort();
@@ -37,8 +35,8 @@ void main() {
           (sqlite.sqlite3.open(path)..execute('PRAGMA busy_timeout = 5000'));
       final t = sw.elapsedMilliseconds;
       try {
-        reader.userVersion;
-        log.add('okuma tamam ${sw.elapsedMilliseconds - t} ms bekledi');
+        final v = reader.userVersion;
+        log.add('okuma $v tamam ${sw.elapsedMilliseconds - t} ms bekledi');
       } on sqlite.SqliteException catch (e) {
         log.add('okuma HATA ${sw.elapsedMilliseconds - t} ms sonra: $e');
       }
@@ -62,4 +60,16 @@ void _hold((String, SendPort, SendPort) args) {
   db.execute('COMMIT');
   events.send('commit ${sw.elapsedMilliseconds}');
   db.close();
+}
+
+String options() {
+  final db = sqlite.sqlite3.openInMemory();
+  final rows = db.select('PRAGMA compile_options');
+  final wanted = RegExp('THREAD|USLEEP|LOCK|BUSY');
+  final picked = [
+    for (final r in rows)
+      if (wanted.hasMatch('${r.values.single}')) '${r.values.single}',
+  ];
+  db.close();
+  return 'seçenekler ${picked.join(',')}';
 }
