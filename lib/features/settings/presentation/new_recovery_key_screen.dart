@@ -215,7 +215,7 @@ class _NewRecoveryKeyScreenState extends ConsumerState<NewRecoveryKeyScreen> {
         );
         if (!leave || !mounted) return;
         setState(() => _pending = null);
-        context.pop();
+        this.context.pop();
       },
       child: _scaffold(l10n),
     );

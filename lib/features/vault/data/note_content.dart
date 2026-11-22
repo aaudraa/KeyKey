@@ -104,6 +104,18 @@ final class NoteContent implements VaultItemContent<NoteContent> {
     );
   }
 
+  /// Düzenleme formunun içeriğini kaydın en son haline uygular: formda
+  /// dokunulmayan alanlar [latest]'teki gibi kalır (form açıkken senkron
+  /// değiştirmiş olabilir). Sık kullanılan ve çöp durumu hep [latest]'ten.
+  NoteContent rebase({
+    required NoteContent original,
+    required NoteContent latest,
+  }) => latest.copyWith(
+    name: name == original.name ? latest.name : name,
+    text: text == original.text ? latest.text : text,
+    folder: folder == original.folder ? latest.folder : folder,
+  );
+
   @override
   NoteContent withFavorite({required bool favorite}) =>
       copyWith(favorite: favorite);

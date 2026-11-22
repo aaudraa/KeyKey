@@ -156,17 +156,11 @@ class RecordsController<C extends VaultItemContent<C>>
     return updated;
   }
 
-  Future<void> setFavorite(
-    VaultRecord<C> item, {
-    required bool favorite,
-  }) async {
-    _swap(
-      await _openRepository.update(
+  Future<void> setFavorite(VaultRecord<C> item, {required bool favorite}) =>
+      _updateLatest(
         item,
-        item.content.withFavorite(favorite: favorite),
-      ),
-    );
-  }
+        (content) => content.withFavorite(favorite: favorite),
+      );
 
   /// Çöp kutusuna taşır.
   Future<void> moveToTrash(VaultRecord<C> item, DateTime now) =>
@@ -183,14 +177,20 @@ class RecordsController<C extends VaultItemContent<C>>
   /// kaydın durumdaki en son halinden gelir (ekranın kopyası eskimiş
   /// olabilir).
   Future<void> _updateLatest(VaultRecord<C> item, C Function(C) change) async {
-    var current = item;
+    final current = latest(item);
+    _swap(await _openRepository.update(current, change(current.content)));
+  }
+
+  /// Kaydın durumdaki en son hali; yoksa verilen. Ekranın elindeki kopya
+  /// eskimiş olabilir.
+  VaultRecord<C> latest(VaultRecord<C> item) {
     if (state case RecordsLoaded<C>(:final items)) {
       final idHex = loginIdHex(item.id);
       for (final other in items) {
-        if (loginIdHex(other.id) == idHex) current = other;
+        if (loginIdHex(other.id) == idHex) return other;
       }
     }
-    _swap(await _openRepository.update(current, change(current.content)));
+    return item;
   }
 
   /// Geri al düğmesi için: kaydın en son halini kendi durumunda bulur.

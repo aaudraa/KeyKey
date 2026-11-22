@@ -137,12 +137,7 @@ class _CardEditScreenState extends ConsumerState<CardEditScreen> {
       notes: _notes.text,
       folder: folder.isEmpty ? null : folder,
     );
-    final original = _original?.content;
-    if (original == null) return base;
-    return base.copyWith(
-      favorite: original.favorite,
-      trashedAt: original.trashedAt,
-    );
+    return base;
   }
 
   Future<void> _save() async {
@@ -159,9 +154,18 @@ class _CardEditScreenState extends ConsumerState<CardEditScreen> {
     try {
       final content = _collect();
       final original = _original;
-      final saved = original == null
-          ? await controller.add(content)
-          : await controller.update(original, content);
+      final VaultRecord<CardContent> saved;
+      if (original == null) {
+        saved = await controller.add(content);
+      } else {
+        // Form açıkken kayıt değişmiş olabilir; dokunulmayan alanlar en son
+        // hâlindeki gibi kalır.
+        final latest = controller.latest(original);
+        saved = await controller.update(
+          latest,
+          content.rebase(original: original.content, latest: latest.content),
+        );
+      }
       _dirty = false;
       ref
           .read(lastSavedProvider.notifier)

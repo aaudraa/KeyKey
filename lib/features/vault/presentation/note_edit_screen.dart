@@ -86,13 +86,10 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
 
   NoteContent _collect() {
     final folder = _folder.text.trim();
-    final original = _original?.content;
     return NoteContent(
       name: _name.text.trim(),
       text: _text.text,
       folder: folder.isEmpty ? null : folder,
-      favorite: original?.favorite ?? false,
-      trashedAt: original?.trashedAt,
     );
   }
 
@@ -105,9 +102,18 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
     try {
       final content = _collect();
       final original = _original;
-      final saved = original == null
-          ? await controller.add(content)
-          : await controller.update(original, content);
+      final VaultRecord<NoteContent> saved;
+      if (original == null) {
+        saved = await controller.add(content);
+      } else {
+        // Form açıkken kayıt değişmiş olabilir; dokunulmayan alanlar en son
+        // hâlindeki gibi kalır.
+        final latest = controller.latest(original);
+        saved = await controller.update(
+          latest,
+          content.rebase(original: original.content, latest: latest.content),
+        );
+      }
       _dirty = false;
       ref
           .read(lastSavedProvider.notifier)

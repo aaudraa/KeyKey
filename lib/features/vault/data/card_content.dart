@@ -183,6 +183,31 @@ final class CardContent implements VaultItemContent<CardContent> {
     );
   }
 
+  /// Düzenleme formunun içeriğini kaydın en son haline uygular. Form açıkken
+  /// kayıt değişmiş olabilir (senkron öteki telefonun değişikliğini getirdi);
+  /// formda dokunulmayan alanlar [latest]'teki gibi kalır. Sık kullanılan ve
+  /// çöp durumu formda yok, hep [latest]'ten gelir.
+  CardContent rebase({
+    required CardContent original,
+    required CardContent latest,
+  }) => latest.copyWith(
+    name: name == original.name ? latest.name : name,
+    cardholder: cardholder == original.cardholder
+        ? latest.cardholder
+        : cardholder,
+    number: number == original.number ? latest.number : number,
+    expiry: _sameExpiry(expiry, original.expiry) ? latest.expiry : expiry,
+    securityCode: securityCode == original.securityCode
+        ? latest.securityCode
+        : securityCode,
+    pin: pin == original.pin ? latest.pin : pin,
+    notes: notes == original.notes ? latest.notes : notes,
+    folder: folder == original.folder ? latest.folder : folder,
+  );
+
+  static bool _sameExpiry(CardExpiry? a, CardExpiry? b) =>
+      a?.month == b?.month && a?.year == b?.year;
+
   @override
   CardContent withFavorite({required bool favorite}) =>
       copyWith(favorite: favorite);

@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/vault/application/records_controller.dart';
 import 'package:keykey/features/vault/data/note_content.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
 import 'package:keykey/features/vault/presentation/note_detail_screen.dart';
@@ -141,6 +143,31 @@ void main() {
 
     expect(notes.items.first.content.text, 'yeni metin');
     expect(notes.items.first.content.name, 'Ev Wi-Fi');
+  });
+
+  testWidgets('form açıkken gelen değişiklik kaydetmede ezilmiyor', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    await go(tester, AppRoutes.noteItemEdit(loginIdHex(notes.items.first.id)));
+    final controller = ProviderScope.containerOf(
+      tester.element(find.byType(NoteEditScreen)),
+    ).read(notesControllerProvider.notifier);
+    final item = notes.items.first;
+    await controller.update(
+      item,
+      item.content.copyWith(name: 'Yazlık Wi-Fi', favorite: true),
+    );
+
+    await tester.enterText(field('Metin'), 'yeni metin');
+    await tester.pump();
+    await tester.tap(find.text('Kaydet'));
+    await tester.pumpAndSettle();
+
+    final saved = notes.items.first.content;
+    expect(saved.text, 'yeni metin');
+    expect(saved.name, 'Yazlık Wi-Fi');
+    expect(saved.favorite, isTrue);
   });
 
   testWidgets('menüden çöp kutusuna taşınır', (tester) async {

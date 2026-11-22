@@ -1,11 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/ui/kk_secret_text.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/vault/application/records_controller.dart';
 import 'package:keykey/features/vault/data/card_content.dart';
 import 'package:keykey/features/vault/data/card_number.dart';
 import 'package:keykey/features/vault/presentation/card_detail_screen.dart';
@@ -293,6 +295,36 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Değişiklikler silinsin mi?'), findsOneWidget);
+    });
+
+    testWidgets('form açıkken gelen değişiklik kaydetmede ezilmiyor', (
+      tester,
+    ) async {
+      // Form açıkken senkron öteki telefonun yeni PIN'ini ve çöpe atmasını
+      // getirdi; kullanıcı yalnızca adı değiştirdi.
+      await pumpApp(tester);
+      await go(
+        tester,
+        AppRoutes.cardItemEdit(loginIdHex(cards.items.first.id)),
+      );
+      final controller = ProviderScope.containerOf(
+        tester.element(find.byType(CardEditScreen)),
+      ).read(cardsControllerProvider.notifier);
+      final item = cards.items.first;
+      await controller.update(
+        item,
+        item.content.copyWith(pin: '9999', trashedAt: DateTime.utc(2026)),
+      );
+
+      await tester.enterText(field('Ad'), 'Yeni ad');
+      await tester.pump();
+      await tester.tap(find.text('Kaydet'));
+      await tester.pumpAndSettle();
+
+      final saved = cards.items.first.content;
+      expect(saved.name, 'Yeni ad');
+      expect(saved.pin, '9999');
+      expect(saved.isTrashed, isTrue);
     });
 
     testWidgets('var olan kart düzenlenir', (tester) async {
