@@ -114,9 +114,18 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
     final snack = kkSnackFor(context);
     final entries = _selectedEntries;
     final bulk = BulkVault(ref);
+    // Yeni ad, seçilmeyen kayıtların (bütün türlerin) klasörleriyle eşlenir;
+    // seçilenlerin kendi klasörü sayılmaz, yoksa "is" hiç "İs" yapılamazdı.
+    final others = switch (ref.read(vaultEntriesProvider)) {
+      VaultEntriesLoaded(:final entries) => foldersOfEntries(
+        entries.where((entry) => !_selected.contains(loginIdHex(entry.id))),
+      ),
+      VaultEntriesLoading() => const <String>[],
+    };
     final choice = await showKkSheet<_FolderChoice>(
       context,
-      builder: (context) => _FolderSheet(folders: folders),
+      builder: (context) =>
+          _FolderSheet(folders: folders, matchAgainst: others),
     );
     if (!mounted || choice == null) return;
     setState(_selected.clear);
@@ -477,9 +486,12 @@ final class _FolderChoice {
 /// Seçilenleri taşımak için klasör penceresi: var olan klasörler, yeni
 /// klasör ve klasörden çıkarma.
 class _FolderSheet extends StatefulWidget {
-  const new({required this.folders});
+  const new({required this.folders, required this.matchAgainst});
 
   final List<String> folders;
+
+  /// Yeni yazılan adın harf büyüklüğüyle eşleneceği klasörler.
+  final List<String> matchAgainst;
 
   @override
   State<_FolderSheet> createState() => _FolderSheetState();
@@ -499,7 +511,7 @@ class _FolderSheetState extends State<_FolderSheet> {
     if (name.isEmpty) return;
     Navigator.pop(
       context,
-      _FolderChoice(matchExistingFolder(name, widget.folders)),
+      _FolderChoice(matchExistingFolder(name, widget.matchAgainst)),
     );
   }
 

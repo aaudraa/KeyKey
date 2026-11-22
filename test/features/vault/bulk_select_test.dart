@@ -192,6 +192,46 @@ void main() {
     expect(login(1).folder, 'Banka');
   });
 
+  testWidgets('klasörün bütün kayıtları seçilince adının harfi düzeltiliyor', (
+    tester,
+  ) async {
+    // "Banka" klasöründeki tek kayıt seçildi; "BANKA" yazılınca kendi klasörü
+    // eşleşmeye sayılmamalı.
+    await pumpVault(tester);
+    await longPress(tester, 'Banka');
+    await tester.tap(find.byTooltip('Klasöre taşı'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Yeni klasör'),
+      'BANKA',
+    );
+    await tester.pump();
+    await tester.tap(find.text('Taşı'));
+    await tester.pumpAndSettle();
+
+    expect(login(2).folder, 'BANKA');
+  });
+
+  testWidgets('başka sekmedeki klasör de eşleşiyor', (tester) async {
+    cards.items[0] = FakeRecordRepository.item(
+      CardContent(name: 'Maaş kartı', folder: 'İş'),
+      id: 4,
+    );
+    await pumpVault(tester);
+    await longPress(tester, 'Posta');
+    await tester.tap(find.byTooltip('Klasöre taşı'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Yeni klasör'),
+      'iş',
+    );
+    await tester.pump();
+    await tester.tap(find.text('Taşı'));
+    await tester.pumpAndSettle();
+
+    expect(login(1).folder, 'İş');
+  });
+
   testWidgets('yeni klasör ve klasörden çıkarma', (tester) async {
     await pumpVault(tester);
     await longPress(tester, 'Posta');

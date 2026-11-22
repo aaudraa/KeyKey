@@ -1,0 +1,1 @@
+Arayüz kodunun incelenmesinden çıkan düzeltmeler. Android'in kenardan geri hareketi yalnızca en üstteki sayfayı kapatıyor. Senkron sırasında yapılan değişiklikler kaybolmuyor. Donanım klavyesiyle kopyalanan parolalar da 30 saniye sonra siliniyor. Okunamayan kasa dosyası açılışı dondurmuyor. İçe aktarılan 2FA adları temizleniyor.
