@@ -20,6 +20,7 @@ import 'package:keykey/features/authenticator/application/otp_clock.dart';
 import 'package:keykey/features/authenticator/application/otp_search.dart';
 import 'package:keykey/features/authenticator/application/otp_visibility.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
+import 'package:keykey/features/authenticator/data/otp_parameters.dart';
 import 'package:keykey/features/authenticator/data/otp_repository.dart';
 import 'package:keykey/features/authenticator/presentation/otp_clock_builder.dart';
 import 'package:keykey/features/authenticator/presentation/otp_code_tile.dart';
@@ -50,9 +51,17 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
   final _searchFocus = FocusNode();
   final _scroll = ScrollController();
 
-  /// Bu ekranda üretilmiş HOTP kodları, hesap kimliğine göre. Kasa
-  /// kilitlenince ekran kapanır ve bunlar da gider.
-  final Map<String, String> _hotpCodes = {};
+  /// Bu ekranda üretilmiş HOTP kodları, hesap kimliğine göre, üretildikten
+  /// sonraki parametrelerle. Hesap düzenlenirse (anahtar, sayaç) kod artık
+  /// geçersizdir ve gösterilmez. Kasa kilitlenince ekran kapanır ve bunlar da
+  /// gider.
+  final Map<String, (String, OtpParameters?)> _hotpCodes = {};
+
+  String? _hotpCodeOf(OtpItem item) => switch (_hotpCodes[otpIdHex(item)]) {
+    (final code, final shownFor) when shownFor == item.content.parameters =>
+      code,
+    _ => null,
+  };
 
   @override
   void dispose() {
@@ -70,7 +79,12 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
     final controller = ref.read(otpsControllerProvider.notifier);
     try {
       final code = await controller.nextHotpCode(item);
-      if (mounted) setState(() => _hotpCodes[otpIdHex(item)] = code);
+      if (!mounted) return;
+      final shownFor = switch (ref.read(otpsControllerProvider)) {
+        OtpsLoaded(:final byId) => byId(item.id)?.content.parameters,
+        OtpsLoading() => null,
+      };
+      setState(() => _hotpCodes[otpIdHex(item)] = (code, shownFor));
     } on VaultLockedException {
       // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.
     } on OtpNotFoundException {
@@ -238,7 +252,7 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
                       ref.watch(loginsControllerProvider),
                       loginIdHex(loginId),
                     )?.content,
-              hotpCode: _hotpCodes[otpIdHex(item)],
+              hotpCode: _hotpCodeOf(item),
               onCopy: _copy,
               onGenerate: () => unawaited(_generate(item)),
               onAction: (action) => unawaited(_onAction(item, action)),
