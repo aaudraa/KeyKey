@@ -320,5 +320,103 @@ void main() {
       );
       expect(result.matches, isEmpty);
     });
+    group('doğrulanmış site', () {
+      // com.banka.mobil'in Android'in doğruladığı sitesi banka.com.tr.
+      Future<LoginMatches> verified(
+        AutofillTarget target, {
+        List<LoginItem>? among,
+      }) => matchLogins(
+        target: target,
+        items: among ?? items,
+        suffixes: psl,
+        hasSigningCertificates: signedWith,
+        verifiedSites: const {'banka.com.tr'},
+      );
+
+      test(
+        'aynı sitedeki bağsız kayıtlar eşleşiyor, bağlı olan önce',
+        () async {
+          final result = await verified(
+            const AutofillTarget(packageName: 'com.banka.mobil'),
+          );
+          expect(names(result), [
+            ('Uygulama', LoginMatchKind.app),
+            ('Banka', LoginMatchKind.verifiedSite),
+            ('Banka giriş', LoginMatchKind.verifiedSite),
+          ]);
+        },
+      );
+
+      test('imzası tutmayan bağlı kayıt doğrulanmış site olmuyor', () async {
+        final mismatched = item(
+          'Banka eski imza',
+          urls: ['https://banka.com.tr'],
+          apps: [
+            LoginApp(
+              packageName: 'com.banka.mobil',
+              certsSha256: const [otherCert],
+            ),
+          ],
+        );
+        final result = await verified(
+          const AutofillTarget(packageName: 'com.banka.mobil'),
+          among: [mismatched],
+        );
+        expect(result.matches, isEmpty);
+        expect(result.signatureMismatches, [mismatched]);
+      });
+
+      test(
+        'hem bağlı hem aynı sitede olan kayıt bir kez, uygulama olarak',
+        () async {
+          final both = item(
+            'İkisi',
+            urls: ['https://banka.com.tr'],
+            apps: [
+              LoginApp(
+                packageName: 'com.banka.mobil',
+                certsSha256: const [ownCert],
+              ),
+            ],
+          );
+          final result = await verified(
+            const AutofillTarget(packageName: 'com.banka.mobil'),
+            among: [both],
+          );
+          expect(names(result), [('İkisi', LoginMatchKind.app)]);
+          expect(result.kindOf(both), LoginMatchKind.app);
+        },
+      );
+
+      test('başka site ve uygulama adresi eşleşmiyor', () async {
+        final result = await verified(
+          const AutofillTarget(packageName: 'com.banka.mobil'),
+          among: [
+            item('Sahte', urls: ['https://sahte-banka.com.tr']),
+            item('Paket', urls: ['androidapp://banka.com.tr']),
+          ],
+        );
+        expect(result.matches, isEmpty);
+      });
+
+      test('tarayıcıda doğrulanmış siteler yok sayılıyor', () async {
+        final result = await verified(
+          const AutofillTarget(
+            packageName: 'com.android.chrome',
+            webDomain: 'banka.com',
+          ),
+        );
+        expect(names(result), [('Başka', LoginMatchKind.exactHost)]);
+      });
+
+      test('eşleşmeyen kaydın türü yok', () async {
+        final other = item('Başka site', urls: ['https://x.com']);
+        final result = await verified(
+          const AutofillTarget(packageName: 'com.banka.mobil'),
+          among: [other],
+        );
+        expect(result.kindOf(other), isNull);
+      });
+    });
   });
 }
