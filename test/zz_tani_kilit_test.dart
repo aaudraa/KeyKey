@@ -24,7 +24,8 @@ void main() {
       final sw = Stopwatch()..start();
       sqlite.Database? early;
       if (mode.contains('önce')) {
-        early = sqlite.sqlite3.open(path)..execute('PRAGMA busy_timeout = 5000');
+        early = sqlite.sqlite3.open(path)
+          ..execute('PRAGMA busy_timeout = 5000');
       }
       final done = events.listen((m) => log.add('tutucu $m'));
       final first = ReceivePort();
