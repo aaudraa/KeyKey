@@ -8,7 +8,7 @@ import 'package:pointycastle/export.dart';
 /// Uygulamaya girmez; telefondaki uygulama aynı değerlerle cihaz testinde
 /// sınanır.
 final class DartKdbxKdf implements KdbxKdf {
-  const DartKdbxKdf();
+  const new();
 
   @override
   Future<Uint8List> aesKdf({
