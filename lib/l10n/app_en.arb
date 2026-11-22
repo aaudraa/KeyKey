@@ -658,6 +658,11 @@
       }
     }
   },
+  "trashFailed": "{failed} of {total} items could not be processed.",
+  "@trashFailed": {
+    "description": "Shown when restoring or emptying the trash fails for some items.",
+    "placeholders": {"failed": {"type": "int"}, "total": {"type": "int"}}
+  },
   "trashEmptyConfirm": "Empty",
   "@trashEmptyConfirm": {
     "description": "Confirms emptying the trash."

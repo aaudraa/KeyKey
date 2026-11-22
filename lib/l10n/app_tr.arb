@@ -159,6 +159,8 @@
   "trashEmptyAll": "Çöpü boşalt",
   "trashEmptyTitle": "Çöp kutusu boşaltılsın mı?",
   "trashEmptyMessage": "{count} kayıt kalıcı olarak silinecek ve geri getirilemeyecek.",
+  "trashFailed": "{total} kayıttan {failed} tanesinde işlem yapılamadı.",
+  "@trashFailed": {"placeholders": {"failed": {"type": "int"}, "total": {"type": "int"}}},
   "trashEmptyConfirm": "Boşalt",
   "generatorPassword": "Parola",
   "generatorPassphrase": "Parola cümlesi",

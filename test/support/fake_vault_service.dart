@@ -467,8 +467,12 @@ class FakeLoginRepository implements LoginRepository {
 
   @override
   Future<void> deletePermanently(LoginItem item) async {
+    await deleteGate?.future;
     items.removeWhere((other) => listEquals(other.id, item.id));
   }
+
+  /// Verilirse kalıcı silme bu tamamlanana kadar sürer.
+  Completer<void>? deleteGate;
 
   @override
   Future<List<LoginItem>> purgeExpiredTrash(List<LoginItem> items) async =>

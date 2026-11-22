@@ -1353,6 +1353,26 @@ void main() {
       expect(find.text('Çöp kutusu boş.'), findsOneWidget);
     });
 
+    testWidgets('boşaltırken ekrandan çıkılsa da hepsi siliniyor', (
+      tester,
+    ) async {
+      await openTrashWithAll(tester);
+      final gate = logins.deleteGate = Completer<void>();
+      await openTrashMenu(tester);
+      await tester.tap(find.text('Çöpü boşalt'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Boşalt'));
+      await tester.pump();
+
+      await tester.tap(find.byTooltip('Geri'));
+      await tester.pumpAndSettle();
+      gate.complete();
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(logins.items, isEmpty);
+    });
+
     testWidgets('çöp boşken toplu işlemler kapalı', (tester) async {
       await pumpVault(tester);
       await openMenu(tester);
