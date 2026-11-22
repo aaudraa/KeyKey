@@ -55,7 +55,7 @@ void main() {
         if (usleep(100000) != 0) interrupted++;
       }
       out.writeln(
-        '10 x usleep(100 ms): ${sw.elapsedMilliseconds} ms, kesilen $interrupted',
+        '10 x usleep: ${sw.elapsedMilliseconds} ms, kesilen $interrupted',
       );
     }
     dir.deleteSync(recursive: true);
