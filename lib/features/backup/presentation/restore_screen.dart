@@ -246,6 +246,13 @@ class _RestoreScreenState extends ConsumerState<RestoreScreen> {
       }
       // Kilit ekranına gidilir; kasa artık yedeğin ana parolasıyla açılır.
       controller.lockReplaced(backup.header);
+      // Klasördeki en yeni otomatik yedekler değiştirilen kasanın; yedeğin
+      // kayıtları eski zamanlar taşıdığı için değişiklik ölçütü yazmazdı.
+      // Kasa açılınca bir kez yazılır (kilit, bekleyen isteği silmeden önce
+      // geçti).
+      unawaited(
+        ref.read(autoBackupControllerProvider.notifier).backUpNowOrOnOpen(),
+      );
     } on Exception {
       _fail(l10n.restoreFailed);
       if (mounted) setState(() => _busy = false);

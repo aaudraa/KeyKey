@@ -499,6 +499,37 @@ void main() {
       expect(folders.files[folder.uri], hasLength(1));
     });
 
+    testWidgets('değiştirdikten sonra kasa açılınca otomatik yedek yazılıyor', (
+      tester,
+    ) async {
+      // N3'ün ikinci yarısı: klasördeki en yeni otomatik yedekler eski
+      // kasanın; değişiklik ölçütü yedeğin eski kayıtlarını yeni saymaz.
+      final folders = FakeBackupFolders()..granted.add(folder.uri);
+      await openFromSettings(
+        tester,
+        folders: folders,
+        settings: FakeSettingsRepository(
+          AppSettings.defaults.withAutoBackupFolder(folder),
+        ),
+      );
+      await tester.tap(find.text('Kasanın yerine yedeği koy'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Değiştir'));
+      await tester.pumpAndSettle();
+      expect(find.text('KeyKey kilitli'), findsOneWidget);
+      expect(folders.writes, 0);
+
+      await tester.enterText(
+        find.byType(TextField),
+        FakeVaultService.correctPassword,
+      );
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Aç'));
+      await tester.pumpAndSettle();
+
+      expect(folders.files[folder.uri], hasLength(1));
+    });
+
     testWidgets('değiştirirken bu cihazın klasörü korunuyor', (tester) async {
       await openFromSettings(
         tester,
