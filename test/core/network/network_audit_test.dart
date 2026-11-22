@@ -2,10 +2,12 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-/// KeyKey'in ağ trafiği sızıntı kontrolü ve senkron için. Ağ kodu yalnızca
-/// bu iki dosyada durur; başka bir yerde ağ kodu görünürse bu test kırılır
-/// ve bilinçli bir karar ister (güvenlik tasarımı, "Ağ").
+/// KeyKey'in ağ trafiği sızıntı kontrolü, senkron ve uygulama ile site
+/// eşleştirmesi için. Ağ kodu yalnızca bu üç dosyada durur; başka bir yerde
+/// ağ kodu görünürse bu test kırılır ve bilinçli bir karar ister (güvenlik
+/// tasarımı, "Ağ").
 const _allowed = {
+  'lib/core/network/asset_links_client.dart',
   'lib/core/network/pwned_passwords_client.dart',
   'lib/core/network/webdav_client.dart',
 };
@@ -102,7 +104,7 @@ void main() {
     expect(auditedSources().any((path) => path.endsWith('.java')), isTrue);
   });
 
-  test('izin verilen iki dosya dışındaki ağ kodu yakalanır', () {
+  test('izin verilen dosyalar dışındaki ağ kodu yakalanır', () {
     const line = 'final c = HttpClient();';
     expect(
       disallowedLines({
@@ -114,13 +116,17 @@ void main() {
     );
   });
 
-  test('ağ kodu yalnızca sızıntı kontrolü ve senkron istemcisinde', () {
-    final found = disallowedLines({
-      for (final path in auditedSources()) path: File(path).readAsStringSync(),
-    });
-    expect(found, isEmpty);
-    for (final path in _allowed) {
-      expect(File(path).existsSync(), isTrue, reason: path);
-    }
-  });
+  test(
+    'ağ kodu yalnızca sızıntı kontrolü, senkron ve assetlinks istemcisinde',
+    () {
+      final found = disallowedLines({
+        for (final path in auditedSources())
+          path: File(path).readAsStringSync(),
+      });
+      expect(found, isEmpty);
+      for (final path in _allowed) {
+        expect(File(path).existsSync(), isTrue, reason: path);
+      }
+    },
+  );
 }
