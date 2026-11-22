@@ -224,6 +224,34 @@ void main() {
     expect(find.text('Posta'), findsOneWidget);
   });
 
+  testWidgets('sekme değişince açık menü öteki sekmede kalmıyor', (
+    tester,
+  ) async {
+    // Menü sekmenin gezgininde açılınca perdesi alt menüyü örtmüyordu;
+    // sekme değişip dönülünce menü hâlâ açıktı.
+    await pumpVault(tester);
+    final cardsTab = tester.getCenter(find.byIcon(Icons.credit_card_outlined));
+    await tester.tap(find.byTooltip('Diğer işlemler'));
+    await tester.pumpAndSettle();
+    expect(find.text('Ada göre sırala'), findsOneWidget);
+
+    // Kullanıcı menü açıkken Kartlar sekmesine dokunur, sonra Kasa'ya döner.
+    await tester.tapAt(cardsTab);
+    await tester.pumpAndSettle();
+    if (find
+        .byIcon(Icons.credit_card_outlined)
+        .hitTestable()
+        .evaluate()
+        .isNotEmpty) {
+      await tester.tap(find.byIcon(Icons.credit_card_outlined));
+      await tester.pumpAndSettle();
+    }
+    await tester.tap(find.byIcon(Icons.key_outlined));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ada göre sırala'), findsNothing);
+  });
+
   testWidgets('sekme değişince seçim bırakılıyor', (tester) async {
     await pumpVault(tester);
     await longPress(tester, 'Posta');

@@ -50,6 +50,9 @@ class KkMenuButton<T> extends StatelessWidget {
       menuPadding: EdgeInsets.zero,
       padding: EdgeInsets.zero,
       position: PopupMenuPosition.under,
+      // Sekmenin gezgininde açılırsa perdesi alt menüyü örtmez; sekme
+      // değişince menü öteki sekmede açık kalırdı (#173, S7).
+      useRootNavigator: true,
       onSelected: onSelected,
       itemBuilder: (context) => [_GlassMenuEntry<T>(items)],
     );
