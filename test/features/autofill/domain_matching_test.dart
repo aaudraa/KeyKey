@@ -82,6 +82,13 @@ void main() {
       }
     });
 
+    test('ters eğik çizgi tarayıcıdaki gibi yolu başlatıyor', () {
+      // Tarayıcılar http(s) adreslerinde "\" işaretini "/" sayar:
+      // https://evil.com\@bank.com evil.com'u açar.
+      expect(DomainName.hostOfUrl(r'https://evil.com\@bank.com'), 'evil.com');
+      expect(DomainName.hostOfUrl(r'evil.com\giris'), 'evil.com');
+    });
+
     test('şema yalnızca başta tanınıyor', () {
       expect(
         DomainName.hostOfUrl('site.com/git?adres=https://banka.com'),

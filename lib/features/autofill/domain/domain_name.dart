@@ -24,7 +24,8 @@ abstract final class DomainName {
       if (web == null) return null;
       rest = rest.substring(web.end);
     }
-    final end = rest.indexOf(RegExp('[/?#]'));
+    // Tarayıcılar http(s) adreslerinde ters eğik çizgiyi de yol başı sayar.
+    final end = rest.indexOf(RegExp(r'[/?#\\]'));
     if (end >= 0) rest = rest.substring(0, end);
     // Kullanıcı bilgisi ve kapı numarası atılır.
     final at = rest.lastIndexOf('@');
