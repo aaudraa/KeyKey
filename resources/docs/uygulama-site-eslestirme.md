@@ -102,6 +102,8 @@ Ağ kodu yeni bir dosyada durur: `lib/core/network/asset_links_client.dart`. [A�
 
 Ayarlar → Otomatik doldurma'da yeni bir anahtar: **"Uygulamanın sitesini internetten doğrula"**, varsayılan kapalı ([İnternet kararı](../yol-haritasi.md#temel-kararlar): her internet özelliği kullanıcı açınca çalışır). Açıklaması: "Bir uygulamada eşleşen kayıt yoksa, uygulamanın sitesi olduğunu söylediği ve kasanda kaydı bulunan sitenin assetlinks.json dosyası okunur. Siteye kasandan bir şey gitmez." Ayar şifreli kasa ayarlarına (`AppSettings`, sürüm 8) eklenir; okunamazsa kapalı sayılır. İnternetsiz kısım (sistemin doğrulaması) ayar istemez, her zaman çalışır.
 
+**Uygularken eklenenler:** Ayar kaydının sürümü artınca yedeğin içerik sürümü de artar (güvenlik tasarımındaki kural, bir test sabitliyor): yedekler 5 ile yazılır. Senkron dosyası ayar kaydı taşımadığı için 4'te kalır, böylece 1.8.0-1.9.x telefonlarla eşitleme sürer. Kullanım koşullarındaki "internete yalnızca … için çıkar" cümlesi bu özellikle eksik kalacağı için koşullar sürüm 4 olur ve bir kez yeniden sorulur.
+
 ### Kotlin
 
 `PlatformApi`'ye (Pigeon) bir çağrı: `appDomains(packageName)` → `[(host, verified)]`. Android 12'nin altında, paket bulunamazsa ya da uygulama `https` alan adı bildirmiyorsa boş liste. Alan adları küçük harfe çevrilir; `getHostToStateMap` anahtarları zaten ASCII'dir. Hedef uygulama doldurma ekranını kendisi başlattığı için paket görünürlüğü engel olmaz; AOSP'deki denetim (`DomainVerificationEnforcer.assertApprovedUserStateQuerent`) yalnızca görünürlüğe bakar, ek izin istemez.
@@ -115,7 +117,7 @@ Ayarlar → Otomatik doldurma'da yeni bir anahtar: **"Uygulamanın sitesini inte
 - Ayar kapalıyken istemci hiç çağrılmaz.
 - Doldurma ekranı (widget): doğrulanmış site tek eşleşmede doğrudan doldurur ve uygulamayı bağlar; yükleniyor yazısı; ağ hatasında liste açılır.
 - Kotlin birim testi: alan adı listesinin dönüşümü.
-- Cihazda: Android 12+ emülatörde doğrulanmış alan adı olan bir uygulama (örneğin Wikipedia, `org.wikipedia`; doğrulama `adb shell pm get-app-links` ile görülür) ve `wikipedia.org` kaydıyla gerçek doldurma yolu.
+- Cihazda: Android 12+ emülatörde doğrulanmış alan adı olan bir uygulama (örneğin Wikipedia, `org.wikipedia`; doğrulama `adb shell pm get-app-links` ile görülür) ve `wikipedia.org` kaydıyla gerçek doldurma yolu. Sonuç: [güvenlik denetimi](guvenlik-denetimi.md#ağ).
 
 ### Belgeler
 

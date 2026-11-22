@@ -1,0 +1,1 @@
+Bir sitenin resmî uygulamasında o sitenin kaydı kendiliğinden eşleşiyor: Android'in doğruladığı siteler internetsiz kullanılıyor; isteğe bağlı ayarla sitenin assetlinks.json dosyası da okunabiliyor (siteye kasadan bir şey gitmez). Eşleşme uygulamanın imzasıyla doğrulanıyor, ilk doldurmada uygulama kayda bağlanıyor. Koşullar bu yüzden bir kez yeniden soruluyor.

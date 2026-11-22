@@ -65,14 +65,14 @@ void main() {
       );
     });
 
-    test('2. sürümü kabul etmiş kullanıcıya yeniden sorulur', () async {
-      // Sürüm 3: senkron açılırsa şifreli kopya kullanıcının sunucusuna gider.
-      final file = File('${dir.path}/terms')..writeAsStringSync('2');
+    test('3. sürümü kabul etmiş kullanıcıya yeniden sorulur', () async {
+      // Sürüm 4: açarsa otomatik doldurma uygulamanın sitesine sorar.
+      final file = File('${dir.path}/terms')..writeAsStringSync('3');
       final store = FileTermsAcceptanceStore(file);
       expect(await store.accepted(), isFalse);
       await store.write(currentTermsVersion);
       expect(await store.accepted(), isTrue);
-      expect(currentTermsVersion, 3);
+      expect(currentTermsVersion, 4);
     });
 
     test('bozuk içerik kabul edilmemiş sayılır', () async {

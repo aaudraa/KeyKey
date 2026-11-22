@@ -1,0 +1,1 @@
+A site's login now matches automatically in that site's official app: websites Android has verified are used without going online, and an optional setting lets KeyKey read the site's assetlinks.json (nothing from your vault is sent). The match is checked against the app's signature, and the app is linked to the login on first fill. The terms are shown once more because of this.

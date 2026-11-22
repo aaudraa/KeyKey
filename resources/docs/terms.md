@@ -1,6 +1,6 @@
 # Terms of use
 
-**Version:** 3 · **Date:** 2026-11-20 · Türkçe: [kosullar.md](kosullar.md)
+**Version:** 4 · **Date:** 2026-11-22 · Türkçe: [kosullar.md](kosullar.md)
 
 KeyKey shows these terms once before a vault is created or opened; you cannot continue without ticking "I have read and understood this, and I accept it." They can be read again under Settings → About → **Terms of use**. This file matches the text in the app; if the terms change, the version number goes up and the app asks once more. Data details are in the [privacy policy](privacy.md); the full license is in [LICENSE](../../LICENSE).
 
@@ -8,7 +8,7 @@ Please read this before you start using KeyKey. We kept it short; every point de
 
 ## Your data is in your hands
 
-Your passwords, 2FA accounts, cards and notes are kept in the vault on this phone. A backup or export file is only created when you ask for it, and saved where you choose. KeyKey has no account and no server, shows no ads and collects no usage data. It goes online only for features you turn on yourself: the breach check in the password report (your passwords themselves are never sent) and, if you turn it on, sync. When you open a link, the page opens in your browser. The developers cannot see, collect or store your data.
+Your passwords, 2FA accounts, cards and notes are kept in the vault on this phone. A backup or export file is only created when you ask for it, and saved where you choose. KeyKey has no account and no server, shows no ads and collects no usage data. It goes online only for features you turn on yourself: the breach check in the password report (your passwords themselves are never sent), sync if you turn it on, and, if you turn it on, verifying an app's website during autofill (nothing from your vault is sent to the site). When you open a link, the page opens in your browser. The developers cannot see, collect or store your data.
 
 ## How the vault is protected
 

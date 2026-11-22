@@ -30,7 +30,7 @@
 ## Neden KeyKey?
 
 - **Verilerin sende kalır.** KeyKey'in sunucusu ve hesabı yok; her şey telefonunda şifreli olarak durur.
-- **Parolaların şifresiz hiçbir yere gitmez.** İnternete yalnızca senin açtığın iki özellik çıkar: sızıntı kontrolüne parola özetinin ilk 5 karakteri gider; isteğe bağlı senkron, kasanı kendi WebDAV sunucun (Nextcloud, ownCloud…) üzerinden ana parolanla uçtan uca şifreli eşitler. Ağ kodunun bu iki dosyada kaldığı her derlemede otomatik olarak denetlenir.
+- **Parolaların şifresiz hiçbir yere gitmez.** İnternete yalnızca senin açtığın özellikler çıkar: sızıntı kontrolüne parola özetinin ilk 5 karakteri gider; isteğe bağlı senkron, kasanı kendi WebDAV sunucun (Nextcloud, ownCloud…) üzerinden ana parolanla uçtan uca şifreli eşitler; isteğe bağlı site doğrulaması, otomatik doldurmada uygulamanın sitesinin `assetlinks.json` dosyasını okur. Ağ kodunun bu üç dosyada kaldığı her derlemede otomatik olarak denetlenir.
 - **Yedeğin senin kontrolünde.** Şifreli yedeği istediğin klasöre elle ya da otomatik olarak alırsın.
 - **Kodu açık, derlemesi doğrulanabilir.** Uygulamanın ne yaptığını herkes inceleyebilir; yayımlanan APK, F-Droid'in derleme aracıyla birebir aynı çıkar.
 

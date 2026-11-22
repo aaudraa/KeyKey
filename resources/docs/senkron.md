@@ -81,7 +81,7 @@ Dosya [yedek biçimindedir](guvenlik-tasarimi.md#yedek-biçimi): aynı sihir, ay
 - `deviceName`: telefonun modeli (`Build.MODEL`, en çok 64 karakter). Yalnızca cihaz listesinde gösterilir, şifreli katmandadır.
 - `passwordChangedAt`, `recoveryChangedAt`: üst bilgideki parola yuvasının ve kurtarma yuvasının bu telefonun bildiği son değişme zamanları (aşağıda); 1.8.0'dan beri değişmediyse `null`.
 - `deleted`: silme kayıtları (aşağıda). Kimlikler tekrarlanamaz.
-- Elle ve otomatik yedekler de sürüm 4 ile yazılır ama `sync` taşımaz ([Sürümler](#sürümler): ayar kaydı sürüm 7 olduğu için 1.7.0 bu yedekleri zaten okuyamaz). `sync` yalnızca sürüm 4'te bulunabilir; senkron dosyası olarak okunan dosyada zorunludur, Geri yükle'de isteğe bağlıdır.
+- Elle ve otomatik yedekler de sürüm 4 ile yazılır ama `sync` taşımaz ([Sürümler](#sürümler): ayar kaydı sürüm 7 olduğu için 1.7.0 bu yedekleri zaten okuyamaz). 1.10.0'dan beri yedekler sürüm 5 ile yazılır (ayar kaydı sürüm 8); senkron dosyası ayar kaydı taşımadığı için sürüm 4'te kalır, 1.8.0-1.9.x telefonlarla eşitleme sürer. `sync` yalnızca sürüm 4'te bulunabilir; senkron dosyası olarak okunan dosyada zorunludur, Geri yükle'de isteğe bağlıdır.
 - Senkron dosyası yedek gibi geri yüklenebilir (Geri yükle ekranı): kayıtları alınır, `sync` nesnesi yok sayılır. Telefon kaybolunca sunucudaki dosya son çare yedeğidir.
 - Okurken doğrulama yedekteki kadar katıdır: bilinmeyen alan, eksik alan, yanlış uzunluk, yinelenen kimlik reddedilir. Daha yeni bir içerik sürümü `NewerBackupException` olur ("başka bir telefonda daha yeni KeyKey var").
 

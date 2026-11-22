@@ -847,7 +847,7 @@
   "@termsDataTitle": {
     "description": "Terms section title: where data lives."
   },
-  "termsDataBody": "Your passwords, 2FA accounts, cards and notes are kept in the vault on this phone. A backup or export file is only created when you ask for it, and saved where you choose. KeyKey has no account and no server, shows no ads and collects no usage data. It goes online only for features you turn on yourself: the breach check in the password report (your passwords themselves are never sent) and, if you turn it on, sync. When you open a link, the page opens in your browser. The developers cannot see, collect or store your data.",
+  "termsDataBody": "Your passwords, 2FA accounts, cards and notes are kept in the vault on this phone. A backup or export file is only created when you ask for it, and saved where you choose. KeyKey has no account and no server, shows no ads and collects no usage data. It goes online only for features you turn on yourself: the breach check in the password report (your passwords themselves are never sent), sync if you turn it on, and, if you turn it on, verifying an app's website during autofill (nothing from your vault is sent to the site). When you open a link, the page opens in your browser. The developers cannot see, collect or store your data.",
   "@termsDataBody": {
     "description": "Terms section body: where data lives."
   },
