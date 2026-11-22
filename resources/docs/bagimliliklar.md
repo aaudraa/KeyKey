@@ -24,7 +24,8 @@ KeyKey GPL-3.0 ile yayımlanır. Bu yüzden içine giren her şeyin lisansı GPL
 | `sodium` | 4.1.2+1 | BSD-3-Clause; içindeki libsodium 1.0.22 ISC | Bütün kriptografi: Argon2id, XChaCha20-Poly1305, rastgele sayı, korumalı bellek |
 | `sqlite3` | 3.9.1 | MIT; SQLite kamu malı | Veritabanı motoru |
 | `drift` | 2.35.4 | MIT | Veritabanı şeması, sorgular ve göçler |
-| `crypto` | 3.0.8 | BSD-3-Clause | 2FA kodları için HMAC-SHA1/256/512; içe aktarmada anahtar türetme; sızıntı kontrolünde parolanın SHA-1 özeti |
+| `crypto` | 3.0.8 | BSD-3-Clause | 2FA kodları için HMAC-SHA1/256/512; içe aktarmada anahtar türetme; sızıntı kontrolünde parolanın SHA-1 özeti; KeePass dosyalarında SHA-256, SHA-512 ve HMAC |
+| `pointycastle` | 4.0.0 | MIT | KeePass dosyalarının şifre çözmesi: AES-256-CBC, Twofish, ChaCha20, Salsa20 (1.9.0). Saf Dart, yerel kod ve bağımlılık getirmiyor, ağa çıkmıyor. Yalnızca kullanıcının verdiği dosyayı açmak için; kasanın şifrelemesinde kullanılmaz. Ağır anahtar türetme bunda değil, telefonun yerel kodunda (aşağıda, Argon2) |
 | `flutter_riverpod` | 3.5.0 | MIT | Uygulama durumunun yönetimi |
 | `go_router` | 18.1.4 | BSD-3-Clause | Ekranlar arası geçiş |
 | `intl` | 0.20.3 | BSD-3-Clause | Tarih ve sayı biçimleri, çeviriler (`flutter_localizations` ile) |
@@ -33,7 +34,7 @@ KeyKey GPL-3.0 ile yayımlanır. Bu yüzden içine giren her şeyin lisansı GPL
 | `image_picker` | 1.2.4 | BSD-3-Clause, Apache-2.0 | QR kodunu galerideki görselden okuma |
 | `file_selector` | 1.1.0 | BSD-3-Clause | Yedek ve içe aktarma dosyası seçme, dışa aktarmayı kaydetme |
 | `path_provider` | 2.1.6 | BSD-3-Clause | Kasa dosyasının uygulama klasöründeki yeri |
-| `xml` | 7.1.0 | MIT; getirdiği `petitparser` 7.1.0 MIT | Senkronda WebDAV klasör listesinin (`PROPFIND` yanıtı) okunması. Saf Dart, ağa çıkmaz, yerel kod yok (1.8.0) |
+| `xml` | 7.1.0 | MIT; getirdiği `petitparser` 7.1.0 MIT | Senkronda WebDAV klasör listesinin (`PROPFIND` yanıtı) okunması (1.8.0); KeePass dosyalarının ve anahtar dosyalarının XML'i (1.9.0). Saf Dart, ağa çıkmaz, yerel kod yok |
 | `flutter`, `flutter_localizations` | SDK | BSD-3-Clause | Arayüz çerçevesi |
 
 Geliştirme bağımlılıkları uygulamaya girmez: `build_runner` ve `drift_dev` (drift kodu üretimi), `pigeon` (Dart-Kotlin köprüsünün üretimi), `very_good_analysis` (kod kuralları), `flutter_test` ve `integration_test`.
@@ -137,6 +138,7 @@ Okurken bilinmesi gerekenler:
 | `petitparser` | 7.1.0 | dolaylı | MIT |
 | `platform` | 3.2.0 | dolaylı | BSD-3-Clause |
 | `plugin_platform_interface` | 2.1.8 | dolaylı | BSD-3-Clause |
+| `pointycastle` | 4.0.0 | doğrudan | MIT |
 | `posix` | 6.5.4 | dolaylı | MIT |
 | `process` | 5.0.6 | dolaylı | BSD-3-Clause |
 | `pub_semver` | 2.2.1 | dolaylı | BSD-3-Clause |
@@ -188,6 +190,7 @@ Testlerde kullanılan `junit` (EPL-1.0) uygulamaya girmez.
 | libsodium 1.0.22 | ISC | `sodium` paketinin içindeki kaynak arşivinden, derleme sırasında NDK ile derlenir |
 | SQLite 3.54.1 (`libsqlite3.so`) | Kamu malı | Repodaki kaynaktan ([`android/third_party/sqlite`](../../android/third_party/sqlite/README.md)), `sqlite3` paketinin derleme kancasıyla NDK ile derlenir |
 | zxing-cpp, zint (`libflutter_zxing.so`) | Apache-2.0, BSD-3-Clause | `flutter_zxing` paketinin içindeki kaynaktan, CMake ile derlenir |
+| Argon2 başvuru uygulaması `20190702` (`libkeykey_argon2.so`, 1.9.0) | CC0 1.0 ya da Apache-2.0 | Repodaki kaynaktan ([`android/third_party/argon2`](../../android/third_party/argon2/README.md), değiştirilmeden), uygulama modülünün CMake'iyle NDK ile derlenir. KeePass dosyalarının Argon2d/Argon2id'si; küçük bir JNI dosyası (`android/app/src/main/cpp/argon2_jni.c`) Kotlin'e bağlar |
 | Flutter motoru (`libflutter.so`) | BSD-3-Clause ve motorun üçüncü taraf lisansları | Flutter aracının indirdiği motor dosyaları |
 | Dart kodu (`libapp.so`) | KeyKey ve paketler | Derlemenin kendisi |
 
@@ -204,7 +207,7 @@ Derleme şunları internetten alır. Her biri bir sürüme ya da özete sabit:
 
 Yayın derlemesi F-Droid'in derleme imajında (`registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie`) yapılır ve imaj **özetiyle sabittir** (`yayin.yml` ve `f-droid.yml`, güncellemesi [yayın belgesinde](yayin.md#derleme-imajını-güncellemek)). Android SDK ve NDK r28c (`28.2.13676358`) imajdan gelir; OpenJDK 21, `make` ve `sudo` derleme sırasında Debian'ın deposundan kurulur, bu yüzden imaj özeti onları sabitlemez (Debian paketleri imzalıdır, sürümleri trixie'nin güvenlik güncellemeleriyle değişebilir). Karşılaştırma işi F-Droid'in `fdroidserver` aracını (fdroiddata CI'ı gibi ana dalın güncel hali) ve `apksigcopier`'ı da kullanır ve F-Droid derlemesini imajın **güncel haliyle** yapar: F-Droid'in ortamı bizimkinden ayrılırsa karşılaştırma kırmızı olur. Bunlar yalnızca CI'da çalışır, uygulamaya girmez ([F-Droid tasarımı](f-droid.md)).
 
-libsodium'un ve zxing-cpp'nin kaynağı derleme sırasında indirilmez, paketlerin içinde gelir. `flutter_zxing`'in CMake dosyalarında başka kütüphaneleri indirebilen bir yol (`FetchContent`) var. Ama KeyKey'in derlemesinde zint, paketin içindeki kaynaktan derleniyor ve hiçbir şey indirilmiyor.
+libsodium'un ve zxing-cpp'nin kaynağı derleme sırasında indirilmez, paketlerin içinde gelir. Argon2'nin kaynağı repoda. `flutter_zxing`'in CMake dosyalarında başka kütüphaneleri indirebilen bir yol (`FetchContent`) var. Ama KeyKey'in derlemesinde zint, paketin içindeki kaynaktan derleniyor ve hiçbir şey indirilmiyor.
 
 ## Lisanslar ekranı
 
@@ -213,13 +216,13 @@ Ayarlar → Hakkında → Lisanslar, Flutter'ın `LicenseRegistry`'sindeki büt�
 Yeni ekran ([`licenses_screen.dart`](../../lib/features/settings/presentation/licenses_screen.dart)) üç bölümden oluşur:
 
 1. **KeyKey:** GPL-3.0, özgürlükler, "hiçbir garanti olmadan" ve telif satırı (© 2026 KeyKey geliştiricileri); lisansın tam metni.
-2. **KeyKey'in kullandıkları:** libsodium, SQLite, Flutter, zxing-cpp ve zint, kamera eklentisi, Barlow Condensed, EFF sözcük listesi, SecLists, Public Suffix List ve Android kütüphaneleri; her biri ne işe yaradığı ve lisans türüyle.
+2. **KeyKey'in kullandıkları:** libsodium, SQLite, Flutter, zxing-cpp ve zint, kamera eklentisi, Barlow Condensed, EFF sözcük listesi, SecLists, Public Suffix List, Argon2 ve `pointycastle` (KeePass dosyaları, 1.9.0) ve Android kütüphaneleri; her biri ne işe yaradığı ve lisans türüyle.
 3. **Bütün paketler:** baş harflerine göre gruplanmış tam liste; her metin eksiksiz.
 
 Lisans türü metinden tanınır ([`license_catalog.dart`](../../lib/features/settings/data/license_catalog.dart)); yol göstermek içindir, metnin kendisi esastır. Başka lisansları anan metinler (OFL'deki MIT cümlesi, GPL'nin sonundaki LGPL, MPL'deki ikincil lisanslar) doğru tanınır; APK'daki 204 girdiyle denendi. Tanınan bir lisansın yanında "diğer" gösterilmez: motorun tanınmayan metinleri çoğunlukla lisans gövdesi olmayan telif satırlarıdır.
 
 - **Bozuk başlıklar:** Bazı eklentilerin `LICENSE` dosyası Flutter'ın beklediği biçimde olmadığı için metin bir satır parçasının ("-", "Copyright 2013 The Flutter Authors") altında görünüyordu (ör. `file_selector_android`). Bu metinler "Adı belirtilmemiş metinler" başlığında toplanır, kaybolmaz.
-- **Elle eklenenler** ([`licenses.dart`](../../lib/app/licenses.dart)): EFF sözcük listesi, SecLists, Barlow Condensed yazı tipi (SIL OFL 1.1), Public Suffix List, zxing-cpp, zint, SQLite ve Android kütüphaneleri (Flutter yalnızca Dart paketlerini topluyor).
+- **Elle eklenenler** ([`licenses.dart`](../../lib/app/licenses.dart)): EFF sözcük listesi, SecLists, Barlow Condensed yazı tipi (SIL OFL 1.1), Public Suffix List, zxing-cpp, zint, SQLite, Argon2 (1.9.0) ve Android kütüphaneleri (Flutter yalnızca Dart paketlerini topluyor).
 
 ## Lisans denetimi (2026-11-17)
 

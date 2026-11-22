@@ -823,6 +823,10 @@
   "@licensesPurposeDomains": {
     "description": "Purpose of the Public Suffix List."
   },
+  "licensesPurposeKeepass": "Opening KeePass files",
+  "@licensesPurposeKeepass": {
+    "description": "What Argon2 and pointycastle are used for, on the licenses screen."
+  },
   "licensesPurposeAndroid": "Fingerprint, autofill, camera",
   "@licensesPurposeAndroid": {
     "description": "Purpose of the Android libraries."

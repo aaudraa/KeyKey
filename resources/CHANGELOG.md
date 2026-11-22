@@ -2,6 +2,21 @@
 
 KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesinde](docs/yayin.md#sürüm-numarası). `v1.0.0`'dan önceki sürümler fazların sonunu işaretler ve hata ayıklama anahtarıyla imzalıdır; kalıcı bir kurulum için kullanılmamalıdır.
 
+## 1.9.0 (2026-11-22): KeePass içe aktarma
+
+KeePass dosyaları (`.kdbx`) doğrudan açılıp kasaya alınabiliyor ([#177](https://github.com/aaudraa/KeyKey/issues/177)). Tasarım: [KeePass içe aktarma](docs/keepass-ice-aktarma.md). Yedek biçimi ve veritabanı şeması değişmedi; yeni izin yok.
+
+### Yeni
+
+- **KeePass dosyası açma.** Ayarlar → Yedek ve aktarım → **İçe aktar** ile seçilen `.kdbx` dosyası ana parola ve/veya anahtar dosyasıyla açılır, kayıtlar bugünkü önizlemede gösterilir. KeePass 2, KeePassXC, KeePassDX ve Keepass2Android'in yazdığı KDBX 2, 3 ve 4 dosyaları; AES-256, ChaCha20 ve Twofish şifreleri; AES-KDF, Argon2d ve Argon2id. Düz metin dışa aktarma gerekmez.
+- Gruplar klasör, TOTP alanları (KeePassXC'in `otp` alanı, KeePass 2'nin `TimeOtp` alanları, eski `TOTP Seed`) bağlı 2FA hesabı, ek alanlar özel alan, `KP2A_URL` alanları ek adres oluyor; alan başvuruları (`{REF:…}`) çözülüyor; yalnızca notu olan kayıtlar güvenli not oluyor. Çöp kutusu ve ekler alınmıyor, sayıları söyleniyor.
+- Anahtar türetme telefonun yerel koduyla: Argon2 kendi yazarlarının başvuru uygulamasıyla (C, çok iş parçacıklı), AES-KDF işlemcinin AES komutlarıyla. Emülatörde Argon2d 64 MiB ve 10 geçiş 0,35 saniye, on milyon turluk AES-KDF 0,33 saniye sürdü.
+
+### Güvenlik
+
+- Hiçbir kayıt dosyanın tamamı doğrulanmadan gösterilmiyor: KDBX 4'te başlık ve blok HMAC'leri, KDBX 2 ve 3'te blok özetleri. Yanlış parola, desteklenmeyen biçim, bozuk dosya ve telefon için fazla ağır ayarlar ayrı mesajlarla söyleniyor. Dosya boyutu, açılmış veri ve anahtar türetme parametreleri sınırlı; kötü niyetli bir dosya belleği tüketemiyor.
+- Parola, anahtar dosyası ve çözülmüş veri hiçbir yere yazılmıyor; anahtar malzemesi ve dosyanın baytları işi bitince sıfırlanıyor.
+
 ## 1.8.2 (2026-11-22): Arayüz incelemesi
 
 1.8.1'deki incelemeye girmeyen arayüz kodu (kasa, 2FA, uygulama kabuğu, ayarlar ve ilk kurulum) incelendi; bulgular ve kararlar [#173](https://github.com/aaudraa/KeyKey/issues/173)'te. Her düzeltme önce bulguyu gösteren bir testle doğrulandı. Yedek biçimi ve veritabanı şeması değişmedi.

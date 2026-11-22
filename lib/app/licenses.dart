@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 /// için burada elle eklenir, EFF listesi atıf istiyor. Public Suffix List
 /// otomatik doldurmada alan adlarını karşılaştırmak için gömülüdür.
 /// flutter_zxing'in içine gömülü C++ kitaplıkları da paketin lisansında
-/// yazmadığı için buradadır.
+/// yazmadığı için buradadır; Argon2'nin C kaynağı da (KeePass dosyaları).
 void registerDataLicenses() {
   LicenseRegistry.addLicense(() async* {
     yield const LicenseEntryWithLineBreaks(
@@ -46,6 +46,10 @@ void registerDataLicenses() {
       '(https://sqlite.org/copyright.html). The sqlite3 package bundles a '
       'build of it as the database engine.',
     );
+    // KeePass dosyalarının Argon2'si; repodaki kaynaktan derlenir.
+    yield LicenseEntryWithLineBreaks([
+      'Argon2',
+    ], await rootBundle.loadString(_argon2License));
     final apache = await rootBundle.loadString(_apacheLicense);
     yield LicenseEntryWithLineBreaks([
       'Android libraries',
@@ -54,6 +58,7 @@ void registerDataLicenses() {
 }
 
 const _apacheLicense = 'resources/assets/licenses/apache-2.0.txt';
+const _argon2License = 'resources/assets/licenses/argon2.txt';
 
 /// Gradle'dan gelen Android kütüphaneleri. Flutter yalnızca Dart
 /// paketlerinin lisanslarını toplar; bunlar elle eklenir. Liste ve

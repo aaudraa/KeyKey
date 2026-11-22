@@ -196,6 +196,7 @@
   "licensesPurposePassphrase": "Parola cümlesi sözcükleri",
   "licensesPurposeCommon": "Yaygın parola uyarısı",
   "licensesPurposeDomains": "Otomatik doldurmada site eşleştirme",
+  "licensesPurposeKeepass": "KeePass dosyalarını açma",
   "licensesPurposeAndroid": "Parmak izi, otomatik doldurma, kamera",
   "licensesLoadFailed": "Lisans metinleri yüklenemedi.",
   "termsTitle": "Kullanım koşulları",

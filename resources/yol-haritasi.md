@@ -786,14 +786,16 @@ Kasanın kullanıcının kendi WebDAV klasörü üzerinden telefonlar arasında 
 
 KeePass 2, KeePassXC, KeePassDX ve Keepass2Android'in `.kdbx` dosyalarını ana parola ve anahtar dosyasıyla açıp kasaya almak ([#177](https://github.com/aaudraa/KeyKey/issues/177)). Proje sahibi soru istemedi; kararlar benim. Tasarım: [`keepass-ice-aktarma.md`](docs/keepass-ice-aktarma.md), plan: [`keepass-ice-aktarma-plani.md`](docs/keepass-ice-aktarma-plani.md).
 
-- [ ] Test dosyaları (pykeepass, KeePassXC, KeePassXC'in komut satırıyla oluşturulan) ve kaynak belgesi
-- [ ] KDBX okuyucu: başlık, sözlük, anahtar dosyası, blok akışları, şifre çözme (`pointycastle`), iç akış, XML
-- [ ] Anahtar türetme: Kotlin'de AES-KDF, Argon2 başvuru uygulaması JNI ile; Pigeon arka plan kuyruğu
-- [ ] Kayıt eşleme: klasör, 2FA, özel alanlar, başvurular, çöp kutusu, güvenli not
-- [ ] KeePass dosyasını aç ekranı ve önizlemeye bağlama
-- [ ] Bozuk girdi testleri, cihaz testleri (Android 11 ve 17)
-- [ ] Güvenlik tasarımı, bağımlılıklar, lisanslar, kılavuz, değişiklik günlüğü
+- [x] Test dosyaları (pykeepass, KeePassXC, KeePassXC'in komut satırıyla oluşturulan) ve kaynak belgesi
+- [x] KDBX okuyucu: başlık, sözlük, anahtar dosyası, blok akışları, şifre çözme (`pointycastle`), iç akış, XML
+- [x] Anahtar türetme: Kotlin'de AES-KDF, Argon2 başvuru uygulaması JNI ile; Pigeon arka plan kuyruğu
+- [x] Kayıt eşleme: klasör, 2FA, özel alanlar, başvurular, çöp kutusu, güvenli not
+- [x] KeePass dosyasını aç ekranı ve önizlemeye bağlama
+- [x] Bozuk girdi testleri, cihaz testleri (Android 11 ve 17)
+- [x] Güvenlik tasarımı, bağımlılıklar, lisanslar, kılavuz, değişiklik günlüğü
 - [ ] Son gözden geçirme, 1.9.0
+
+Ölçümler (emülatör, x86_64): Argon2d 64 MiB, 10 geçiş, 2 şerit 0,35 saniye; AES-KDF on milyon tur 0,33 saniye (ilk Kotlin sürümü ECB ile 11,6 saniyeydi; sıfırlar üstünde CBC zinciriyle 35 kat hızlandı).
 
 **Bitti sayılması için:** test klasöründeki bütün desteklenen dosyalar bilgisayarda ve telefonda açılıyor ve aynı kayıtları veriyor; yanlış parola, desteklenmeyen biçim ve bozuk dosya ayrı mesajlarla reddediliyor; KeePassXC'in varsayılan ayarlarıyla oluşturulmuş bir dosya telefonda makul sürede açılıyor; hiçbir şey diske yazılmıyor.
 

@@ -1,7 +1,7 @@
 name: keykey
 description: "Android için parola yöneticisi ve 2FA doğrulama uygulaması."
 publish_to: "none"
-version: 1.8.2+14
+version: 1.9.0+15
 
 environment:
   sdk: ^3.13.7
@@ -47,6 +47,7 @@ flutter:
     - resources/assets/licenses/apache-2.0.txt
     - resources/assets/autofill/public_suffix_list.dat
     - resources/assets/licenses/barlow-ofl.txt
+    - resources/assets/licenses/argon2.txt
   # Ekran başlıkları (kkRootAppBar): dar, eğik, çok kalın. SIL OFL 1.1.
   fonts:
     - family: BarlowCondensed

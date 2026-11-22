@@ -1,0 +1,1 @@
+KeePass dosyaları (.kdbx) doğrudan açılıp içe aktarılabiliyor: ana parola ve/veya anahtar dosyasıyla, KDBX 2, 3 ve 4; AES, ChaCha20 ve Twofish; AES-KDF, Argon2d ve Argon2id. Gruplar klasör, TOTP alanları bağlı 2FA hesabı, ek alanlar özel alan oluyor. Dosyanın tamamı doğrulanmadan kayıt gösterilmiyor; parola ve dosya hiçbir yere yazılmıyor.

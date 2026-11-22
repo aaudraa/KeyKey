@@ -1,0 +1,1 @@
+KeePass files (.kdbx) can now be opened and imported directly, with the master password and/or key file: KDBX 2, 3 and 4; AES, ChaCha20 and Twofish; AES-KDF, Argon2d and Argon2id. Groups become folders, TOTP fields become linked 2FA accounts, extra fields become custom fields. Nothing is shown before the whole file is verified; the password and file are never stored.

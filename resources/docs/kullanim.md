@@ -239,6 +239,14 @@ Senkron bir yedek değildir: yanlışlıkla sildiğin kayıt bütün telefonlard
 > [!WARNING]
 > Dışa aktarma dosyası şifresizdir; içinde bütün parolaların düz metin olarak durur. İçe aktardıktan sonra dosyayı Dosyalar uygulamasından ya da Drive'dan kendin sil. KeyKey bu dosyayı silemez.
 
+**KeePass'tan geçmek (1.9.0):** KeePass 2, KeePassXC, KeePassDX ya da Keepass2Android kullanıyorsan dışa aktarmana gerek yok: aynı **İçe aktar** düğmesiyle `.kdbx` dosyasının kendisini seç. KeyKey dosyanın KeePass olduğunu anlar ve **KeePass dosyasını aç** ekranını gösterir. KeePass'taki ana parolanı yaz; anahtar dosyası kullanıyorsan **Anahtar dosyası seç** ile onu da seç (yalnız anahtar dosyasıyla korunan dosyada parola kutusunu boş bırak). **Aç**'a dokun. KeePass dosyaları parola denemelerini yavaşlatmak için bilerek yavaş açılır; birkaç saniye sürebilir. Sonra aynı önizleme gelir.
+
+- Gruplar klasör olur, alt gruplar `İş/Projeler` gibi. TOTP alanları 2FA hesabı olur ve kayda bağlanır; ek alanlar özel alan olarak gelir, KeePass'ta korumalı olanlar gizli alan olur.
+- Yalnızca notu olan kayıtlar güvenli not olur.
+- Çöp kutusundaki kayıtlar ve dosya ekleri alınmaz; önizleme kaç tane olduğunu söyler. Kayıt geçmişi, simgeler ve etiketler de alınmaz.
+- YubiKey ya da Windows hesabıyla korunan dosyalar ve KeePass 1 (`.kdb`) dosyaları açılamaz. KeePass 1 dosyasını KeePass 2 ya da KeePassXC'de açıp yeniden kaydedersen olur.
+- `.kdbx` dosyası şifreli olduğu için silmen gerekmez; ana parolan ve anahtar dosyan KeyKey'e kaydedilmez.
+
 **2FA hesapları:** Ayarlar → Yedek ve aktarım → **2FA hesaplarını içe aktar** (Aegis, 2FAS), ya da **+** → **2FA kodu** → **Başka uygulamadan aktar** (Google Authenticator'ın dışa aktarma QR'ları da). Şifreli dosyalar için o uygulamada belirlediğin parola istenir.
 
 **KeyKey'den ayrılmak istersen:** Ayarlar → Yedek ve aktarım → **Şifresiz dışa aktar**. Önce biçimi seçersin: **CSV** çoğu parola yöneticisinin okuduğu biçimdir ama kartları taşımaz; **JSON** Bitwarden'ın biçimidir ve kartlar dahil her şeyi taşır. Steam hesapları Bitwarden'ın `steam://` biçimiyle yazılır. Dosya şifresiz olduğu için önce uyarı çıkar ve kimliğini doğrulaman istenir.

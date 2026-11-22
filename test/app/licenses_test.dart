@@ -20,6 +20,8 @@ void main() {
     expect(textOf('EFF Large Wordlist'), contains('CC BY 3.0'));
     expect(textOf('Public Suffix List'), contains('Mozilla Public License'));
     expect(textOf('SQLite'), contains('public domain'));
+    expect(textOf('Argon2'), contains('CC0 1.0'));
+    expect(textOf('Argon2'), contains('Apache License'));
     expect(textOf('Barlow Condensed'), contains('SIL Open Font License'));
     expect(textOf('Android libraries'), contains('AndroidX'));
     expect(textOf('Android libraries'), contains('Version 2.0, January 2004'));

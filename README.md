@@ -43,7 +43,7 @@
 | **2FA doğrulama** | TOTP, HOTP ve Steam Guard kodları; QR ile ekleme; Google Authenticator, Aegis ve 2FAS'tan aktarım; kodları göstermek için isteğe bağlı ek onay |
 | **Otomatik doldurma** | Android uygulamalarında ve tarayıcılarda parola doldurma ve kaydetme, ödeme formlarında kart doldurma; uygulamalar imza sertifikasıyla eşleşir, şüpheli durumlarda uyarı verilir |
 | **Kilit** | Ana parola, parmak iziyle açma, kurtarma anahtarı; otomatik kilitlenme ve arka planda kilitlenme süresi |
-| **Yedekleme** | Şifreli yedek, otomatik yedek ve geri yükleme; Bitwarden, Chrome, Firefox ve KeePassXC'den içe aktarma; başka bir parola yöneticisine geçmek için şifresiz dışa aktarma (CSV ya da JSON) |
+| **Yedekleme** | Şifreli yedek, otomatik yedek ve geri yükleme; Bitwarden, Chrome, Firefox ve KeePassXC'den içe aktarma, KeePass dosyalarını (`.kdbx`) doğrudan açma; başka bir parola yöneticisine geçmek için şifresiz dışa aktarma (CSV ya da JSON) |
 | **Senkron** | Kendi WebDAV sunucun üzerinden telefonlar arasında uçtan uca şifreli eşitleme; yeni telefonu senkrondan kurma, başka kasası olan telefonu katma |
 | **Görünüm** | Açık, koyu ya da sistem teması; Türkçe ve İngilizce |
 
@@ -126,7 +126,7 @@ Repoyu `C:\KeyKey` gibi kısa bir yola klonla. Uzun yollarda libsodium derlemesi
 
 KeyKey is an open-source password manager and 2FA authenticator for Android 11+, with no account and no server. The vault stays encrypted on your phone (libsodium: Argon2id and XChaCha20-Poly1305). Optional end-to-end encrypted sync goes through your own WebDAV server (Nextcloud, ownCloud…). The app is available in English and Turkish; the project's documents are in Turkish.
 
-- Password vault, bank cards and secure notes, TOTP/HOTP/Steam codes, autofill for apps and browsers, encrypted and automatic backups, imports from Bitwarden, Chrome, Firefox, KeePassXC, Google Authenticator, Aegis and 2FAS.
+- Password vault, bank cards and secure notes, TOTP/HOTP/Steam codes, autofill for apps and browsers, encrypted and automatic backups, imports from Bitwarden, Chrome, Firefox, KeePassXC, KeePass (.kdbx) files, Google Authenticator, Aegis and 2FAS.
 - Most of the code was written with an AI coding assistant; the owner set the direction and tested it on their own phone. It has not had an independent security audit. Findings of a multi-agent AI review of its most critical parts (crypto, lock, sync, backup, autofill) are listed openly in [#168](https://github.com/aaudraa/KeyKey/issues/168).
 - English documents: [security design summary](resources/docs/security-summary.md), [privacy policy](resources/docs/privacy.md), [terms of use](resources/docs/terms.md) and [security policy](.github/SECURITY.md#security-policy).
 - Download the APK from [the latest release](https://github.com/aaudraa/KeyKey/releases/latest) or add it to [Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22io.github.aaudraa.keykey%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Faaudraa%2FKeyKey%22%2C%22author%22%3A%22aaudraa%22%2C%22name%22%3A%22KeyKey%22%7D). Signing certificate SHA-256: `66ff7b5c0c009a8530d0a55dd1d80a3af35de48bd0667c456a0cf86a6d1129a0`.
