@@ -228,7 +228,6 @@ class _NavTabState extends State<_NavTab> with SingleTickerProviderStateMixin {
                 constraints: const BoxConstraints(
                   minWidth: GlassNavBar._tabWidth,
                 ),
-
                 decoration: BoxDecoration(
                   color: selected
                       ? glass.tint

@@ -109,7 +109,7 @@ void main() {
       await pumpApp(tester, locale: const Locale('tr', 'TR'));
 
       // Sekme adı görünmez (#163); ekran okuyucu etiketi dili gösterir.
-      expect(find.bySemanticsLabel(RegExp('^Parolalar\\n')), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp(r'^Parolalar\n')), findsOneWidget);
       semantics.dispose();
     });
 
@@ -118,7 +118,7 @@ void main() {
       await pumpApp(tester, locale: const Locale('en', 'US'));
 
       // Sekme adı görünmez (#163); ekran okuyucu etiketi dili gösterir.
-      expect(find.bySemanticsLabel(RegExp('^Passwords\\n')), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp(r'^Passwords\n')), findsOneWidget);
       semantics.dispose();
     });
 
@@ -127,7 +127,7 @@ void main() {
       await pumpApp(tester, locale: const Locale('de', 'DE'));
 
       // Sekme adı görünmez (#163); ekran okuyucu etiketi dili gösterir.
-      expect(find.bySemanticsLabel(RegExp('^Passwords\\n')), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp(r'^Passwords\n')), findsOneWidget);
       semantics.dispose();
     });
   });
