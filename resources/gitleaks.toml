@@ -27,6 +27,12 @@ paths = [
   # Parola içe aktarma örnekleri: bir kısmı Bitwarden'ın içe aktarma
   # testlerinden (bitwarden/clients, GPL-3.0), diğerleri deneme verisi.
   '''^test/fixtures/import/logins/[a-z_]+\.(csv|json)$''',
+  # KeePass test dosyaları ve anahtar dosyaları pykeepass (GPL-3.0) ve
+  # KeePassXC (GPL-2.0/3.0) testlerinden; kaynak ve özetler
+  # test/fixtures/import/kdbx/KAYNAKLAR.md'de. Cihaz testi aynılarını
+  # Base64 olarak taşır (resources/scripts/kdbx-cihaz-ornekleri.py).
+  '''^test/fixtures/import/kdbx/(pykeepass|keepassxc|keykey)/[\w.]+$''',
+  '''^integration_test/kdbx_fixtures\.dart$''',
 ]
 
 # Testlerdeki sabit deneme parolaları yanlış alarm veriyor. Dosyalara değil,
@@ -49,6 +55,9 @@ regexes = [
   '''^wpC9qFvsbWQK5Z$''',
   '''^Qh6W4Wz55YGFNU$''',
   '''^ABCD1234EFGH5678$''',
+  # KeePass içe aktarma testlerinin herkese açık deneme TOTP anahtarı
+  # (RFC 4226'daki "12345678901234567890"ın ilk 10 baytı, Base32).
+  '''^GEZDGNBVGY3TQOJQ$''',
 ]
 
 # SQLite'ın değiştirilmemiş kaynağı. "sqlite3_api->xxx" ve "iKey==xxx" gibi C

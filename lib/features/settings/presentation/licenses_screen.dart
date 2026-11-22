@@ -293,6 +293,11 @@ List<_Part> _parts(AppLocalizations l10n) => [
     packages: ['Public Suffix List'],
   ),
   (
+    name: 'Argon2, pointycastle',
+    purpose: l10n.licensesPurposeKeepass,
+    packages: ['Argon2', 'pointycastle'],
+  ),
+  (
     name: l10n.licensesAndroid,
     purpose: l10n.licensesPurposeAndroid,
     packages: ['Android libraries'],

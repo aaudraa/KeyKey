@@ -251,7 +251,8 @@ void main() {
         tester,
         DocumentOpened(Uint8List.fromList([1, 2, 3])),
         'Bu dosya tanınmadı. Bitwarden (JSON veya CSV), Chrome (CSV), '
-        'Firefox (CSV) ya da KeePassXC (CSV) dışa aktarması seç.',
+        'Firefox (CSV), KeePassXC (CSV) dışa aktarması ya da KeePass '
+        'dosyası (.kdbx) seç.',
       );
     });
 

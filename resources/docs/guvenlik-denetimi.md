@@ -98,7 +98,7 @@ TalkBack'in korumalı pencerede çalışmaya devam ettiği [Erişilebilirlik](#e
 | İzinler yalnızca izin listesindekiler; `INTERNET` 1.6.0'dan beri listede, gerekçesiyle | Tamam |
 | `usesCleartextTraffic` kapalı, ağ güvenliği yapılandırması tanımlı (1.6.0) | Tamam |
 | `debuggable` kapalı, `allowBackup` kapalı, `dataExtractionRules` tanımlı | Tamam |
-| R8 açık: kendi paketimizden adı korunan sınıflar yalnızca manifestteki dört bileşen (`MainActivity`, `AutofillActivity`, `KeyKeyAutofillService`, `ClipboardClearReceiver`); geri kalanların adı kısaltılmış | Tamam |
+| R8 açık: kendi paketimizden adı korunan sınıflar yalnızca manifestteki dört bileşen (`MainActivity`, `AutofillActivity`, `KeyKeyAutofillService`, `ClipboardClearReceiver`) ve 1.9.0'dan beri yerel kodun adıyla bağladığı JNI sınıfı `Argon2Native`; geri kalanların adı kısaltılmış | Tamam |
 | Yerel kütüphanelerde (`libapp`, `libflutter`, `libsodium`, `libsqlite3`, `libflutter_zxing` ve diğerleri, 3 mimari, 24 dosya) hata ayıklama bölümü (`.debug_*`) ve tam sembol tablosu (`.symtab`) yok. Kalan dinamik semboller kütüphanenin Dart'tan çağrılabilmesi için gerekli | Tamam |
 | Anahtar deposu, `.env`, `.keykey` yedeği, test fixture'ı veya `DebugProbesKt.bin` yok | `DebugProbesKt.bin` (kotlinx-coroutines'in hata ayıklama dosyası) vardı, paketten çıkarıldı |
 | [Deneme değerlerinden](../scripts/deneme-degerleri.txt) (test parolaları, kurtarma anahtarı, 2FA anahtarı, kullanıcı adları) hiçbiri APK'nın hiçbir dosyasında yok | Tamam |
@@ -333,6 +333,7 @@ KeyKey WebView kullanmıyor. Sürüm APK'sının dex dosyalarında `android.webk
 | Google Authenticator dışa aktarması | QR | Kendi protobuf okuyucumuz; rastgele bozulmuş girdiyle sınanıyor |
 | Aegis, 2FAS dosyaları | Belge seçici | En fazla 10 MB; scrypt bellek ve iş sınırları; bozuk hesap atlanır ([İçe aktarma](guvenlik-tasarimi.md#içe-aktarma)) |
 | Bitwarden, Chrome, Firefox, KeePassXC dosyaları | Belge seçici | RFC 4180 CSV okuyucu; bilinmeyen alanlar yok sayılır, bozuk satır atlanır ([Parola içe aktarma](guvenlik-tasarimi.md#parola-içe-aktarma)) |
+| KeePass `.kdbx` dosyası ve anahtar dosyası (1.9.0) | Belge seçici | Sınırlı ikili okuyucu; dosyanın tamamı HMAC ya da blok özetleriyle doğrulanmadan kayıt gösterilmez; boyut ve anahtar türetme sınırları; her baytı bozulmuş dosyalarla sınanır ([KeePass dosyaları](guvenlik-tasarimi.md#keepass-dosyaları)) |
 | `.keykey` yedeği | Belge seçici | Yapı denetlenir; her kayıt çözülüp doğrulanmadan hiçbir şey yazılmaz ([Geri yükleme](guvenlik-tasarimi.md#geri-yükleme)) |
 | Kasa dosyası | Disk | Her kayıt kimliği ve türüyle bağlı (AD); değiştirilmiş kayıt açılmaz |
 | Doldurma isteği | Başka uygulama, tarayıcı | İmza ve güvenilen tarayıcı denetimi, şüpheli durumda uyarı ([Şüpheli durumlar](guvenlik-tasarimi.md#şüpheli-durumlar)) |

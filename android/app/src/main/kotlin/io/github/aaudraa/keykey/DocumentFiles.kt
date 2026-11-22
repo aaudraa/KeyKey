@@ -99,6 +99,9 @@ class DocumentFiles(private val activity: ComponentActivity) : DocumentApi {
                 null
             } catch (_: SecurityException) {
                 null
+            } catch (_: OutOfMemoryError) {
+                // Java yığını dosyaya yetmedi; uygulama düşmesin.
+                return DocumentResult(DocumentStatus.TOO_LARGE)
             } ?: return DocumentResult(DocumentStatus.FAILED)
         if (bytes.size > maxBytes) {
             bytes.fill(0)

@@ -84,6 +84,28 @@ abstract class ImportCryptoApi {
     Uint8List nonce,
     Uint8List cipherTextWithTag,
   );
+
+  /// KeePass AES-KDF: [key] (32 bayt), [seed] anahtarıyla AES-256-ECB'den
+  /// [rounds] kez geçer; dönen değer sonucun SHA-256'sı. Donanım hızlandırmalı
+  /// AES; arka plan iş parçacığında.
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  Uint8List kdbxAesKdf(Uint8List key, Uint8List seed, int rounds);
+
+  /// Argon2 başvuru uygulaması (C), 32 baytlık çıktı. [type] 0 Argon2d,
+  /// 2 Argon2id. Bellek ayrılamazsa `out-of-memory`, başka hata `failed`
+  /// koduyla hata. Arka plan iş parçacığında.
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  Uint8List kdbxArgon2(
+    int type,
+    Uint8List password,
+    Uint8List salt,
+    int iterations,
+    int memoryKiB,
+    int parallelism,
+    int version,
+    Uint8List? secret,
+    Uint8List? associatedData,
+  );
 }
 
 /// Doldurma ekranını açan isteğin, kasaya bakmadan bilinen özeti.

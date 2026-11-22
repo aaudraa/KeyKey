@@ -11,6 +11,8 @@ import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/backup/application/login_import_plan.dart';
+import 'package:keykey/features/backup/data/import/kdbx/kdbx_header.dart';
+import 'package:keykey/features/backup/data/import/kdbx/kdbx_reader.dart';
 import 'package:keykey/features/backup/data/import/login_import.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
@@ -28,13 +30,13 @@ Future<void> pickLoginExport(BuildContext context, WidgetRef ref) async {
   final show = kkSnackFor(context);
 
   final files = ref.read(documentFilesProvider);
+  // KeePass dosyaları eklerle 10 MiB'ı aşabilir; CSV ve JSON için sınır
+  // aşağıda ayrıca denetlenir.
   final result = await ref
       .read(externalActivityGateProvider.notifier)
       .run(
-        () => files.open(
-          mimeTypes: const ['*/*'],
-          maxBytes: LoginExportReader.maxBytes,
-        ),
+        () =>
+            files.open(mimeTypes: const ['*/*'], maxBytes: KdbxReader.maxBytes),
       );
   if (!context.mounted) {
     if (result case DocumentOpened(:final bytes)) {
@@ -49,6 +51,16 @@ Future<void> pickLoginExport(BuildContext context, WidgetRef ref) async {
       show(l10n.loginImportTooLarge);
     case DocumentOpenFailed():
       show(l10n.loginImportUnknown);
+    case DocumentOpened(:final bytes) when KdbxHeader.isKdb(bytes):
+      bytes.fillRange(0, bytes.length, 0);
+      show(l10n.keepassOld);
+    case DocumentOpened(:final bytes) when KdbxHeader.isKdbx(bytes):
+      // Baytlar KeePass ekranına geçer; ekran kapanınca sıfırlar.
+      await context.push(AppRoutes.keepassOpen, extra: bytes);
+    case DocumentOpened(:final bytes)
+        when bytes.length > LoginExportReader.maxBytes:
+      bytes.fillRange(0, bytes.length, 0);
+      show(l10n.loginImportTooLarge);
     case DocumentOpened(:final bytes):
       final LoginExport export;
       try {
@@ -134,7 +146,10 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
       // Kayıt bitti; hatırlatma açıkken düğmede ilerleme halkası dönmesin.
       setState(() => _saving = false);
       snack(l10n.loginImportDone(items.length + cards.length + notes.length));
-      await _remindToDelete(l10n);
+      // KeePass dosyası şifreli; yalnızca düz metin dışa aktarmalar için.
+      if (plan.source != LoginExportSource.keepassKdbx) {
+        await _remindToDelete(l10n);
+      }
       if (mounted) context.pop();
     } on VaultLockedException {
       // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.
@@ -255,6 +270,16 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
         icon: Icons.description_outlined,
         text: l10n.loginImportRead(plan.total, _sourceName(plan.source)),
       ),
+      if (widget.export.inRecycleBin > 0)
+        _Notice(
+          icon: Icons.delete_outline,
+          text: l10n.loginImportRecycleBin(widget.export.inRecycleBin),
+        ),
+      if (widget.export.withAttachments > 0)
+        _Notice(
+          icon: Icons.attach_file_rounded,
+          text: l10n.loginImportAttachments(widget.export.withAttachments),
+        ),
       if (plan.skipped > 0)
         _Notice(
           icon: Icons.info_outline,
@@ -335,6 +360,7 @@ String _sourceName(LoginExportSource source) => switch (source) {
   LoginExportSource.chromeCsv => 'Chrome (CSV)',
   LoginExportSource.firefoxCsv => 'Firefox (CSV)',
   LoginExportSource.keepassxcCsv => 'KeePassXC (CSV)',
+  LoginExportSource.keepassKdbx => 'KeePass (KDBX)',
 };
 
 /// Önizleme listesinin bir satırı.
