@@ -2,7 +2,7 @@
 
 KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. 1.5.0'a kadar tamamen çevrimdışıydı; 2026-11-19'da internet gerektiren özelliklere de açılma kararı alındı ([İnternet](#temel-kararlar)). Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-22 · **Şu anki faz:** 19 bitti; sıradaki 20, KeePass içe aktarma. [1.8.2](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.2) yayında (düzeltme sürümü: ultra review'a girmeyen arayüz kodunun incelemesi, [#173](https://github.com/aaudraa/KeyKey/issues/173); kalan dört küçük bulgu [#174](https://github.com/aaudraa/KeyKey/issues/174)'te). [1.8.1](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.1) (düzeltme sürümü: projenin bütününün ultra review bulguları, [#168](https://github.com/aaudraa/KeyKey/issues/168); gömülü çerçeveye parola yazılmaması N9 gerçek Chrome'da denendi; navbar yalnızca simge, #163). [1.8.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.0) (kendi WebDAV sunucusu üzerinden uçtan uca şifreli senkron, senkrondan kurma, başka kasası olan telefonu katma; Nextcloud ile ilk deneme ve 1.4.0'dan beri gelenlerle birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
+**Son güncelleme:** 2026-11-22 · **Şu anki faz:** 20, KeePass içe aktarma ([#177](https://github.com/aaudraa/KeyKey/issues/177)); ardından 25, uygulama ve site eşleştirme ([#178](https://github.com/aaudraa/KeyKey/issues/178)). [1.8.2](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.2) yayında (düzeltme sürümü: ultra review'a girmeyen arayüz kodunun incelemesi, [#173](https://github.com/aaudraa/KeyKey/issues/173); kalan dört küçük bulgu [#174](https://github.com/aaudraa/KeyKey/issues/174)'te). [1.8.1](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.1) (düzeltme sürümü: projenin bütününün ultra review bulguları, [#168](https://github.com/aaudraa/KeyKey/issues/168); gömülü çerçeveye parola yazılmaması N9 gerçek Chrome'da denendi; navbar yalnızca simge, #163). [1.8.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.0) (kendi WebDAV sunucusu üzerinden uçtan uca şifreli senkron, senkrondan kurma, başka kasası olan telefonu katma; Nextcloud ile ilk deneme ve 1.4.0'dan beri gelenlerle birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
 
 > [!IMPORTANT]
 > **KeyKey 1.0 yayında.** Projenin kendi güvenlik denetimi tamamlandı, ama bağımsız bir denetim yapılmadı. Şifreli yedeğini düzenli al ve telefonun dışında da sakla.
@@ -33,11 +33,12 @@ KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uyg
 | 17 | Kartlar ve notlar için gezinme | S | 14 | `faz/17-gezinme` | Tamamlandı (1.6.0) |
 | 18 | Kilit süresi, klavye, toplu seçim, Steam Guard | M | 14 | `faz/18-kullanim-kolayligi` | Tamamlandı (1.7.0) |
 | 19 | Senkron (WebDAV; Google Drive ayrı) | XL | 16 | `faz/19-senkron` | Tamamlandı (1.8.0) |
-| 20 | KeePass (`.kdbx`) içe aktarma | L | 14 | `faz/20-keepass` | Planlandı |
+| 20 | KeePass (`.kdbx`) içe aktarma | L | 14 | `faz/20-keepass` | Sürüyor |
 | 21 | Passkey sağlayıcısı | XL | 15 | `faz/21-passkey` | Planlandı |
 | 22 | İşlemciye göre APK ve kendi F-Droid deposu | M | — | `faz/22-dagitim` | Planlandı |
 | 23 | KeyKey klavyesi | XL | 15 | `faz/23-klavye` | Planlandı |
 | 24 | Windows sürümü | XL | 19 | `faz/24-windows` | Planlandı |
+| 25 | Uygulama ve site eşleştirme | M | 16 | `faz/25-uygulama-site` | Planlandı (Faz 20'den sonra) |
 
 Büyüklük göreli iş miktarını gösterir, takvim sözü değildir. Faz 4 ve 5 aynı anda ilerleyebilir. Faz 14'ten sonraki sıra ve gerekçesi [1.0 sonrası](#10-sonrası) bölümünde; dal adları faz başlayınca kesinleşir. İlerlemeyi [milestone'lardan](https://github.com/aaudraa/KeyKey/milestones) da izleyebilirsin.
 
@@ -781,6 +782,29 @@ Kasanın kullanıcının kendi WebDAV klasörü üzerinden telefonlar arasında 
 
 **Bitti sayılması için:** iki telefonda eklenen, değiştirilen ve silinen kayıtlar ötekine geçiyor; eski bir dosya yeni bir değişikliği geri almıyor; kalıcı silinen kayıt geri gelmiyor; yeni telefon senkrondan kuruluyor; başka kasası olan telefon kayıtlarını kaybetmeden katılıyor; sunucuya giden dosyada şifresiz kayıt yok.
 
+### Faz 20 — KeePass içe aktarma
+
+KeePass 2, KeePassXC, KeePassDX ve Keepass2Android'in `.kdbx` dosyalarını ana parola ve anahtar dosyasıyla açıp kasaya almak ([#177](https://github.com/aaudraa/KeyKey/issues/177)). Proje sahibi soru istemedi; kararlar benim. Tasarım: [`keepass-ice-aktarma.md`](docs/keepass-ice-aktarma.md), plan: [`keepass-ice-aktarma-plani.md`](docs/keepass-ice-aktarma-plani.md).
+
+- [ ] Test dosyaları (pykeepass, KeePassXC, KeePassXC'in komut satırıyla oluşturulan) ve kaynak belgesi
+- [ ] KDBX okuyucu: başlık, sözlük, anahtar dosyası, blok akışları, şifre çözme (`pointycastle`), iç akış, XML
+- [ ] Anahtar türetme: Kotlin'de AES-KDF, Argon2 başvuru uygulaması JNI ile; Pigeon arka plan kuyruğu
+- [ ] Kayıt eşleme: klasör, 2FA, özel alanlar, başvurular, çöp kutusu, güvenli not
+- [ ] KeePass dosyasını aç ekranı ve önizlemeye bağlama
+- [ ] Bozuk girdi testleri, cihaz testleri (Android 11 ve 17)
+- [ ] Güvenlik tasarımı, bağımlılıklar, lisanslar, kılavuz, değişiklik günlüğü
+- [ ] Son gözden geçirme, 1.9.0
+
+**Bitti sayılması için:** test klasöründeki bütün desteklenen dosyalar bilgisayarda ve telefonda açılıyor ve aynı kayıtları veriyor; yanlış parola, desteklenmeyen biçim ve bozuk dosya ayrı mesajlarla reddediliyor; KeePassXC'in varsayılan ayarlarıyla oluşturulmuş bir dosya telefonda makul sürede açılıyor; hiçbir şey diske yazılmıyor.
+
+### Faz 25 — Uygulama ve site eşleştirme
+
+İnternet izni yokken bir uygulamanın hangi siteye ait olduğu doğrulanamıyordu, uygulama kayda ilk doldurmada elle bağlanıyordu. Proje sahibi 2026-11-22'de bunun internetle yeniden ele alınmasını istedi ("o an engelimiz vardı artık yok"; "hangi sistem daha iyi ve sağlamsa"). Faz 20'den sonra yapılır ([#178](https://github.com/aaudraa/KeyKey/issues/178)).
+
+- Önce internetsiz: Android 12+ `DomainVerificationManager` ile sistemin zaten doğruladığı alan adları.
+- Sonra internetle: kayıtlı sitenin `/.well-known/assetlinks.json` dosyası (Digital Asset Links); paket adı ve imza özeti tutarsa eşleşme kendiliğinden kurulur. Ağ kodu üçüncü bir dosyaya çıkar, gizlilik bildirimi güncellenir.
+- Güvenilen tarayıcı listesi gömülü kalır, internetten güncellenmez: sahte siteye karşı ana savunma o.
+
 ## 1.0 sonrası
 
 **2026-11-19:** Proje sahibi bu bölümdeki fikirlerin, kendi kararını bekleyenler dahil hepsini onayladı ve internete açılmaya karar verdi ([İnternet](#temel-kararlar)). Sıra benim kararım ve [Durum](#durum) tablosunda faz olarak duruyor. Gerekçesi:
@@ -804,6 +828,7 @@ Kasanın kullanıcının kendi WebDAV klasörü üzerinden telefonlar arasında 
 | Steam Guard kodları | 18 | 2FA tarafı için. |
 | Navbar'da yalnızca simgeler | Tamamlandı (1.8.1) | Proje sahibinin notu (2026-11-21): navbar yalnızca seçili sekmenin adını, o da sığarsa gösteriyor; beş sekmeyle telefonda yalnızca "2FA" sığdığı için tutarsız görünüyor. Görünen adlar kalkar, ekran okuyucu adları okumaya devam eder. Sonraki sürüme küçük bir düzeltme olarak girer ([#163](https://github.com/aaudraa/KeyKey/issues/163)). |
 | KeePass (`.kdbx`) içe aktarma | 20 | KDBX çoğunlukla Argon2d kullanır, libsodium'da yok; ayrı ve incelenmiş bir uygulama gerekir. |
+| Uygulama ve site eşleştirme | 25 | 2026-11-22'de eklendi. İnternetsizken uygulamanın sitesi doğrulanamıyordu; Digital Asset Links ile kendiliğinden eşleşme. |
 | Passkey ve Credential Manager sağlayıcısı | 21 | Android 14 ve üstü. Passkey'ler çoğunlukla P-256 (ES256) ister, libsodium'da yok; Android'in kendi kripto sağlayıcısı kullanılır. |
 | İşlemciye göre bölünmüş APK | 22 | Evrensel APK 80 MB. Bölünmüş APK'lar evrenselin yanına eklenir; Obtainium işlemciye uygun olanı seçebilir. |
 | Kendi F-Droid deposu | 22 | F-Droid istemcisine eklenebilen kendi depomuz (`fdroid repo`, örneğin GitHub Pages'te). Ana depoya girmeden F-Droid kullanıcılarına güncelleme verir; imza bizim. |
