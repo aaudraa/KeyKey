@@ -1,4 +1,5 @@
 // GEÇİCİ TANI: Linux CI'da meşgul bekleme neden çalışmıyor? Birleştirilmez.
+import 'dart:ffi';
 import 'dart:io';
 import 'dart:isolate';
 
@@ -44,6 +45,18 @@ void main() {
       await Future<void>.delayed(const Duration(seconds: 1));
       await done.cancel();
       out.writeln('[$mode] ${log.join(' | ')}');
+    }
+    if (!Platform.isWindows) {
+      final usleep = DynamicLibrary.process()
+          .lookupFunction<Int32 Function(Uint32), int Function(int)>('usleep');
+      final sw = Stopwatch()..start();
+      var interrupted = 0;
+      for (var i = 0; i < 10; i++) {
+        if (usleep(100000) != 0) interrupted++;
+      }
+      out.writeln(
+        '10 x usleep(100 ms): ${sw.elapsedMilliseconds} ms, kesilen $interrupted',
+      );
     }
     dir.deleteSync(recursive: true);
     fail(out.toString());
