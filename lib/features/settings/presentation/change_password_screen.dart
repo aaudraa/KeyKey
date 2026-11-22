@@ -126,6 +126,12 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    // Değişim sürerken ekrandan çıkılmaz: sonuç ve eski yedeklerle ilgili not
+    // ancak bu ekranda söylenebilir.
+    return PopScope(canPop: !_busy, child: _scaffold(l10n));
+  }
+
+  Widget _scaffold(AppLocalizations l10n) {
     return KkScaffold(
       appBar: kkAppBar(context, title: l10n.changePasswordTitle),
       bottomNavigationBar: ListenableBuilder(
