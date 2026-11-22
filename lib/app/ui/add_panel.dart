@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
@@ -179,7 +180,8 @@ class _AddPanelState extends State<AddPanel> {
             ),
             child: KkEntranceScope(
               key: ValueKey(_otpPage),
-              child: Padding(
+              // Yatay ekranda ya da büyük yazıda kutu sığmazsa kayar.
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -218,17 +220,30 @@ class _AddPanelState extends State<AddPanel> {
           left: 16,
           right: 16,
           bottom: bottom,
-          child: FadeTransition(
-            opacity: animation,
-            child: ScaleTransition(
-              scale: Tween<double>(begin: 0.92, end: 1).animate(spring),
-              alignment: Alignment.bottomRight,
-              child: Semantics(
-                scopesRoute: true,
-                namesRoute: true,
-                explicitChildNodes: true,
-                label: l10n.addTitle,
-                child: box,
+          // Yalnız alttan konumlanan kutunun yüksekliği sınırsızdır; ekranın
+          // üstünden taşmasın (#173, S3).
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: max(
+                0,
+                MediaQuery.sizeOf(context).height -
+                    bottom -
+                    MediaQuery.paddingOf(context).top -
+                    8,
+              ),
+            ),
+            child: FadeTransition(
+              opacity: animation,
+              child: ScaleTransition(
+                scale: Tween<double>(begin: 0.92, end: 1).animate(spring),
+                alignment: Alignment.bottomRight,
+                child: Semantics(
+                  scopesRoute: true,
+                  namesRoute: true,
+                  explicitChildNodes: true,
+                  label: l10n.addTitle,
+                  child: box,
+                ),
               ),
             ),
           ),
