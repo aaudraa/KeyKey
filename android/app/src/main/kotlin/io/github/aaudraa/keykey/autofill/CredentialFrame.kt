@@ -19,8 +19,11 @@ object CredentialFrame {
     private val credentialKinds = listOf(FieldKind.PASSWORD, FieldKind.NEW_PASSWORD, FieldKind.USERNAME)
 
     fun restrict(form: ParsedForm, fields: List<FieldInfo>): Result {
-        // Sıra önemli: parola hangi çerçevedeyse eşleştirme o siteyle yapılır.
-        val anchor = credentialKinds.firstNotNullOfOrNull { kind -> form.of(kind).minOrNull() }
+        // Kullanıcı bir giriş alanına dokunduysa onun çerçevesi; yoksa sıra
+        // önemli: parola hangi çerçevedeyse eşleştirme o siteyle yapılır.
+        val credentials = credentialKinds.flatMap { form.of(it) }
+        val anchor = credentials.firstOrNull { fields[it].isFocused }
+            ?: credentialKinds.firstNotNullOfOrNull { kind -> form.of(kind).minOrNull() }
             ?: return Result(form, null, null)
         val frame = fields[anchor].frameDomain?.lowercase(Locale.ROOT)
         val kept = form.fields.mapValues { (kind, indices) ->

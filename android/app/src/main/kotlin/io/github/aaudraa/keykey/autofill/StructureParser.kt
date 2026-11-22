@@ -89,6 +89,7 @@ object StructureParser {
                     maxLength = maxLengthOf(node, attributes),
                     frameDomain = frame?.first,
                     frameScheme = frame?.second,
+                    isFocused = node.isFocused,
                 )
             }
             for (i in 0 until node.childCount) visit(node.getChildAt(i), visible, frame)

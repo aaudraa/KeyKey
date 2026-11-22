@@ -61,6 +61,33 @@ class CredentialFrameTest {
     }
 
     @Test
+    fun odaktakiAlanınÇerçevesiÖnceGeliyor() {
+        // Banka önce yalnızca kullanıcı adını soruyor; sayfadaki başka bir
+        // çerçevede görünür bir parola alanı var. Kullanıcı bankanın kutusuna
+        // dokunduysa eşleştirme bankayla yapılır.
+        val result = restrict(
+            input("email", "email", "banka.example").copy(isFocused = true),
+            input("password", "password", "reklam.example"),
+        )
+
+        assertEquals("banka.example", result.frameDomain)
+        assertEquals(listOf(0), result.form.of(FieldKind.USERNAME))
+        assertEquals(emptyList<Int>(), result.form.of(FieldKind.PASSWORD))
+    }
+
+    @Test
+    fun odaktakiAlanGirişAlanıDeğilseEskiKuralGeçerli() {
+        // Parolanın önündeki düz kutu kullanıcı adı sayılır; odaktaki arama
+        // kutusu bu yüzden parolanın ardında.
+        val result = restrict(
+            input("password", "password", "giris.example"),
+            input("text", "search", "banka.example").copy(isFocused = true),
+        )
+
+        assertEquals("giris.example", result.frameDomain)
+    }
+
+    @Test
     fun alanAdıBüyükKüçükHarfeDuyarsız() {
         val result = restrict(
             input("password", "password", "Banka.Example"),

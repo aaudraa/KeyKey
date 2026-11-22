@@ -60,6 +60,8 @@ data class FieldInfo(
      */
     val frameDomain: String? = null,
     val frameScheme: String? = null,
+    /** Kullanıcının dokunduğu alan; doldurma isteği bunun için geldi. */
+    val isFocused: Boolean = false,
 ) {
     companion object {
         const val AUTOFILL_TYPE_TEXT = 1
