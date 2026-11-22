@@ -1,4 +1,5 @@
 import 'package:keykey/features/authenticator/data/otp_parameters.dart';
+import 'package:keykey/features/authenticator/data/otpauth_uri.dart';
 
 /// Dosya veya QR bu sürümün okuyabileceği bir dışa aktarma değil.
 ///
@@ -22,12 +23,15 @@ final class WrongImportPasswordException implements Exception {
 
 /// Başka bir uygulamadan okunan hesap. Henüz kaydedilmedi.
 final class ImportedAccount {
-  const new({
+  /// Servis ve hesap adı otpauth bağlantısındaki gibi temizlenir: denetim ve
+  /// yön karakterleri bir servisi başkası gibi gösterebilir (#173, O4).
+  new({
     required this.parameters,
-    required this.issuer,
-    required this.account,
+    required String issuer,
+    required String account,
     this.notes = '',
-  });
+  }) : issuer = OtpauthUri.cleanName(issuer),
+       account = OtpauthUri.cleanName(account);
 
   final OtpParameters parameters;
   final String issuer;
