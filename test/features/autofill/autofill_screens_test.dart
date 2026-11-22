@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/app/ui/keykey_logo.dart';
 import 'package:keykey/app/ui/kk_motion.dart';
+import 'package:keykey/core/network/asset_links_client.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
 import 'package:keykey/features/authenticator/application/otp_clock.dart';
 import 'package:keykey/features/authenticator/application/otp_generator.dart';
@@ -35,9 +36,12 @@ import '../../support/fake_vault_service.dart';
 
 /// Android tarafının yerine geçer; doldurulanı ve kapatılmayı kaydeder.
 class FakeAutofillBridge implements AutofillBridge {
-  new(this.target);
+  new(this.target, {this.domains = const []});
 
   final AutofillTarget? target;
+
+  /// Uygulamanın bildirdiği alan adları ve doğrulama durumu.
+  final List<AppDomain> domains;
   ({String username, String password})? filled;
   String? notice;
   int fillCount = 0;
@@ -54,6 +58,10 @@ class FakeAutofillBridge implements AutofillBridge {
   ) async =>
       packageName == target?.packageName &&
       certs.every(target!.certsSha256.contains);
+
+  @override
+  Future<List<AppDomain>> appDomains(String packageName) async =>
+      packageName == target?.packageName ? domains : const [];
 
   @override
   Future<void> fill({
@@ -90,6 +98,24 @@ class SlowClipboard extends RecordingClipboard {
   Future<void> copy(String text) async {
     await _gate.future;
     await super.copy(text);
+  }
+}
+
+/// `assetlinks.json` yerine geçer; sorulan alan adlarını kaydeder.
+class FakeAssetLinks implements AssetLinksSource {
+  new(this.bodies);
+
+  final Map<String, String?> bodies;
+  final asked = <String>[];
+
+  /// Doluysa yanıt bu tamamlanana kadar bekler.
+  Completer<void>? gate;
+
+  @override
+  Future<String?> fetch(String host) async {
+    asked.add(host);
+    await gate?.future;
+    return bodies[host];
   }
 }
 
@@ -222,10 +248,12 @@ void main() {
     AutofillTarget? target = app,
     bool settle = true,
     bool termsAccepted = true,
+    List<AppDomain> domains = const [],
+    AssetLinksSource? assetLinks,
   }) async {
     tester.platformDispatcher.localesTestValue = [const Locale('tr')];
     addTearDown(tester.platformDispatcher.clearLocalesTestValue);
-    final bridge = FakeAutofillBridge(target);
+    final bridge = FakeAutofillBridge(target, domains: domains);
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -240,6 +268,9 @@ void main() {
           autofillBridgeProvider.overrideWithValue(bridge),
           publicSuffixListProvider.overrideWith((ref) => psl),
           initialTermsAcceptedProvider.overrideWithValue(termsAccepted),
+          assetLinksSourceProvider.overrideWithValue(
+            assetLinks ?? FakeAssetLinks(const {}),
+          ),
         ],
         child: const AutofillApp(),
       ),
@@ -639,6 +670,258 @@ void main() {
     expect(find.text('Banka'), findsOneWidget);
     expect(find.text('Örnek hesap'), findsNothing);
     expect(find.text('Eşleşen kayıtlar'), findsNothing);
+  });
+
+  group('uygulamanın sitesi', () {
+    const githubCert =
+        'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd';
+    const github = AutofillTarget(
+      packageName: 'com.github.android',
+      appLabel: 'GitHub',
+      certsSha256: [githubCert],
+    );
+    final approving = jsonEncode([
+      {
+        'relation': ['delegate_permission/common.get_login_creds'],
+        'target': {
+          'namespace': 'android_app',
+          'package_name': 'com.github.android',
+          'sha256_cert_fingerprints': [List.filled(32, 'DD').join(':')],
+        },
+      },
+    ]);
+
+    void addGithub({String name = 'GitHub', String user = 'ali', int id = 20}) {
+      logins.items.add(
+        FakeLoginRepository.item(
+          LoginContent(
+            name: name,
+            username: user,
+            password: 'github-parolasi-$id',
+            urls: const ['https://github.com/login'],
+          ),
+          id: id,
+        ),
+      );
+    }
+
+    LoginItem githubItem([String name = 'GitHub']) =>
+        logins.items.firstWhere((i) => i.content.name == name);
+
+    AppSettings verifyOnline() =>
+        AppSettings.defaults.copyWith(autofillVerifySites: true);
+
+    testWidgets('Android doğruladıysa liste açılmadan doldurulup bağlanıyor', (
+      tester,
+    ) async {
+      addGithub();
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: github,
+        domains: [AppDomain(host: 'github.com', verified: true)],
+      );
+
+      expect(bridge.filled?.password, 'github-parolasi-20');
+      expect(bridge.fillCount, 1);
+      final apps = githubItem().content.apps;
+      expect(apps.single.packageName, 'com.github.android');
+      expect(apps.single.certsSha256, [githubCert]);
+    });
+
+    testWidgets('iki hesapta liste açılıyor, seçilen uyarısız bağlanıyor', (
+      tester,
+    ) async {
+      addGithub();
+      addGithub(name: 'GitHub iş', user: 'is', id: 21);
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: github,
+        domains: [AppDomain(host: 'github.com', verified: true)],
+      );
+
+      expect(bridge.filled, isNull);
+      await tester.tap(find.text('GitHub iş'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Doldurmadan önce'), findsNothing);
+      expect(bridge.filled?.password, 'github-parolasi-21');
+      expect(githubItem('GitHub iş').content.apps, hasLength(1));
+      expect(githubItem().content.apps, isEmpty);
+    });
+
+    testWidgets('kullanıcının seçtiği alan adı doğrulanmış sayılmıyor', (
+      tester,
+    ) async {
+      addGithub();
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: github,
+        domains: [AppDomain(host: 'github.com', verified: false)],
+      );
+
+      expect(bridge.filled, isNull);
+      expect(find.text('Eşleşen kayıtlar'), findsNothing);
+    });
+
+    testWidgets('ayar kapalıyken internete çıkılmıyor', (tester) async {
+      addGithub();
+      final links = FakeAssetLinks({'github.com': approving});
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: github,
+        assetLinks: links,
+      );
+
+      expect(links.asked, isEmpty);
+      expect(bridge.filled, isNull);
+    });
+
+    testWidgets('ayar açıkken site onaylıyorsa doldurulup bağlanıyor', (
+      tester,
+    ) async {
+      settings.settings = verifyOnline();
+      addGithub();
+      final links = FakeAssetLinks({'github.com': approving});
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: github,
+        assetLinks: links,
+      );
+
+      expect(links.asked, ['github.com']);
+      expect(bridge.filled?.password, 'github-parolasi-20');
+      expect(githubItem().content.apps.single.certsSha256, [githubCert]);
+    });
+
+    testWidgets('bağlamadan sonra aynı siteye yeniden sorulmuyor', (
+      tester,
+    ) async {
+      settings.settings = verifyOnline();
+      addGithub();
+      addGithub(name: 'GitHub iş', user: 'is', id: 21);
+      final links = FakeAssetLinks({'github.com': approving});
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: github,
+        assetLinks: links,
+      );
+
+      await tester.tap(find.text('GitHub'));
+      await tester.pumpAndSettle();
+
+      expect(bridge.filled?.password, 'github-parolasi-20');
+      expect(links.asked, ['github.com']);
+    });
+
+    testWidgets('site onaylamazsa eşleşme yok uyarısı', (tester) async {
+      settings.settings = verifyOnline();
+      addGithub();
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: github,
+        assetLinks: FakeAssetLinks({'github.com': null}),
+      );
+
+      expect(bridge.filled, isNull);
+      await searchFor(tester, 'github');
+      await tester.tap(find.text('GitHub'));
+      await tester.pumpAndSettle();
+      expect(find.text('Doldurmadan önce'), findsOneWidget);
+    });
+
+    testWidgets('sorgu sürerken doğrulandığı yazıyor', (tester) async {
+      settings.settings = verifyOnline();
+      addGithub();
+      final links = FakeAssetLinks({'github.com': approving})
+        ..gate = Completer<void>();
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: github,
+        assetLinks: links,
+        settle: false,
+      );
+      for (var i = 0; i < 5; i++) {
+        await tester.pump();
+      }
+
+      expect(find.text('Uygulamanın sitesi doğrulanıyor'), findsOneWidget);
+      links.gate!.complete();
+      await tester.pumpAndSettle();
+      expect(bridge.filled?.password, 'github-parolasi-20');
+    });
+
+    testWidgets('uygulamanın web sayfasında uyarı kalıyor, bağlanmıyor', (
+      tester,
+    ) async {
+      settings.settings = verifyOnline();
+      addGithub();
+      final links = FakeAssetLinks({'github.com': approving});
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: const AutofillTarget(
+          packageName: 'com.github.android',
+          appLabel: 'GitHub',
+          certsSha256: [githubCert],
+          inWebView: true,
+        ),
+        domains: [AppDomain(host: 'github.com', verified: true)],
+        assetLinks: links,
+      );
+
+      expect(bridge.filled, isNull);
+      expect(links.asked, isEmpty);
+      await searchFor(tester, 'github');
+      await tester.tap(find.text('GitHub'));
+      await tester.pumpAndSettle();
+      expect(find.text('Doldurmadan önce'), findsOneWidget);
+      await tester.tap(find.text('Yine de doldur'));
+      await tester.pumpAndSettle();
+      expect(bridge.filled?.password, 'github-parolasi-20');
+      expect(githubItem().content.apps, isEmpty);
+    });
+
+    testWidgets('imzası tutmayan bağlı kayıt doğrulanmış sitede de uyarıyor', (
+      tester,
+    ) async {
+      logins.items.add(
+        FakeLoginRepository.item(
+          LoginContent(
+            name: 'GitHub eski',
+            username: 'ali',
+            password: 'eski',
+            urls: const ['https://github.com'],
+            apps: [
+              LoginApp(
+                packageName: 'com.github.android',
+                certsSha256: const [cert],
+              ),
+            ],
+          ),
+          id: 22,
+        ),
+      );
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: github,
+        domains: [AppDomain(host: 'github.com', verified: true)],
+      );
+
+      expect(bridge.filled, isNull);
+      await searchFor(tester, 'github');
+      await tester.tap(find.text('GitHub eski'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('sahte'), findsWidgets);
+    });
   });
 
   group('uyarılar', () {

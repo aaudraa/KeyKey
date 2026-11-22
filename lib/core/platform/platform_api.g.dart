@@ -272,6 +272,52 @@ class BiometricUnwrapResult {
   }
 }
 
+/// Uygulamanın manifestinde `autoVerify` ile bildirdiği bir `https` alan
+/// adı. [verified] yalnızca sistem alan adını doğruladıysa
+/// (`DOMAIN_STATE_VERIFIED`) doğrudur. Joker `*.` ile başlar.
+class AppDomain {
+  AppDomain({required this.host, required this.verified});
+
+  String host;
+
+  bool verified;
+
+  List<Object?> _toList() {
+    return <Object?>[host, verified];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static AppDomain decode(Object result) {
+    result as List<Object?>;
+    return AppDomain(host: result[0]! as String, verified: result[1]! as bool);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! AppDomain || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(host, other.host) &&
+        _deepEquals(verified, other.verified);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'AppDomain(host: $host, verified: $verified)';
+  }
+}
+
 /// Doldurma ekranını açan isteğin, kasaya bakmadan bilinen özeti.
 ///
 /// Kurallar güvenlik tasarımı belgesinin Otomatik doldurma bölümündedir.
@@ -690,23 +736,26 @@ class _PigeonCodec extends StandardMessageCodec {
     } else if (value is BiometricUnwrapResult) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
-    } else if (value is AutofillRequestInfo) {
+    } else if (value is AppDomain) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
-    } else if (value is AutofillSaveValues) {
+    } else if (value is AutofillRequestInfo) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    } else if (value is CardFillValues) {
+    } else if (value is AutofillSaveValues) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    } else if (value is AutofillSetupStatus) {
+    } else if (value is CardFillValues) {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
-    } else if (value is DocumentResult) {
+    } else if (value is AutofillSetupStatus) {
       buffer.putUint8(140);
       writeValue(buffer, value.encode());
-    } else if (value is FolderPickResult) {
+    } else if (value is DocumentResult) {
       buffer.putUint8(141);
+      writeValue(buffer, value.encode());
+    } else if (value is FolderPickResult) {
+      buffer.putUint8(142);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -735,16 +784,18 @@ class _PigeonCodec extends StandardMessageCodec {
       case 135:
         return BiometricUnwrapResult.decode(readValue(buffer)!);
       case 136:
-        return AutofillRequestInfo.decode(readValue(buffer)!);
+        return AppDomain.decode(readValue(buffer)!);
       case 137:
-        return AutofillSaveValues.decode(readValue(buffer)!);
+        return AutofillRequestInfo.decode(readValue(buffer)!);
       case 138:
-        return CardFillValues.decode(readValue(buffer)!);
+        return AutofillSaveValues.decode(readValue(buffer)!);
       case 139:
-        return AutofillSetupStatus.decode(readValue(buffer)!);
+        return CardFillValues.decode(readValue(buffer)!);
       case 140:
-        return DocumentResult.decode(readValue(buffer)!);
+        return AutofillSetupStatus.decode(readValue(buffer)!);
       case 141:
+        return DocumentResult.decode(readValue(buffer)!);
+      case 142:
         return FolderPickResult.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -1076,6 +1127,28 @@ class AutofillApi {
       isNullValid: false,
     );
     return pigeonVar_replyValue! as bool;
+  }
+
+  /// [packageName]'in bildirdiği alan adları ve sistemin doğrulama durumu
+  /// (Android 12+). Daha eski sürümde ya da okunamazsa boş.
+  Future<List<AppDomain>> appDomains(String packageName) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.AutofillApi.appDomains$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[packageName],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return (pigeonVar_replyValue! as List<Object?>).cast<AppDomain>();
   }
 
   /// Değerleri forma verir, [notice] bildirimini gösterir ve ekranı kapatır.

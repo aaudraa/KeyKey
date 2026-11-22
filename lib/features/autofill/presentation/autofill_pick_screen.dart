@@ -7,6 +7,7 @@ import 'package:keykey/app/ui/kk_card.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/core/platform/sensitive_clipboard.dart';
+import 'package:keykey/features/autofill/application/app_site_check.dart';
 import 'package:keykey/features/autofill/application/autofill_bridge.dart';
 import 'package:keykey/features/autofill/application/autofill_matches.dart';
 import 'package:keykey/features/autofill/application/autofill_otp.dart';
@@ -83,7 +84,12 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
       if (item == null || _busy) return;
       _busy = true;
       setState(() => _directFilling = true);
-      unawaited(_fill(item).whenComplete(() => _busy = false));
+      unawaited(
+        _bindIfVerifiedSite(
+          item,
+          value,
+        ).then(_fill).whenComplete(() => _busy = false),
+      );
     } else if (next is AsyncError) {
       _directChecked = true;
     }
@@ -109,6 +115,7 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
           chosen = await _bindApp(item);
         }
       }
+      chosen = await _bindIfVerifiedSite(chosen, matches);
       await _fill(chosen);
     } finally {
       _busy = false;
@@ -137,6 +144,21 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
       ),
     );
     return completer.future;
+  }
+
+  /// Kayıt uygulamanın doğrulanmış sitesiyle eşleştiyse uygulamayı ona
+  /// bağlar; sonraki doldurmalar imzayla eşleşir, ağa çıkılmaz. Bağlama
+  /// yazılamazsa doldurma yine yapılır.
+  Future<LoginItem> _bindIfVerifiedSite(
+    LoginItem item,
+    LoginMatches matches,
+  ) async {
+    if (matches.kindOf(item) != LoginMatchKind.verifiedSite) return item;
+    try {
+      return await _bindApp(item);
+    } on Exception {
+      return item;
+    }
   }
 
   /// Uygulamayı paket adı ve imza özetleriyle kayda ekler.
@@ -224,9 +246,18 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
         child: switch (confirming) {
           final Widget confirm => confirm,
           null when ready => _picker(context, l10n, state, matches, cancel),
-          null => const Padding(
-            padding: EdgeInsets.all(32),
-            child: Center(child: CircularProgressIndicator()),
+          null => Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Center(child: CircularProgressIndicator()),
+                if (ref.watch(siteCheckInProgressProvider)) ...[
+                  const SizedBox(height: 16),
+                  Text(l10n.autofillVerifyingSite, textAlign: TextAlign.center),
+                ],
+              ],
+            ),
           ),
         },
       ),

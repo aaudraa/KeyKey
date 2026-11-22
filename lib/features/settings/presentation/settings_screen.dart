@@ -145,6 +145,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  Future<void> _setAutofillVerifySites({required bool value}) async {
+    final l10n = AppLocalizations.of(context);
+    final snack = kkSnackFor(context);
+    try {
+      await ref
+          .read(settingsControllerProvider.notifier)
+          .setAutofillVerifySites(value: value);
+    } on VaultLockedException {
+      // Kasa kilitlendi, yönlendirme kilit ekranına gidiyor.
+    } on Exception {
+      snack(l10n.loginSaveFailed);
+    }
+  }
+
   Future<void> _setPlainKeyboard({required bool value}) async {
     final l10n = AppLocalizations.of(context);
     final snack = kkSnackFor(context);
@@ -392,6 +406,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ? null
                         : (value) =>
                               unawaited(_setAutofillCopyOtp(value: value)),
+                  ),
+                  KkSwitchTile(
+                    infoTitle: l10n.settingsAutofillVerifySites,
+                    info: l10n.settingsAutofillVerifySitesHelp,
+                    secondary: const KkIconBox(
+                      icon: Icons.travel_explore_rounded,
+                    ),
+                    title: Text(l10n.settingsAutofillVerifySites),
+                    value: settings?.autofillVerifySites ?? false,
+                    onChanged: settings == null
+                        ? null
+                        : (value) =>
+                              unawaited(_setAutofillVerifySites(value: value)),
                   ),
                 ],
               ),

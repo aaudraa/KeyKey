@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/core/platform/platform_api.g.dart';
 import 'package:keykey/features/vault/data/card_content.dart';
 
+export 'package:keykey/core/platform/platform_api.g.dart' show AppDomain;
+
 /// Kullanıcının forma yazıp kaydetmeyi onayladığı değerler.
 @immutable
 final class AutofillSave {
@@ -106,6 +108,10 @@ abstract interface class AutofillBridge {
   /// [packageName] verilen imza özetlerinin hepsiyle imzalanmış mı.
   Future<bool> hasSigningCertificates(String packageName, List<String> certs);
 
+  /// [packageName]'in bildirdiği alan adları ve Android'in onları doğrulayıp
+  /// doğrulamadığı (Android 12+). Daha eski sürümde ya da okunamazsa boş.
+  Future<List<AppDomain>> appDomains(String packageName);
+
   /// Değerleri forma verir; Android [notice] bildirimini gösterir ve ekranı
   /// kapatır. Bildirim yalnızca kaydın adını taşır.
   Future<void> fill({
@@ -154,6 +160,10 @@ final class PigeonAutofillBridge implements AutofillBridge {
   @override
   Future<bool> hasSigningCertificates(String packageName, List<String> certs) =>
       _api.hasSigningCertificates(packageName, certs);
+
+  @override
+  Future<List<AppDomain>> appDomains(String packageName) =>
+      _api.appDomains(packageName);
 
   @override
   Future<void> fill({

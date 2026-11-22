@@ -847,7 +847,7 @@
   "@termsDataTitle": {
     "description": "Terms section title: where data lives."
   },
-  "termsDataBody": "Your passwords, 2FA accounts, cards and notes are kept in the vault on this phone. A backup or export file is only created when you ask for it, and saved where you choose. KeyKey has no account and no server, shows no ads and collects no usage data. It goes online only for features you turn on yourself: the breach check in the password report (your passwords themselves are never sent) and, if you turn it on, sync. When you open a link, the page opens in your browser. The developers cannot see, collect or store your data.",
+  "termsDataBody": "Your passwords, 2FA accounts, cards and notes are kept in the vault on this phone. A backup or export file is only created when you ask for it, and saved where you choose. KeyKey has no account and no server, shows no ads and collects no usage data. It goes online only for features you turn on yourself: the breach check in the password report (your passwords themselves are never sent), sync if you turn it on, and, if you turn it on, verifying an app's website during autofill (nothing from your vault is sent to the site). When you open a link, the page opens in your browser. The developers cannot see, collect or store your data.",
   "@termsDataBody": {
     "description": "Terms section body: where data lives."
   },
@@ -1738,6 +1738,18 @@
         "type": "int"
       }
     }
+  },
+  "settingsAutofillVerifySites": "Verify the app's website online",
+  "@settingsAutofillVerifySites": {
+    "description": "Setting that lets autofill read a website's assetlinks.json to match an app with its site."
+  },
+  "settingsAutofillVerifySitesHelp": "If nothing matches in an app, KeyKey reads the assetlinks.json file of the site the app claims as its own, but only if your vault has a login for that site. If the file approves the app, the login matches and the app is linked to it. Nothing from your vault is sent to the site.",
+  "@settingsAutofillVerifySitesHelp": {
+    "description": "Explains the online site verification setting."
+  },
+  "autofillVerifyingSite": "Verifying the app's website",
+  "@autofillVerifyingSite": {
+    "description": "Shown under the loading indicator while the autofill screen checks the app's website online."
   },
   "autofillSetupTitle": "Autofill service",
   "@autofillSetupTitle": {

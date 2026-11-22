@@ -2,7 +2,7 @@
 
 **Applies to:** KeyKey 1.0 and later · **Last updated:** 2026-11-20 · Türkçe: [gizlilik.md](gizlilik.md)
 
-KeyKey collects no data. There is no account and KeyKey has no server; your vault stays on this phone, encrypted. Since 1.6.0 KeyKey has the internet permission, and it goes online only for two features you turn on yourself: the [breach check](#breach-check) in the password report and, if you turn it on, [sync](#sync). Your passwords and your vault do not leave the device during the breach check; with sync, only a copy of your vault encrypted with your master password goes to the server you choose. All network code lives in two files, and a test on every build checks that there is no network code anywhere else; anyone can verify this from the source code.
+KeyKey collects no data. There is no account and KeyKey has no server; your vault stays on this phone, encrypted. Since 1.6.0 KeyKey has the internet permission, and it goes online only for features you turn on yourself: the [breach check](#breach-check) in the password report, [sync](#sync) if you turn it on, and, if you turn it on, [verifying an app's website](#verifying-an-apps-website) during autofill. Your passwords and your vault do not leave the device during the breach check or website verification; with sync, only a copy of your vault encrypted with your master password goes to the server you choose. All network code lives in three files, and a test on every build checks that there is no network code anywhere else; anyone can verify this from the source code.
 
 ## What is not collected
 
@@ -28,13 +28,15 @@ KeyKey collects no data. There is no account and KeyKey has no server; your vaul
 | Camera | Requested only while scanning a 2FA QR code. Images are not stored and never leave the device. |
 | Biometrics (fingerprint) | To unlock the vault with a fingerprint. The fingerprint itself never reaches KeyKey; Android only reports "verified". |
 | Hide overlay windows | So other apps cannot draw over KeyKey and trick your taps while it is on screen. |
-| Internet | For the breach check in the password report, when you tap it; and, if you turn it on, for sync, only with the server you entered. What is sent is below: [breach check](#breach-check), [sync](#sync). |
+| Internet | For the breach check in the password report, when you tap it; if you turn it on, for sync, only with the server you entered; if you turn it on, to verify an app's website during autofill. What is sent is below: [breach check](#breach-check), [sync](#sync), [website verification](#verifying-an-apps-website). |
 
 KeyKey does not request location, contacts, storage or "see all apps" (`QUERY_ALL_PACKAGES`) permissions.
 
 ## Autofill
 
 If you select KeyKey as your autofill service, Android gives KeyKey the structure of a login form when you tap it (field types, the app's package name, the site's domain in a browser). KeyKey uses this only to suggest the right entry and does not store it. If you accept a save prompt, only the username and password you confirm are added to the vault. To link entries to apps, KeyKey can see the list of apps that have a launcher icon.
+
+When you fill in an app, KeyKey also reads the websites Android has verified for that app (Android 12 and later). This stays on the phone; nothing goes online.
 
 ## Clipboard
 
@@ -59,6 +61,15 @@ If you turn on Settings → **Sync**, KeyKey writes an encrypted copy of your va
 - **Who receives it:** Only the server you entered, only over HTTPS (redirects are not followed). KeyKey and its developers have no server; the developers have no access to the files.
 - **What the other side sees:** Your IP address and the file names, sizes and modification times. It cannot read or change the content without your master password; it can try to guess your master password offline, so a strong master password matters.
 - **What is stored:** One file per phone on the server. When you turn sync off you can delete this phone's file as well; the server's file history and trash are out of KeyKey's reach.
+
+## Verifying an app's website
+
+If you turn on Settings → Autofill → **Verify the app's website online** (off by default) and nothing matches in an app, KeyKey reads the `assetlinks.json` file of the site the app claims as its own. If the file approves the app, the login matches and the app is linked to it; that login is not checked online again. Details in the [design document](uygulama-site-eslestirme.md) (Turkish).
+
+- **What is sent:** Only a request for a fixed address: `https://<site>/.well-known/assetlinks.json`. Nothing from your vault, no entry name, username or password.
+- **Where it goes:** Only to a site that the app claims as its own and that you have a login for, only over HTTPS (redirects are not followed). At most 4 sites per fill.
+- **What the other side sees:** Your IP address and the time; from this it can infer that you are about to fill in an app related to that site and that your vault has a login for it. The request carries no identifier, cookie or account other than `User-Agent: KeyKey`.
+- **What is stored:** If approved, the app is linked to the login (inside the vault, encrypted). Otherwise nothing.
 
 ## Files
 

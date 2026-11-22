@@ -827,6 +827,33 @@ void main() {
     expect(tester.widget<KkSwitchTile>(copySwitch).value, isFalse);
   });
 
+  testWidgets('site doğrulama ayarı kapalı başlıyor ve açılabiliyor', (
+    tester,
+  ) async {
+    final settings = FakeSettingsRepository();
+    await pumpKeyKey(
+      tester,
+      status: VaultOpen(service.newSession()),
+      service: service,
+      settings: settings,
+    );
+    await tester.tap(find.byIcon(Icons.settings_outlined));
+    await tester.pumpAndSettle();
+
+    final verifySwitch = find.widgetWithText(
+      KkSwitchTile,
+      'Uygulamanın sitesini internetten doğrula',
+    );
+    await tester.scrollUntilVisible(verifySwitch, 100);
+    await tester.ensureVisible(verifySwitch);
+    await tester.pumpAndSettle();
+    expect(tester.widget<KkSwitchTile>(verifySwitch).value, isFalse);
+    await tester.tap(verifySwitch);
+    await tester.pumpAndSettle();
+    expect(settings.settings.autofillVerifySites, isTrue);
+    expect(tester.widget<KkSwitchTile>(verifySwitch).value, isTrue);
+  });
+
   group('tema', () {
     late _RecordingThemeStore store;
 

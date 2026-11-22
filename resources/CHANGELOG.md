@@ -2,6 +2,25 @@
 
 KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesinde](docs/yayin.md#sürüm-numarası). `v1.0.0`'dan önceki sürümler fazların sonunu işaretler ve hata ayıklama anahtarıyla imzalıdır; kalıcı bir kurulum için kullanılmamalıdır.
 
+## 1.10.0 (2026-11-22): Uygulama ve site eşleştirme
+
+Bir sitenin kaydı, o sitenin resmî uygulamasında da kendiliğinden eşleşiyor ([#178](https://github.com/aaudraa/KeyKey/issues/178)). Tasarım: [uygulama ve site eşleştirme](docs/uygulama-site-eslestirme.md). Yeni izin yok; veritabanı şeması değişmedi.
+
+### Yeni
+
+- **Uygulamanın doğrulanmış sitesi.** Uygulamaya bağlı olmayan kayıt, adresi uygulamanın doğrulanmış sitesiyle aynı siteyse eşleşir; tek eşleşme liste açılmadan doldurulur ve uygulama kayda kendiliğinden bağlanır. Android 12 ve üstünde sistemin zaten doğruladığı siteler kullanılır, ağa çıkılmaz.
+- **Uygulamanın sitesini internetten doğrula** (Ayarlar → Otomatik doldurma, varsayılan kapalı). Sistemin doğrulamadığı durumlarda KeyKey sitenin `/.well-known/assetlinks.json` dosyasını okur; yalnızca uygulamanın kendi sitesi olduğunu söylediği ve kasada kaydı bulunan siteye, en fazla dördüne sorulur. Siteye kasadan bir şey gitmez.
+
+### Güvenlik
+
+- Eşleşmeyi her zaman uygulamanın imzası belirler: site dosyası uygulamanın paket adını ve imza özetini listelemelidir. Paket adı yalnızca hangi siteye sorulacağını bulur. Kayda bağlı uygulamanın imzası tutmuyorsa doğrulanmış site bunu değiştirmez, "sahte olabilir" uyarısı kalır.
+- Yeni ağ kodu ayrı bir dosyada (`asset_links_client.dart`); yönlendirme izlenmez, IP adresi ve port reddedilir, gövde 128 KiB, toplam bekleme 5 saniye.
+
+### Uyumluluk
+
+- Ayar kaydı sürüm 8, yedeğin içerik sürümü 5. 1.9.x ve öncesi 1.10.0 yedeklerini "daha yeni yedek" diye açmaz ve güncellemeyi söyler. Senkron dosyası sürüm 4'te kalır; 1.8.0-1.9.x telefonlarla eşitleme sürer.
+- Kullanım koşulları sürüm 4: internete çıkan yeni bir özellik eklendiği için güncellemeden sonra bir kez yeniden sorulur.
+
 ## 1.9.0 (2026-11-22): KeePass içe aktarma
 
 KeePass dosyaları (`.kdbx`) doğrudan açılıp kasaya alınabiliyor ([#177](https://github.com/aaudraa/KeyKey/issues/177)). Tasarım: [KeePass içe aktarma](docs/keepass-ice-aktarma.md). Yedek biçimi ve veritabanı şeması değişmedi; yeni izin yok.

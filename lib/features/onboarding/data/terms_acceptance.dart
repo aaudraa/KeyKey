@@ -2,8 +2,9 @@ import 'dart:io';
 
 /// Kullanım koşullarının sürümü. Koşullar değişince artırılır; daha eski
 /// sürümü kabul etmiş kullanıcıya yenisi bir kez gösterilir. Sürüm 3:
-/// senkron (şifreli kopya kullanıcının seçtiği sunucuda).
-const currentTermsVersion = 3;
+/// senkron (şifreli kopya kullanıcının seçtiği sunucuda). Sürüm 4: açarsa
+/// otomatik doldurmada uygulamanın sitesinin internetten doğrulanması.
+const currentTermsVersion = 4;
 
 /// Dosyadaki metni kabul edilen sürüme çevirir. Boş ya da tanınmayan
 /// içerik hiç kabul edilmemiş (0) sayılır.

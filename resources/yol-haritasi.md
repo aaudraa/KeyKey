@@ -38,7 +38,7 @@ KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uyg
 | 22 | İşlemciye göre APK ve kendi F-Droid deposu | M | — | `faz/22-dagitim` | Planlandı |
 | 23 | KeyKey klavyesi | XL | 15 | `faz/23-klavye` | Planlandı |
 | 24 | Windows sürümü | XL | 19 | `faz/24-windows` | Planlandı |
-| 25 | Uygulama ve site eşleştirme | M | 16 | `faz/25-uygulama-site` | Sıradaki |
+| 25 | Uygulama ve site eşleştirme | M | 16 | `faz/25-uygulama-site` | Sürüyor (1.10.0) |
 
 Büyüklük göreli iş miktarını gösterir, takvim sözü değildir. Faz 4 ve 5 aynı anda ilerleyebilir. Faz 14'ten sonraki sıra ve gerekçesi [1.0 sonrası](#10-sonrası) bölümünde; dal adları faz başlayınca kesinleşir. İlerlemeyi [milestone'lardan](https://github.com/aaudraa/KeyKey/milestones) da izleyebilirsin.
 
@@ -808,6 +808,21 @@ Son gözden geçirme taze bir alt ajanla yapıldı: kritik bulgu yok; iki öneml
 - Önce internetsiz: Android 12+ `DomainVerificationManager` ile sistemin zaten doğruladığı alan adları.
 - Sonra internetle: kayıtlı sitenin `/.well-known/assetlinks.json` dosyası (Digital Asset Links); paket adı ve imza özeti tutarsa eşleşme kendiliğinden kurulur. Ağ kodu üçüncü bir dosyaya çıkar, gizlilik bildirimi güncellenir.
 - Güvenilen tarayıcı listesi gömülü kalır, internetten güncellenmez: sahte siteye karşı ana savunma o.
+
+Proje sahibi soru istemedi; kararlar benim. Tasarım: [`uygulama-site-eslestirme.md`](docs/uygulama-site-eslestirme.md), plan: [`uygulama-site-eslestirme-plani.md`](docs/uygulama-site-eslestirme-plani.md).
+
+- [x] Kotlin: uygulamanın alan adları ve doğrulama durumu (`DomainVerificationManager`, yalnızca `VERIFIED`)
+- [x] Doğrulanmış site eşleşmesi, paket adından site türetme
+- [x] `assetlinks.json` istemcisi (üçüncü ağ dosyası) ve karar
+- [x] Ayar (varsayılan kapalı); ayar kaydı sürüm 8, yedek içerik sürümü 5, senkron dosyası 4'te
+- [x] Doldurma ekranı: internet adayları, önbellek, kendiliğinden bağlama
+- [x] Cihazda: sistemin doğrulaması ve internet yolu (Android 17, Wikipedia)
+- [x] Güvenlik tasarımı, gizlilik, koşullar sürüm 4, kılavuz, değişiklik günlüğü
+- [ ] Son gözden geçirme, 1.10.0
+
+Bir karar plandan saptı: ayar kaydının sürümü artınca yedeğin içerik sürümü de artmalı (bunu bir test sabitliyor). Yedekler 5 ile yazılıyor, eski sürüm "daha yeni yedek" der. Senkron dosyası ayar kaydı taşımadığı için 4'te kaldı; böylece 1.9.x telefonlarla eşitleme kırılmıyor. Kullanım koşullarındaki "internete yalnızca … için çıkar" cümlesi yeni özellikle eksik kalacağı için koşullar sürüm 4 oldu.
+
+**Cihazda (2026-11-22, Android 17 emülatörü):** Örnek giriş uygulamasının `autoVerify` alan adı sistemde "approved" yapıldı; bağsız `example.com` kaydı liste açılmadan doldu ve uygulama kayda bağlandı. F-Droid'deki Wikipedia'nın imzası `wikipedia.org` dosyasında listeli; sistemin doğrulaması geri alınıp ayar açıldı, `en.wikipedia.org` kaydı giriş ekranında liste açılmadan doldu ve `org.wikipedia` bağlandı.
 
 ## 1.0 sonrası
 

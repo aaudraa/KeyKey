@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:keykey/features/autofill/application/autofill_bridge.dart';
 import 'package:keykey/features/autofill/domain/domain_name.dart';
 import 'package:keykey/features/autofill/domain/public_suffix_list.dart';
@@ -7,6 +8,11 @@ import 'package:keykey/features/vault/data/login_repository.dart';
 enum LoginMatchKind {
   /// Kayda bağlı uygulama: paket adı ve imza tutuyor.
   app,
+
+  /// Kayıttaki adreslerden birinin sitesi, uygulamanın doğrulanmış sitesi:
+  /// Android doğrulamış ya da sitenin `assetlinks.json` dosyası uygulamanın
+  /// imzasını listeliyor. Yalnızca uygulama hedefinde.
+  verifiedSite,
 
   /// Kayıttaki adresin alan adı formunkiyle aynı.
   exactHost,
@@ -33,6 +39,14 @@ final class LoginMatches {
   /// Bağlı uygulamanın paket adı aynı ama imzası tutmayan kayıtlar. Bunlar
   /// eşleşmiş sayılmaz; seçilirse uygulamanın sahte olabileceği söylenir.
   final List<LoginItem> signatureMismatches;
+
+  /// [item]'ın eşleşme türü; eşleşmediyse `null`.
+  LoginMatchKind? kindOf(LoginItem item) {
+    for (final match in matches) {
+      if (listEquals(match.item.id, item.id)) return match.kind;
+    }
+    return null;
+  }
 }
 
 /// İmza denetimi; Android'de `PackageManager.hasSigningCertificate`.
@@ -46,15 +60,22 @@ typedef SignatureCheck = Future<bool> Function(
 ///
 /// - Tarayıcı olmayan uygulamada yalnızca o uygulamaya bağlı kayıtlar
 ///   eşleşir; WebView'ın bildirdiği alan adı kullanılmaz.
+/// - Uygulamada, bağlı olmayan kayıt, adreslerinden birinin sitesi
+///   [verifiedSites] içindeyse (uygulamanın doğrulanmış siteleri, kayıt
+///   edilebilir alan adı olarak) eşleşir. İmzası tutmayan kayıt bu yolla
+///   eşleşmez. Uygulama web sayfası gösteriyorsa bu yol kullanılmaz:
+///   uygulamanın kendi tarayıcısında açılan başka bir sitenin sahte giriş
+///   sayfası, uygulamanın sitesinin kaydını uyarısız almasın.
 /// - Güvenilen tarayıcıda yalnızca adresler karşılaştırılır.
 ///
-/// [suffixes] yalnızca web hedefinde gerekir; uygulama hedefinde liste hiç
-/// yüklenmesin diye boş bırakılabilir.
+/// [suffixes] web hedefinde ve [verifiedSites] doluyken gerekir; uygulama
+/// hedefinde liste hiç yüklenmesin diye boş bırakılabilir.
 Future<LoginMatches> matchLogins({
   required AutofillTarget target,
   required Iterable<LoginItem> items,
   required PublicSuffixList? suffixes,
   required SignatureCheck hasSigningCertificates,
+  Set<String> verifiedSites = const {},
 }) async {
   final matches = <LoginMatch>[];
   final mismatches = <LoginItem>[];
@@ -73,7 +94,15 @@ Future<LoginMatches> matchLogins({
       final bound = item.content.apps.where(
         (app) => app.packageName == target.packageName,
       );
-      if (bound.isEmpty) continue;
+      if (bound.isEmpty) {
+        if (verifiedSites.isNotEmpty && !target.showsWebPage) {
+          final list = suffixes ?? (throw ArgumentError.notNull('suffixes'));
+          if (_onVerifiedSite(item, verifiedSites, list)) {
+            matches.add(LoginMatch(item, LoginMatchKind.verifiedSite));
+          }
+        }
+        continue;
+      }
       var verified = false;
       for (final app in bound) {
         if (await hasSigningCertificates(app.packageName, app.certsSha256)) {
@@ -97,6 +126,15 @@ Future<LoginMatches> matchLogins({
   });
   return LoginMatches(matches: matches, signatureMismatches: mismatches);
 }
+
+bool _onVerifiedSite(
+  LoginItem item,
+  Set<String> sites,
+  PublicSuffixList suffixes,
+) => item.content.urls.any((url) {
+  final host = DomainName.hostOfUrl(url);
+  return host != null && sites.contains(suffixes.registrableDomain(host));
+});
 
 LoginMatchKind? _webMatch(
   LoginItem item,

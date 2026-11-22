@@ -2,7 +2,7 @@
 
 **Geçerlilik:** KeyKey 1.0 ve sonrası · **Son güncelleme:** 2026-11-20 · English: [privacy.md](privacy.md)
 
-KeyKey hiçbir veri toplamaz. Hesap ve KeyKey'in bir sunucusu yoktur; kasan bu telefonda, şifreli durur. KeyKey 1.6.0'dan beri internet iznine sahiptir ve internete yalnızca senin açtığın iki özellik için çıkar: parola raporundaki [sızıntı kontrolü](#sızıntı-kontrolü) ve açarsan [senkron](#senkron). Sızıntı kontrolünde parolaların ve kasan cihazdan çıkmaz; senkronda kasanın yalnızca ana parolanla şifrelenmiş bir kopyası senin seçtiğin sunucuya gider. Ağ kodu iki dosyadadır ve başka bir yerde ağ kodu olmadığını her derlemede bir test denetler; kaynak koddan herkes doğrulayabilir.
+KeyKey hiçbir veri toplamaz. Hesap ve KeyKey'in bir sunucusu yoktur; kasan bu telefonda, şifreli durur. KeyKey 1.6.0'dan beri internet iznine sahiptir ve internete yalnızca senin açtığın özellikler için çıkar: parola raporundaki [sızıntı kontrolü](#sızıntı-kontrolü), açarsan [senkron](#senkron) ve açarsan otomatik doldurmada [uygulamanın sitesinin doğrulanması](#uygulamanın-sitesini-doğrulama). Sızıntı kontrolünde ve site doğrulamasında parolaların ve kasan cihazdan çıkmaz; senkronda kasanın yalnızca ana parolanla şifrelenmiş bir kopyası senin seçtiğin sunucuya gider. Ağ kodu üç dosyadadır ve başka bir yerde ağ kodu olmadığını her derlemede bir test denetler; kaynak koddan herkes doğrulayabilir.
 
 ## Toplanmayanlar
 
@@ -28,13 +28,15 @@ KeyKey hiçbir veri toplamaz. Hesap ve KeyKey'in bir sunucusu yoktur; kasan bu t
 | Kamera | Yalnızca 2FA QR kodu tararken istenir. Görüntü kaydedilmez, cihazdan çıkmaz. |
 | Biyometri (parmak izi) | Kasayı parmak iziyle açmak için. Parmak izinin kendisi KeyKey'e hiç ulaşmaz; Android yalnızca "doğrulandı" bilgisini verir. |
 | Bindirme pencerelerini gizleme | KeyKey ekrandayken başka uygulamaların üstüne pencere çizip dokunuşları kandırmasını önlemek için. |
-| İnternet | Parola raporundaki sızıntı kontrolü için, sen dokununca; açarsan senkron için, yalnızca senin girdiğin sunucuyla. Ne gittiği aşağıda: [sızıntı kontrolü](#sızıntı-kontrolü), [senkron](#senkron). |
+| İnternet | Parola raporundaki sızıntı kontrolü için, sen dokununca; açarsan senkron için, yalnızca senin girdiğin sunucuyla; açarsan otomatik doldurmada uygulamanın sitesini doğrulamak için. Ne gittiği aşağıda: [sızıntı kontrolü](#sızıntı-kontrolü), [senkron](#senkron), [site doğrulama](#uygulamanın-sitesini-doğrulama). |
 
 Konum, rehber, depolama ve bütün uygulamaları görme (`QUERY_ALL_PACKAGES`) izinleri istenmez.
 
 ## Otomatik doldurma
 
 KeyKey'i doldurma servisi olarak seçersen Android, bir giriş formuna dokunduğunda formun yapısını (alan türleri, uygulamanın paket adı, tarayıcıdaysa sitenin alan adı) KeyKey'e verir. KeyKey bunu yalnızca doğru kaydı önermek için kullanır ve saklamaz. Kaydetme önerisini kabul edersen yalnızca senin onayladığın kullanıcı adı ve parola kasaya eklenir. Kayıtları uygulamalara bağlayabilmek için KeyKey ana ekranda simgesi olan uygulamaların listesini görebilir.
+
+Bir uygulamada doldururken KeyKey, Android'in o uygulama için doğruladığı siteleri de okur (Android 12 ve üstü). Bu bilgi telefonda kalır; ağa çıkılmaz.
 
 ## Pano
 
@@ -59,6 +61,15 @@ Ayarlar → **Senkron**'u açarsan KeyKey, kasanın şifreli bir kopyasını sen
 - **Kime gider:** Yalnızca senin girdiğin sunucuya, yalnızca HTTPS ile (yönlendirme izlenmez). KeyKey'in ya da geliştiricilerinin bir sunucusu yoktur; geliştiriciler dosyalara erişmez.
 - **Karşı taraf ne görür:** IP adresin, dosya adları, boyutları ve değişme zamanları. İçeriği ana parolan olmadan okuyamaz ve değiştiremez; ana parolanı çevrimdışı deneyebilir, bu yüzden ana parolanın güçlü olması önemlidir.
 - **Ne saklanır:** Sunucuda her telefonun bir dosyası. Senkronu kapatırken bu telefonun dosyasını da silebilirsin; sunucunun dosya geçmişi ve çöp kutusu KeyKey'in erişiminde değildir.
+
+## Uygulamanın sitesini doğrulama
+
+Ayarlar → Otomatik doldurma → **Uygulamanın sitesini internetten doğrula**'yı açarsan (varsayılan kapalı), bir uygulamada eşleşen kayıt yoksa KeyKey uygulamanın kendi sitesi olduğunu söylediği sitenin `assetlinks.json` dosyasını okur. Dosya uygulamayı onaylıyorsa kayıt eşleşir ve uygulama kayda bağlanır; o kayıtta bir daha sorulmaz. Ayrıntılar [tasarım belgesinde](uygulama-site-eslestirme.md).
+
+- **Ne gider:** Yalnızca sabit adres isteği: `https://<site>/.well-known/assetlinks.json`. Kasadan hiçbir şey, kayıt adı, kullanıcı adı ya da parola gitmez.
+- **Kime gider:** Yalnızca hem uygulamanın kendi sitesi olduğunu söylediği hem de kasanda kaydı bulunan siteye, yalnızca HTTPS ile (yönlendirme izlenmez). Bir doldurmada en fazla 4 site.
+- **Karşı taraf ne görür:** IP adresin ve zamanı; buradan o siteyle ilgili bir uygulamada doldurma yapmak üzere olduğun ve kasanda o siteden bir kayıt bulunduğu çıkarılabilir. İstekte `User-Agent: KeyKey` dışında tanımlayıcı, çerez ya da hesap yoktur.
+- **Ne saklanır:** Onaylanırsa uygulama kayda bağlanır (kasanın içinde, şifreli). Onaylanmazsa hiçbir şey.
 
 ## Dosyalar
 

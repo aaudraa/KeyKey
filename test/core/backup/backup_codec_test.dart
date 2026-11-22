@@ -185,7 +185,7 @@ void main() {
         utf8.decode([for (final m in plain) ...m.message]),
       ) as Map<String, dynamic>;
       expect(json.keys, unorderedEquals(['version', 'createdAt', 'records']));
-      expect(json['version'], 4);
+      expect(json['version'], 5);
       expect(json['createdAt'], createdAt.millisecondsSinceEpoch);
       final first = (json['records'] as List).first as Map<String, dynamic>;
       expect(
@@ -207,12 +207,12 @@ void main() {
       });
     });
 
-    test('yalnızca eski türler olsa da içerik sürümü 4', () async {
-      // Sürüm 7 ayar kaydını 1.7.0 okuyamaz; içerik sürümü 4 ona "daha yeni
+    test('yalnızca eski türler olsa da içerik sürümü 5', () async {
+      // Sürüm 8 ayar kaydını 1.9.0 okuyamaz; içerik sürümü 5 ona "daha yeni
       // yedek" dedirtir. Şifreli kayıtların içi burada görünmediği için her
       // yedek bu sürümle yazılır.
       final contents = await decode(await encode(sampleRecords()));
-      expect(contents.version, 4);
+      expect(contents.version, 5);
       expect(contents.sync, isNull);
     });
 
@@ -233,19 +233,19 @@ void main() {
         {
           'login': 2,
           'otp': 1,
-          'settings': 7,
+          'settings': 8,
           'card': 1,
           'note': 1,
-          'payload': 4,
+          'payload': 5,
         },
       );
     });
 
-    test('kart ve not içerik sürümü 4 ile gidip geliyor', () async {
+    test('kart ve not içerik sürümü 5 ile gidip geliyor', () async {
       for (final type in ['card', 'note']) {
         final records = [...sampleRecords(), record(9, type: type)];
         final contents = await decode(await encode(records));
-        expect(contents.version, 4, reason: type);
+        expect(contents.version, 5, reason: type);
         expectSame(contents.records, records);
       }
     });
@@ -555,7 +555,7 @@ void main() {
 
     test('daha yeni içerik sürümü ayrı hatayla reddediliyor', () async {
       await expectLater(
-        decode(await withPayload({...payload([]), 'version': 5})),
+        decode(await withPayload({...payload([]), 'version': 6})),
         throwsA(isA<NewerBackupException>()),
       );
     });
@@ -567,19 +567,19 @@ void main() {
         // "bozuk" sanmamalı.
         await expectLater(
           decode(
-            await withPayload({...payload([]), 'version': 5, 'app': '1.5.0'}),
+            await withPayload({...payload([]), 'version': 6, 'app': '1.5.0'}),
           ),
           throwsA(isA<NewerBackupException>()),
         );
         await expectLater(
-          decode(await withPayload({'version': 5, 'items': <Object>[]})),
+          decode(await withPayload({'version': 6, 'items': <Object>[]})),
           throwsA(isA<NewerBackupException>()),
         );
       },
     );
 
-    test('sürüm 2, 3 ve 4 içerikte kart ve not açılıyor', () async {
-      for (final version in [2, 3, 4]) {
+    test('sürüm 2, 3, 4 ve 5 içerikte kart ve not açılıyor', () async {
+      for (final version in [2, 3, 4, 5]) {
         final contents = await decode(
           await withPayload({
             ...payload([
