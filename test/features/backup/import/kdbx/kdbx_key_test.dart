@@ -73,6 +73,15 @@ void main() {
     );
   });
 
+  test('anahtar dosyasının anahtarına dokunmaz', () {
+    final key = keyFileKey(kdbxFixture('keepassxc/FileKeyBinary.key'));
+    final copy = Uint8List.fromList(key);
+    compositeKey(keyFileKey: key);
+    expect(key, copy);
+    compositeKey(password: 'a', keyFileKey: key);
+    expect(key, copy);
+  });
+
   test('ikisi de yoksa hata', () {
     expect(compositeKey, throwsArgumentError);
   });

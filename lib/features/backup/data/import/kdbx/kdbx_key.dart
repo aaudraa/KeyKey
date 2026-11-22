@@ -30,7 +30,8 @@ Uint8List compositeKey({String? password, Uint8List? keyFileKey}) {
   if (password == null && keyFileKey == null) {
     throw ArgumentError('Parola ya da anahtar dosyası gerekir.');
   }
-  final parts = BytesBuilder(copy: false);
+  // Kopyalayarak birleştirilir: tek parça olsa da girdi dizisi sıfırlanmasın.
+  final parts = BytesBuilder();
   if (password != null) parts.add(sha256.convert(utf8.encode(password)).bytes);
   if (keyFileKey != null) parts.add(keyFileKey);
   final joined = parts.takeBytes();
