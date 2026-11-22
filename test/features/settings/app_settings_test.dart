@@ -491,7 +491,7 @@ void main() {
       final json = jsonDecode(
         utf8.decode(settings.toJsonBytes()),
       ) as Map<String, Object?>;
-      expect(json['version'], 7);
+      expect(json['version'], AppSettings.currentVersion);
       expect((json['sync']! as Map).keys, {
         'folder',
         'username',
@@ -563,6 +563,78 @@ void main() {
         final settings = await repository.load();
         expect(settings.otpRequireAuth, isTrue, reason: json);
         expect(settings.sync, isNull, reason: json);
+      }
+    });
+  });
+
+  group('sürüm 8: uygulamanın sitesini doğrulama', () {
+    const v7 =
+        '{"version":7,"otpRequireAuth":false,"autofillCopyOtp":true,'
+        '"lastBackupAt":null,"backupReminderSnoozedUntil":null,'
+        '"vaultSort":"name","generator":{"passphrase":false,"length":20,'
+        '"lowercase":true,"uppercase":true,"digits":true,"symbols":true,'
+        '"words":6},"autoBackupFolder":null,"backgroundLockSeconds":30,'
+        '"plainKeyboard":true,"sync":null}';
+
+    String v8(String value) => v7
+        .replaceFirst('"version":7', '"version":8')
+        .replaceFirst(
+          '"sync":null}',
+          '"sync":null,"autofillVerifySites":$value}',
+        );
+
+    test('varsayılan kapalı, ek onayda da kapalı', () {
+      expect(AppSettings.defaults.autofillVerifySites, isFalse);
+      expect(AppSettings.requireAuth.autofillVerifySites, isFalse);
+    });
+
+    test('sürüm 7 kaydı okunuyor, ayar kapalı', () async {
+      await putRaw(encrypt(v7));
+      final settings = await repository.load();
+      expect(settings.otpRequireAuth, isFalse);
+      expect(settings.autofillVerifySites, isFalse);
+      expect(settings.plainKeyboard, isTrue);
+    });
+
+    test('yazılıp okunuyor, sürüm 8', () async {
+      await repository.save(
+        AppSettings.defaults.copyWith(autofillVerifySites: true),
+      );
+      final settings = await repository.load();
+      expect(settings.autofillVerifySites, isTrue);
+      final json = jsonDecode(
+        utf8.decode(settings.toJsonBytes()),
+      ) as Map<String, Object?>;
+      expect(json['version'], 8);
+      expect(json['autofillVerifySites'], isTrue);
+    });
+
+    test('elle yazılmış sürüm 8 kaydı okunuyor', () async {
+      await putRaw(encrypt(v8('true')));
+      expect((await repository.load()).autofillVerifySites, isTrue);
+    });
+
+    test('öteki yollar ayarı koruyor', () {
+      final settings = AppSettings.defaults
+          .copyWith(autofillVerifySites: true)
+          .withAutoBackupFolder(null)
+          .withSync(null)
+          .withoutBackupHistory()
+          .copyWith(otpRequireAuth: true);
+      expect(settings.autofillVerifySites, isTrue);
+    });
+
+    test('geçersiz değer kaydı okunamaz yapıyor', () async {
+      for (final json in [
+        v8('1'),
+        v8('null'),
+        v8('"true"'),
+        v7.replaceFirst('"version":7', '"version":8'),
+      ]) {
+        await putRaw(encrypt(json));
+        final settings = await repository.load();
+        expect(settings.otpRequireAuth, isTrue, reason: json);
+        expect(settings.autofillVerifySites, isFalse, reason: json);
       }
     });
   });

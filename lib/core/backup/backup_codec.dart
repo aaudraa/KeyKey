@@ -86,12 +86,15 @@ final class BackupCodec {
 
   /// Yazılan içerik sürümü. Sürüm 2 kart ve notu, sürüm 3 ayar kaydının
   /// sürüm 6'sını ve Steam hesaplarını, sürüm 4 ayar kaydının sürüm 7'sini ve
-  /// senkron dosyasının `sync` nesnesini getirdi. Kayıtlar şifreli olduğundan
-  /// içleri burada görünmez; her yedek bu sürümle yazılır ve eski uygulamalar
-  /// onu "daha yeni yedek" diye reddeder.
-  static const payloadVersion = 4;
+  /// senkron dosyasının `sync` nesnesini, sürüm 5 ayar kaydının sürüm 8'ini
+  /// getirdi. Kayıtlar şifreli olduğundan içleri burada görünmez; her yedek
+  /// bu sürümle yazılır ve eski uygulamalar onu "daha yeni yedek" diye
+  /// reddeder.
+  static const payloadVersion = 5;
 
-  /// `sync` nesnesinin taşınabildiği ilk içerik sürümü.
+  /// `sync` nesnesinin taşınabildiği ilk içerik sürümü. Senkron dosyası bu
+  /// sürümle yazılır: ayar kaydı taşımadığı için sürüm 5'in getirdiği
+  /// değişiklik ona dokunmaz ve 1.8.0-1.9.x telefonlarla eşitleme sürer.
   static const _syncPayloadVersion = 4;
 
   /// Ayar kaydının türü; senkron dosyasına girmez.
@@ -362,7 +365,7 @@ final class BackupCodec {
       });
     }
     return jsonEncode({
-      'version': payloadVersion,
+      'version': sync == null ? payloadVersion : _syncPayloadVersion,
       'createdAt': createdAt.millisecondsSinceEpoch,
       'records': entries,
       if (sync != null) 'sync': _syncJson(sync),

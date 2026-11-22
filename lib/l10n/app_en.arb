@@ -1739,6 +1739,18 @@
       }
     }
   },
+  "settingsAutofillVerifySites": "Verify the app's website online",
+  "@settingsAutofillVerifySites": {
+    "description": "Setting that lets autofill read a website's assetlinks.json to match an app with its site."
+  },
+  "settingsAutofillVerifySitesHelp": "If nothing matches in an app, KeyKey reads the assetlinks.json file of the site the app claims as its own, but only if your vault has a login for that site. If the file approves the app, the login matches and the app is linked to it. Nothing from your vault is sent to the site.",
+  "@settingsAutofillVerifySitesHelp": {
+    "description": "Explains the online site verification setting."
+  },
+  "autofillVerifyingSite": "Verifying the app's website",
+  "@autofillVerifyingSite": {
+    "description": "Shown under the loading indicator while the autofill screen checks the app's website online."
+  },
   "autofillSetupTitle": "Autofill service",
   "@autofillSetupTitle": {
     "description": "Settings entry for the system autofill service."

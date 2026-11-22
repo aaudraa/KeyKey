@@ -170,6 +170,7 @@ final class AppSettings {
     this.backgroundLock = BackgroundLock.immediately,
     this.plainKeyboard = false,
     this.sync,
+    this.autofillVerifySites = false,
   });
 
   static const defaults = AppSettings(
@@ -188,9 +189,10 @@ final class AppSettings {
   /// Sürüm 2 [autofillCopyOtp], sürüm 3 yedek bilgilerini ([lastBackupAt],
   /// [backupReminderSnoozedUntil]), sürüm 4 [vaultSort] ve [generator]
   /// alanlarını, sürüm 5 [autoBackupFolder] alanını, sürüm 6
-  /// [backgroundLock] ve [plainKeyboard] alanlarını, sürüm 7 [sync] alanını
-  /// ekledi. Eski sürümler okunmaya devam eder.
-  static const currentVersion = 7;
+  /// [backgroundLock] ve [plainKeyboard] alanlarını, sürüm 7 [sync] alanını,
+  /// sürüm 8 [autofillVerifySites] alanını ekledi. Eski sürümler okunmaya
+  /// devam eder.
+  static const currentVersion = 8;
 
   /// 2FA kodlarını göstermeden önce parmak izi veya ana parola istenir.
   final bool otpRequireAuth;
@@ -223,6 +225,11 @@ final class AppSettings {
   /// Senkron bilgileri; kapalıysa `null`.
   final SyncSettings? sync;
 
+  /// Otomatik doldurmada uygulamanın sitesi, sistem doğrulamamışsa,
+  /// sitenin `assetlinks.json` dosyasıyla internetten doğrulanır. Varsayılan
+  /// kapalı.
+  final bool autofillVerifySites;
+
   /// Yedek zamanları yalnızca ileri alınır, silinmez; bu yüzden `null`
   /// verilen alan olduğu gibi kalır.
   AppSettings copyWith({
@@ -234,6 +241,7 @@ final class AppSettings {
     GeneratorPreferences? generator,
     BackgroundLock? backgroundLock,
     bool? plainKeyboard,
+    bool? autofillVerifySites,
   }) => AppSettings(
     otpRequireAuth: otpRequireAuth ?? this.otpRequireAuth,
     autofillCopyOtp: autofillCopyOtp ?? this.autofillCopyOtp,
@@ -246,6 +254,7 @@ final class AppSettings {
     backgroundLock: backgroundLock ?? this.backgroundLock,
     plainKeyboard: plainKeyboard ?? this.plainKeyboard,
     sync: sync,
+    autofillVerifySites: autofillVerifySites ?? this.autofillVerifySites,
   );
 
   /// Otomatik yedeğin klasörünü değiştirir; `null` kapatır. [copyWith] bu
@@ -261,6 +270,7 @@ final class AppSettings {
     backgroundLock: backgroundLock,
     plainKeyboard: plainKeyboard,
     sync: sync,
+    autofillVerifySites: autofillVerifySites,
   );
 
   /// Senkron bilgilerini değiştirir; `null` kapatır. [copyWith] bu alana
@@ -276,6 +286,7 @@ final class AppSettings {
     backgroundLock: backgroundLock,
     plainKeyboard: plainKeyboard,
     sync: sync,
+    autofillVerifySites: autofillVerifySites,
   );
 
   /// Yedek zamanı ve hatırlatıcı ertelemesi olmadan; başka bir kasaya
@@ -289,6 +300,7 @@ final class AppSettings {
     backgroundLock: backgroundLock,
     plainKeyboard: plainKeyboard,
     sync: sync,
+    autofillVerifySites: autofillVerifySites,
   );
 
   Uint8List toJsonBytes() => utf8.encode(
@@ -305,6 +317,7 @@ final class AppSettings {
       'backgroundLockSeconds': backgroundLock.seconds,
       'plainKeyboard': plainKeyboard,
       'sync': sync?.toJson(),
+      'autofillVerifySites': autofillVerifySites,
     }),
   );
 
@@ -327,7 +340,8 @@ final class AppSettings {
     // Sürüm 1'de kod kopyalama yoktu; varsayılanı açık. Sürüm 3'ten önce
     // yedek bilgisi, sürüm 4'ten önce sıralama ve üretici, sürüm 5'ten önce
     // otomatik yedek, sürüm 6'dan önce arka plan kilidi süresi ve klavye
-    // ayarı, sürüm 7'den önce senkron yoktu.
+    // ayarı, sürüm 7'den önce senkron, sürüm 8'den önce site doğrulama
+    // yoktu.
     const v3 = {
       'version',
       'otpRequireAuth',
@@ -351,7 +365,8 @@ final class AppSettings {
       4 => const {...v3, 'vaultSort', 'generator'},
       5 => const {...v3, 'vaultSort', 'generator', 'autoBackupFolder'},
       6 => v6,
-      currentVersion => const {...v6, 'sync'},
+      7 => const {...v6, 'sync'},
+      currentVersion => const {...v6, 'sync', 'autofillVerifySites'},
       _ => null,
     };
     if (keys == null ||
@@ -368,7 +383,7 @@ final class AppSettings {
     if (!_isTime(lastBackupAt) || !_isTime(snoozedUntil)) return null;
     var vaultSort = LoginSort.name;
     var generator = GeneratorPreferences.defaults;
-    if (version case 4 || 5 || 6 || currentVersion) {
+    if (version case 4 || 5 || 6 || 7 || currentVersion) {
       final sortName = decoded['vaultSort'];
       final sort = LoginSort.values
           .where((s) => _sortName(s) == sortName)
@@ -379,7 +394,7 @@ final class AppSettings {
       generator = parsed;
     }
     AutoBackupFolder? autoBackupFolder;
-    if (version case 5 || 6 || currentVersion) {
+    if (version case 5 || 6 || 7 || currentVersion) {
       final folder = decoded['autoBackupFolder'];
       if (folder != null) {
         autoBackupFolder = AutoBackupFolder.tryParse(folder);
@@ -388,7 +403,7 @@ final class AppSettings {
     }
     var backgroundLock = BackgroundLock.immediately;
     var plainKeyboard = false;
-    if (version case 6 || currentVersion) {
+    if (version case 6 || 7 || currentVersion) {
       final lock = BackgroundLock.bySeconds(decoded['backgroundLockSeconds']);
       final plain = decoded['plainKeyboard'];
       if (lock == null || plain is! bool) return null;
@@ -396,9 +411,15 @@ final class AppSettings {
       plainKeyboard = plain;
     }
     SyncSettings? sync;
-    if (version == currentVersion && decoded['sync'] != null) {
+    if (version case 7 || currentVersion when decoded['sync'] != null) {
       sync = SyncSettings.tryParse(decoded['sync']);
       if (sync == null) return null;
+    }
+    var autofillVerifySites = false;
+    if (version == currentVersion) {
+      final verify = decoded['autofillVerifySites'];
+      if (verify is! bool) return null;
+      autofillVerifySites = verify;
     }
     return AppSettings(
       otpRequireAuth: otpRequireAuth,
@@ -411,6 +432,7 @@ final class AppSettings {
       backgroundLock: backgroundLock,
       plainKeyboard: plainKeyboard,
       sync: sync,
+      autofillVerifySites: autofillVerifySites,
     );
   }
 

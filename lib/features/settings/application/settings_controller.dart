@@ -75,6 +75,9 @@ class SettingsController extends Notifier<AppSettings?> {
   Future<void> setAutofillCopyOtp({required bool value}) =>
       _update((current) => current.copyWith(autofillCopyOtp: value));
 
+  Future<void> setAutofillVerifySites({required bool value}) =>
+      _update((current) => current.copyWith(autofillVerifySites: value));
+
   /// Başarılı bir yedeğin zamanını yazar.
   Future<void> recordBackup(DateTime at) =>
       _update((current) => current.copyWith(lastBackupAt: at));
