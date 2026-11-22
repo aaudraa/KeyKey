@@ -246,6 +246,23 @@ void main() {
       expect((await loaded()).items, isEmpty);
     });
 
+    test('senkron yeniden kurarken yapılan değişiklik kaybolmuyor', () async {
+      await loaded();
+      final item = await controller().add(CardContent(name: 'A', pin: '1111'));
+      // Süresi dolan çöp, okumanın içinde bir yazma daha yapar.
+      final old = await controller().add(CardContent(name: 'Eski'));
+      await controller().moveToTrash(old, now);
+      now = now.add(const Duration(days: 31));
+
+      // Senkron öteki telefonun değişikliğini getirince denetleyiciyi yeniden
+      // kurar; kullanıcının kaydı tam o sırada biter.
+      container.invalidate(cardsControllerProvider);
+      await controller().update(item, item.content.copyWith(pin: '2222'));
+
+      final shown = (await loaded()).items.single;
+      expect(shown.content.pin, '2222');
+    });
+
     test('addAll hepsini ekliyor', () async {
       await loaded();
 

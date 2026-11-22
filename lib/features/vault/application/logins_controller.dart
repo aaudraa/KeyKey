@@ -50,6 +50,11 @@ class LoginsController extends Notifier<LoginsState> {
   /// biterse sonucu çöpe gider, kasa kilitliyken kayıtlar geri gelmez.
   int _generation = 0;
 
+  /// Biten her yazmada artar. Okuma sürerken bir yazma biterse okunan liste
+  /// o yazmayı kaçırmış olabilir; okuma baştan yapılır, yoksa yazma ekrandan
+  /// silinir ve sonraki işlem eski kopyayı geri yazardı.
+  int _writes = 0;
+
   @override
   LoginsState build() {
     _generation++;
@@ -81,17 +86,21 @@ class LoginsController extends Notifier<LoginsState> {
   }
 
   Future<void> _load(LoginRepository repository, int generation) async {
-    final LoadedLogins loaded;
-    final List<LoginItem> kept;
-    try {
-      loaded = await repository.loadAll();
-      kept = await repository.purgeExpiredTrash(loaded.items);
-    } on VaultLockedException {
-      // Yükleme sürerken kilitlendi, anahtarlar artık yok.
-      if (generation == _generation) rethrow;
-      return;
-    }
-    if (generation != _generation) return;
+    LoadedLogins loaded;
+    List<LoginItem> kept;
+    int writes;
+    do {
+      writes = _writes;
+      try {
+        loaded = await repository.loadAll();
+        kept = await repository.purgeExpiredTrash(loaded.items);
+      } on VaultLockedException {
+        // Yükleme sürerken kilitlendi, anahtarlar artık yok.
+        if (generation == _generation) rethrow;
+        return;
+      }
+      if (generation != _generation) return;
+    } while (writes != _writes);
     state = LoginsLoaded(items: kept, unreadableCount: loaded.unreadableCount);
   }
 
@@ -209,6 +218,7 @@ class LoginsController extends Notifier<LoginsState> {
   }
 
   void _replaceItems(List<LoginItem> Function(List<LoginItem>) change) {
+    _writes++;
     final current = state;
     if (current is! LoginsLoaded) return;
     state = LoginsLoaded(

@@ -79,6 +79,11 @@ class RecordsController<C extends VaultItemContent<C>>
   /// biterse sonucu çöpe gider, kasa kilitliyken kayıtlar geri gelmez.
   int _generation = 0;
 
+  /// Biten her yazmada artar. Okuma sürerken bir yazma biterse okunan liste
+  /// o yazmayı kaçırmış olabilir; okuma baştan yapılır, yoksa yazma ekrandan
+  /// silinir ve sonraki işlem eski kopyayı geri yazardı.
+  int _writes = 0;
+
   @override
   RecordsState<C> build() {
     _generation++;
@@ -111,16 +116,20 @@ class RecordsController<C extends VaultItemContent<C>>
     VaultRecordRepository<C> repository,
     int generation,
   ) async {
-    final LoadedRecords<C> loaded;
-    final List<VaultRecord<C>> kept;
-    try {
-      loaded = await repository.loadAll();
-      kept = await repository.purgeExpiredTrash(loaded.items);
-    } on VaultLockedException {
-      if (generation == _generation) rethrow;
-      return;
-    }
-    if (generation != _generation) return;
+    LoadedRecords<C> loaded;
+    List<VaultRecord<C>> kept;
+    int writes;
+    do {
+      writes = _writes;
+      try {
+        loaded = await repository.loadAll();
+        kept = await repository.purgeExpiredTrash(loaded.items);
+      } on VaultLockedException {
+        if (generation == _generation) rethrow;
+        return;
+      }
+      if (generation != _generation) return;
+    } while (writes != _writes);
     state = RecordsLoaded(items: kept, unreadableCount: loaded.unreadableCount);
   }
 
@@ -227,6 +236,7 @@ class RecordsController<C extends VaultItemContent<C>>
   void _replaceItems(
     List<VaultRecord<C>> Function(List<VaultRecord<C>>) change,
   ) {
+    _writes++;
     final current = state;
     if (current is! RecordsLoaded<C>) return;
     state = RecordsLoaded(
