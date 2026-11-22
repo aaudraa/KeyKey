@@ -18,12 +18,38 @@ import 'package:keykey/features/backup/data/import/login_import.dart';
 /// isolate'te yapılır; arayüz donmaz. Kurallar KeePass içe aktarma
 /// tasarımında.
 abstract final class KdbxReader {
-  static const int maxBytes = 64 * 1024 * 1024;
+  /// Seçilen dosya Kotlin'den Pigeon'la geçerken Java yığınında birkaç
+  /// kopya olur; yığın sınırı 192 MB olan telefonlarda 64 MiB'lık dosya
+  /// uygulamayı düşürebilir.
+  static const int maxBytes = 32 * 1024 * 1024;
 
   /// [password] `null` ise kutu boştur: anahtar dosyası varsa önce yalnız
   /// onunla, tutmazsa boş parolayla da denenir; anahtar dosyası da yoksa
   /// boş parola kullanılır.
   static Future<LoginExport> open(
+    Uint8List file, {
+    required KdbxKdf kdf,
+    String? password,
+    Uint8List? keyFileKey,
+  }) async {
+    try {
+      return await _open(
+        file,
+        kdf: kdf,
+        password: password,
+        keyFileKey: keyFileKey,
+      );
+    } on KdbxException {
+      rethrow;
+    } on Object {
+      // Ekran yalnızca KdbxException bekler. Başka bir hata (ayrıştırıcıdaki
+      // bir hata, isolate'te bellek yetmemesi) açılıyor ekranında takılı
+      // bırakmasın. Ayrıntısı günlüğe yazılmaz; sır içerebilir.
+      throw const KdbxCorrupt();
+    }
+  }
+
+  static Future<LoginExport> _open(
     Uint8List file, {
     required KdbxKdf kdf,
     String? password,

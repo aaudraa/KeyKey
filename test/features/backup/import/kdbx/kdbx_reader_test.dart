@@ -91,6 +91,19 @@ final class _RecordingKdf implements KdbxKdf {
 }
 
 void main() {
+  test('beklenmeyen hata bozuk dosya olarak söylenir', () async {
+    // Ekran yalnızca KdbxException bekler; başka bir hata ekranı açılıyor
+    // durumunda bırakıyordu.
+    await expectLater(
+      KdbxReader.open(
+        kdbxFixture('keepassxc/Format400.kdbx'),
+        kdf: _CountingKdf(() => throw StateError('beklenmeyen')),
+        password: 't',
+      ),
+      throwsA(isA<KdbxCorrupt>()),
+    );
+  });
+
   group('her desteklenen dosya açılır', () {
     for (final MapEntry(key: path, value: key) in kdbxFixtureKeys.entries) {
       test(path, () async {
@@ -143,8 +156,8 @@ void main() {
     );
   });
 
-  test('64 MiB üstü dosya ağır sayılır', () {
-    final file = Uint8List(64 * 1024 * 1024 + 1)
+  test('32 MiB üstü dosya ağır sayılır', () {
+    final file = Uint8List(32 * 1024 * 1024 + 1)
       ..setAll(0, kdbxFixture('keepassxc/Format300.kdbx'));
     expect(_open('', password: 'a', file: file), throwsA(isA<KdbxTooHeavy>()));
   });

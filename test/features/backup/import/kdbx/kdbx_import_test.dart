@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/features/backup/data/import/kdbx/kdbx_import.dart';
+import 'package:keykey/features/backup/data/import/kdbx/kdbx_xml.dart';
 import 'package:keykey/features/backup/data/import/login_import.dart';
 
 import '../../../../support/kdbx_fixtures.dart';
@@ -149,5 +150,29 @@ void main() {
       id: {'Password': '{REF:P@I:$id}'},
     };
     expect(resolveKdbxReferences('{REF:P@I:$id}', entries), contains('{REF:'));
+  });
+
+  test('yüzde işaretli otp alanı okumayı durdurmaz', () {
+    // Uri.splitQueryString bozuk kaçışta ArgumentError fırlatıyordu.
+    final export = kdbxToLoginExport(
+      const KdbxDatabase(
+        entries: [
+          KdbxEntry(
+            uuid: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+            groupPath: [],
+            strings: {
+              'Title': (value: 'Banka', protected: false),
+              'Password': (value: 'parola', protected: true),
+              'otp': (value: 'Kurtarma kodu: 100%', protected: false),
+            },
+            attachments: 0,
+          ),
+        ],
+        recycledEntries: 0,
+      ),
+    );
+    final entry = _named(export, 'Banka');
+    expect(entry.password, 'parola');
+    expect(entry.totp, isNull);
   });
 }

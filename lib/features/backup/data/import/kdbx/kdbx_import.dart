@@ -183,12 +183,10 @@ String? _keepassXcOtp(String text) {
   final trimmed = text.trim();
   if (trimmed.isEmpty) return null;
   if (trimmed.toLowerCase().startsWith('otpauth://')) return trimmed;
-  final Map<String, String> query;
-  try {
-    query = Uri.splitQueryString(trimmed);
-  } on FormatException {
-    return null;
-  }
+  // Uri.splitQueryString bozuk kaçışta ArgumentError fırlatır; ayrıştırma
+  // başarılıysa kaçışlar düzeltilmiş olur ve okuma hata vermez.
+  final query = Uri.tryParse('?$trimmed')?.queryParameters;
+  if (query == null) return null;
   final key = query['key'];
   if (key == null || (query['type'] ?? 'totp').toLowerCase() != 'totp') {
     return null;

@@ -47,6 +47,35 @@ Uint8List? decryptBody(
   }
 }
 
+/// Gövdenin ilk [length] baytını dolguya bakmadan çözer; [length] 16'nın
+/// katıdır. CBC'de ilk bloklar sonraki baytlara bağlı değildir, bu yüzden
+/// kesik bir dosyada da anahtar KDBX 3'ün `StreamStartBytes`'ıyla
+/// doğrulanabilir.
+Uint8List decryptStart(
+  KdbxCipher cipher,
+  Uint8List key,
+  Uint8List iv,
+  Uint8List data,
+  int length,
+) {
+  final input = Uint8List.sublistView(data, 0, length);
+  switch (cipher) {
+    case KdbxCipher.chaCha20:
+      final engine = ChaCha7539Engine()
+        ..init(false, ParametersWithIV(KeyParameter(key), iv));
+      return engine.process(input);
+    case KdbxCipher.aes256 || KdbxCipher.twofish:
+      final engine = CBCBlockCipher(
+        cipher == KdbxCipher.aes256 ? AESEngine() : TwofishEngine(),
+      )..init(false, ParametersWithIV(KeyParameter(key), iv));
+      final plain = Uint8List(length);
+      for (var offset = 0; offset < length; offset += 16) {
+        engine.processBlock(input, offset, plain, offset);
+      }
+      return plain;
+  }
+}
+
 /// Korumalı değerlerin iç akışı: belge sırasıyla her değer bu akışla
 /// XOR'lanır. Kimlik 2 Salsa20, 3 ChaCha20, 0 koruma yok.
 final class KdbxInnerStream {

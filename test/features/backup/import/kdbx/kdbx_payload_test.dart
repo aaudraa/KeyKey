@@ -153,6 +153,25 @@ void main() {
       );
     });
 
+    // Yarım inmiş ya da yarım eşitlenmiş dosya doğru parolayla "yanlış
+    // parola" demesin; ilk bloklar kesilmeden çözülür ve anahtarı doğrular.
+    for (final path in [
+      'pykeepass/test3.kdbx',
+      'keepassxc/Format300.kdbx',
+      'keepassxc/Format200.kdbx',
+    ]) {
+      for (final cut in [1, 16, 100]) {
+        test('$path sonundan $cut bayt eksikse bozuk', () async {
+          final full = kdbxFixture(path);
+          final file = Uint8List.sublistView(full, 0, full.length - cut);
+          await expectLater(
+            _open(path, file: Uint8List.fromList(file)),
+            throwsA(isA<KdbxCorrupt>()),
+          );
+        });
+      }
+    }
+
     test('son blok yoksa bozuk', () {
       expect(
         () => readHashedBlocks(block(0, [1])),
@@ -165,6 +184,18 @@ void main() {
     test('sınır içinde açılır', () {
       final data = List.filled(1000, 7);
       expect(kdbxGunzip(Uint8List.fromList(gzip.encode(data))), data);
+    });
+
+    test('çok parçalı çıktı eksiksiz birleşir', () {
+      // Çözücü 4 KiB'lık girdi parçalarıyla beslenir; çıktı birçok parça.
+      var state = 1;
+      final data = List.generate(300000, (i) {
+        state = (state * 1103515245 + 12345) & 0x7fffffff;
+        return (state >> 16) & 0x0f;
+      });
+      final packed = gzip.encode(data);
+      expect(packed.length, greaterThan(16 * 1024));
+      expect(kdbxGunzip(Uint8List.fromList(packed)), data);
     });
 
     test('sınırı aşan açılmış veri ağır sayılır', () {

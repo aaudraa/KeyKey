@@ -77,7 +77,8 @@ void main() {
       kdbxFixture('keepassxc/ProtectedStrings.kdbx'),
     );
     await pickFile(tester);
-    expect(documents.lastMaxBytes, 64 * 1024 * 1024);
+    // Dosya Kotlin'den Pigeon'la geçerken Java yığınında birkaç kopya olur.
+    expect(documents.lastMaxBytes, 32 * 1024 * 1024);
     expect(find.text('KeePass dosyasını aç'), findsOneWidget);
 
     await enterPassword(tester, 'masterpw');

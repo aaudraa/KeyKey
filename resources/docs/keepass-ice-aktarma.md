@@ -118,7 +118,7 @@ Dosya güvenilmeyen veridir; kötü niyetli bir dosya cihazı dakikalarca meşgu
 
 | Değer | Sınır | Neden |
 |---|---|---|
-| `.kdbx` dosyası | 64 MiB | Eki çok olan kasalar 10 MiB'ı aşabiliyor. CSV/JSON'un 10 MiB sınırı değişmez. |
+| `.kdbx` dosyası | 32 MiB | Eki çok olan kasalar 10 MiB'ı aşabiliyor. CSV/JSON'un 10 MiB sınırı değişmez. Gözden geçirmede 64 MiB'tan indirildi: dosya Kotlin'den Pigeon'la geçerken Java yığınında birkaç kopya olur (yığın sınırı 192 MB olan telefonlar). |
 | Açılmış XML | 64 MiB | gzip bombası. |
 | Argon2 belleği | 1 GiB | KeePassXC'in arayüzündeki en büyük değer 4 GiB ama telefonlar bunu ayıramaz; 1 GiB'ı aşan dosya "telefon için fazla bellek istiyor" mesajıyla açılmaz. |
 | Argon2 geçiş sayısı | 1–1000 | |

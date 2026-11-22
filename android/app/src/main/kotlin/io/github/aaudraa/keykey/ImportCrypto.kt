@@ -44,7 +44,9 @@ class ImportCrypto : ImportCryptoApi {
             transformHalf(seed, block, AES_BLOCK, rounds)
             return MessageDigest.getInstance("SHA-256").digest(block)
         } finally {
+            // Pigeon'un verdiği kopya da bizim; anahtar bellekte kalmasın.
             block.fill(0)
+            key.fill(0)
         }
     }
 
@@ -100,10 +102,16 @@ class ImportCrypto : ImportCryptoApi {
             throw FlutterError("failed", "Geçersiz Argon2 parametresi.")
         }
         val out = ByteArray(KDBX_KEY_BYTES)
-        val result = Argon2Native.hash(
-            type.toInt(), password, salt, iterations.toInt(), memoryKiB.toInt(),
-            parallelism.toInt(), version.toInt(), secret, associatedData, out,
-        )
+        val result =
+            try {
+                Argon2Native.hash(
+                    type.toInt(), password, salt, iterations.toInt(), memoryKiB.toInt(),
+                    parallelism.toInt(), version.toInt(), secret, associatedData, out,
+                )
+            } finally {
+                // Pigeon'un verdiği kopya; bileşik anahtar bellekte kalmasın.
+                password.fill(0)
+            }
         when (result) {
             Argon2Native.OK -> return out
             Argon2Native.MEMORY_ALLOCATION_ERROR ->

@@ -83,19 +83,36 @@ KdbxPayload decryptPayload(
 
 KdbxPayload _decrypt3(Uint8List file, KdbxHeader header, Uint8List masterKey) {
   final body = Uint8List.sublistView(file, header.bytes.length);
+  // Anahtar önce gövdenin kesilmeden çözülebilen başıyla doğrulanır; sonra
+  // çıkan uzunluk ya da dolgu hatası yarım kalmış bir dosyadır, yanlış
+  // parola değil.
+  if (body.length < 32) throw const KdbxCorrupt();
+  final start = decryptStart(
+    header.cipher,
+    masterKey,
+    header.encryptionIv,
+    body,
+    32,
+  );
+  final keyMatches = kdbxBytesEqual(start, header.streamStartBytes!);
+  start.fillRange(0, start.length, 0);
+  if (!keyMatches) throw const KdbxWrongKey();
   final plain = decryptBody(
     header.cipher,
     masterKey,
     header.encryptionIv,
     body,
   );
-  if (plain == null || plain.length < 32) throw const KdbxWrongKey();
+  if (plain == null || plain.length < 32) throw const KdbxCorrupt();
   try {
-    if (!kdbxBytesEqual(plain.sublist(0, 32), header.streamStartBytes!)) {
-      throw const KdbxWrongKey();
-    }
     final blocks = readHashedBlocks(Uint8List.sublistView(plain, 32));
-    final xml = _decompress(header, blocks);
+    final Uint8List xml;
+    try {
+      xml = _decompress(header, blocks);
+    } finally {
+      // Birden çok blokta yeni bir kopya, tek blokta [plain]'in görünümü.
+      blocks.fillRange(0, blocks.length, 0);
+    }
     return KdbxPayload(
       xml: xml,
       innerStreamId: header.innerStreamId!,
@@ -118,13 +135,14 @@ KdbxPayload _decrypt4(
   if (!kdbxBytesEqual(sha256.convert(header.bytes).bytes, storedHash)) {
     throw const KdbxCorrupt();
   }
-  final hmacBase = Uint8List.fromList(sha512.convert([...seeded, 0x01]).bytes);
+  final baseInput = Uint8List(seeded.length + 1)
+    ..setAll(0, seeded)
+    ..[seeded.length] = 0x01;
+  final hmacBase = Uint8List.fromList(sha512.convert(baseInput).bytes);
+  baseInput.fillRange(0, baseInput.length, 0);
   try {
     final storedHmac = reader.view(32);
-    final headerHmac = Hmac(
-      sha256,
-      _blockKey(hmacBase, -1),
-    ).convert(header.bytes).bytes;
+    final headerHmac = _hmac(hmacBase, -1, header.bytes);
     if (!kdbxBytesEqual(headerHmac, storedHmac)) throw const KdbxWrongKey();
 
     final cipherText = BytesBuilder(copy: false);
@@ -139,10 +157,7 @@ KdbxPayload _decrypt4(
         ..add(_u64le(index))
         ..add(_u32le(size))
         ..add(data);
-      final expected = Hmac(
-        sha256,
-        _blockKey(hmacBase, index),
-      ).convert(message.takeBytes()).bytes;
+      final expected = _hmac(hmacBase, index, message.takeBytes());
       if (!kdbxBytesEqual(expected, hmac)) throw const KdbxCorrupt();
       if (size == 0) break;
       cipherText.add(data);
@@ -155,10 +170,13 @@ KdbxPayload _decrypt4(
     );
     // HMAC doğrulandıktan sonra dolgu tutmuyorsa dosya bozuk yazılmış.
     if (plain == null) throw const KdbxCorrupt();
+    Uint8List? opened;
     try {
-      return _innerHeader(_decompress(header, plain));
+      opened = _decompress(header, plain);
+      return _innerHeader(opened);
     } finally {
       plain.fillRange(0, plain.length, 0);
+      opened?.fillRange(0, opened.length, 0);
     }
   } finally {
     hmacBase.fillRange(0, hmacBase.length, 0);
@@ -265,15 +283,14 @@ final class _LimitedSink implements Sink<List<int>> {
   new(this._limit);
 
   final int _limit;
-  final _builder = BytesBuilder(copy: false);
   final _chunks = <Uint8List>[];
+  int _length = 0;
 
   @override
   void add(List<int> data) {
-    if (_builder.length + data.length > _limit) throw const KdbxTooHeavy();
-    final copy = Uint8List.fromList(data);
-    _chunks.add(copy);
-    _builder.add(copy);
+    if (_length + data.length > _limit) throw const KdbxTooHeavy();
+    _chunks.add(Uint8List.fromList(data));
+    _length += data.length;
   }
 
   @override
@@ -285,17 +302,34 @@ final class _LimitedSink implements Sink<List<int>> {
     }
   }
 
+  /// Parçaları tek diziye kopyalar ve parçaları sıfırlar. Ara bir birleşik
+  /// dizi bırakılmaz; çözülmüş verinin her kopyası sıfırlanabilir kalır.
   Uint8List takeBytes() {
-    final bytes = Uint8List.fromList(_builder.takeBytes());
+    final bytes = Uint8List(_length);
+    var offset = 0;
+    for (final chunk in _chunks) {
+      bytes.setRange(offset, offset + chunk.length, chunk);
+      offset += chunk.length;
+    }
     wipe();
     return bytes;
   }
 }
 
-/// Blok HMAC anahtarı: `SHA-512(u64le(sıra) ‖ taban)`; başlık için sıra
-/// `2^64 − 1` ([index] −1).
-Uint8List _blockKey(Uint8List base, int index) =>
-    Uint8List.fromList(sha512.convert([..._u64le(index), ...base]).bytes);
+/// Blok HMAC'i. Anahtar `SHA-512(u64le(sıra) ‖ taban)`; başlık için sıra
+/// `2^64 − 1` ([index] −1). Anahtar ve girdisi işi bitince sıfırlanır.
+List<int> _hmac(Uint8List base, int index, List<int> message) {
+  final input = Uint8List(8 + base.length)
+    ..setAll(0, _u64le(index))
+    ..setAll(8, base);
+  final key = Uint8List.fromList(sha512.convert(input).bytes);
+  input.fillRange(0, input.length, 0);
+  try {
+    return Hmac(sha256, key).convert(message).bytes;
+  } finally {
+    key.fillRange(0, key.length, 0);
+  }
+}
 
 Uint8List _u64le(int value) =>
     (ByteData(8)..setInt64(0, value, Endian.little)).buffer.asUint8List();
