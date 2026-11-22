@@ -336,12 +336,21 @@ void main() {
       async.elapse(const Duration(seconds: 1));
       expect(container.read(otpsControllerProvider), isA<OtpsLoaded>());
       states.clear();
+      // Ekranların elindeki denetleyiciler (geri al, HOTP) yeniden okumadan
+      // sonra da çalışmalı. Riverpod 3.5 yeniden kurarken aynı nesneyi
+      // kullanıyor; bu değişirse burası söyler (#173, O2).
+      final otps = container.read(otpsControllerProvider.notifier);
+      final cards = container.read(cardsControllerProvider.notifier);
+      final notes = container.read(notesControllerProvider.notifier);
 
       sync.gate!.complete();
       async.elapse(const Duration(seconds: 1));
       expect(sync.calls, 1);
       expect(states.first, isA<OtpsLoading>());
       expect(states.last, isA<OtpsLoaded>());
+      expect(container.read(otpsControllerProvider.notifier), same(otps));
+      expect(container.read(cardsControllerProvider.notifier), same(cards));
+      expect(container.read(notesControllerProvider.notifier), same(notes));
     });
   });
 
