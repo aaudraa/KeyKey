@@ -80,8 +80,12 @@ class _OtpImportScreenState extends ConsumerState<OtpImportScreen> {
     final snack = kkSnackFor(context);
     setState(() => _saving = true);
     try {
+      // Kullanıcı ikisini de seçse de aynı anahtar bir kez eklenir.
       final contents = [
-        for (final index in _selected.toList()..sort())
+        for (final index in firstOfEachSecret(
+          batch.accounts,
+          _selected.toList()..sort(),
+        ))
           contentOf(batch.accounts[index]),
       ];
       final count = await ref
@@ -152,11 +156,12 @@ class _OtpImportScreenState extends ConsumerState<OtpImportScreen> {
         if (isAlreadyAdded(account, state.items)) index,
     };
     if (!_selectionReady) {
-      // İlk açılışta yeni olanların hepsi seçili gelir.
-      _selected = {
+      // İlk açılışta yeni olanların hepsi seçili gelir; dosyada iki kez
+      // geçen anahtarın yalnızca ilki.
+      _selected = firstOfEachSecret(batch.accounts, [
         for (var i = 0; i < batch.accounts.length; i++)
           if (!duplicates.contains(i)) i,
-      };
+      ]).toSet();
       _selectionReady = true;
     }
 

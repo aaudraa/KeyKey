@@ -82,11 +82,7 @@ bool isAlreadyAdded(ImportedAccount account, Iterable<OtpItem> existing) =>
 /// anahtarlı bir hesap var mı.
 bool hasSameSecret(OtpParameters parameters, Iterable<OtpItem> existing) {
   for (final item in existing) {
-    final other = item.content.parameters;
-    if (other.kind == parameters.kind &&
-        listEquals(other.secret, parameters.secret)) {
-      return true;
-    }
+    if (isSameSecret(item.content.parameters, parameters)) return true;
   }
   return false;
 }
@@ -98,3 +94,27 @@ OtpContent contentOf(ImportedAccount account) => OtpContent(
   account: account.account,
   notes: account.notes,
 );
+
+/// İki hesap aynı türde ve aynı gizli anahtarlı mı.
+bool isSameSecret(OtpParameters a, OtpParameters b) =>
+    a.kind == b.kind && listEquals(a.secret, b.secret);
+
+/// Bir içe aktarmadaki hesaplardan, aynı gizli anahtar ikinci kez geçiyorsa
+/// sonrakileri atar. Aynı hesap bir dosyada iki adla bulunabilir; kasaya bir
+/// kez girer (#173, O6).
+List<int> firstOfEachSecret(
+  List<ImportedAccount> accounts,
+  Iterable<int> indexes,
+) {
+  final kept = <int>[];
+  for (final index in indexes) {
+    final parameters = accounts[index].parameters;
+    if (kept.any(
+      (other) => isSameSecret(accounts[other].parameters, parameters),
+    )) {
+      continue;
+    }
+    kept.add(index);
+  }
+  return kept;
+}
