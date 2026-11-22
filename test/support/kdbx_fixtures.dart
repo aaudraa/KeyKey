@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:keykey/features/backup/data/import/kdbx/kdbx_key.dart';
+
 /// `test/fixtures/import/kdbx/` altındaki bir dosya, ör. `pykeepass/test4.kdbx`.
 Uint8List kdbxFixture(String path) =>
     File('test/fixtures/import/kdbx/$path').readAsBytesSync();
@@ -57,3 +59,97 @@ List<int> u64(int value) =>
 
 List<int> _u16(int value) =>
     (ByteData(2)..setUint16(0, value, Endian.little)).buffer.asUint8List();
+
+/// Desteklenen her test dosyası ve anahtarı (KAYNAKLAR.md'deki tablo).
+/// Parola `null` ise parola bileşeni yoktur; `''` boş paroladır.
+const kdbxFixtureKeys = <String, ({String? password, String? keyFile})>{
+  'pykeepass/test3.kdbx': (
+    password: 'password',
+    keyFile: 'pykeepass/test3.key',
+  ),
+  'pykeepass/test4.kdbx': (
+    password: 'password',
+    keyFile: 'pykeepass/test4.key',
+  ),
+  'pykeepass/test4_aes.kdbx': (
+    password: 'password',
+    keyFile: 'pykeepass/test4.key',
+  ),
+  'pykeepass/test4_aeskdf.kdbx': (
+    password: 'password',
+    keyFile: 'pykeepass/test4.key',
+  ),
+  'pykeepass/test4_chacha20.kdbx': (
+    password: 'password',
+    keyFile: 'pykeepass/test4.key',
+  ),
+  'pykeepass/test4_twofish.kdbx': (
+    password: 'password',
+    keyFile: 'pykeepass/test4.key',
+  ),
+  'pykeepass/test4_hex.kdbx': (
+    password: 'password',
+    keyFile: 'pykeepass/test4_hex.key',
+  ),
+  'pykeepass/test4_keyx.kdbx': (
+    password: 'password',
+    keyFile: 'pykeepass/test4_keyx.keyx',
+  ),
+  'pykeepass/test4_aes_uncompressed.kdbx': (
+    password: 'password',
+    keyFile: null,
+  ),
+  'pykeepass/test4_chacha20_uncompressed.kdbx': (
+    password: 'password',
+    keyFile: null,
+  ),
+  'pykeepass/test4_twofish_uncompressed.kdbx': (
+    password: 'password',
+    keyFile: null,
+  ),
+  'pykeepass/test4_argon2id.kdbx': (password: 'password', keyFile: null),
+  'pykeepass/test4_blankpass.kdbx': (
+    password: '',
+    keyFile: 'pykeepass/test4.key',
+  ),
+  'keepassxc/Format200.kdbx': (password: 'a', keyFile: null),
+  'keepassxc/Format300.kdbx': (password: 'a', keyFile: null),
+  'keepassxc/Format400.kdbx': (password: 't', keyFile: null),
+  'keepassxc/NonAscii.kdbx': (password: 'Δöض', keyFile: null),
+  'keepassxc/Compressed.kdbx': (password: '', keyFile: null),
+  'keepassxc/ProtectedStrings.kdbx': (password: 'masterpw', keyFile: null),
+  'keepassxc/NewDatabase.kdbx': (password: 'a', keyFile: null),
+  'keepassxc/RecycleBinWithData.kdbx': (password: '123', keyFile: null),
+  'keepassxc/FileKeyBinary.kdbx': (
+    password: null,
+    keyFile: 'keepassxc/FileKeyBinary.key',
+  ),
+  'keepassxc/FileKeyHex.kdbx': (
+    password: null,
+    keyFile: 'keepassxc/FileKeyHex.key',
+  ),
+  'keepassxc/FileKeyHashed.kdbx': (
+    password: null,
+    keyFile: 'keepassxc/FileKeyHashed.key',
+  ),
+  'keepassxc/FileKeyXml.kdbx': (
+    password: null,
+    keyFile: 'keepassxc/FileKeyXml.key',
+  ),
+  'keepassxc/FileKeyXmlV2.kdbx': (
+    password: null,
+    keyFile: 'keepassxc/FileKeyXmlV2.keyx',
+  ),
+  'keykey/keykey_ornek.kdbx': (password: 'keykey', keyFile: null),
+};
+
+/// [kdbxFixtureKeys] tablosundaki anahtarla bileşik anahtar.
+Uint8List kdbxFixtureComposite(String path) {
+  final key = kdbxFixtureKeys[path]!;
+  return compositeKey(
+    password: key.password,
+    keyFileKey: key.keyFile == null
+        ? null
+        : keyFileKey(kdbxFixture(key.keyFile!)),
+  );
+}
