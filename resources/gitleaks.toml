@@ -27,6 +27,12 @@ paths = [
   # Parola içe aktarma örnekleri: bir kısmı Bitwarden'ın içe aktarma
   # testlerinden (bitwarden/clients, GPL-3.0), diğerleri deneme verisi.
   '''^test/fixtures/import/logins/[a-z_]+\.(csv|json)$''',
+  # KeePass test dosyaları ve anahtar dosyaları pykeepass (GPL-3.0) ve
+  # KeePassXC (GPL-2.0/3.0) testlerinden; kaynak ve özetler
+  # test/fixtures/import/kdbx/KAYNAKLAR.md'de. Cihaz testi aynılarını
+  # Base64 olarak taşır (resources/scripts/kdbx-cihaz-ornekleri.py).
+  '''^test/fixtures/import/kdbx/(pykeepass|keepassxc|keykey)/[\w.]+$''',
+  '''^integration_test/kdbx_fixtures\.dart$''',
 ]
 
 # Testlerdeki sabit deneme parolaları yanlış alarm veriyor. Dosyalara değil,
