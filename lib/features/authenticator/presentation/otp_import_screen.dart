@@ -119,8 +119,10 @@ class _OtpImportScreenState extends ConsumerState<OtpImportScreen> {
 
   Widget? _addButton(AppLocalizations l10n, ImportBatch batch) {
     if (ref.watch(otpsControllerProvider) is! OtpsLoaded) return null;
+    // Aynı anahtar iki kez seçildiyse bir kez eklenir; düğme de onu söyler.
+    final count = firstOfEachSecret(batch.accounts, _selected).length;
     return KkBottomAction(
-      label: l10n.otpImportAdd(_selected.length),
+      label: l10n.otpImportAdd(count),
       busy: _saving,
       onPressed: _selected.isEmpty ? null : () => _save(batch),
     );

@@ -199,6 +199,10 @@ void main() {
     await settle(tester);
 
     expect(find.text('1 hesabı ekle'), findsOneWidget);
+    // İkincisini de seçse düğme yine bir hesap söyler; o kadar eklenir.
+    await tester.tap(find.text('veli'));
+    await settle(tester);
+    expect(find.text('1 hesabı ekle'), findsOneWidget);
     await tester.tap(find.text('1 hesabı ekle'));
     await settle(tester);
     expect(otps.items, hasLength(1));
