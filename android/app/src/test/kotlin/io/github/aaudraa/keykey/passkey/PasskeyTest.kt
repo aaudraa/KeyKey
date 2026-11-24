@@ -114,3 +114,23 @@ class PendingAssertionsTest {
         assertNull(PendingAssertions.take("yok", "a"))
     }
 }
+
+class CredentialProviderXmlTest {
+    @Test
+    fun `sağlayıcı passkey türünü androidx'in adıyla bildiriyor`() {
+        // Sistem sağlayıcıyı yalnızca istekteki türü yetenek olarak bildirdiyse
+        // çağırır; passkey türünün adı androidx önekli. Yanlış adla Android
+        // "required capabilities" deyip KeyKey'i hiç sormuyordu.
+        val file = java.io.File("src/main/res/xml/credential_provider.xml")
+        val document = javax.xml.parsers.DocumentBuilderFactory.newInstance()
+            .newDocumentBuilder().parse(file)
+        val capabilities = document.getElementsByTagName("capability")
+        val names = (0 until capabilities.length).map {
+            capabilities.item(it).attributes.getNamedItem("name").nodeValue
+        }
+        assertEquals(
+            listOf(androidx.credentials.PublicKeyCredential.TYPE_PUBLIC_KEY_CREDENTIAL),
+            names,
+        )
+    }
+}
