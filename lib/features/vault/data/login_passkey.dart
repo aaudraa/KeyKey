@@ -88,17 +88,9 @@ final class LoginPasskey {
     } on FormatException {
       return null;
     }
-    final rpId = json['rpId']! as String;
-    if (id.isEmpty ||
-        id.length > maxCredentialIdBytes ||
-        handle.length > maxUserHandleBytes ||
-        key.isEmpty ||
-        !isValidRpId(rpId)) {
-      return null;
-    }
-    return LoginPasskey(
+    return tryNew(
       credentialId: id,
-      rpId: rpId,
+      rpId: json['rpId']! as String,
       userHandle: handle,
       userName: json['userName']! as String,
       userDisplayName: json['userDisplayName']! as String,
@@ -107,6 +99,36 @@ final class LoginPasskey {
         json['createdAt']! as int,
         isUtc: true,
       ),
+    );
+  }
+
+  /// Kurucunun sınırlarına uymayan değerlerde (kimlik ya da kullanıcı
+  /// kimliği uzunluğu, `rpId`, boş anahtar) hata yerine `null`. Dışarıdan
+  /// gelen veri (kasa dosyası, içe aktarma) bununla okunur.
+  static LoginPasskey? tryNew({
+    required Uint8List credentialId,
+    required String rpId,
+    required Uint8List userHandle,
+    required String userName,
+    required String userDisplayName,
+    required Uint8List privateKey,
+    required DateTime createdAt,
+  }) {
+    if (credentialId.isEmpty ||
+        credentialId.length > maxCredentialIdBytes ||
+        userHandle.length > maxUserHandleBytes ||
+        privateKey.isEmpty ||
+        !isValidRpId(rpId)) {
+      return null;
+    }
+    return LoginPasskey(
+      credentialId: credentialId,
+      rpId: rpId,
+      userHandle: userHandle,
+      userName: userName,
+      userDisplayName: userDisplayName,
+      privateKey: privateKey,
+      createdAt: createdAt,
     );
   }
 

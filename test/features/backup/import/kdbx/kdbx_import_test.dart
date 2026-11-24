@@ -2,8 +2,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/features/backup/data/import/kdbx/kdbx_import.dart';
 import 'package:keykey/features/backup/data/import/kdbx/kdbx_xml.dart';
 import 'package:keykey/features/backup/data/import/login_import.dart';
+import 'package:keykey/features/vault/data/login_passkey.dart';
 
 import '../../../../support/kdbx_fixtures.dart';
+import '../../../../support/passkey_test_keys.dart';
 
 Future<LoginExport> _export(String path) async =>
     kdbxToLoginExport(await kdbxFixtureDatabase(path));
@@ -255,5 +257,70 @@ void main() {
     final entry = _named(export, 'Banka');
     expect(entry.password, 'parola');
     expect(entry.totp, isNull);
+  });
+
+  group('KeePassXC passkey alanları', () {
+    LoginExport single(Map<String, ({String value, bool protected})> extra) =>
+        kdbxToLoginExport(
+          KdbxDatabase(
+            entries: [
+              KdbxEntry(
+                uuid: 'CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC',
+                groupPath: const [],
+                strings: {
+                  'Title': (value: 'webauthn.io', protected: false),
+                  'UserName': (value: 'furkan', protected: false),
+                  'URL': (value: 'https://webauthn.io', protected: false),
+                  ...extra,
+                },
+                attachments: 0,
+              ),
+            ],
+            recycledEntries: 0,
+          ),
+        );
+
+    Map<String, ({String value, bool protected})> passkey({
+      String pem = p256Pem,
+      String id = 'AQIDBAUGBwgJCgsMDQ4PEA',
+    }) => {
+      'KPEX_PASSKEY_CREDENTIAL_ID': (value: id, protected: false),
+      'KPEX_PASSKEY_PRIVATE_KEY_PEM': (value: pem, protected: true),
+      'KPEX_PASSKEY_RELYING_PARTY': (value: 'webauthn.io', protected: false),
+      'KPEX_PASSKEY_USERNAME': (value: 'furkan', protected: false),
+      'KPEX_PASSKEY_USER_HANDLE': (
+        value: base64UrlNoPad('id-furkan'.codeUnits),
+        protected: false,
+      ),
+    };
+
+    test('passkey olur, alanları özel alana düşmez', () {
+      final export = single(passkey());
+      final login = export.logins.single;
+
+      expect(export.skippedPasskeys, 0);
+      expect(login.fields, isEmpty);
+      final key = login.passkeys.single;
+      expect(key.credentialId, List.generate(16, (i) => i + 1));
+      expect(key.rpId, 'webauthn.io');
+      expect(key.userName, 'furkan');
+      expect(String.fromCharCodes(key.userHandle), 'id-furkan');
+      expect(key.privateKey, base64UrlDecodeNoPad(p256Pkcs8B64Url));
+    });
+
+    test('P-256 olmayan ya da eksik passkey atlanıp sayılıyor', () {
+      const p384 =
+          '-----BEGIN PRIVATE KEY-----\n$p384Pkcs8B64\n'
+          '-----END PRIVATE KEY-----';
+      expect(single(passkey(pem: p384)).skippedPasskeys, 1);
+      expect(single(passkey(id: '')).skippedPasskeys, 1);
+      final export = single(passkey(pem: p384));
+      expect(export.logins.single.passkeys, isEmpty);
+      expect(export.logins.single.fields, isEmpty);
+    });
+
+    test('passkey alanı olmayan kayıtta sayaç sıfır', () {
+      expect(single(const {}).skippedPasskeys, 0);
+    });
   });
 }

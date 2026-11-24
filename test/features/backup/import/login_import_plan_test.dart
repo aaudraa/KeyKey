@@ -8,6 +8,7 @@ import 'package:keykey/features/backup/application/login_import_plan.dart';
 import 'package:keykey/features/backup/data/import/login_import.dart';
 import 'package:keykey/features/vault/data/card_content.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
+import 'package:keykey/features/vault/data/login_passkey.dart';
 import 'package:keykey/features/vault/data/note_content.dart';
 
 import '../../../support/fake_vault_service.dart';
@@ -292,5 +293,39 @@ void main() {
         expect(otp.parameters.period, 60);
       },
     );
+  });
+
+  test("passkey'ler kayda geçiyor ve sayılıyor", () {
+    LoginPasskey key(int id) => LoginPasskey(
+      credentialId: Uint8List.fromList([id]),
+      rpId: 'github.com',
+      userHandle: Uint8List(0),
+      userName: 'ali',
+      userDisplayName: '',
+      privateKey: Uint8List.fromList([id]),
+      createdAt: DateTime.utc(2026),
+    );
+    final plan = planLoginImport(
+      LoginExport(
+        source: LoginExportSource.bitwardenJson,
+        logins: [
+          ImportedLogin(name: 'GitHub', passkeys: [key(1), key(2)]),
+          ImportedLogin(name: 'Site', password: 'p', passkeys: [key(3)]),
+          forum,
+        ],
+        skipped: 0,
+        skippedPasskeys: 4,
+      ),
+      existingLogins: const [],
+      existingOtps: const [],
+    );
+
+    expect(plan.candidates[0].content.passkeys.map((p) => p.credentialId), [
+      [1],
+      [2],
+    ]);
+    expect(plan.candidates[2].content.passkeys, isEmpty);
+    expect(plan.passkeys, 3);
+    expect(plan.skippedPasskeys, 4);
   });
 }

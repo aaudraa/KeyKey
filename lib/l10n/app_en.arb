@@ -2199,6 +2199,28 @@
   "@loginImportWithOtp": {
     "description": "Marks an entry that brings a 2FA key."
   },
+  "loginImportWithPasskey": "with passkey",
+  "@loginImportWithPasskey": {
+    "description": "Marks an imported entry that brings passkeys."
+  },
+  "loginImportPasskeys": "{count, plural, =1{1 passkey comes with the entries.} other{{count} passkeys come with the entries.}}",
+  "@loginImportPasskeys": {
+    "description": "How many passkeys an import brings.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "loginImportSkippedPasskeys": "{count, plural, =1{1 passkey couldn't be imported: KeyKey only uses P-256 (ES256) passkeys, at most 20 per entry. The entries themselves are still added.} other{{count} passkeys couldn't be imported: KeyKey only uses P-256 (ES256) passkeys, at most 20 per entry. The entries themselves are still added.}}",
+  "@loginImportSkippedPasskeys": {
+    "description": "How many passkeys an import skips.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "loginImportNothing": "There is nothing to import in this file.",
   "@loginImportNothing": {
     "description": "Shown when the file has no importable entries."
@@ -2352,6 +2374,10 @@
   "exportWarningCancel": "Cancel",
   "@exportWarningCancel": {
     "description": "Cancels the export."
+  },
+  "exportPasskeysNote": "Passkeys are not written to this file. You will need to add passkeys to your sites again in the new password manager.",
+  "@exportPasskeysNote": {
+    "description": "Added to the plaintext export warning when the vault has passkeys."
   },
   "exportConfirmTitle": "Export unencrypted",
   "@exportConfirmTitle": {

@@ -2,8 +2,11 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:keykey/features/backup/data/import/csv_reader.dart';
+import 'package:keykey/features/passkey/domain/p256_key.dart';
 import 'package:keykey/features/vault/data/card_content.dart';
 import 'package:keykey/features/vault/data/card_number.dart';
+import 'package:keykey/features/vault/data/login_content.dart';
+import 'package:keykey/features/vault/data/login_passkey.dart';
 import 'package:keykey/features/vault/data/note_content.dart';
 
 /// Dosya tanınan bir parola dışa aktarma biçiminde değil.
@@ -38,6 +41,7 @@ final class ImportedLogin {
     this.favorite = false,
     this.fields = const [],
     this.totp,
+    this.passkeys = const [],
   });
 
   final String name;
@@ -51,6 +55,9 @@ final class ImportedLogin {
 
   /// `otpauth://` bağlantısı veya çıplak Base32 anahtar; yoksa `null`.
   final String? totp;
+
+  /// Kayda bağlı P-256 passkey'ler; en çok [LoginContent.maxPasskeys].
+  final List<LoginPasskey> passkeys;
 }
 
 /// Başka bir uygulamadan okunan kart.
@@ -93,6 +100,7 @@ final class LoginExport {
     this.notes = const [],
     this.withAttachments = 0,
     this.inRecycleBin = 0,
+    this.skippedPasskeys = 0,
   });
 
   final LoginExportSource source;
@@ -108,6 +116,10 @@ final class LoginExport {
 
   /// Çöp kutusunda olduğu için alınmayan kayıtların sayısı (KeePass).
   final int inRecycleBin;
+
+  /// P-256 olmadığı, bozuk olduğu ya da kayıt başına sınırı aştığı için
+  /// alınmayan passkey'ler. Kaydın kendisi yine alınır.
+  final int skippedPasskeys;
 }
 
 /// Bitwarden (JSON, CSV), Chrome (CSV), Firefox (CSV) ve KeePassXC (CSV) dışa
@@ -312,11 +324,16 @@ abstract final class LoginExportReader {
     final cards = <ImportedCard>[];
     final notes = <NoteContent>[];
     var skipped = 0;
+    var skippedPasskeys = 0;
     for (final item in items) {
       // Tür 1 giriş, 2 güvenli not, 3 kart; 4 kimlik ve 5 SSH anahtarı
       // desteklenmiyor.
       final record = switch (item) {
-        {'type': 1} => _bitwardenItem(item, folders),
+        {'type': 1} => _bitwardenItem(
+          item,
+          folders,
+          onSkippedPasskeys: (count) => skippedPasskeys += count,
+        ),
         final Map<String, Object?> map when map['type'] == 2 => _bitwardenNote(
           map,
           folders,
@@ -345,6 +362,7 @@ abstract final class LoginExportReader {
       cards: cards,
       notes: notes,
       skipped: skipped,
+      skippedPasskeys: skippedPasskeys,
     );
   }
 
@@ -526,8 +544,9 @@ abstract final class LoginExportReader {
 
   static ImportedLogin? _bitwardenItem(
     Object? item,
-    Map<String, String> folders,
-  ) {
+    Map<String, String> folders, {
+    required void Function(int count) onSkippedPasskeys,
+  }) {
     if (item is! Map<String, Object?> || item['type'] != 1) return null;
     final login = item['login'];
     if (login is! Map<String, Object?>) return null;
@@ -550,6 +569,19 @@ abstract final class LoginExportReader {
             (name: name ?? '', value: value ?? '', hidden: type == 1),
     ];
     final folderId = item['folderId'];
+    final passkeys = <LoginPasskey>[];
+    var skippedPasskeys = 0;
+    if (login['fido2Credentials'] case final List<Object?> list) {
+      for (final credential in list) {
+        final passkey = _bitwardenPasskey(credential);
+        if (passkey == null || passkeys.length >= LoginContent.maxPasskeys) {
+          skippedPasskeys++;
+        } else {
+          passkeys.add(passkey);
+        }
+      }
+    }
+    if (skippedPasskeys > 0) onSkippedPasskeys(skippedPasskeys);
     return cleanLogin(
       name: _text(item['name']),
       username: _text(login['username']),
@@ -560,7 +592,70 @@ abstract final class LoginExportReader {
       favorite: item['favorite'] == true,
       fields: fields,
       totp: login['totp'] is String ? login['totp']! as String : null,
+      passkeys: passkeys,
     );
+  }
+
+  /// Bitwarden'ın `fido2Credentials` öğesi. Kimlik GUID (Bitwarden'ın
+  /// oluşturduğu) ya da `b64.` önekli base64url (içe aktarılmış) olur;
+  /// anahtar base64url PKCS#8. Yalnızca ECDSA P-256 alınır; uymayan ya da
+  /// bozuk öğe `null`.
+  static LoginPasskey? _bitwardenPasskey(Object? credential) {
+    if (credential is! Map<String, Object?>) return null;
+    if (credential['keyType'] != 'public-key' ||
+        credential['keyAlgorithm'] != 'ECDSA' ||
+        credential['keyCurve'] != 'P-256') {
+      return null;
+    }
+    try {
+      final id = _bitwardenCredentialId(_text(credential['credentialId']));
+      final key = _base64Any(_text(credential['keyValue']));
+      if (id == null || key == null || !isP256Pkcs8(key)) return null;
+      final handle = _text(credential['userHandle']);
+      return LoginPasskey.tryNew(
+        credentialId: id,
+        rpId: _text(credential['rpId']),
+        userHandle: handle.isEmpty
+            ? Uint8List(0)
+            : base64UrlDecodeNoPad(handle),
+        userName: _text(credential['userName']),
+        userDisplayName: _text(credential['userDisplayName']),
+        privateKey: key,
+        createdAt:
+            DateTime.tryParse(_text(credential['creationDate']))?.toUtc() ??
+            DateTime.now().toUtc(),
+      );
+    } on FormatException {
+      return null;
+    }
+  }
+
+  static final _guid = RegExp(
+    r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+    caseSensitive: false,
+  );
+
+  static Uint8List? _bitwardenCredentialId(String value) {
+    if (value.startsWith('b64.')) {
+      return base64UrlDecodeNoPad(value.substring(4));
+    }
+    if (!_guid.hasMatch(value)) return null;
+    final hex = value.replaceAll('-', '');
+    return Uint8List.fromList([
+      for (var i = 0; i < hex.length; i += 2)
+        int.parse(hex.substring(i, i + 2), radix: 16),
+    ]);
+  }
+
+  /// Base64url ya da standart base64, dolgulu ya da dolgusuz.
+  static Uint8List? _base64Any(String value) {
+    final text = value.trim().replaceAll('-', '+').replaceAll('_', '/');
+    if (text.isEmpty) return null;
+    try {
+      return base64.decode(base64.normalize(text.replaceAll('=', '')));
+    } on FormatException {
+      return null;
+    }
   }
 
   /// Bitwarden `androidapp://`, Chrome `android://` yazıyor.
@@ -583,6 +678,7 @@ abstract final class LoginExportReader {
     bool favorite = false,
     List<({String name, String value, bool hidden})> fields = const [],
     String? totp,
+    List<LoginPasskey> passkeys = const [],
   }) {
     // Uygulama adresleri alınmaz: KeyKey uygulamayı imzasıyla birlikte bağlar.
     final cleanUrls = [
@@ -597,10 +693,14 @@ abstract final class LoginExportReader {
           : '';
     }
     if (cleanName.isEmpty) cleanName = username.trim();
+    if (cleanName.isEmpty && passkeys.isNotEmpty) {
+      cleanName = passkeys.first.rpId;
+    }
     if (cleanName.isEmpty &&
         password.isEmpty &&
         cleanUrls.isEmpty &&
-        (cleanTotp == null || cleanTotp.isEmpty)) {
+        (cleanTotp == null || cleanTotp.isEmpty) &&
+        passkeys.isEmpty) {
       return null;
     }
     final cleanFolder = folder?.trim();
@@ -615,6 +715,7 @@ abstract final class LoginExportReader {
       favorite: favorite,
       fields: fields,
       totp: cleanTotp == null || cleanTotp.isEmpty ? null : cleanTotp,
+      passkeys: passkeys,
     );
   }
 

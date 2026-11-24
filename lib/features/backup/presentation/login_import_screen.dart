@@ -249,6 +249,8 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
               _hostOf(candidate.content.urls.first),
             if (candidate.otp != null && !candidate.otpAlreadySaved)
               l10n.loginImportWithOtp,
+            if (candidate.content.passkeys.isNotEmpty)
+              l10n.loginImportWithPasskey,
             if (candidate.duplicate) l10n.loginImportDuplicate,
           ]),
         ),
@@ -303,6 +305,16 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
         _Notice(
           icon: Icons.info_outline,
           text: l10n.loginImportSkippedOtps(plan.skippedOtps),
+        ),
+      if (plan.passkeys > 0)
+        _Notice(
+          icon: Icons.key_rounded,
+          text: l10n.loginImportPasskeys(plan.passkeys),
+        ),
+      if (plan.skippedPasskeys > 0)
+        _Notice(
+          icon: Icons.info_outline,
+          text: l10n.loginImportSkippedPasskeys(plan.skippedPasskeys),
         ),
       if (hasDuplicates)
         _Notice(

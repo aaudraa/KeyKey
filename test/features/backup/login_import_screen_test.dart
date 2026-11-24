@@ -14,6 +14,7 @@ import 'package:keykey/features/vault/data/note_content.dart';
 import 'package:sodium/sodium_sumo.dart';
 
 import '../../support/fake_vault_service.dart';
+import '../../support/passkey_test_keys.dart';
 
 void main() {
   late SodiumSumo sodium;
@@ -105,6 +106,65 @@ void main() {
     expect(otp.content.issuer, 'Sirket');
     expect(otp.content.parameters.digits, 8);
     expect(listEquals(otp.content.loginId, company.id), isTrue);
+  });
+
+  testWidgets("passkey'ler önizlemede sayılıp kayıtla ekleniyor", (
+    tester,
+  ) async {
+    Map<String, Object?> credential(String id, {String curve = 'P-256'}) => {
+      'credentialId': id,
+      'keyType': 'public-key',
+      'keyAlgorithm': 'ECDSA',
+      'keyCurve': curve,
+      'keyValue': p256Pkcs8B64Url,
+      'rpId': 'github.com',
+      'userHandle': 'AQ',
+      'userName': 'furkan',
+      'userDisplayName': '',
+      'creationDate': '2026-03-05T12:00:00.000Z',
+    };
+    final bytes = Uint8List.fromList(
+      utf8.encode(
+        jsonEncode({
+          'encrypted': false,
+          'items': [
+            {
+              'type': 1,
+              'name': 'GitHub',
+              'login': {
+                'username': 'furkan',
+                'password': 'parola',
+                'fido2Credentials': [
+                  credential('b64.AQ'),
+                  credential('b64.Ag'),
+                  credential('b64.Aw', curve: 'P-384'),
+                ],
+              },
+            },
+            {
+              'type': 1,
+              'name': 'webauthn.io',
+              'login': {
+                'fido2Credentials': [credential('b64.BA')],
+              },
+            },
+          ],
+        }),
+      ),
+    );
+    documents.nextOpen = DocumentOpened(bytes);
+    await openImport(tester);
+
+    expect(find.text('Kayıtlarla birlikte 3 passkey alınacak.'), findsOne);
+    expect(find.textContaining('1 passkey alınamadı'), findsOne);
+    expect(find.text('furkan · Passkey ile'), findsOneWidget);
+
+    await tester.tap(find.text('2 kaydı ekle'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tamam'));
+    await tester.pumpAndSettle();
+
+    expect(logins.items.map((item) => item.content.passkeys.length), [2, 1]);
   });
 
   testWidgets('kasada olan kayıt seçilmemiş geliyor', (tester) async {

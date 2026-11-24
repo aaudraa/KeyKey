@@ -6,6 +6,10 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/features/backup/data/import/login_import.dart';
 import 'package:keykey/features/vault/data/card_number.dart';
+import 'package:keykey/features/vault/data/login_content.dart';
+import 'package:keykey/features/vault/data/login_passkey.dart';
+
+import '../../../support/passkey_test_keys.dart';
 
 /// Örneklerin bir kısmı Bitwarden'ın içe aktarma testlerinden
 /// (bitwarden/clients, GPL-3.0); diğerleri dışa aktaranların yazdığı
@@ -239,6 +243,126 @@ void main() {
         () => read('bitwarden_password_protected.json'),
         throwsA(isA<EncryptedBitwardenExportException>()),
       );
+    });
+  });
+
+  group("Bitwarden passkey'leri", () {
+    LoginExport readItems(List<Map<String, Object?>> items) =>
+        LoginExportReader.read(
+          Uint8List.fromList(
+            utf8.encode(jsonEncode({'encrypted': false, 'items': items})),
+          ),
+        );
+
+    Map<String, Object?> credential({
+      required String id,
+      String rpId = 'github.com',
+      String curve = 'P-256',
+      String algorithm = 'ECDSA',
+      String key = p256Pkcs8B64Url,
+      String user = 'furkan',
+    }) => {
+      'credentialId': id,
+      'keyType': 'public-key',
+      'keyAlgorithm': algorithm,
+      'keyCurve': curve,
+      'keyValue': key,
+      'rpId': rpId,
+      'userHandle': base64UrlNoPad(utf8.encode('id-$user')),
+      'userName': user,
+      'counter': '0',
+      'rpName': rpId,
+      'userDisplayName': 'Furkan',
+      'discoverable': 'true',
+      'creationDate': '2026-03-05T12:00:00.000Z',
+    };
+
+    Map<String, Object?> login(
+      String name,
+      List<Map<String, Object?>> credentials, {
+      String? password,
+    }) => {
+      'type': 1,
+      'name': name,
+      'login': {
+        'username': null,
+        'password': password,
+        'uris': <Object?>[],
+        'fido2Credentials': credentials,
+      },
+    };
+
+    test("GUID ve b64. kimlikli P-256 passkey'ler alınıyor", () {
+      final export = readItems([
+        login('GitHub', [
+          credential(id: '6a7b1c2d-3e4f-4a5b-8c9d-0e1f2a3b4c5d'),
+          credential(id: 'b64.AQIDBAUGBwgJCgsMDQ4PEA', rpId: 'example.com'),
+        ], password: 'parola'),
+      ]);
+
+      expect(export.skipped, 0);
+      expect(export.skippedPasskeys, 0);
+      final passkeys = export.logins.single.passkeys;
+      expect(passkeys, hasLength(2));
+      final first = passkeys[0];
+      expect(first.credentialId, [
+        0x6a, 0x7b, 0x1c, 0x2d, 0x3e, 0x4f, 0x4a, 0x5b, //
+        0x8c, 0x9d, 0x0e, 0x1f, 0x2a, 0x3b, 0x4c, 0x5d,
+      ]);
+      expect(first.rpId, 'github.com');
+      expect(utf8.decode(first.userHandle), 'id-furkan');
+      expect(first.userName, 'furkan');
+      expect(first.userDisplayName, 'Furkan');
+      expect(first.privateKey, base64UrlDecodeNoPad(p256Pkcs8B64Url));
+      expect(first.createdAt, DateTime.utc(2026, 3, 5, 12));
+      expect(passkeys[1].credentialId, List.generate(16, (i) => i + 1));
+      expect(passkeys[1].rpId, 'example.com');
+    });
+
+    test("yalnızca passkey'i olan giriş atlanmıyor", () {
+      final export = readItems([
+        login('webauthn.io', [credential(id: 'b64.AQIDBAUGBwgJCgsMDQ4PEA')]),
+      ]);
+
+      expect(export.skipped, 0);
+      expect(export.logins.single.name, 'webauthn.io');
+      expect(export.logins.single.passkeys, hasLength(1));
+    });
+
+    test(
+      'P-256 olmayan ya da bozuk passkey atlanıp sayılıyor, giriş kalıyor',
+      () {
+        final export = readItems([
+          login('Eski', [
+            credential(id: 'b64.AQ', curve: 'P-384', key: p384Pkcs8B64),
+            credential(id: 'b64.Ag', algorithm: 'EdDSA'),
+            credential(id: 'kimlik-değil'),
+            credential(id: 'b64.Aw', key: p384Pkcs8B64),
+            credential(id: 'b64.BA', rpId: 'Örnek Site'),
+            credential(id: 'b64.BQ'),
+          ], password: 'parola'),
+        ]);
+
+        expect(export.skipped, 0);
+        expect(export.skippedPasskeys, 5);
+        expect(export.logins.single.password, 'parola');
+        expect(export.logins.single.passkeys.single.credentialId, [5]);
+      },
+    );
+
+    test('kayıt başına sınırdan fazlası atlanıp sayılıyor', () {
+      final export = readItems([
+        login('Çok', [
+          for (var i = 1; i <= LoginContent.maxPasskeys + 2; i++)
+            credential(id: 'b64.${base64UrlNoPad([i])}'),
+        ]),
+      ]);
+
+      expect(
+        export.logins.single.passkeys,
+        hasLength(LoginContent.maxPasskeys),
+      );
+      expect(export.skippedPasskeys, 2);
     });
   });
 
