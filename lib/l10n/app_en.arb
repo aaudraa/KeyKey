@@ -566,6 +566,60 @@
   "@loginApp": {
     "description": "Label for an Android app linked to a login for autofill."
   },
+  "loginPasskey": "Passkey",
+  "@loginPasskey": {
+    "description": "Label of a passkey row in a login's details."
+  },
+  "loginPasskeySummary": "{site} · {user}",
+  "@loginPasskeySummary": {
+    "description": "Site (rpId) and account name of a passkey.",
+    "placeholders": {
+      "site": {
+        "type": "String"
+      },
+      "user": {
+        "type": "String"
+      }
+    }
+  },
+  "loginPasskeyCreated": "Created: {date}",
+  "@loginPasskeyCreated": {
+    "description": "When a passkey was created.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "loginPasskeyDelete": "Delete passkey",
+  "@loginPasskeyDelete": {
+    "description": "Tooltip of the button that deletes a passkey."
+  },
+  "loginPasskeyDeleteTitle": "Delete the passkey?",
+  "@loginPasskeyDeleteTitle": {
+    "description": "Title of the passkey delete confirmation."
+  },
+  "loginPasskeyDeleteMessage": "You will no longer be able to sign in to {site} with this passkey. You can also remove it in the site's account settings.",
+  "@loginPasskeyDeleteMessage": {
+    "description": "Body of the passkey delete confirmation.",
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "loginPasskeyDeleteConfirm": "Delete",
+  "@loginPasskeyDeleteConfirm": {
+    "description": "Confirms deleting a passkey."
+  },
+  "loginPasskeyDeleteCancel": "Cancel",
+  "@loginPasskeyDeleteCancel": {
+    "description": "Keeps the passkey."
+  },
+  "loginPasskeyDeleted": "Passkey deleted.",
+  "@loginPasskeyDeleted": {
+    "description": "Shown after a passkey is deleted."
+  },
   "loginAppSignature": "Signature {fingerprint}",
   "@loginAppSignature": {
     "description": "Shortened signing certificate fingerprint of a linked app.",
@@ -1788,6 +1842,14 @@
   "@autofillSetupOpenFailed": {
     "description": "The system or Chrome setting could not be opened."
   },
+  "passkeySetupTitle": "Passkey provider",
+  "@passkeySetupTitle": {
+    "description": "Settings row that opens the system's credential provider choice."
+  },
+  "passkeySetupHelp": "Choose KeyKey in Android's Passwords & accounts settings. Passkeys you create on sites and in apps are then kept in KeyKey.",
+  "@passkeySetupHelp": {
+    "description": "Explains the passkey provider row."
+  },
   "autofillCardFor": "Card for {target}",
   "@autofillCardFor": {
     "description": "Subtitle of the autofill sheet when a payment form asks for a card. Shows which app or website will receive the card.",
@@ -2453,6 +2515,10 @@
   "favoriteMark": "Favorite",
   "@favoriteMark": {
     "description": "Screen reader label of the star on favorite items."
+  },
+  "passkeyMark": "Has a passkey",
+  "@passkeyMark": {
+    "description": "Screen reader label of the key icon on a login that has a passkey."
   },
   "addTitle": "What do you want to add?",
   "addPassword": "Password",

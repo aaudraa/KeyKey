@@ -74,17 +74,28 @@ class LoginTile extends ConsumerWidget {
       selected: selection?.selected,
       onLongPress: onLongPress,
       longPressHint: onLongPress == null ? null : l10n.selectHint,
-      title: content.favorite
+      title: content.favorite || content.passkeys.isNotEmpty
           ? Row(
               children: [
                 Flexible(child: title),
-                const SizedBox(width: 4),
-                Icon(
-                  Icons.star_rounded,
-                  size: 14,
-                  color: glass.accent,
-                  semanticLabel: l10n.favoriteMark,
-                ),
+                if (content.favorite) ...[
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.star_rounded,
+                    size: 14,
+                    color: glass.accent,
+                    semanticLabel: l10n.favoriteMark,
+                  ),
+                ],
+                if (content.passkeys.isNotEmpty) ...[
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.key_rounded,
+                    size: 14,
+                    color: glass.accent,
+                    semanticLabel: l10n.passkeyMark,
+                  ),
+                ],
               ],
             )
           : title,

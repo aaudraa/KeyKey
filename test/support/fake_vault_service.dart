@@ -547,6 +547,12 @@ class FakeAutofillSetup implements AutofillSetupBridge {
     opened.add('chrome');
     return canOpen;
   }
+
+  @override
+  Future<bool> openCredentialProviderSettings() async {
+    opened.add('credentialProvider');
+    return canOpen;
+  }
 }
 
 /// Bellekte duran ayarlar.

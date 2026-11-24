@@ -9,6 +9,7 @@ final class AutofillSetupState {
     required this.supported,
     required this.enabled,
     this.chromeMajorVersion,
+    this.passkeysSupported = false,
   });
 
   /// Chrome başka bir doldurma servisini bu sürümden beri kullanabiliyor.
@@ -21,6 +22,9 @@ final class AutofillSetupState {
 
   /// Kurulu Chrome'un ana sürümü; Chrome yoksa `null`.
   final int? chromeMajorVersion;
+
+  /// KeyKey bu cihazda passkey sağlayıcısı olabilir (Android 14+).
+  final bool passkeysSupported;
 
   bool get chromeTooOld =>
       chromeMajorVersion != null && chromeMajorVersion! < minChromeVersion;
@@ -35,6 +39,9 @@ abstract interface class AutofillSetupBridge {
 
   /// Chrome'un otomatik doldurma ayarını açar; açılamazsa `false`.
   Future<bool> openChromeAutofillSettings();
+
+  /// Sistemin passkey sağlayıcısı seçimini açar; açılamazsa `false`.
+  Future<bool> openCredentialProviderSettings();
 }
 
 final class PigeonAutofillSetupBridge implements AutofillSetupBridge {
@@ -47,6 +54,7 @@ final class PigeonAutofillSetupBridge implements AutofillSetupBridge {
       supported: status.supported,
       enabled: status.enabled,
       chromeMajorVersion: status.chromeMajorVersion,
+      passkeysSupported: status.passkeysSupported,
     );
   }
 
@@ -56,6 +64,10 @@ final class PigeonAutofillSetupBridge implements AutofillSetupBridge {
   @override
   Future<bool> openChromeAutofillSettings() =>
       _api.openChromeAutofillSettings();
+
+  @override
+  Future<bool> openCredentialProviderSettings() =>
+      _api.openCredentialProviderSettings();
 }
 
 final autofillSetupBridgeProvider = Provider<AutofillSetupBridge>(

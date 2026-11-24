@@ -659,7 +659,9 @@ data class AutofillSetupStatus (
   /** Seçili otomatik doldurma servisi KeyKey. */
   val enabled: Boolean,
   /** Kurulu Chrome'un ana sürümü; Chrome yoksa `null`. */
-  val chromeMajorVersion: Long? = null
+  val chromeMajorVersion: Long? = null,
+  /** KeyKey bu cihazda passkey sağlayıcısı olabilir (Android 14+). */
+  val passkeysSupported: Boolean
 )
  {
   companion object {
@@ -667,7 +669,8 @@ data class AutofillSetupStatus (
       val supported = pigeonVar_list[0] as Boolean
       val enabled = pigeonVar_list[1] as Boolean
       val chromeMajorVersion = pigeonVar_list[2] as Long?
-      return AutofillSetupStatus(supported, enabled, chromeMajorVersion)
+      val passkeysSupported = pigeonVar_list[3] as Boolean
+      return AutofillSetupStatus(supported, enabled, chromeMajorVersion, passkeysSupported)
     }
   }
   fun toList(): List<Any?> {
@@ -675,6 +678,7 @@ data class AutofillSetupStatus (
       supported,
       enabled,
       chromeMajorVersion,
+      passkeysSupported,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -685,7 +689,7 @@ data class AutofillSetupStatus (
       return true
     }
     val other = other as AutofillSetupStatus
-    return PlatformApiPigeonUtils.deepEquals(this.supported, other.supported) && PlatformApiPigeonUtils.deepEquals(this.enabled, other.enabled) && PlatformApiPigeonUtils.deepEquals(this.chromeMajorVersion, other.chromeMajorVersion)
+    return PlatformApiPigeonUtils.deepEquals(this.supported, other.supported) && PlatformApiPigeonUtils.deepEquals(this.enabled, other.enabled) && PlatformApiPigeonUtils.deepEquals(this.chromeMajorVersion, other.chromeMajorVersion) && PlatformApiPigeonUtils.deepEquals(this.passkeysSupported, other.passkeysSupported)
   }
 
   override fun hashCode(): Int {
@@ -693,10 +697,11 @@ data class AutofillSetupStatus (
     result = 31 * result + PlatformApiPigeonUtils.deepHash(this.supported)
     result = 31 * result + PlatformApiPigeonUtils.deepHash(this.enabled)
     result = 31 * result + PlatformApiPigeonUtils.deepHash(this.chromeMajorVersion)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.passkeysSupported)
     return result
   }
   override fun toString(): String {
-    return "AutofillSetupStatus(supported=$supported, enabled=$enabled, chromeMajorVersion=$chromeMajorVersion)"
+    return "AutofillSetupStatus(supported=$supported, enabled=$enabled, chromeMajorVersion=$chromeMajorVersion, passkeysSupported=$passkeysSupported)"
   }
 }
 
@@ -1657,6 +1662,8 @@ interface AutofillSetupApi {
   fun openAutofillSettings(): Boolean
   /** Chrome'un otomatik doldurma ayarını açar. Açılamazsa `false`. */
   fun openChromeAutofillSettings(): Boolean
+  /** Sistemin passkey sağlayıcısı seçimini açar. Açılamazsa `false`. */
+  fun openCredentialProviderSettings(): Boolean
 
   companion object {
     /** The codec used by AutofillSetupApi. */
@@ -1703,6 +1710,21 @@ interface AutofillSetupApi {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
               listOf(api.openChromeAutofillSettings())
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.AutofillSetupApi.openCredentialProviderSettings$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.openCredentialProviderSettings())
             } catch (exception: Throwable) {
               PlatformApiPigeonUtils.wrapError(exception)
             }

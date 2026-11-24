@@ -248,6 +248,7 @@ class AutofillSetupStatus {
   AutofillSetupStatus({
     required this.supported,
     required this.enabled,
+    required this.passkeysSupported,
     this.chromeMajorVersion,
   });
 
@@ -259,6 +260,9 @@ class AutofillSetupStatus {
 
   /// Kurulu Chrome'un ana sürümü; Chrome yoksa `null`.
   int? chromeMajorVersion;
+
+  /// KeyKey bu cihazda passkey sağlayıcısı olabilir (Android 14+).
+  bool passkeysSupported;
 }
 
 /// Kurulum ekranının Kotlin tarafı: durum ve ayarlara doğrudan geçiş.
@@ -271,6 +275,9 @@ abstract class AutofillSetupApi {
 
   /// Chrome'un otomatik doldurma ayarını açar. Açılamazsa `false`.
   bool openChromeAutofillSettings();
+
+  /// Sistemin passkey sağlayıcısı seçimini açar. Açılamazsa `false`.
+  bool openCredentialProviderSettings();
 }
 
 /// Belge kaydetmenin veya açmanın sonucu.

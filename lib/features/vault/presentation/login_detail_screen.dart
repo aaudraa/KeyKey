@@ -3,12 +3,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:keykey/app/router.dart';
 import 'package:keykey/app/ui/glass_nav_bar.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
 import 'package:keykey/app/ui/kk_menu.dart';
+import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/core/platform/web_links.dart';
@@ -16,6 +18,7 @@ import 'package:keykey/features/authenticator/application/otps_controller.dart';
 import 'package:keykey/features/authenticator/presentation/linked_otp_tile.dart';
 import 'package:keykey/features/authenticator/presentation/otp_display.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
+import 'package:keykey/features/vault/data/login_passkey.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:keykey/features/vault/presentation/detail_fields.dart';
 import 'package:keykey/features/vault/presentation/login_ids.dart';
@@ -74,6 +77,13 @@ class LoginDetailScreen extends ConsumerWidget {
           ),
           title: Text(l10n.loginApp, style: theme.textTheme.labelMedium),
           subtitle: Text(app.packageName),
+        ),
+      for (final passkey in content.passkeys)
+        _PasskeyTile(
+          key: ValueKey(passkey.credentialIdB64),
+          passkey: passkey,
+          onDelete: () =>
+              unawaited(_deletePasskey(context, controller, item, passkey)),
         ),
     ];
     final extra = <Widget>[
@@ -200,6 +210,42 @@ class LoginDetailScreen extends ConsumerWidget {
     );
   }
 
+  Future<void> _deletePasskey(
+    BuildContext context,
+    LoginsController controller,
+    LoginItem item,
+    LoginPasskey passkey,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showKkConfirm(
+      context,
+      title: l10n.loginPasskeyDeleteTitle,
+      message: l10n.loginPasskeyDeleteMessage(passkey.rpId),
+      confirmLabel: l10n.loginPasskeyDeleteConfirm,
+      cancelLabel: l10n.loginPasskeyDeleteCancel,
+      destructive: true,
+    );
+    if (!confirmed || !context.mounted) return;
+    final id = passkey.credentialIdB64;
+    // Ekranın elindeki kopya eskimiş olabilir; değişiklik kaydın en son
+    // haline uygulanır ve yalnızca bu passkey çıkar.
+    final deleted = await runRecordAction(
+      context,
+      () => controller.changePasskeys(
+        item,
+        (content) => content.copyWith(
+          passkeys: [
+            for (final p in content.passkeys)
+              if (p.credentialIdB64 != id) p,
+          ],
+        ),
+      ),
+    );
+    if (deleted && context.mounted) {
+      showKkSnack(context, l10n.loginPasskeyDeleted);
+    }
+  }
+
   Future<void> _moveToTrash(
     BuildContext context,
     LoginsController controller,
@@ -225,6 +271,46 @@ class LoginDetailScreen extends ConsumerWidget {
         onPressed: () => unawaited(
           runRecordAction(rootContext, () => controller.restoreById(item.id)),
         ),
+      ),
+    );
+  }
+}
+
+/// Kayıttaki bir passkey: site, hesap, oluşturulma tarihi ve silme düğmesi.
+/// Passkey düzenlenmez; yalnızca görülür ve silinir.
+class _PasskeyTile extends StatelessWidget {
+  const new({required this.passkey, required this.onDelete, super.key});
+
+  final LoginPasskey passkey;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    // Orta tarih biçimi Türkçede yılı göstermiyor; passkey yıllarca kalır.
+    final created = DateFormat.yMMMd(
+      Localizations.localeOf(context).toLanguageTag(),
+    ).format(passkey.createdAt.toLocal());
+    final user = passkey.userName.isNotEmpty
+        ? passkey.userName
+        : passkey.userDisplayName;
+    return ListTile(
+      leading: Icon(Icons.key_rounded, color: KkGlass.of(context).accent),
+      title: Text(l10n.loginPasskey, style: theme.textTheme.labelMedium),
+      subtitle: Text(
+        [
+          if (user.isEmpty)
+            passkey.rpId
+          else
+            l10n.loginPasskeySummary(passkey.rpId, user),
+          l10n.loginPasskeyCreated(created),
+        ].join('\n'),
+      ),
+      trailing: IconButton(
+        icon: const Icon(Icons.delete_outline_rounded),
+        tooltip: l10n.loginPasskeyDelete,
+        onPressed: onDelete,
       ),
     );
   }

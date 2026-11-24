@@ -557,6 +557,7 @@ class AutofillSetupStatus {
     required this.supported,
     required this.enabled,
     this.chromeMajorVersion,
+    required this.passkeysSupported,
   });
 
   /// Cihaz otomatik doldurmayı destekliyor.
@@ -568,8 +569,11 @@ class AutofillSetupStatus {
   /// Kurulu Chrome'un ana sürümü; Chrome yoksa `null`.
   int? chromeMajorVersion;
 
+  /// KeyKey bu cihazda passkey sağlayıcısı olabilir (Android 14+).
+  bool passkeysSupported;
+
   List<Object?> _toList() {
-    return <Object?>[supported, enabled, chromeMajorVersion];
+    return <Object?>[supported, enabled, chromeMajorVersion, passkeysSupported];
   }
 
   Object encode() {
@@ -582,6 +586,7 @@ class AutofillSetupStatus {
       supported: result[0]! as bool,
       enabled: result[1]! as bool,
       chromeMajorVersion: result[2] as int?,
+      passkeysSupported: result[3]! as bool,
     );
   }
 
@@ -596,7 +601,8 @@ class AutofillSetupStatus {
     }
     return _deepEquals(supported, other.supported) &&
         _deepEquals(enabled, other.enabled) &&
-        _deepEquals(chromeMajorVersion, other.chromeMajorVersion);
+        _deepEquals(chromeMajorVersion, other.chromeMajorVersion) &&
+        _deepEquals(passkeysSupported, other.passkeysSupported);
   }
 
   @override
@@ -605,7 +611,7 @@ class AutofillSetupStatus {
 
   @override
   String toString() {
-    return 'AutofillSetupStatus(supported: $supported, enabled: $enabled, chromeMajorVersion: $chromeMajorVersion)';
+    return 'AutofillSetupStatus(supported: $supported, enabled: $enabled, chromeMajorVersion: $chromeMajorVersion, passkeysSupported: $passkeysSupported)';
   }
 }
 
@@ -1610,6 +1616,25 @@ class AutofillSetupApi {
   Future<bool> openChromeAutofillSettings() async {
     final pigeonVar_channelName =
         'dev.flutter.pigeon.keykey.AutofillSetupApi.openChromeAutofillSettings$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as bool;
+  }
+
+  /// Sistemin passkey sağlayıcısı seçimini açar. Açılamazsa `false`.
+  Future<bool> openCredentialProviderSettings() async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.AutofillSetupApi.openCredentialProviderSettings$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,

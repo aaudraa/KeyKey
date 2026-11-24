@@ -5,6 +5,7 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.provider.Settings
 import android.view.autofill.AutofillManager
 import io.github.aaudraa.keykey.AutofillSetupApi
@@ -25,6 +26,7 @@ class AutofillSetup(private val activity: Activity) : AutofillSetupApi {
             supported = manager?.isAutofillSupported == true,
             enabled = manager?.hasEnabledAutofillServices() == true,
             chromeMajorVersion = chromeMajorVersion(),
+            passkeysSupported = passkeysSupported(),
         )
     }
 
@@ -45,6 +47,20 @@ class AutofillSetup(private val activity: Activity) : AutofillSetupApi {
             .setPackage(CHROME)
         return start { activity.startActivity(intent) }
     }
+
+    override fun openCredentialProviderSettings(): Boolean {
+        if (!passkeysSupported()) return false
+        // Paket verisiyle bazı sürümler doğrudan KeyKey'in sayfasını açar;
+        // açamayan sürümde genel seçim ekranı denenir.
+        val withPackage = Intent(Settings.ACTION_CREDENTIAL_PROVIDER)
+            .setData(Uri.parse("package:${activity.packageName}"))
+        return start { activity.startActivity(withPackage) } ||
+            start { activity.startActivity(Intent(Settings.ACTION_CREDENTIAL_PROVIDER)) }
+    }
+
+    /** Sağlayıcı servisi manifestte yalnızca Android 14+'ta etkin. */
+    private fun passkeysSupported(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 
     private fun start(launch: () -> Unit): Boolean = try {
         launch()
