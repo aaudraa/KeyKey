@@ -95,6 +95,35 @@ void main() {
     });
   });
 
+  group('clientDataHash', () {
+    final hash = Uint8List.fromList(List.filled(32, 7));
+
+    test('güvenilen tarayıcınınki kullanılıyor', () {
+      final prompt = resolvePasskeyPrompt(
+        create: false,
+        requestJson: fixture('webauthn_io_get.json'),
+        caller: chrome('https://webauthn.io'),
+        suffixes: psl,
+        clientDataHash: hash,
+      );
+      expect(prompt.clientDataHash, hash);
+    });
+
+    test("uygulamanınki atılıyor; imza KeyKey'in kendi clientDataJSON'una", () {
+      // Bir uygulama, başka bir sitenin origin'iyle kurduğu clientDataJSON'un
+      // özetini verip o sitenin geçerli web imzasını alamamalı.
+      final prompt = resolvePasskeyPrompt(
+        create: false,
+        requestJson: fixture('webauthn_io_get.json'),
+        caller: PasskeyCaller(packageName: 'a.b', certsSha256: [cert]),
+        suffixes: psl,
+        clientDataHash: hash,
+      );
+      expect(prompt.clientDataHash, isNull);
+      expect(prompt.origin, startsWith('android:apk-key-hash:'));
+    });
+  });
+
   group('kayıtlar', () {
     final github = FakeLoginRepository.item(
       LoginContent(

@@ -130,7 +130,10 @@ class PasskeyActivity : FlutterFragmentActivity(), PasskeyApi {
             certsSha256 = digests(caller.signingInfo),
             appLabel = label(caller.packageName),
             browserOrigin = origin,
-            clientDataHash = clientDataHash,
+            // Hazır özete yalnızca güvenilen tarayıcıda güvenilir; başka bir
+            // uygulama başka bir sitenin origin'iyle kurduğu clientDataJSON'un
+            // özetini verip o sitenin web imzasını alamasın.
+            clientDataHash = if (origin != null) clientDataHash else null,
         )
     }
 

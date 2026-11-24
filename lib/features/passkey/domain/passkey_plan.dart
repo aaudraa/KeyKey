@@ -60,7 +60,11 @@ PasskeyPrompt resolvePasskeyPrompt({
     origin: caller.origin(),
     creation: creation,
     assertion: assertion,
-    clientDataHash: clientDataHash,
+    // Hazır özet yalnızca güvenilen tarayıcıdan alınır. Bir uygulama başka
+    // bir sitenin origin'iyle kurduğu clientDataJSON'un özetini verip o
+    // sitenin web imzasını alamasın: uygulamada imza KeyKey'in kendi
+    // `apk-key-hash` clientDataJSON'una atılır.
+    clientDataHash: caller.isBrowser ? clientDataHash : null,
   );
 }
 
