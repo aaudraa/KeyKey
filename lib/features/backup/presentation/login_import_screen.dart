@@ -15,6 +15,7 @@ import 'package:keykey/features/backup/data/import/kdbx/kdbx_header.dart';
 import 'package:keykey/features/backup/data/import/kdbx/kdbx_reader.dart';
 import 'package:keykey/features/backup/data/import/login_import.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
+import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/application/records_controller.dart';
 import 'package:keykey/features/vault/data/card_content.dart';
@@ -55,8 +56,21 @@ Future<void> pickLoginExport(BuildContext context, WidgetRef ref) async {
       bytes.fillRange(0, bytes.length, 0);
       show(l10n.keepassOld);
     case DocumentOpened(:final bytes) when KdbxHeader.isKdbx(bytes):
-      // Baytlar KeePass ekranına geçer; ekran kapanınca sıfırlar.
-      await context.push(AppRoutes.keepassOpen, extra: bytes);
+      // Baytlar KeePass ekranına geçer; ekran kapanınca sıfırlar. Kasa
+      // seçici dönerken kilitlendiyse yönlendirme ekranı hiç kurmaz: o
+      // durumda baytları burası, kilit sırasında da kilit sıfırlar.
+      void wipe() => bytes.fillRange(0, bytes.length, 0);
+      if (ref.read(vaultControllerProvider) is! VaultOpen) {
+        wipe();
+        return;
+      }
+      final vault = ref.read(vaultControllerProvider.notifier)
+        ..addLockListener(wipe);
+      try {
+        await context.push(AppRoutes.keepassOpen, extra: bytes);
+      } finally {
+        vault.removeLockListener(wipe);
+      }
     case DocumentOpened(:final bytes)
         when bytes.length > LoginExportReader.maxBytes:
       bytes.fillRange(0, bytes.length, 0);

@@ -50,8 +50,14 @@ final class PlatformKdbxKdf implements KdbxKdf {
       // diye kopyalanır.
       return Uint8List.fromList(await call());
     } on PlatformException catch (error) {
-      if (error.code == 'out-of-memory') throw const KdbxOutOfMemory();
-      throw const KdbxCorrupt();
+      throw switch (error.code) {
+        'out-of-memory' => const KdbxOutOfMemory(),
+        // Dosyadan gelen geçersiz parametre.
+        'failed' => const KdbxCorrupt(),
+        // 'device' ya da Pigeon'un sınıf adıyla ilettiği yakalanmamış hata
+        // (ör. UnsatisfiedLinkError): dosyayla ilgisi yok.
+        _ => const KdbxDeviceFailure(),
+      };
     }
   }
 }

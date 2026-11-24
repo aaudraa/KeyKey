@@ -152,6 +152,87 @@ void main() {
     expect(resolveKdbxReferences('{REF:P@I:$id}', entries), contains('{REF:'));
   });
 
+  test('çok dallı başvuru zinciri sınırlı işte biter', () {
+    // Her kayıt bir sonrakine beş kez başvuruyor: sınırsız çözüm 5^10 iş
+    // ve 5^10 uzunluk olurdu.
+    String id(int i) => i.toRadixString(16).padLeft(32, '0').toUpperCase();
+    final entries = {
+      for (var i = 0; i < 12; i++)
+        id(i): {'Password': '{REF:P@I:${id(i + 1)}}' * 5},
+      id(12): {'Password': 'x' * 100},
+    };
+    final watch = Stopwatch()..start();
+    final result = resolveKdbxReferences('{REF:P@I:${id(0)}}', entries);
+    expect(watch.elapsed, lessThan(const Duration(seconds: 2)));
+    expect(result.length, lessThanOrEqualTo(maxKdbxReferenceLength));
+    expect(result, contains('{REF:'));
+  });
+
+  group('yalnız notu olan kayıt', () {
+    LoginExport single(Map<String, ({String value, bool protected})> strings) =>
+        kdbxToLoginExport(
+          KdbxDatabase(
+            entries: [
+              const KdbxEntry(
+                uuid: 'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB',
+                groupPath: [],
+                strings: {
+                  'Title': (value: 'Kaynak', protected: false),
+                  'UserName': (value: 'ali', protected: false),
+                  'Password': (value: 'kaynak-parola', protected: true),
+                },
+                attachments: 0,
+              ),
+              KdbxEntry(
+                uuid: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+                groupPath: const [],
+                strings: strings,
+                attachments: 0,
+              ),
+            ],
+            recycledEntries: 0,
+          ),
+        );
+
+    test('korumalı alanı varsa gizli alanlı kayıt olur, not olmaz', () {
+      final export = single({
+        'Title': (value: 'Kasa', protected: false),
+        'Notes': (value: 'kapı kodu', protected: false),
+        'PIN': (value: '4321', protected: true),
+      });
+      expect(export.notes, isEmpty);
+      final login = _named(export, 'Kasa');
+      expect(login.notes, 'kapı kodu');
+      expect(login.fields.single, (name: 'PIN', value: '4321', hidden: true));
+    });
+
+    test('parolaya başvuran korumasız alan gizli gelir', () {
+      final export = single({
+        'Title': (value: 'Kopya', protected: false),
+        'Notes': (value: 'not', protected: false),
+        'Eski': (
+          value: '{REF:P@I:BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB}',
+          protected: false,
+        ),
+      });
+      expect(export.notes, isEmpty);
+      expect(_named(export, 'Kopya').fields.single, (
+        name: 'Eski',
+        value: 'kaynak-parola',
+        hidden: true,
+      ));
+    });
+
+    test('korumasız alanlarla yine güvenli not olur', () {
+      final export = single({
+        'Title': (value: 'Wi-Fi', protected: false),
+        'Notes': (value: 'ev', protected: false),
+        'Ağ': (value: 'keykey', protected: false),
+      });
+      expect(export.notes.single.text, 'ev\nAğ: keykey');
+    });
+  });
+
   test('yüzde işaretli otp alanı okumayı durdurmaz', () {
     // Uri.splitQueryString bozuk kaçışta ArgumentError fırlatıyordu.
     final export = kdbxToLoginExport(

@@ -18,6 +18,7 @@ LoginExport kdbxToLoginExport(KdbxDatabase db) {
           key: value.value,
       },
   };
+  final references = KdbxReferenceResolver(byUuid);
   final logins = <ImportedLogin>[];
   final notes = <NoteContent>[];
   var skipped = 0;
@@ -26,7 +27,7 @@ LoginExport kdbxToLoginExport(KdbxDatabase db) {
   for (final entry in db.entries) {
     if (entry.attachments > 0) withAttachments++;
     String value(String key) =>
-        resolveKdbxReferences(entry.strings[key]?.value ?? '', byUuid);
+        references.resolve(entry.strings[key]?.value ?? '');
 
     final totp = _totp(entry, value);
     final consumed = {..._standardKeys, if (totp != null) ...totp.keys};
@@ -37,7 +38,12 @@ LoginExport kdbxToLoginExport(KdbxDatabase db) {
     final fields = [
       for (final MapEntry(:key, value: field) in entry.strings.entries)
         if (!consumed.contains(key) && !_isInternal(key))
-          (name: key, value: value(key), hidden: field.protected),
+          (
+            name: key,
+            value: value(key),
+            // Parolaya başvuran korumasız alan da parolayı gösterirdi.
+            hidden: field.protected || _refersToPassword(field.value),
+          ),
     ];
     final folder = entry.groupPath.isEmpty ? null : entry.groupPath.join('/');
     final title = value('Title');
@@ -50,7 +56,11 @@ LoginExport kdbxToLoginExport(KdbxDatabase db) {
         password.isNotEmpty ||
         totp != null ||
         urls.any((url) => url.trim().isNotEmpty && !_isAppUrl(url));
-    if (!hasLoginData && text.trim().isNotEmpty) {
+    // Güvenli notta gizli alan yok; gizli alanı olan kayıt not olsaydı
+    // değeri not metninde açık görünürdü.
+    if (!hasLoginData &&
+        text.trim().isNotEmpty &&
+        !fields.any((field) => field.hidden)) {
       final note = LoginExportReader.cleanNote(
         name: title,
         text: text,
@@ -131,22 +141,51 @@ const _referenceFields = {
   'N': 'Notes',
 };
 
+/// Alanın ham değeri parolaya başvuruyor mu (`{REF:P@I:…}`).
+bool _refersToPassword(String raw) => _reference
+    .allMatches(raw)
+    .any((match) => match.group(1)!.toUpperCase() == 'P');
+
+/// Çözülen bir değerin en büyük uzunluğu; aşan başvuru çözülmeden kalır.
+const int maxKdbxReferenceLength = 64 * 1024;
+
 /// `{REF:<alan>@I:<UUID>}` başvurularını aynı dosyadaki kaydın alanıyla
 /// değiştirir. Başka arama türleri ve bulunamayan kayıt olduğu gibi kalır;
 /// zincir en çok 10 adım izlenir.
+///
+/// Dosya güvenilmeyen veridir: bir alanda k tane başvuru 10 adımda k^10 iş
+/// ve uzunluk olurdu. Her (kayıt, alan) bir kez çözülür ve sonucu saklanır;
+/// [maxKdbxReferenceLength]'i aşan sonuç yerine başvurunun kendisi kalır.
+final class KdbxReferenceResolver {
+  new(this._byUuid);
+
+  final Map<String, Map<String, String>> _byUuid;
+  final _resolved = <String, String>{};
+
+  static const _maxDepth = 10;
+
+  String resolve(String value) => _resolve(value, 0);
+
+  String _resolve(String value, int depth) {
+    if (depth >= _maxDepth || !value.contains('{')) return value;
+    final result = value.replaceAllMapped(_reference, (match) {
+      final uuid = match.group(2)!.toUpperCase();
+      final target = _byUuid[uuid];
+      if (target == null) return match.group(0)!;
+      final field = _referenceFields[match.group(1)!.toUpperCase()]!;
+      final key = '$uuid/$field';
+      return _resolved[key] ??= _resolve(target[field] ?? '', depth + 1);
+    });
+    return result.length > maxKdbxReferenceLength ? value : result;
+  }
+}
+
+/// Tek bir değerin başvurularını çözer; bütün dosya için
+/// [KdbxReferenceResolver] kullanılır.
 String resolveKdbxReferences(
   String value,
-  Map<String, Map<String, String>> byUuid, [
-  int depth = 0,
-]) {
-  if (depth >= 10 || !value.contains('{')) return value;
-  return value.replaceAllMapped(_reference, (match) {
-    final target = byUuid[match.group(2)!.toUpperCase()];
-    if (target == null) return match.group(0)!;
-    final field = _referenceFields[match.group(1)!.toUpperCase()]!;
-    return resolveKdbxReferences(target[field] ?? '', byUuid, depth + 1);
-  });
-}
+  Map<String, Map<String, String>> byUuid,
+) => KdbxReferenceResolver(byUuid).resolve(value);
 
 /// Kayıttaki 2FA: bağlantı ve tüketilen alanlar.
 typedef _Totp = ({String uri, Set<String> keys});

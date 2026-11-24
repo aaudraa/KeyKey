@@ -2228,6 +2228,19 @@
   "@keepassOutOfMemory": {
     "description": "Error when Argon2 cannot allocate memory."
   },
+  "keepassDeviceFailure": "This file could not be opened on this phone: KeyKey's key derivation code did not run. The file is not damaged; it can be opened in KeePass or KeePassXC on a computer.",
+  "@keepassDeviceFailure": {
+    "description": "Error when the native key derivation code fails (library not loaded, Java memory, thread)."
+  },
+  "keepassInnerStream": "inner stream cipher {id}",
+  "@keepassInnerStream": {
+    "description": "Fills {what} in keepassUnsupported for an unknown inner stream cipher id.",
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
   "keepassCorrupt": "The file is damaged or has been modified.",
   "@keepassCorrupt": {
     "description": "Error for a damaged KeePass file."

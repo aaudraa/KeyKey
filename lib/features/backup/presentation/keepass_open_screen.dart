@@ -116,10 +116,13 @@ class _KeepassOpenScreenState extends ConsumerState<KeepassOpenScreen> {
   static String _message(AppLocalizations l10n, KdbxException error) =>
       switch (error) {
         KdbxWrongKey() => l10n.keepassWrongKey,
+        KdbxUnsupported(:final what, innerStream: true) =>
+          l10n.keepassUnsupported(l10n.keepassInnerStream(what)),
         KdbxUnsupported(:final what) =>
           what == 'KeePass 1' ? l10n.keepassOld : l10n.keepassUnsupported(what),
         KdbxTooHeavy() => l10n.keepassTooHeavy,
         KdbxOutOfMemory() => l10n.keepassOutOfMemory,
+        KdbxDeviceFailure() => l10n.keepassDeviceFailure,
         KdbxCorrupt() => l10n.keepassCorrupt,
         KdbxKeyFileCorrupt() => l10n.keepassKeyFileCorrupt,
       };

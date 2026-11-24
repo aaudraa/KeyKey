@@ -30,7 +30,10 @@ void main() {
   });
 
   /// Ayarlar → İçe aktar; seçicinin vereceği dosya önceden kurulur.
-  Future<void> pickFile(WidgetTester tester) async {
+  Future<void> pickFile(
+    WidgetTester tester, {
+    bool lockWhilePicking = false,
+  }) async {
     await pumpKeyKey(
       tester,
       status: VaultOpen(service.newSession()),
@@ -46,7 +49,12 @@ void main() {
     final container = ProviderScope.containerOf(
       tester.element(find.text('Yedekle')),
     );
-    documents.readGate = () => container.read(externalActivityGateProvider);
+    documents.readGate = () {
+      if (lockWhilePicking) {
+        container.read(vaultControllerProvider.notifier).lock();
+      }
+      return container.read(externalActivityGateProvider);
+    };
     final tile = find.text('İçe aktar');
     await tester.scrollUntilVisible(tile, 200);
     await tester.ensureVisible(tile);
@@ -155,6 +163,16 @@ void main() {
     expect(file.any((b) => b != 0), isTrue);
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
+    expect(file.every((b) => b == 0), isTrue);
+  });
+
+  testWidgets('seçici dönerken kasa kilitlenirse baytlar yine sıfırlanır', (
+    tester,
+  ) async {
+    final file = kdbxFixture('keepassxc/ProtectedStrings.kdbx');
+    documents.nextOpen = DocumentOpened(file);
+    await pickFile(tester, lockWhilePicking: true);
+    expect(find.text('KeePass dosyasını aç'), findsNothing);
     expect(file.every((b) => b == 0), isTrue);
   });
 

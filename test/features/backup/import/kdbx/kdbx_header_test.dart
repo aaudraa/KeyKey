@@ -144,6 +144,35 @@ void main() {
     );
   });
 
+  test('bilinmeyen iç akış ekranın dilinde söylenir, sürüm onaltılık', () {
+    expect(
+      () => KdbxHeader.parse(_v3(innerStream: 4)),
+      throwsA(
+        isA<KdbxUnsupported>()
+            .having((e) => e.what, 'what', '4')
+            .having((e) => e.innerStream, 'innerStream', isTrue),
+      ),
+    );
+    expect(
+      () => KdbxHeader.parse(_v4(kdf: {..._argon(), 'V': (0x04, u32(0x11))})),
+      throwsA(
+        isA<KdbxUnsupported>().having((e) => e.what, 'what', 'Argon2 0x11'),
+      ),
+    );
+  });
+
+  test('bilinmeyen dış başlık alanı yok sayılır', () {
+    final builder = KdbxHeaderBuilder(4, minor: 0)
+      ..field(2, fromHex(_aes))
+      ..field(3, u32(1))
+      ..field(13, [1, 2, 3])
+      ..field(4, Uint8List(32))
+      ..field(7, Uint8List(16))
+      ..field(11, variantDictionary(_argon()))
+      ..field(0, [13, 10, 13, 10]);
+    expect(KdbxHeader.parse(builder.build()).cipher, KdbxCipher.aes256);
+  });
+
   group('ağır anahtar türetme', () {
     test('1 GiB üstü bellek', () {
       expect(
