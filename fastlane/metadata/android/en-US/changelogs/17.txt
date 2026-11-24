@@ -1,0 +1,1 @@
+KeyKey can now be your passkey provider (Android 14+): create passkeys and sign in with them on sites and in apps, see and delete them in the entry, and import them from Bitwarden and KeePassXC. Passkeys stay encrypted in your vault and move with backups and sync. If you use sync, update all your phones: older versions cannot open the new backups.
