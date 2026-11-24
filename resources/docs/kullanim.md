@@ -13,6 +13,7 @@ Görüntülerdeki kayıtlar örnektir.
 - [Kartlar ve güvenli notlar](#kartlar-ve-güvenli-notlar)
 - [2FA kodları](#2fa-kodları)
 - [Otomatik doldurma](#otomatik-doldurma)
+- [Passkey'ler](#passkeyler)
 - [Yedekleme ve yeni telefona geçiş](#yedekleme-ve-yeni-telefona-geçiş)
 - [Senkron](#senkron)
 - [Başka uygulamalardan geçiş](#başka-uygulamalardan-geçiş)
@@ -173,6 +174,20 @@ KeyKey, uygulamalardaki ve Chrome'daki giriş formlarını ve ödeme formlarınd
 - Kasanda kart yoksa da öneri çıkar (KeyKey kasayı açmadan kartın olup olmadığını bilemez); liste kart olmadığını söyler.
 - Forma elle yazdığın yeni bir kartı KeyKey kaydetmeyi önermez; kartı **+** → **Kart** ile eklersin.
 
+## Passkey'ler
+
+Passkey, parolanın yerine geçen bir giriş anahtarıdır: site senin yerine bir parola saklamaz, telefonun girişte bir imza atar. Sızdırılamaz ve sahte bir siteye girilemez. KeyKey 1.11.0'dan beri, **Android 14 ve üstünde** passkey'lerini kasanda tutabilir; kasan gibi yedeğe ve senkrona girer, yeni telefona geçer.
+
+**Açmak için:** Ayarlar → Otomatik doldurma → **Passkey sağlayıcısı**'na dokun. Android'in Parolalar ve hesaplar ayarı açılır; orada **KeyKey**'i aç (bazı telefonlarda "tercih edilen hizmet" olarak seçmen gerekir). Bu satır Android 13 ve öncesinde görünmez.
+
+- **Oluşturmak:** Bir sitede ya da uygulamada "passkey oluştur" dediğinde Android'in penceresinde **KeyKey**'i seç. KeyKey'in kilidini açarsın; site, hesap ve passkey'in kaydedileceği kayıt gösterilir. **Passkey oluştur**'a dokununca passkey o sitenin kaydına eklenir; kayıt yoksa yeni bir kayıt açılır.
+- **Giriş:** Site passkey istediğinde Android'in penceresinde **KeyKey'in kilidini aç**'a dokun ve kasayı aç. O sitenin hesapları aynı pencerede listelenir; birini seçince giriş yapılır. KeyKey, kasa kilitliyken hangi sitelerde passkey'in olduğunu kimseye söylemez; bu yüzden pencere önce kilit açmayı ister.
+- **Uyarı:** Passkey'i bir uygulama istiyorsa ve KeyKey uygulamanın o siteye ait olduğunu doğrulayamazsa uyarır. Uygulamayı tanımıyorsan vazgeç.
+- **Kayıtta:** Passkey'li kayıtların listede adının yanında küçük bir anahtar simgesi olur. Kayda dokununca passkey'in sitesini, hesabını ve oluşturulduğu tarihi görürsün; **Passkey'i sil** ile silebilirsin (onay ister). Siteden de kaldırmak istersen sitenin hesap ayarlarına gir. Kaydı düzenlemek passkey'lere dokunmaz.
+- KeyKey yalnızca en yaygın passkey türünü (ES256) destekler. Başka bir tür isteyen site "desteklenmiyor" der.
+
+**Bütün telefonlarını güncelle:** Passkey taşıyan kayıtları ve 1.11.0'ın aldığı yedekleri KeyKey 1.10.x ve öncesi açamaz; yedek için "daha yeni bir yedek", senkronda "başka bir telefonda daha yeni KeyKey var" der. Senkron kullanıyorsan bütün telefonlarını 1.11.0'a güncelle.
+
 ## Yedekleme ve yeni telefona geçiş
 
 <img src="../design/kilavuz/11-yedek-hatirlatma.webp" width="240" alt="Yedek hatırlatması"> <img src="../design/kilavuz/12-ayarlar.webp" width="240" alt="Ayarlar">
@@ -235,7 +250,7 @@ Senkron bir yedek değildir: yanlışlıkla sildiğin kayıt bütün telefonlard
 
 <img src="../design/kilavuz/10-ice-aktarma.webp" width="240" alt="Parola içe aktarma">
 
-**Parolalar, kartlar ve notlar:** Ayarlar → Yedek ve aktarım → **İçe aktar**. Bitwarden (şifresiz JSON ya da CSV), Chrome, Firefox ve KeePassXC dışa aktarma dosyalarını okur. Kayıtlar eklenmeden önce liste halinde gösterilir; kasanda zaten olanlar işaretlenir ve seçilmez. Bitwarden ve KeePassXC'deki 2FA anahtarları da 2FA hesabı olarak eklenir. Bitwarden'daki kartlar ve güvenli notlar da alınır. Karta uymayan bir değer (örneğin harf içeren bir numara) atılmaz, kartın notuna yazılır ve listede bunu görürsün; Bitwarden'da `PIN` adlı bir alan varsa kartın PIN'i olur.
+**Parolalar, kartlar ve notlar:** Ayarlar → Yedek ve aktarım → **İçe aktar**. Bitwarden (şifresiz JSON ya da CSV), Chrome, Firefox ve KeePassXC dışa aktarma dosyalarını okur. Kayıtlar eklenmeden önce liste halinde gösterilir; kasanda zaten olanlar işaretlenir ve seçilmez. Bitwarden ve KeePassXC'deki 2FA anahtarları da 2FA hesabı olarak eklenir; passkey'leri de (1.11.0) kayıtlarıyla birlikte gelir ve önizleme kaç passkey alınacağını söyler. Bitwarden'daki kartlar ve güvenli notlar da alınır. Karta uymayan bir değer (örneğin harf içeren bir numara) atılmaz, kartın notuna yazılır ve listede bunu görürsün; Bitwarden'da `PIN` adlı bir alan varsa kartın PIN'i olur.
 
 > [!WARNING]
 > Dışa aktarma dosyası şifresizdir; içinde bütün parolaların düz metin olarak durur. İçe aktardıktan sonra dosyayı Dosyalar uygulamasından ya da Drive'dan kendin sil. KeyKey bu dosyayı silemez.
@@ -250,7 +265,7 @@ Senkron bir yedek değildir: yanlışlıkla sildiğin kayıt bütün telefonlard
 
 **2FA hesapları:** Ayarlar → Yedek ve aktarım → **2FA hesaplarını içe aktar** (Aegis, 2FAS), ya da **+** → **2FA kodu** → **Başka uygulamadan aktar** (Google Authenticator'ın dışa aktarma QR'ları da). Şifreli dosyalar için o uygulamada belirlediğin parola istenir.
 
-**KeyKey'den ayrılmak istersen:** Ayarlar → Yedek ve aktarım → **Şifresiz dışa aktar**. Önce biçimi seçersin: **CSV** çoğu parola yöneticisinin okuduğu biçimdir ama kartları taşımaz; **JSON** Bitwarden'ın biçimidir ve kartlar dahil her şeyi taşır. Steam hesapları Bitwarden'ın `steam://` biçimiyle yazılır. Dosya şifresiz olduğu için önce uyarı çıkar ve kimliğini doğrulaman istenir.
+**KeyKey'den ayrılmak istersen:** Ayarlar → Yedek ve aktarım → **Şifresiz dışa aktar**. Önce biçimi seçersin: **CSV** çoğu parola yöneticisinin okuduğu biçimdir ama kartları taşımaz; **JSON** Bitwarden'ın biçimidir ve kartlar dahil her şeyi taşır. Steam hesapları Bitwarden'ın `steam://` biçimiyle yazılır. Dosya şifresiz olduğu için önce uyarı çıkar ve kimliğini doğrulaman istenir. Passkey'ler bu dosyaya yazılmaz; yeni parola yöneticisinde sitelere yeniden passkey eklemen gerekir.
 
 ## Görünüm
 
@@ -269,6 +284,7 @@ Ayarlar → Hakkında → **Lisanslar**: önce KeyKey'in kendi lisansı (GPL-3.0
 - **Bazı uygulamalar otomatik doldurmayı desteklemiyor.** Bazı uygulamalar giriş kutularını Android'in doldurma sistemine bildirmiyor; bu ekranlarda öneri hiç çıkmaz. Aynı ekranda Google'ın ve Samsung'un parola yöneticileri de çalışmaz. Kullanıcı adını ve parolayı KeyKey'den kopyalayıp yapıştır; pano 30 saniye sonra temizlenir.
 - **Samsung Internet desteklenmiyor.** Bu tarayıcı başka bir doldurma servisine istek göndermiyor, yalnızca kendi kayıtlı parolalarını ve Samsung Pass'i öneriyor. Parolayı KeyKey'den kopyalayarak girebilir ya da Chrome gibi bir tarayıcı kullanabilirsin. Samsung klavyesiyle uygulamalarda doldurma çalışıyor.
 - **Chrome'da ayrı bir ayar gerekiyor.** [Otomatik doldurma](#otomatik-doldurma) bölümündeki ikinci adımı atlarsan Chrome kendi parola yöneticisini kullanmaya devam eder.
+- **Passkey için Android 14.** Android 13 ve öncesinde KeyKey passkey sağlayıcısı olamaz; içe aktardığın passkey'ler kasada durur ama kullanılamaz.
 - **Senkron yalnızca WebDAV ile.** Telefonlar arasında eşitlemek için Nextcloud, ownCloud ya da başka bir WebDAV sunucusu gerekir. Google Drive ile senkron henüz yok; Drive'a elle yedek alabilirsin.
 - **Ekran görüntüsü alınamaz.** KeyKey ekrandayken ekran görüntüsü ve ekran kaydı engellenir, son uygulamalar listesinde de içeriği görünmez. Bu bilerek yapılır.
 - **Kilidi açık telefon.** KeyKey açıkken telefonu eline alan biri ekrandaki kayıtları görebilir. Arka plana geçince hemen kilitlenmesi ve 2FA için ek onay bu riski azaltır; arka plan kilidine bekleme süresi verdiysen o süre boyunca kasa açık kalır.

@@ -122,7 +122,7 @@
 
 ### Görev 9: Belgeler ve sürüm
 
-- [ ] Güvenlik tasarımı: "Passkey" bölümü (saklama, kripto, origin, akış, bilinen sınırlar), kayıt biçimi sürüm 3, yedek sürüm 6, senkron 5; tehdit modeline sağlayıcı.
+- [ ] Güvenlik tasarımı: "Passkey" bölümü (saklama, kripto, origin, akış, bilinen sınırlar), kayıt biçimi sürüm 3, yedek ve senkron sürüm 6; tehdit modeline sağlayıcı.
 - [ ] Gizlilik (TR/EN): passkey'ler kasada, hiçbir şey gönderilmez; koşullar değişmez (gerekirse sürüm 5).
 - [ ] Kılavuz (`kullanim.md`): passkey sağlayıcısını seçmek, oluşturma, giriş, "bütün telefonları güncelle".
 - [ ] Bağımlılıklar ve lisanslar (`androidx.credentials`), değişiklik günlüğü, mağaza sürüm notu, `pubspec.yaml` 1.11.0, yol haritası Faz 21 bölümü.
