@@ -1846,7 +1846,7 @@
   "@passkeySetupTitle": {
     "description": "Settings row that opens the system's credential provider choice."
   },
-  "passkeySetupHelp": "Choose KeyKey in Android's Passwords & accounts settings. Passkeys you create on sites and in apps are then kept in KeyKey.",
+  "passkeySetupHelp": "In the Android settings that open, choose KeyKey as the preferred service. Passkeys you create on sites and in apps are then kept in KeyKey.",
   "@passkeySetupHelp": {
     "description": "Explains the passkey provider row."
   },

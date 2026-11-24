@@ -411,7 +411,7 @@
   "autofillSetupChromeUpdate": "Chrome'u güncelle. Chrome başka bir doldurma servisini 135 sürümünden beri kullanabiliyor; bu cihazdaki sürüm {version}.",
   "autofillSetupOpenFailed": "Ayar açılamadı.",
   "passkeySetupTitle": "Passkey sağlayıcısı",
-  "passkeySetupHelp": "Android'in Parolalar ve hesaplar ayarında KeyKey'i seç. Sitelerde ve uygulamalarda oluşturduğun passkey'ler KeyKey'de saklanır.",
+  "passkeySetupHelp": "Açılan Android ayarında KeyKey'i tercih edilen hizmet olarak seç. Sitelerde ve uygulamalarda oluşturduğun passkey'ler KeyKey'de saklanır.",
   "autofillCardFor": "{target} için kart",
   "autofillCardEmpty": "Kasada henüz kart yok. Kartı KeyKey'de Kartlar sekmesinden ekleyebilirsin.",
   "autofillCardSearch": "Kart ara",

@@ -791,7 +791,7 @@ void main() {
         alignment: 0.5,
       );
       await tester.pumpAndSettle();
-      expect(find.textContaining('Parolalar ve hesaplar'), findsOneWidget);
+      expect(find.textContaining('tercih edilen hizmet'), findsOneWidget);
       await tester.tap(find.text('Passkey sağlayıcısı'));
       await tester.pump();
       expect(setup.opened, ['credentialProvider']);

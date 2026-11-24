@@ -178,7 +178,7 @@ KeyKey, uygulamalardaki ve Chrome'daki giriş formlarını ve ödeme formlarınd
 
 Passkey, parolanın yerine geçen bir giriş anahtarıdır: site senin yerine bir parola saklamaz, telefonun girişte bir imza atar. Sızdırılamaz ve sahte bir siteye girilemez. KeyKey 1.11.0'dan beri, **Android 14 ve üstünde** passkey'lerini kasanda tutabilir; kasan gibi yedeğe ve senkrona girer, yeni telefona geçer.
 
-**Açmak için:** Ayarlar → Otomatik doldurma → **Passkey sağlayıcısı**'na dokun. Android'in Parolalar ve hesaplar ayarı açılır; orada **KeyKey**'i aç (bazı telefonlarda "tercih edilen hizmet" olarak seçmen gerekir). Bu satır Android 13 ve öncesinde görünmez.
+**Açmak için:** Ayarlar → Otomatik doldurma → **Passkey sağlayıcısı**'na dokun. Android'in parola ve passkey hizmetleri ayarı açılır (adı Android sürümüne göre "Parolalar ve hesaplar" ya da "Parolalar ve passkey'ler"); orada **KeyKey**'i tercih edilen hizmet olarak seç. Bu satır Android 13 ve öncesinde görünmez.
 
 - **Oluşturmak:** Bir sitede ya da uygulamada "passkey oluştur" dediğinde Android'in penceresinde **KeyKey**'i seç. KeyKey'in kilidini açarsın; site, hesap ve passkey'in kaydedileceği kayıt gösterilir. **Passkey oluştur**'a dokununca passkey o sitenin kaydına eklenir; kayıt yoksa yeni bir kayıt açılır.
 - **Giriş:** Site passkey istediğinde Android'in penceresinde **KeyKey'in kilidini aç**'a dokun ve kasayı aç. O sitenin hesapları aynı pencerede listelenir; birini seçince giriş yapılır. KeyKey, kasa kilitliyken hangi sitelerde passkey'in olduğunu kimseye söylemez; bu yüzden pencere önce kilit açmayı ister.
