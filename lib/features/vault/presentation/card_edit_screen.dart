@@ -122,7 +122,7 @@ class _CardEditScreenState extends ConsumerState<CardEditScreen> {
             loginIdHex(entry.id) != loginIdHex(_original!.id),
       ),
     ),
-    VaultEntriesLoading() => const [],
+    VaultEntriesLoading() || VaultEntriesFailed() => const [],
   };
 
   CardContent _collect() {

@@ -10,6 +10,7 @@ import 'package:keykey/app/ui/kk_animated_items.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_load_failed.dart';
 import 'package:keykey/app/ui/kk_menu.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
@@ -120,7 +121,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
       VaultEntriesLoaded(:final entries) => foldersOfEntries(
         entries.where((entry) => !_selected.contains(loginIdHex(entry.id))),
       ),
-      VaultEntriesLoading() => const <String>[],
+      VaultEntriesLoading() || VaultEntriesFailed() => const <String>[],
     };
     final choice = await showKkSheet<_FolderChoice>(
       context,
@@ -288,6 +289,9 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
         body: switch (state) {
           VaultEntriesLoading() => const Center(
             child: CircularProgressIndicator(),
+          ),
+          VaultEntriesFailed() => KkLoadFailed(
+            onRetry: () => retryVaultEntries(ref),
           ),
           VaultEntriesLoaded() => _loaded(context, l10n, state, view!),
         },

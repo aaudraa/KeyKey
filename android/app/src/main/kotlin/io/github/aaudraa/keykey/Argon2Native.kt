@@ -12,6 +12,7 @@ internal object Argon2Native {
     /** Argon2'nin hata kodları (argon2.h). */
     const val OK = 0
     const val MEMORY_ALLOCATION_ERROR = -22
+    const val THREAD_FAIL = -33
 
     /** [type] 0 Argon2d, 2 Argon2id. Sonuç [out]'a yazılır; dönen değer hata kodu. */
     @JvmStatic

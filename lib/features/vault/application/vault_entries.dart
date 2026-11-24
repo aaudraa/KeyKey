@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -161,12 +162,18 @@ List<String> foldersOfEntries(Iterable<VaultEntry> entries) {
   }.toList()..sort((a, b) => foldForSearch(a).compareTo(foldForSearch(b)));
 }
 
-/// Kasa listesinin durumu: üç türden biri yükleniyorsa liste de yükleniyor.
+/// Kasa listesinin durumu: üç türden biri yükleniyorsa liste de yükleniyor,
+/// biri okunamadıysa liste de okunamadı.
 sealed class VaultEntriesState {
   const new();
 }
 
 final class VaultEntriesLoading extends VaultEntriesState {
+  const new();
+}
+
+/// Türlerden biri depodan okunamadı.
+final class VaultEntriesFailed extends VaultEntriesState {
   const new();
 }
 
@@ -191,10 +198,22 @@ final class VaultEntriesLoaded extends VaultEntriesState {
 }
 
 /// Parola, kart ve not denetleyicilerini tek listede birleştirir.
+/// Okunamayan türleri yeniden okur; yüklenmiş olanlara dokunmaz.
+void retryVaultEntries(WidgetRef ref) {
+  unawaited(ref.read(loginsControllerProvider.notifier).retry());
+  unawaited(ref.read(cardsControllerProvider.notifier).retry());
+  unawaited(ref.read(notesControllerProvider.notifier).retry());
+}
+
 final vaultEntriesProvider = Provider<VaultEntriesState>((ref) {
   final logins = ref.watch(loginsControllerProvider);
   final cards = ref.watch(cardsControllerProvider);
   final notes = ref.watch(notesControllerProvider);
+  if (logins is LoginsFailed ||
+      cards is RecordsFailed<CardContent> ||
+      notes is RecordsFailed<NoteContent>) {
+    return const VaultEntriesFailed();
+  }
   if (logins is! LoginsLoaded ||
       cards is! RecordsLoaded<CardContent> ||
       notes is! RecordsLoaded<NoteContent>) {

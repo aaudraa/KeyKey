@@ -100,7 +100,22 @@ void main() {
     await tester.pumpWidget(
       _host(AppTheme.light, const KkBackdrop(), ambient: true),
     );
-    await tester.pump(const Duration(seconds: 1));
+    await tester.pump();
+    await tester.binding.delayed(const Duration(milliseconds: 100));
+    expect(tester.binding.hasScheduledFrame, isTrue);
+  });
+
+  testWidgets('kayan zemin saniyede 15 kareden fazla istemez', (tester) async {
+    await tester.pumpWidget(
+      _host(AppTheme.light, const KkBackdrop(), ambient: true),
+    );
+    await tester.pump();
+    // Her karede değil (#174, S6): zemin ve üstündeki bulanık camlar
+    // ekranın kare hızında yeniden çizilmesin.
+    expect(tester.binding.hasScheduledFrame, isFalse);
+    await tester.binding.delayed(const Duration(milliseconds: 30));
+    expect(tester.binding.hasScheduledFrame, isFalse);
+    await tester.binding.delayed(const Duration(milliseconds: 50));
     expect(tester.binding.hasScheduledFrame, isTrue);
   });
 
@@ -133,6 +148,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
     }
     expect(tester.takeException(), isNull);
+    await tester.binding.delayed(const Duration(milliseconds: 100));
     expect(tester.binding.hasScheduledFrame, isTrue);
   });
 

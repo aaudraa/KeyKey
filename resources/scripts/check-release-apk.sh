@@ -21,6 +21,10 @@ allowed_permissions=(
   # Yalnızca kullanıcının başlattığı denetimler (Have I Been Pwned sızıntı
   # kontrolü). Parolalar gönderilmez; bkz. resources/docs/internet-ve-sizinti.md.
   "android.permission.INTERNET"
+  # Simgesi olmayan uygulamada da ilk kaydetmede uygulamanın adı ve imzası
+  # okunsun diye (#71). Liste cihazdan çıkmaz; bkz. guvenlik-tasarimi.md,
+  # "Yeni parola kaydetme".
+  "android.permission.QUERY_ALL_PACKAGES"
 )
 
 sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"

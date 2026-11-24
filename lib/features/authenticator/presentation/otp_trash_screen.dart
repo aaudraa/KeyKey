@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:keykey/app/ui/kk_animated_items.dart';
@@ -5,6 +7,7 @@ import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_card.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_load_failed.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/app/ui/record_avatar.dart';
 import 'package:keykey/features/authenticator/application/otps_controller.dart';
@@ -54,6 +57,10 @@ class OtpTrashScreen extends ConsumerWidget {
       ),
       body: switch (state) {
         OtpsLoading() => const Center(child: CircularProgressIndicator()),
+        OtpsFailed() => KkLoadFailed(
+          onRetry: () =>
+              unawaited(ref.read(otpsControllerProvider.notifier).retry()),
+        ),
         OtpsLoaded(:final trashed) => Column(
           children: [
             Padding(

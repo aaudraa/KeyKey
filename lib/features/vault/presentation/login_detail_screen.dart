@@ -122,7 +122,11 @@ class LoginDetailScreen extends ConsumerWidget {
             tooltip: l10n.screenMore,
             onSelected: (action) => switch (action) {
               _DetailAction.favorite => unawaited(
-                controller.setFavorite(item, favorite: !content.favorite),
+                runRecordAction(
+                  context,
+                  () =>
+                      controller.setFavorite(item, favorite: !content.favorite),
+                ),
               ),
               _DetailAction.trash => unawaited(
                 _moveToTrash(context, controller, item, l10n),
@@ -203,7 +207,11 @@ class LoginDetailScreen extends ConsumerWidget {
     AppLocalizations l10n,
   ) async {
     final rootContext = Navigator.of(context, rootNavigator: true).context;
-    await controller.moveToTrash(item, DateTime.now().toUtc());
+    final moved = await runRecordAction(
+      context,
+      () => controller.moveToTrash(item, DateTime.now().toUtc()),
+    );
+    if (!moved) return;
     if (context.mounted) context.pop();
     if (!rootContext.mounted) {
       hideKkSnack();
@@ -214,7 +222,9 @@ class LoginDetailScreen extends ConsumerWidget {
       l10n.loginMovedToTrash,
       action: KkSnackAction(
         label: l10n.loginUndo,
-        onPressed: () => unawaited(controller.restoreById(item.id)),
+        onPressed: () => unawaited(
+          runRecordAction(rootContext, () => controller.restoreById(item.id)),
+        ),
       ),
     );
   }

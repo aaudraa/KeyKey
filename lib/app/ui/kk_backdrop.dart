@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
@@ -12,7 +13,8 @@ import 'package:keykey/app/ui/kk_motion.dart';
 ///
 /// Süren hareket açıkken ([KkAmbient]) lekeler çok yavaş yer değiştirir.
 /// Animasyonlar kapalıyken, ekran görünmüyorken (`TickerMode`) ve liste
-/// kayarken ([KkScrollState]) durur.
+/// kayarken ([KkScrollState]) durur. Kayma ekranın kare hızında değil,
+/// saniyede [driftFps] adımla ilerler ([_DriftClock]).
 class KkBackdrop extends StatefulWidget {
   const new({this.lively = false, super.key});
 
@@ -22,6 +24,12 @@ class KkBackdrop extends StatefulWidget {
   /// Lekenin merkezinden en çok kayacağı yol, genişliğin oranı olarak.
   static const double driftAmount = 0.06;
 
+  /// Kaymanın saniyedeki adımı. Bir döngü 24-36 saniye sürer; adım başına
+  /// bir pikselden az kayma gözle ayırt edilmez, ama ekranın kare hızında
+  /// (60-120 Hz) çizmek zemini ve üstündeki bulanık camları 4-8 kat daha
+  /// sık yeniden çizdirirdi (#174, S6).
+  static const int driftFps = 15;
+
   /// Kilit ekranında daha canlı ([KkMotion.drift]), diğer ekranlarda daha
   /// sakin ([KkMotion.calmDrift]) döngü.
   final bool lively;
@@ -30,14 +38,13 @@ class KkBackdrop extends StatefulWidget {
   State<KkBackdrop> createState() => KkBackdropState();
 }
 
-// Animasyon ayarı değişince denetleyici yeniden kurulur; bu yüzden tek
-// zamanlayıcılı karışım yetmez.
-class KkBackdropState extends State<KkBackdrop> with TickerProviderStateMixin {
-  AnimationController? _drift;
+class KkBackdropState extends State<KkBackdrop> {
+  _DriftClock? _drift;
   ValueListenable<bool>? _scrolling;
+  ValueListenable<TickerModeData>? _ticker;
 
   /// Lekeler şu an kayıyor mu (testler için).
-  bool get isDrifting => _drift?.isAnimating ?? false;
+  bool get isDrifting => _drift?.isRunning ?? false;
 
   /// Kayma döngüsünün süresi.
   Duration get period => widget.lively ? KkMotion.drift : KkMotion.calmDrift;
@@ -47,8 +54,13 @@ class KkBackdropState extends State<KkBackdrop> with TickerProviderStateMixin {
     super.didChangeDependencies();
     final scrolling = KkScrollState.maybeOf(context)?.scrolling;
     if (scrolling != _scrolling) {
-      _scrolling?.removeListener(_onScroll);
-      _scrolling = scrolling?..addListener(_onScroll);
+      _scrolling?.removeListener(_update);
+      _scrolling = scrolling?..addListener(_update);
+    }
+    final ticker = TickerMode.getValuesNotifier(context);
+    if (ticker != _ticker) {
+      _ticker?.removeListener(_update);
+      _ticker = ticker..addListener(_update);
     }
     _sync();
   }
@@ -62,29 +74,32 @@ class KkBackdropState extends State<KkBackdrop> with TickerProviderStateMixin {
   void _sync() {
     final moving = KkAmbient.of(context);
     if (moving && _drift == null) {
-      _drift = AnimationController(vsync: this, duration: period);
-      _onScroll();
+      _drift = _DriftClock(period);
     } else if (!moving && _drift != null) {
       _drift!.dispose();
       _drift = null;
     }
-    _drift?.duration = period;
+    _drift?.period = period;
+    _update();
   }
 
-  /// Liste kayarken zemin durur, bırakınca kaldığı yerden sürer.
-  void _onScroll() {
+  /// Liste kayarken ve ekran görünmüyorken zemin durur, sonra kaldığı
+  /// yerden sürer.
+  void _update() {
     final drift = _drift;
     if (drift == null) return;
-    if (_scrolling?.value ?? false) {
+    final visible = _ticker?.value.enabled ?? true;
+    if (!visible || (_scrolling?.value ?? false)) {
       drift.stop();
-    } else if (!drift.isAnimating) {
-      drift.repeat();
+    } else {
+      drift.start();
     }
   }
 
   @override
   void dispose() {
-    _scrolling?.removeListener(_onScroll);
+    _scrolling?.removeListener(_update);
+    _ticker?.removeListener(_update);
     _drift?.dispose();
     super.dispose();
   }
@@ -106,6 +121,44 @@ class KkBackdropState extends State<KkBackdrop> with TickerProviderStateMixin {
   }
 }
 
+/// Kaymanın saati: 0..1 arası döngü, saniyede [KkBackdrop.driftFps] kez
+/// ilerler ve dinleyicilere haber verir. `AnimationController` her
+/// karede yeni kare isterdi; bu yalnızca adımda ister.
+class _DriftClock extends ChangeNotifier implements ValueListenable<double> {
+  new(this.period);
+
+  Duration period;
+  Timer? _timer;
+  double _value = 0;
+
+  static const Duration _step = Duration(
+    microseconds: Duration.microsecondsPerSecond ~/ KkBackdrop.driftFps,
+  );
+
+  @override
+  double get value => _value;
+
+  bool get isRunning => _timer != null;
+
+  void start() {
+    _timer ??= Timer.periodic(_step, (_) {
+      _value = (_value + _step.inMicroseconds / period.inMicroseconds) % 1;
+      notifyListeners();
+    });
+  }
+
+  void stop() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  @override
+  void dispose() {
+    stop();
+    super.dispose();
+  }
+}
+
 class _BlobPainter extends CustomPainter {
   new(this.ground, this.blobs, this.alpha, {this.drift})
     : super(repaint: drift);
@@ -115,7 +168,7 @@ class _BlobPainter extends CustomPainter {
   final double alpha;
 
   /// 0..1 arası döngü; `null` ise lekeler yerinde durur.
-  final Animation<double>? drift;
+  final ValueListenable<double>? drift;
 
   /// Merkezler ekranın oranı olarak, yarıçaplar genişliğin katı olarak.
   static const _centers = [

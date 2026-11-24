@@ -65,7 +65,7 @@ final autofillMatchesProvider = FutureProvider<LoginMatches>((ref) async {
   final cache = ref.read(siteCheckCacheProvider);
   final sites = verifiedSites(appSites, suffixes);
   void addCached() {
-    for (final MapEntry(key: host, value: approved) in cache.entries) {
+    for (final MapEntry(key: host, value: approved) in cache.results.entries) {
       final site = approved ? suffixes.registrableDomain(host) : null;
       if (site != null) sites.add(site);
     }
@@ -82,31 +82,34 @@ final autofillMatchesProvider = FutureProvider<LoginMatches>((ref) async {
   if (verifyOnline) addCached();
   final matches = await match();
   if (!verifyOnline) return matches;
-  final unmatched = _unmatched(items, matches);
   final hosts = [
     for (final host in onlineCandidates(
       packageName: target.packageName,
       domains: appSites,
-      unmatched: unmatched,
+      unmatched: _unmatched(items, matches),
+      bound: [
+        for (final m in matches.matches)
+          if (m.kind == LoginMatchKind.app) m.item,
+      ],
       suffixes: suffixes,
     ))
-      if (!cache.containsKey(host)) host,
+      if (!cache.results.containsKey(host)) host,
   ];
   if (hosts.isEmpty) return matches;
-  final progress = ref.read(siteCheckInProgressProvider.notifier)
-    ..set(value: true);
+  final progress = ref.read(siteCheckInProgressProvider.notifier)..start();
   try {
-    cache.addAll(
-      await checkSitesOnline(
+    await cache.ensure(
+      hosts,
+      (fresh) => checkSitesOnline(
         packageName: target.packageName,
         certsSha256: target.certsSha256,
-        hosts: hosts,
+        hosts: fresh,
         source: ref.read(assetLinksSourceProvider),
         hasSigningCertificates: bridge.hasSigningCertificates,
       ),
     );
   } finally {
-    progress.set(value: false);
+    progress.finish();
   }
   addCached();
   return await match();

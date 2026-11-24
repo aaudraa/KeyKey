@@ -82,9 +82,10 @@ final class KdbxHeader {
       if (length > maxFieldBytes) throw const KdbxCorrupt();
       final data = reader.view(length);
       if (id == 0) break;
-      // Yorum (1) ve genel özel veri (12) yok sayılır.
-      if (id == 1 || id == 12) continue;
-      if (id > 12 || fields.containsKey(id)) throw const KdbxCorrupt();
+      // Yorum (1), genel özel veri (12) ve bilinmeyen alanlar yok sayılır;
+      // KeePass ve KeePassXC de 12'den büyük kimlikleri atlıyor.
+      if (id == 1 || id >= 12) continue;
+      if (fields.containsKey(id)) throw const KdbxCorrupt();
       fields[id] = data;
     }
 
@@ -183,7 +184,9 @@ final class KdbxHeader {
   /// İç akış kimliği: 0 koruma yok, 2 Salsa20, 3 ChaCha20.
   static void checkInnerStreamId(int id) {
     if (id == 1) throw const KdbxUnsupported('ArcFour');
-    if (id != 0 && id != 2 && id != 3) throw KdbxUnsupported('akış $id');
+    if (id != 0 && id != 2 && id != 3) {
+      throw KdbxUnsupported('$id', innerStream: true);
+    }
   }
 
   static KdbxCipher _cipher(Uint8List uuid) => switch (kdbxHex(uuid)) {
@@ -247,7 +250,7 @@ final class KdbxHeader {
         }
         if (salt.length < 8) throw const KdbxCorrupt();
         if (version != 0x10 && version != 0x13) {
-          throw KdbxUnsupported('Argon2 $version');
+          throw KdbxUnsupported('Argon2 0x${version.toRadixString(16)}');
         }
         final memoryKiB = memory ~/ 1024;
         if (memoryKiB > maxArgon2MemoryKiB ||

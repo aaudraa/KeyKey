@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/core/network/asset_links_client.dart';
 import 'package:keykey/features/autofill/application/app_site_check.dart';
@@ -145,6 +146,24 @@ void main() {
       );
     });
 
+    test('sitesinin bir kaydı uygulamaya bağlıysa aday olmuyor', () {
+      expect(
+        onlineCandidates(
+          packageName: pkg,
+          domains: const [],
+          unmatched: [
+            login('GitHub iş', ['github.com']),
+            login('GitLab', ['gitlab.com']),
+          ],
+          bound: [
+            login('GitHub', ['https://github.com/login']),
+          ],
+          suffixes: psl,
+        ),
+        isEmpty,
+      );
+    });
+
     test('IP adresi ve geçersiz alan adı aday olmuyor', () {
       expect(
         candidates(
@@ -240,5 +259,43 @@ void main() {
       expect(result, {'github.com': true, 'githubusercontent.com': false});
       source.gates['githubusercontent.com']!.complete();
     });
+  });
+
+  group('sorgu önbelleği', () {
+    test('süren sorguya yeniden sorulmuyor, ikisi de sonucu alıyor', () async {
+      final cache = SiteCheckCache();
+      final asked = <List<String>>[];
+      final gate = Completer<void>();
+      Future<Map<String, bool>> check(List<String> hosts) async {
+        asked.add(hosts);
+        await gate.future;
+        return {for (final host in hosts) host: host == 'github.com'};
+      }
+
+      final first = cache.ensure(['github.com'], check);
+      final second = cache.ensure(['github.com', 'gitlab.com'], check);
+      gate.complete();
+      await Future.wait([first, second]);
+
+      expect(asked, [
+        ['github.com'],
+        ['gitlab.com'],
+      ]);
+      expect(cache.results, {'github.com': true, 'gitlab.com': false});
+      await cache.ensure(['github.com'], check);
+      expect(asked, hasLength(2));
+    });
+  });
+
+  test('doğrulanıyor yazısı son sorgu bitince kalkıyor', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final progress = container.read(siteCheckInProgressProvider.notifier)
+      ..start()
+      ..start()
+      ..finish();
+    expect(container.read(siteCheckInProgressProvider), isTrue);
+    progress.finish();
+    expect(container.read(siteCheckInProgressProvider), isFalse);
   });
 }

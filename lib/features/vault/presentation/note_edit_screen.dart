@@ -81,7 +81,7 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
             loginIdHex(entry.id) != loginIdHex(_original!.id),
       ),
     ),
-    VaultEntriesLoading() => const [],
+    VaultEntriesLoading() || VaultEntriesFailed() => const [],
   };
 
   NoteContent _collect() {

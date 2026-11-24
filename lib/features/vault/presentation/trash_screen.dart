@@ -5,6 +5,7 @@ import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_card.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_load_failed.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/app/ui/record_avatar.dart';
@@ -38,7 +39,7 @@ class TrashScreen extends ConsumerWidget {
         trashed.where((entry) => entry.kind == kind).toList(),
         LoginSort.recentlyUpdated,
       ),
-      VaultEntriesLoading() => const <VaultEntry>[],
+      VaultEntriesLoading() || VaultEntriesFailed() => const <VaultEntry>[],
     };
     return KkScaffold(
       appBar: kkAppBar(
@@ -68,6 +69,9 @@ class TrashScreen extends ConsumerWidget {
       body: switch (state) {
         VaultEntriesLoading() => const Center(
           child: CircularProgressIndicator(),
+        ),
+        VaultEntriesFailed() => KkLoadFailed(
+          onRetry: () => retryVaultEntries(ref),
         ),
         VaultEntriesLoaded() => Column(
           children: [

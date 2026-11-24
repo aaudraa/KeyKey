@@ -869,7 +869,7 @@ Bir karar plandan saptı: ayar kaydının sürümü artınca yedeğin içerik s�
 |---|---|---|
 | libsodium'un Windows'ta Android için derlenmesi kırılgan olabilir | Derleme bozulur | Bu bilgisayarda doğrulandı, gereken araçlar [belgelendi](#geliştirme-ortamı). CI Linux'ta derler, proje yolu kısa tutulur. |
 | Otomatik doldurma tarayıcıya ve üreticiye göre farklı davranır | Bazı yerlerde doldurmaz | Dört sürümlük test düzeni, saf işlevlerle alan tespiti, Faz 8'de gerçek cihaz. |
-| Android, kaydetme sırasında ana ekranda simgesi olmayan uygulamayı KeyKey'e göstermiyor | O uygulamada ilk kayıt uygulamaya bağlanmaz, ilk doldurmada uyarı çıkar | Kayıt yine kaydedilir ve ekran durumu söyler; uygulama ilk doldurmada bir dokunuşla bağlanır. Faz 8'in telefon denemesinde böyle bir uygulama çıkmadı; gerçek bir örnek çıkarsa 1.0 sonrasında çözülecek: [#71](https://github.com/aaudraa/KeyKey/issues/71). |
+| Android, kaydetme sırasında hedef uygulamayı KeyKey'e kendiliğinden göstermiyor | Ana ekranda simgesi olmayan uygulamada ilk kayıt uygulamaya bağlanmazdı | 1.11.0'dan beri `QUERY_ALL_PACKAGES` ile bütün uygulamalar görünür; proje sahibinin kararı (2026-11-24, [#71](https://github.com/aaudraa/KeyKey/issues/71)). Liste cihazdan çıkmaz; imza yine okunamazsa kayıt bağlanmadan kaydedilir ve ekran söyler. |
 | Otomatik doldurma ekranında Flutter'ın yavaş açılması | Kullanım zorlaşır | Ayrı ve hafif giriş noktası, Faz 6 başında süre ölçümü. |
 | Kasa göçü veya biçim hatası | Veri kaybı | Biçim sürümleri, örnek dosyalı uyumluluk testleri, Faz 8'e kadar gerçek veri yok. |
 | Bağımlılık kaynaklı güvenlik sorunu | Tedarik zinciri saldırısı | Az paket, `pubspec.lock`, Dependabot, SHA'ya sabit Action'lar. |

@@ -40,9 +40,11 @@ class ImportCrypto : ImportCryptoApi {
         }
         val block = key.copyOf()
         try {
-            transformHalf(seed, block, 0, rounds)
-            transformHalf(seed, block, AES_BLOCK, rounds)
-            return MessageDigest.getInstance("SHA-256").digest(block)
+            return deviceErrors {
+                transformHalf(seed, block, 0, rounds)
+                transformHalf(seed, block, AES_BLOCK, rounds)
+                MessageDigest.getInstance("SHA-256").digest(block)
+            }
         } finally {
             // Pigeon'un verdiği kopya da bizim; anahtar bellekte kalmasın.
             block.fill(0)
@@ -104,10 +106,12 @@ class ImportCrypto : ImportCryptoApi {
         val out = ByteArray(KDBX_KEY_BYTES)
         val result =
             try {
-                Argon2Native.hash(
-                    type.toInt(), password, salt, iterations.toInt(), memoryKiB.toInt(),
-                    parallelism.toInt(), version.toInt(), secret, associatedData, out,
-                )
+                deviceErrors {
+                    Argon2Native.hash(
+                        type.toInt(), password, salt, iterations.toInt(), memoryKiB.toInt(),
+                        parallelism.toInt(), version.toInt(), secret, associatedData, out,
+                    )
+                }
             } finally {
                 // Pigeon'un verdiği kopya; bileşik anahtar bellekte kalmasın.
                 password.fill(0)
@@ -116,9 +120,26 @@ class ImportCrypto : ImportCryptoApi {
             Argon2Native.OK -> return out
             Argon2Native.MEMORY_ALLOCATION_ERROR ->
                 throw FlutterError("out-of-memory", "Argon2 için bellek ayrılamadı.")
+            Argon2Native.THREAD_FAIL ->
+                throw FlutterError("device", "Argon2 iş parçacığı açılamadı.")
             else -> throw FlutterError("failed", "Argon2 hatası $result.")
         }
     }
+
+    /**
+     * Telefonun kendi hatalarını dosya hatasından ayırır: yerel kütüphane
+     * yüklenemezse (`LinkageError`, `UnsatisfiedLinkError` dahil) "device",
+     * Java belleği yetmezse "out-of-memory". Dart bunlara "dosya bozuk"
+     * demez.
+     */
+    private inline fun <T> deviceErrors(block: () -> T): T =
+        try {
+            block()
+        } catch (error: LinkageError) {
+            throw FlutterError("device", "Yerel kod yüklenemedi: ${error.javaClass.simpleName}")
+        } catch (_: OutOfMemoryError) {
+            throw FlutterError("out-of-memory", "Java belleği yetmedi.")
+        }
 
     private companion object {
         const val KDBX_KEY_BYTES = 32

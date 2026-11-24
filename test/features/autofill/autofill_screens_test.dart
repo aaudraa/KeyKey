@@ -819,6 +819,53 @@ void main() {
       expect(links.asked, ['github.com']);
     });
 
+    testWidgets('sitenin bir kaydı uygulamaya bağlıysa internete çıkılmıyor', (
+      tester,
+    ) async {
+      settings.settings = verifyOnline();
+      addGithub();
+      addGithub(name: 'GitHub iş', user: 'is', id: 21);
+      final bound = githubItem();
+      logins.items[logins.items.indexOf(bound)] = FakeLoginRepository.item(
+        bound.content.copyWith(
+          apps: [
+            LoginApp(
+              packageName: 'com.github.android',
+              certsSha256: const [githubCert],
+            ),
+          ],
+        ),
+        id: 20,
+      );
+      final links = FakeAssetLinks({'github.com': approving});
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: github,
+        assetLinks: links,
+      );
+
+      expect(links.asked, isEmpty);
+      expect(bridge.filled?.password, 'github-parolasi-20');
+    });
+
+    testWidgets('bağlama beklenmedik hatayla biterse liste geri geliyor', (
+      tester,
+    ) async {
+      addGithub();
+      logins.updateError = StateError('beklenmedik');
+      final bridge = await pumpAutofill(
+        tester,
+        status: VaultOpen(service.newSession()),
+        target: github,
+        domains: [AppDomain(host: 'github.com', verified: true)],
+      );
+
+      expect(tester.takeException(), isStateError);
+      expect(bridge.filled, isNull);
+      expect(find.text('GitHub'), findsOneWidget);
+    });
+
     testWidgets('site onaylamazsa eşleşme yok uyarısı', (tester) async {
       settings.settings = verifyOnline();
       addGithub();

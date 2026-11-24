@@ -1,6 +1,6 @@
 # Gizlilik bildirimi
 
-**Geçerlilik:** KeyKey 1.0 ve sonrası · **Son güncelleme:** 2026-11-20 · English: [privacy.md](privacy.md)
+**Geçerlilik:** KeyKey 1.0 ve sonrası · **Son güncelleme:** 2026-11-24 · English: [privacy.md](privacy.md)
 
 KeyKey hiçbir veri toplamaz. Hesap ve KeyKey'in bir sunucusu yoktur; kasan bu telefonda, şifreli durur. KeyKey 1.6.0'dan beri internet iznine sahiptir ve internete yalnızca senin açtığın özellikler için çıkar: parola raporundaki [sızıntı kontrolü](#sızıntı-kontrolü), açarsan [senkron](#senkron) ve açarsan otomatik doldurmada [uygulamanın sitesinin doğrulanması](#uygulamanın-sitesini-doğrulama). Sızıntı kontrolünde ve site doğrulamasında parolaların ve kasan cihazdan çıkmaz; senkronda kasanın yalnızca ana parolanla şifrelenmiş bir kopyası senin seçtiğin sunucuya gider. Ağ kodu üç dosyadadır ve başka bir yerde ağ kodu olmadığını her derlemede bir test denetler; kaynak koddan herkes doğrulayabilir.
 
@@ -28,13 +28,14 @@ KeyKey hiçbir veri toplamaz. Hesap ve KeyKey'in bir sunucusu yoktur; kasan bu t
 | Kamera | Yalnızca 2FA QR kodu tararken istenir. Görüntü kaydedilmez, cihazdan çıkmaz. |
 | Biyometri (parmak izi) | Kasayı parmak iziyle açmak için. Parmak izinin kendisi KeyKey'e hiç ulaşmaz; Android yalnızca "doğrulandı" bilgisini verir. |
 | Bindirme pencerelerini gizleme | KeyKey ekrandayken başka uygulamaların üstüne pencere çizip dokunuşları kandırmasını önlemek için. |
+| Bütün uygulamaları görme (`QUERY_ALL_PACKAGES`) | Otomatik doldurmada bir kaydı ana ekranda simgesi olmayan bir uygulamaya da (başka bir uygulamanın içinden açılan giriş ekranları) ilk kaydetmede bağlayabilmek için. KeyKey yalnızca o an kaydedilen ya da doldurulan uygulamanın adını, imza özetini ve simgesini okur; uygulama listesi hiçbir yere yazılmaz ve gönderilmez. |
 | İnternet | Parola raporundaki sızıntı kontrolü için, sen dokununca; açarsan senkron için, yalnızca senin girdiğin sunucuyla; açarsan otomatik doldurmada uygulamanın sitesini doğrulamak için. Ne gittiği aşağıda: [sızıntı kontrolü](#sızıntı-kontrolü), [senkron](#senkron), [site doğrulama](#uygulamanın-sitesini-doğrulama). |
 
-Konum, rehber, depolama ve bütün uygulamaları görme (`QUERY_ALL_PACKAGES`) izinleri istenmez.
+Konum, rehber ve depolama izinleri istenmez.
 
 ## Otomatik doldurma
 
-KeyKey'i doldurma servisi olarak seçersen Android, bir giriş formuna dokunduğunda formun yapısını (alan türleri, uygulamanın paket adı, tarayıcıdaysa sitenin alan adı) KeyKey'e verir. KeyKey bunu yalnızca doğru kaydı önermek için kullanır ve saklamaz. Kaydetme önerisini kabul edersen yalnızca senin onayladığın kullanıcı adı ve parola kasaya eklenir. Kayıtları uygulamalara bağlayabilmek için KeyKey ana ekranda simgesi olan uygulamaların listesini görebilir.
+KeyKey'i doldurma servisi olarak seçersen Android, bir giriş formuna dokunduğunda formun yapısını (alan türleri, uygulamanın paket adı, tarayıcıdaysa sitenin alan adı) KeyKey'e verir. KeyKey bunu yalnızca doğru kaydı önermek için kullanır ve saklamaz. Kaydetme önerisini kabul edersen yalnızca senin onayladığın kullanıcı adı ve parola kasaya eklenir. Kayıtları uygulamalara bağlayabilmek için KeyKey telefondaki uygulamaları görebilir (1.11.0'dan beri bütün uygulamaları; önceden yalnızca ana ekranda simgesi olanları).
 
 Bir uygulamada doldururken KeyKey, Android'in o uygulama için doğruladığı siteleri de okur (Android 12 ve üstü). Bu bilgi telefonda kalır; ağa çıkılmaz.
 

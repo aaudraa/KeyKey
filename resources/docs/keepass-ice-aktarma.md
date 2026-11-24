@@ -109,7 +109,7 @@ Dosya ekran açıkken bellekte durur (yanlış parolada yeniden seçmek gerekmes
 
 - Kotlin tarafı Pigeon'daki `ImportCryptoApi`'ye eklenen iki çağrıdır: `aesKdf(seed, key, rounds)` ve `argon2(type, password, salt, iterations, memoryKiB, parallelism, version, secret, associatedData)`. İkisi de Pigeon'un arka plan iş kuyruğunda çalışır (`@TaskQueue`); ana iş parçacığı donmaz. İkisi de 32 bayt döndürür. AES-KDF dönüşü KeePass'ın tanımıyla zaten SHA-256'dan geçmiştir.
 - Argon2 kaynağı `android/third_party/argon2/` altına değiştirilmeden konur (yalnızca `src/argon2.c`, `core.c`, `ref.c`, `thread.c`, `encoding.c`, `blake2/` ve `include/argon2.h`). Hangi sürüm olduğu, kaynağın özeti ve lisansı yanındaki `README.md`'de yazar (SQLite'taki gibi). Uygulama modülünde CMake ile derlenir; küçük bir JNI dosyası (`argon2_jni.c`) `argon2_ctx`'i çağırır. İş parçacığı sayısı `min(parallelism, işlemci sayısı)`; sonuç iş parçacığı sayısından bağımsızdır.
-- Kotlin Argon2'nin hata kodunu ayırır: bellek ayrılamadıysa (`ARGON2_MEMORY_ALLOCATION_ERROR`) Dart'a ayrı bir hata koduyla, "bellek yetmedi" olarak gelir; başka her hata bozuk dosyadır.
+- Kotlin Argon2'nin hata kodunu ayırır: bellek ayrılamadıysa (`ARGON2_MEMORY_ALLOCATION_ERROR`) ya da Java belleği yetmediyse (`OutOfMemoryError`) Dart'a "bellek yetmedi" olarak gelir. İş parçacığı açılamadıysa (`ARGON2_THREAD_FAIL`) ya da yerel kütüphane yüklenemediyse (`LinkageError`) "bu telefonda açılamadı" (`KdbxDeviceFailure`) denir; bunlar dosyanın değil telefonun sorunu. Yalnızca dosyadan gelen geçersiz parametre bozuk dosyadır (1.11.0, [#180](https://github.com/aaudraa/KeyKey/issues/180)).
 - `KdbxKdf` diye bir Dart arayüzü vardır. Uygulamada `PlatformKdbxKdf` (Pigeon), bilgisayardaki testlerde `pointycastle` ile çalışan `DartKdbxKdf` verilir. `DartKdbxKdf` yalnızca `test/` altındadır, uygulamaya girmez; `pointycastle` ise uygulamada da şifre çözmede kullanıldığı için normal bağımlılıktır.
 
 ### Sınırlar
@@ -143,7 +143,7 @@ Sınırı aşan değer "bu dosya telefonda açılamayacak kadar ağır ayarlanm�
 
   Okunamayan 2FA bugünkü kuralla sayılır ve önizlemede söylenir. 2FA hesabı kayda bağlanır.
 - **Özel alanlar:** yukarıdakiler dışındaki her `String` alanı özel alan olur; `Protected="True"` ise gizli. KeePassXC'in iç alanları (`KPEX_…`, `_etm_…`) alınmaz.
-- **Alan başvuruları:** `{REF:<alan>@I:<UUID>}` biçimindeki başvurular (KeePass'ın aynı parolayı iki kayıtta tutma yolu) aynı dosyadaki kaydın alanıyla değiştirilir; `<alan>` T, U, P, A ya da N olabilir. Başka arama türleri (`@T:`, `@U:` …) ve çözülemeyen başvurular olduğu gibi kalır. Başvuru zinciri en çok 10 adım izlenir.
+- **Alan başvuruları:** `{REF:<alan>@I:<UUID>}` biçimindeki başvurular (KeePass'ın aynı parolayı iki kayıtta tutma yolu) aynı dosyadaki kaydın alanıyla değiştirilir; `<alan>` T, U, P, A ya da N olabilir. Başka arama türleri (`@T:`, `@U:` …) ve çözülemeyen başvurular olduğu gibi kalır. Başvuru zinciri en çok 10 adım izlenir. Her (kayıt, alan) bir kez çözülür ve sonucu saklanır; 64 KiB'ı aşan sonuç yerine başvurunun kendisi kalır, böylece hazırlanmış bir dosya üstel iş yaptıramaz. Parolaya başvuran (`{REF:P@…}`) korumasız bir alan da gizli alan olur. Gizli alanı olan, yalnızca notu olan kayıt güvenli not değil kayıt olarak gelir: güvenli notta gizli alan yok, değer not metninde açık görünürdü (1.11.0).
 - **Güvenli not:** kullanıcı adı, parola, adres ve 2FA'sı olmayan ama notu olan kayıt güvenli not olur (ad ve metin). Hiçbir alanı olmayan kayıt atlanır ve atlananlara sayılır.
 - Bugünkü kurallar aynen geçerli: yinelenen kayıtların seçilmemiş gelmesi, 64 KiB'ı aşan notun atlanması, kayıtların ekleme anında şifrelenmesi.
 
@@ -160,7 +160,8 @@ Sınırı aşan değer "bu dosya telefonda açılamayacak kadar ağır ayarlanm�
 | Tür | Ne zaman | Mesaj (kısa) |
 |---|---|---|
 | `KdbxWrongKey` | HMAC, `StreamStartBytes` ya da dolgu tutmadı | Parola ya da anahtar dosyası yanlış (YubiKey / Windows hesabı notuyla) |
-| `KdbxUnsupported` | Eski biçim, bilinmeyen şifre, KDF, iç akış | Bu KeePass dosyası desteklenmeyen bir ayar kullanıyor: <ne> |
+| `KdbxUnsupported` | Eski biçim, bilinmeyen şifre, KDF, iç akış | Bu KeePass dosyası desteklenmeyen bir ayar kullanıyor: <ne> (dile bağlı olmayan ad: `KDBX 5`, `Argon2 0x11`, UUID; iç akış için "iç akış şifresi 4" ekranın dilinde) |
+| `KdbxDeviceFailure` | Yerel kod çalışmadı (kütüphane, iş parçacığı) | Bu dosya bu telefonda açılamadı … |
 | `KdbxTooHeavy` | Sınırı aşan KDF ya da boyut | Telefonda açılamayacak kadar ağır ayarlanmış |
 | `KdbxOutOfMemory` | Argon2 bellek ayıramadı | Telefonun belleği yetmedi |
 | `KdbxCorrupt` | Başka her şey | Dosya bozuk |

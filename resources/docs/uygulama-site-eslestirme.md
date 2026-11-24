@@ -93,7 +93,8 @@ Kalan risk: sitenin `assetlinks.json` dosyasının başka bir şirketin uygulama
 Ağ kodu yeni bir dosyada durur: `lib/core/network/asset_links_client.dart`. [Ağ denetimi testi](../../test/core/network/network_audit_test.dart) izin verilen dosyalara bunu ekler. Diğer istemcilerle aynı kurallar:
 
 - Yalnızca `https`; adres kodda kurulur: `https://<alan adı>/.well-known/assetlinks.json`. Alan adı, kayıt edilebilir alan adı olan ya da sistemin bildirdiği ASCII (punycode) bir addır; IP adresi ve port kabul edilmez, uymazsa ağa çıkılmaz.
-- Yönlendirme izlenmez (Android'in kendi doğrulaması da izlemez). Yanıt `200` ve gövde en fazla 128 KiB olmalı; JSON dizisi değilse aday düşer.
+- Yönlendirme izlenmez (Android'in kendi doğrulaması da izlemez). Yanıt `200` ve gövde en fazla 128 KiB olmalı; JSON dizisi değilse aday düşer. Sıkıştırma istenmez (`Accept-Encoding: identity`); site yine de sıkıştırılmış gönderirse yanıt reddedilir (1.11.0, [#182](https://github.com/aaudraa/KeyKey/issues/182)).
+- Ekran açıkken sonucu bilinen ya da sorgusu süren alan adına yeniden sorulmaz. Sitesinin bir kaydı uygulamaya imzasıyla zaten bağlıysa o siteye hiç sorulmaz: aynı sitede hiç seçilmeyen ikinci bir hesap her doldurmada internete çıkılmasına yol açmasın; o hesap aramayla bulunur (1.11.0).
 - Bağlanma 3 saniye, istek 5 saniye. Çerez tutulmaz, `User-Agent` yalnızca "KeyKey".
 - Sistemin güvendiği sertifika yetkilileri kullanılır, kullanıcının eklediği sertifikalara güvenilmez; sabitleme yapılmaz (siteler binlerce farklı sunucu).
 - Siteye ne gider: yalnızca sabit yolun kendisi. Site ve ağı izleyen biri, bu cihazın o sitenin `assetlinks.json` dosyasını istediğini görür; yani kullanıcının o sitenin uygulamasında KeyKey ile doldurma yapmak üzere olduğunu ve kasada o siteden bir kayıt bulunduğunu çıkarabilir. Kasadan hiçbir şey gitmez.

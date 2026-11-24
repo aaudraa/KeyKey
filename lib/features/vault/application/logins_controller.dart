@@ -20,6 +20,12 @@ final class LoginsLoading extends LoginsState {
   const new();
 }
 
+/// Kayıtlar depodan okunamadı (SQLite ya da giriş/çıkış hatası). Ekran
+/// hatayı ve "yeniden dene"yi gösterir; bellekte kayıt yok.
+final class LoginsFailed extends LoginsState {
+  const new();
+}
+
 final class LoginsLoaded extends LoginsState {
   new({required List<LoginItem> items, required this.unreadableCount})
     : indexed = items.map(IndexedLogin.new).toList(growable: false);
@@ -98,10 +104,29 @@ class LoginsController extends Notifier<LoginsState> {
         // Yükleme sürerken kilitlendi, anahtarlar artık yok.
         if (generation == _generation) rethrow;
         return;
+      } on Exception {
+        // Yeniden okumada eski liste görünür kalır; ilk yüklemede ekran
+        // sonsuza dek "yükleniyor" kalmasın.
+        if (generation == _generation && state is! LoginsLoaded) {
+          state = const LoginsFailed();
+        }
+        return;
       }
       if (generation != _generation) return;
     } while (writes != _writes);
     state = LoginsLoaded(items: kept, unreadableCount: loaded.unreadableCount);
+  }
+
+  /// Yükleme başarısız olduysa yeniden dener.
+  Future<void> retry() async {
+    final repository = _repository;
+    if (repository == null || state is! LoginsFailed) return;
+    state = const LoginsLoading();
+    try {
+      await _load(repository, ++_generation);
+    } on VaultLockedException {
+      // Okuma sürerken kilitlendi; kilit ekranı zaten geliyor.
+    }
   }
 
   /// Kasa açıkken kayıtları yeniden okur; örneğin arka plandayken doldurma

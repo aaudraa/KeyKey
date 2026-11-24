@@ -21,18 +21,24 @@ const maxOnlineSites = 4;
 /// [unmatched] kayıtlardan birinin adresiyle aynı olanlar kalır; site başına
 /// bir alan adı (bildirilen, yoksa türetilen; alfabetik ilk), site adına göre
 /// sıralı, en fazla [maxOnlineSites].
+///
+/// [bound] uygulamaya imzasıyla zaten bağlı kayıtlardır. Sitelerine
+/// sorulmaz: aynı sitede hiç seçilmeyen ikinci bir hesap yüzünden her
+/// doldurmada internete çıkılmasın. O hesap aramayla bulunur.
 List<String> onlineCandidates({
   required String packageName,
   required Iterable<AppDomain> domains,
   required Iterable<LoginItem> unmatched,
   required PublicSuffixList suffixes,
+  Iterable<LoginItem> bound = const [],
 }) {
-  final recordSites = <String>{
-    for (final item in unmatched)
+  Set<String> sitesOf(Iterable<LoginItem> items) => {
+    for (final item in items)
       for (final url in item.content.urls)
         if (DomainName.hostOfUrl(url) case final host?)
           ?suffixes.registrableDomain(host),
   };
+  final recordSites = sitesOf(unmatched).difference(sitesOf(bound));
   if (recordSites.isEmpty) return const [];
   String? siteOf(String host) {
     final name = DomainName.normalize(host);
@@ -96,20 +102,67 @@ Future<Map<String, bool>> checkSitesOnline({
   return {for (final (i, host) in hosts.indexed) host: results[i]};
 }
 
-/// Ekran açıkken internetle doğrulanmış alan adları; aynı alan adına ikinci
-/// kez sorulmaz (kayda bağlama eşleşmeleri yeniden hesaplatır).
-final siteCheckCacheProvider = Provider<Map<String, bool>>((ref) => {});
+/// Ekran açıkken internetle doğrulanan alan adları; aynı alan adına ikinci
+/// kez sorulmaz (kayda bağlama ve kayıtların değişmesi eşleşmeleri yeniden
+/// hesaplatır, sorgu sürerken de).
+final class SiteCheckCache {
+  /// Sonucu bilinen alan adları.
+  final Map<String, bool> results = {};
+
+  final Map<String, Future<void>> _pending = {};
+
+  /// [hosts]'un sonuçları [results]'a girene kadar bekler. Yalnızca sonucu
+  /// bilinmeyen ve sorgusu sürmeyen alan adları [check]'e verilir.
+  Future<void> ensure(
+    List<String> hosts,
+    Future<Map<String, bool>> Function(List<String> hosts) check,
+  ) async {
+    final fresh = [
+      for (final host in hosts)
+        if (!results.containsKey(host) && !_pending.containsKey(host)) host,
+    ];
+    if (fresh.isNotEmpty) {
+      final batch = _run(fresh, check);
+      for (final host in fresh) {
+        _pending[host] = batch;
+      }
+    }
+    await Future.wait({for (final host in hosts) ?_pending[host]});
+  }
+
+  Future<void> _run(
+    List<String> hosts,
+    Future<Map<String, bool>> Function(List<String> hosts) check,
+  ) async {
+    try {
+      results.addAll(await check(hosts));
+    } finally {
+      hosts.forEach(_pending.remove);
+    }
+  }
+}
+
+final siteCheckCacheProvider = Provider<SiteCheckCache>(
+  (ref) => SiteCheckCache(),
+);
 
 /// İnternetle doğrulama sürüyor; ekran yükleniyor görünümünde bunu söyler.
+/// Eşleşmeler sorgu sürerken yeniden hesaplanabildiği için sayaçla tutulur:
+/// yazı son sorgu bitince kalkar.
 final siteCheckInProgressProvider = NotifierProvider<SiteCheckInProgress, bool>(
   SiteCheckInProgress.new,
 );
 
 class SiteCheckInProgress extends Notifier<bool> {
-  @override
-  bool build() => false;
+  var _running = 0;
 
-  // Notifier'ın durumu dışarıdan bu yolla değişir.
-  // ignore: use_setters_to_change_properties
-  void set({required bool value}) => state = value;
+  @override
+  bool build() => _running > 0;
+
+  void start() => state = ++_running > 0;
+
+  void finish() {
+    if (_running > 0) _running--;
+    state = _running > 0;
+  }
 }
