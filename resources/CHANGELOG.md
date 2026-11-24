@@ -18,12 +18,12 @@ Android 14 ve üstünde KeyKey passkey sağlayıcısı olabiliyor ([#186](https:
 
 - Anahtar üretimi ve imza Android'in kendi kripto sağlayıcısında (P-256, ES256); özel anahtar kasanın dışında hiçbir yerde şifresiz durmuyor ve düz metin dışa aktarmaya yazılmıyor.
 - Kasa kilitliyken KeyKey hangi sitelerde passkey olduğunu söylemiyor. Hiçbir site, kullanıcı bir hesap seçmeden imza almıyor; girişte hazırlanan yanıtlar en çok 2 dakika bellekte duruyor.
-- Başka bir sitenin adına gelen istek reddediliyor: `rpId` public suffix olamaz, tarayıcıda origin yalnızca güvenilen tarayıcılardan alınıyor ve `rpId`'ye uymalı. Passkey'i bir uygulama istiyorsa ve uygulamanın o siteye ait olduğu doğrulanamıyorsa KeyKey uyarıyor.
+- Başka bir sitenin adına gelen istek reddediliyor: `rpId` public suffix olamaz, tarayıcıda origin yalnızca güvenilen tarayıcılardan alınıyor ve `rpId`'ye uymalı. Passkey'i bir uygulama istiyorsa ve uygulamanın o siteye ait olduğu doğrulanamıyorsa KeyKey uyarıyor; uygulamanın imza için verdiği hazır özet kullanılmıyor, imza her zaman uygulamanın kendi kimliğine atılıyor.
 - Küçük bulgular kapatıldı: site doğrulaması ([#182](https://github.com/aaudraa/KeyKey/issues/182)), KeePass içe aktarma ([#180](https://github.com/aaudraa/KeyKey/issues/180)) ve arayüz incelemesi ([#174](https://github.com/aaudraa/KeyKey/issues/174)); liste okunamazsa "Yeniden dene", ayrıntı ekranında yazma hatası söyleniyor.
 
 ### Uyumluluk
 
-- **Bütün telefonlarını güncelle.** Parola kaydı sürüm 3, yedeğin ve senkron dosyasının içerik sürümü 6. 1.10.x ve öncesi 1.11.0 yedeklerini "daha yeni yedek" diye açmaz; senkronda "başka bir telefonda daha yeni KeyKey var" der. 1.11.0, eski sürümlerin yedeklerini ve senkron dosyalarını okumaya devam eder.
+- **Bütün telefonlarını güncelle.** Parola kaydı sürüm 3, yedeğin ve senkron dosyasının içerik sürümü 6. 1.10.x ve öncesi 1.11.0 yedeklerini "daha yeni yedek" diye açmaz; senkronda "başka bir telefonda daha yeni KeyKey var" der. 1.11.0, eski sürümlerin yedeklerini ve senkron dosyalarını okumaya devam eder. Güncelleme sürerken 1.10 telefonda düzenlenen bir kayıt senkronda passkey'lerini yitirmez.
 - Passkey sağlayıcısı yalnızca Android 14 ve üstünde; eski sürümlerde içe aktarılan passkey'ler kasada durur.
 - Yeni izin: bütün uygulamaları görme (`QUERY_ALL_PACKAGES`, #71). KeyKey yalnızca o an kaydedilen ya da doldurulan uygulamanın adını, imza özetini ve simgesini okur ([gizlilik](docs/gizlilik.md#izinler)). Passkey için kullanıcıdan istenen yeni bir izin yok.
 - Yeni bağımlılık: `androidx.credentials` 1.6.0 (Apache 2.0); Google Play hizmetleri gerekmez.

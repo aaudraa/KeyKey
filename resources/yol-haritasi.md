@@ -840,11 +840,14 @@ Android 14 ve üstünde KeyKey'i Credential Manager'ın passkey sağlayıcısı 
 - [x] Bitwarden JSON ve KeePassXC passkey'lerini içe aktarma; şifresiz dışa aktarma passkey yazmaz
 - [x] Güvenlik tasarımı, gizlilik, kılavuz, bağımlılıklar, değişiklik günlüğü
 - [x] Cihazda: örnek giriş uygulaması ve Chrome'da webauthn.io (Android 17 emülatörü)
-- [ ] Son gözden geçirme, 1.11.0
+- [x] Son gözden geçirme ([#187](https://github.com/aaudraa/KeyKey/issues/187))
+- [ ] 1.11.0
 
 Plandan sapan kararlar: senkron dosyası da içerik sürümü 6 ile yazılıyor (5 olamazdı: 1.10 sürüm 5'i okuyup sürüm 3 kaydı açmaya çalışırdı), bu yüzden passkey'li kasayı eşitleyen bütün telefonlar güncellenmeli. Kullanım koşulları değişmedi: passkey yeni bir ağ isteği eklemiyor, uygulamanın sitesini doğrulamak Faz 25'in ayarı ve istemcisiyle yapılıyor.
 
 **Cihazda (2026-11-24, Android 17 emülatörü, Chrome 157):** KeyKey Ayarlar'daki satırla Android'in ayarında tercih edilen hizmet seçildi. Örnek giriş uygulamasında passkey oluşturuldu ve onunla girildi; uygulama yanıtı bir sunucu gibi denetledi (meydan okuma, origin, `rpId` özeti, bayraklar, oluşturmada saklanan açık anahtarla imza). Alan adı doğrulanmamışken pencere uyardı, `pm set-app-links` ile onaylanınca uyarmadı. Kasa kilitliyken Android'in penceresinde yalnızca "Unlock KeyKey" vardı, hesap yoktu. Chrome'da webauthn.io'da kayıt ve giriş başarılı ("You're logged in!"). Kayıt listede "Has a passkey" etiketiyle, ayrıntıda site, hesap ve tarihle göründü. Entegrasyon testlerinin hepsi geçti. Deneme iki hata buldu, ikisi de düzeltildi: sağlayıcının yetenek adı `android.` önekliydi (doğrusu `androidx.credentials.TYPE_PUBLIC_KEY_CREDENTIAL`), Android KeyKey'i hiç sormuyordu; ayar satırının yardımı Android 14'ün ekran adını kullanıyordu.
+
+**Son gözden geçirme:** Taze bir alt ajan (Opus) dalın bütününü inceledi. Kritik bulgu düzeltildi: bir uygulamanın verdiği hazır `clientDataHash` de imzalanıyordu; kötü niyetli bir uygulama başka bir sitenin origin'iyle kurduğu clientDataJSON'un özetini verip tek uyarıdan sonra o sitenin geçerli web imzasını alabilirdi. Artık hazır özet yalnızca güvenilen tarayıcıdan alınıyor. Önemli bulgu düzeltildi: 1.10 telefonda düzenlenen kayıt senkronda kazanınca passkey'in özel anahtarı kalıcı olarak gidiyordu; artık passkey'i bilmeyen sürüm kazanınca passkey'ler korunuyor. Dokuz küçük bulgu [#187](https://github.com/aaudraa/KeyKey/issues/187)'de.
 
 **Bitti sayılması için:** örnek uygulamada ve Chrome'da passkey oluşturulup onunla giriş yapılıyor; kasa kilitliyken hiçbir hesap görünmüyor; passkey'ler yedekten ve senkron dosyasından eksiksiz geri geliyor (testlerle); eski sürümler yeni yedeğe "daha yeni" diyor.
 
