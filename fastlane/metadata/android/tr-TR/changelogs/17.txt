@@ -1,0 +1,1 @@
+KeyKey artık passkey sağlayıcısı olabiliyor (Android 14+): sitelerde ve uygulamalarda passkey oluşturma ve giriş, kayıtta görme ve silme, Bitwarden ve KeePassXC'den içe aktarma. Passkey'ler kasada şifreli durur, yedek ve senkronla taşınır. Senkron kullanıyorsan bütün telefonlarını güncelle: eski sürümler yeni yedekleri açamaz.

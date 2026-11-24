@@ -3,4 +3,8 @@
     <string name="autofill_fill_with_keykey">KeyKey ile doldur</string>
     <string name="autofill_fill_card_with_keykey">KeyKey ile kart doldur</string>
     <string name="touch_blocked_overlay">Başka bir uygulama KeyKey\'in üstünde görünüyor, dokunuşun yok sayıldı. O uygulamanın yüzen penceresini veya ekran filtresini kapatıp yeniden dene.</string>
+    <string name="passkey_account_name">KeyKey kasası</string>
+    <string name="passkey_unlock">KeyKey\'in kilidini aç</string>
+    <string name="passkey_expired">Passkey yanıtının süresi doldu. Yeniden dene.</string>
+    <string name="passkey_provider_subtitle">KeyKey kasandaki passkey\'ler</string>
 </resources>

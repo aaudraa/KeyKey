@@ -557,6 +557,7 @@ class AutofillSetupStatus {
     required this.supported,
     required this.enabled,
     this.chromeMajorVersion,
+    required this.passkeysSupported,
   });
 
   /// Cihaz otomatik doldurmayı destekliyor.
@@ -568,8 +569,11 @@ class AutofillSetupStatus {
   /// Kurulu Chrome'un ana sürümü; Chrome yoksa `null`.
   int? chromeMajorVersion;
 
+  /// KeyKey bu cihazda passkey sağlayıcısı olabilir (Android 14+).
+  bool passkeysSupported;
+
   List<Object?> _toList() {
-    return <Object?>[supported, enabled, chromeMajorVersion];
+    return <Object?>[supported, enabled, chromeMajorVersion, passkeysSupported];
   }
 
   Object encode() {
@@ -582,6 +586,7 @@ class AutofillSetupStatus {
       supported: result[0]! as bool,
       enabled: result[1]! as bool,
       chromeMajorVersion: result[2] as int?,
+      passkeysSupported: result[3]! as bool,
     );
   }
 
@@ -596,7 +601,8 @@ class AutofillSetupStatus {
     }
     return _deepEquals(supported, other.supported) &&
         _deepEquals(enabled, other.enabled) &&
-        _deepEquals(chromeMajorVersion, other.chromeMajorVersion);
+        _deepEquals(chromeMajorVersion, other.chromeMajorVersion) &&
+        _deepEquals(passkeysSupported, other.passkeysSupported);
   }
 
   @override
@@ -605,7 +611,7 @@ class AutofillSetupStatus {
 
   @override
   String toString() {
-    return 'AutofillSetupStatus(supported: $supported, enabled: $enabled, chromeMajorVersion: $chromeMajorVersion)';
+    return 'AutofillSetupStatus(supported: $supported, enabled: $enabled, chromeMajorVersion: $chromeMajorVersion, passkeysSupported: $passkeysSupported)';
   }
 }
 
@@ -708,6 +714,208 @@ class FolderPickResult {
   }
 }
 
+/// Passkey'in P-256 anahtar çifti: PKCS#8 DER özel anahtar ve açık noktanın
+/// 32'şer baytlık koordinatları.
+class PasskeyKeyPair {
+  PasskeyKeyPair({required this.privateKey, required this.x, required this.y});
+
+  Uint8List privateKey;
+
+  Uint8List x;
+
+  Uint8List y;
+
+  List<Object?> _toList() {
+    return <Object?>[privateKey, x, y];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static PasskeyKeyPair decode(Object result) {
+    result as List<Object?>;
+    return PasskeyKeyPair(
+      privateKey: result[0]! as Uint8List,
+      x: result[1]! as Uint8List,
+      y: result[2]! as Uint8List,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! PasskeyKeyPair || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(privateKey, other.privateKey) &&
+        _deepEquals(x, other.x) &&
+        _deepEquals(y, other.y);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'PasskeyKeyPair(privateKey: $privateKey, x: $x, y: $y)';
+  }
+}
+
+/// Passkey penceresini açan istek; kasaya bakmadan bilinenler.
+class PasskeyRequestInfo {
+  PasskeyRequestInfo({
+    required this.kind,
+    required this.requestJson,
+    required this.packageName,
+    required this.certsSha256,
+    this.appLabel,
+    this.browserOrigin,
+    this.clientDataHash,
+  });
+
+  /// `create` ya da `get`.
+  String kind;
+
+  /// Credential Manager'ın verdiği WebAuthn seçenekleri.
+  String requestJson;
+
+  String packageName;
+
+  /// Küçük harfli onaltılık SHA-256 özetleri; okunamadıysa boş.
+  List<String> certsSha256;
+
+  String? appLabel;
+
+  /// Güvenilen tarayıcının bildirdiği origin; uygulamada `null`.
+  String? browserOrigin;
+
+  /// Tarayıcının verdiği clientDataJSON özeti.
+  Uint8List? clientDataHash;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      kind,
+      requestJson,
+      packageName,
+      certsSha256,
+      appLabel,
+      browserOrigin,
+      clientDataHash,
+    ];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static PasskeyRequestInfo decode(Object result) {
+    result as List<Object?>;
+    return PasskeyRequestInfo(
+      kind: result[0]! as String,
+      requestJson: result[1]! as String,
+      packageName: result[2]! as String,
+      certsSha256: (result[3]! as List<Object?>).cast<String>(),
+      appLabel: result[4] as String?,
+      browserOrigin: result[5] as String?,
+      clientDataHash: result[6] as Uint8List?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! PasskeyRequestInfo || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(kind, other.kind) &&
+        _deepEquals(requestJson, other.requestJson) &&
+        _deepEquals(packageName, other.packageName) &&
+        _deepEquals(certsSha256, other.certsSha256) &&
+        _deepEquals(appLabel, other.appLabel) &&
+        _deepEquals(browserOrigin, other.browserOrigin) &&
+        _deepEquals(clientDataHash, other.clientDataHash);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'PasskeyRequestInfo(kind: $kind, requestJson: $requestJson, packageName: $packageName, certsSha256: $certsSha256, appLabel: $appLabel, browserOrigin: $browserOrigin, clientDataHash: $clientDataHash)';
+  }
+}
+
+/// Kasa açılınca hesaplanan, kullanıcının seçmesini bekleyen bir giriş
+/// yanıtı.
+class PasskeyAssertion {
+  PasskeyAssertion({
+    required this.credentialId,
+    required this.userName,
+    required this.displayName,
+    required this.responseJson,
+  });
+
+  /// base64url, dolgusuz.
+  String credentialId;
+
+  String userName;
+
+  String displayName;
+
+  String responseJson;
+
+  List<Object?> _toList() {
+    return <Object?>[credentialId, userName, displayName, responseJson];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static PasskeyAssertion decode(Object result) {
+    result as List<Object?>;
+    return PasskeyAssertion(
+      credentialId: result[0]! as String,
+      userName: result[1]! as String,
+      displayName: result[2]! as String,
+      responseJson: result[3]! as String,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! PasskeyAssertion || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(credentialId, other.credentialId) &&
+        _deepEquals(userName, other.userName) &&
+        _deepEquals(displayName, other.displayName) &&
+        _deepEquals(responseJson, other.responseJson);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'PasskeyAssertion(credentialId: $credentialId, userName: $userName, displayName: $displayName, responseJson: $responseJson)';
+  }
+}
+
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -757,6 +965,15 @@ class _PigeonCodec extends StandardMessageCodec {
     } else if (value is FolderPickResult) {
       buffer.putUint8(142);
       writeValue(buffer, value.encode());
+    } else if (value is PasskeyKeyPair) {
+      buffer.putUint8(143);
+      writeValue(buffer, value.encode());
+    } else if (value is PasskeyRequestInfo) {
+      buffer.putUint8(144);
+      writeValue(buffer, value.encode());
+    } else if (value is PasskeyAssertion) {
+      buffer.putUint8(145);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -797,6 +1014,12 @@ class _PigeonCodec extends StandardMessageCodec {
         return DocumentResult.decode(readValue(buffer)!);
       case 142:
         return FolderPickResult.decode(readValue(buffer)!);
+      case 143:
+        return PasskeyKeyPair.decode(readValue(buffer)!);
+      case 144:
+        return PasskeyRequestInfo.decode(readValue(buffer)!);
+      case 145:
+        return PasskeyAssertion.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -1407,6 +1630,25 @@ class AutofillSetupApi {
     );
     return pigeonVar_replyValue! as bool;
   }
+
+  /// Sistemin passkey sağlayıcısı seçimini açar. Açılamazsa `false`.
+  Future<bool> openCredentialProviderSettings() async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.AutofillSetupApi.openCredentialProviderSettings$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as bool;
+  }
 }
 
 /// Android'in belge oluşturma ve açma ekranları (Storage Access Framework).
@@ -1621,6 +1863,227 @@ class BackupFolderApi {
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
       <Object?>[folderUri],
     );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
+  }
+}
+
+/// Passkey kriptosu, Android'in kendi sağlayıcısıyla. Anahtar Android
+/// Keystore'da değil kasada durur; Kotlin'e gelen özel anahtar baytları
+/// kullanıldıktan sonra sıfırlanır.
+class PasskeyCryptoApi {
+  /// Constructor for [PasskeyCryptoApi]. The [binaryMessenger] named argument is
+  /// available for dependency injection. If it is left null, the default
+  /// BinaryMessenger will be used which routes to the host platform.
+  PasskeyCryptoApi({
+    BinaryMessenger? binaryMessenger,
+    String messageChannelSuffix = '',
+  }) : pigeonVar_binaryMessenger = binaryMessenger,
+       pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty
+           ? '.$messageChannelSuffix'
+           : '';
+
+  final BinaryMessenger? pigeonVar_binaryMessenger;
+  static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
+
+  final String pigeonVar_messageChannelSuffix;
+
+  /// Yeni bir P-256 anahtar çifti.
+  Future<PasskeyKeyPair> generate() async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.PasskeyCryptoApi.generate$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as PasskeyKeyPair;
+  }
+
+  /// `SHA256withECDSA`, DER imza.
+  Future<Uint8List> sign(Uint8List privateKey, Uint8List data) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.PasskeyCryptoApi.sign$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[privateKey, data],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as Uint8List;
+  }
+}
+
+/// Passkey penceresi ile `PasskeyActivity` arasındaki köprü.
+class PasskeyApi {
+  /// Constructor for [PasskeyApi]. The [binaryMessenger] named argument is
+  /// available for dependency injection. If it is left null, the default
+  /// BinaryMessenger will be used which routes to the host platform.
+  PasskeyApi({
+    BinaryMessenger? binaryMessenger,
+    String messageChannelSuffix = '',
+  }) : pigeonVar_binaryMessenger = binaryMessenger,
+       pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty
+           ? '.$messageChannelSuffix'
+           : '';
+
+  final BinaryMessenger? pigeonVar_binaryMessenger;
+  static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
+
+  final String pigeonVar_messageChannelSuffix;
+
+  Future<PasskeyRequestInfo?> request() async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.PasskeyApi.request$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
+    return pigeonVar_replyValue as PasskeyRequestInfo?;
+  }
+
+  /// Otomatik doldurmadaki gibi: paketin imzası özetlerin hepsiyle tutuyor mu.
+  Future<bool> hasSigningCertificates(
+    String packageName,
+    List<String> certsSha256,
+  ) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.PasskeyApi.hasSigningCertificates$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[packageName, certsSha256],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as bool;
+  }
+
+  /// Otomatik doldurmadaki gibi: paketin bildirdiği alan adları (Android 12+).
+  Future<List<AppDomain>> appDomains(String packageName) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.PasskeyApi.appDomains$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[packageName],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return (pigeonVar_replyValue! as List<Object?>).cast<AppDomain>();
+  }
+
+  /// Oluşturma bitti; yanıt `RegistrationResponseJSON`.
+  Future<void> finishCreate(String responseJson) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.PasskeyApi.finishCreate$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[responseJson],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
+  }
+
+  /// Kilit açıldı; sistem bu hesapları gösterir. Boşsa "passkey yok".
+  Future<void> finishGet(List<PasskeyAssertion> assertions) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.PasskeyApi.finishGet$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[assertions],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
+  }
+
+  /// İstek reddedildi: `invalidRequest`, `unsupportedAlgorithm`,
+  /// `alreadyExists`, `rpIdMismatch`.
+  Future<void> fail(String error) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.PasskeyApi.fail$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[error],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
+  }
+
+  Future<void> cancel() async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.keykey.PasskeyApi.cancel$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     _extractReplyValueOrThrow(
       pigeonVar_replyList,

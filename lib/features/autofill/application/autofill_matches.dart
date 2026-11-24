@@ -52,7 +52,7 @@ final autofillMatchesProvider = FutureProvider<LoginMatches>((ref) async {
   final appSites = usesAppSites
       ? await _appDomains(bridge, target.packageName)
       : const <AppDomain>[];
-  final verifyOnline = usesAppSites && await _verifyOnlineEnabled(ref);
+  final verifyOnline = usesAppSites && await verifySitesOnlineEnabled(ref);
   if (appSites.isEmpty && !verifyOnline) {
     return await matchLogins(
       target: target,
@@ -126,8 +126,9 @@ Future<List<AppDomain>> _appDomains(
   }
 }
 
-/// Ayar okunamazsa kapalı sayılır.
-Future<bool> _verifyOnlineEnabled(Ref ref) async {
+/// "Siteleri internetten doğrula" ayarı. Kasa kapalıysa ya da ayar
+/// okunamazsa kapalı sayılır.
+Future<bool> verifySitesOnlineEnabled(Ref ref) async {
   final status = ref.read(vaultControllerProvider);
   if (status is! VaultOpen) return false;
   try {

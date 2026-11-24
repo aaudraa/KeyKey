@@ -248,6 +248,7 @@ class AutofillSetupStatus {
   AutofillSetupStatus({
     required this.supported,
     required this.enabled,
+    required this.passkeysSupported,
     this.chromeMajorVersion,
   });
 
@@ -259,6 +260,9 @@ class AutofillSetupStatus {
 
   /// Kurulu Chrome'un ana sürümü; Chrome yoksa `null`.
   int? chromeMajorVersion;
+
+  /// KeyKey bu cihazda passkey sağlayıcısı olabilir (Android 14+).
+  bool passkeysSupported;
 }
 
 /// Kurulum ekranının Kotlin tarafı: durum ve ayarlara doğrudan geçiş.
@@ -271,6 +275,9 @@ abstract class AutofillSetupApi {
 
   /// Chrome'un otomatik doldurma ayarını açar. Açılamazsa `false`.
   bool openChromeAutofillSettings();
+
+  /// Sistemin passkey sağlayıcısı seçimini açar. Açılamazsa `false`.
+  bool openCredentialProviderSettings();
 }
 
 /// Belge kaydetmenin veya açmanın sonucu.
@@ -364,4 +371,97 @@ abstract class BackupFolderApi {
 
   /// [folderUri] için alınan kalıcı izni bırakır.
   void release(String folderUri);
+}
+
+/// Passkey'in P-256 anahtar çifti: PKCS#8 DER özel anahtar ve açık noktanın
+/// 32'şer baytlık koordinatları.
+class PasskeyKeyPair {
+  PasskeyKeyPair({required this.privateKey, required this.x, required this.y});
+
+  Uint8List privateKey;
+  Uint8List x;
+  Uint8List y;
+}
+
+/// Passkey kriptosu, Android'in kendi sağlayıcısıyla. Anahtar Android
+/// Keystore'da değil kasada durur; Kotlin'e gelen özel anahtar baytları
+/// kullanıldıktan sonra sıfırlanır.
+@HostApi()
+abstract class PasskeyCryptoApi {
+  /// Yeni bir P-256 anahtar çifti.
+  PasskeyKeyPair generate();
+
+  /// `SHA256withECDSA`, DER imza.
+  Uint8List sign(Uint8List privateKey, Uint8List data);
+}
+
+/// Passkey penceresini açan istek; kasaya bakmadan bilinenler.
+class PasskeyRequestInfo {
+  PasskeyRequestInfo({
+    required this.kind,
+    required this.requestJson,
+    required this.packageName,
+    required this.certsSha256,
+    required this.appLabel,
+    required this.browserOrigin,
+    required this.clientDataHash,
+  });
+
+  /// `create` ya da `get`.
+  String kind;
+
+  /// Credential Manager'ın verdiği WebAuthn seçenekleri.
+  String requestJson;
+  String packageName;
+
+  /// Küçük harfli onaltılık SHA-256 özetleri; okunamadıysa boş.
+  List<String> certsSha256;
+  String? appLabel;
+
+  /// Güvenilen tarayıcının bildirdiği origin; uygulamada `null`.
+  String? browserOrigin;
+
+  /// Tarayıcının verdiği clientDataJSON özeti.
+  Uint8List? clientDataHash;
+}
+
+/// Kasa açılınca hesaplanan, kullanıcının seçmesini bekleyen bir giriş
+/// yanıtı.
+class PasskeyAssertion {
+  PasskeyAssertion({
+    required this.credentialId,
+    required this.userName,
+    required this.displayName,
+    required this.responseJson,
+  });
+
+  /// base64url, dolgusuz.
+  String credentialId;
+  String userName;
+  String displayName;
+  String responseJson;
+}
+
+/// Passkey penceresi ile `PasskeyActivity` arasındaki köprü.
+@HostApi()
+abstract class PasskeyApi {
+  PasskeyRequestInfo? request();
+
+  /// Otomatik doldurmadaki gibi: paketin imzası özetlerin hepsiyle tutuyor mu.
+  bool hasSigningCertificates(String packageName, List<String> certsSha256);
+
+  /// Otomatik doldurmadaki gibi: paketin bildirdiği alan adları (Android 12+).
+  List<AppDomain> appDomains(String packageName);
+
+  /// Oluşturma bitti; yanıt `RegistrationResponseJSON`.
+  void finishCreate(String responseJson);
+
+  /// Kilit açıldı; sistem bu hesapları gösterir. Boşsa "passkey yok".
+  void finishGet(List<PasskeyAssertion> assertions);
+
+  /// İstek reddedildi: `invalidRequest`, `unsupportedAlgorithm`,
+  /// `alreadyExists`, `rpIdMismatch`.
+  void fail(String error);
+
+  void cancel();
 }

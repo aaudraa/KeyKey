@@ -10,6 +10,7 @@ import 'package:keykey/core/crypto/vault_header.dart';
 import 'package:keykey/core/storage/vault_store.dart';
 import 'package:keykey/features/sync/application/sync_merger.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
+import 'package:keykey/features/vault/data/login_passkey.dart';
 import 'package:keykey/features/vault/data/note_content.dart';
 import 'package:sodium/sodium_sumo.dart';
 
@@ -254,6 +255,103 @@ void main() {
       ]);
       expect(plan.isEmpty, isTrue);
     });
+  });
+
+  group("passkey'ler", () {
+    final passkey = LoginPasskey(
+      credentialId: Uint8List.fromList(List.filled(16, 9)),
+      rpId: 'github.com',
+      userHandle: Uint8List.fromList([1]),
+      userName: 'furkan',
+      userDisplayName: '',
+      privateKey: Uint8List.fromList([1, 2, 3]),
+      createdAt: t1,
+    );
+
+    StoredRecord withBlob(int n, DateTime at, List<int> plain) => StoredRecord(
+      id: id(n),
+      type: 'login',
+      blob: cipher.encrypt(
+        recordId: id(n),
+        type: 'login',
+        plainText: Uint8List.fromList(plain),
+      ),
+      createdAt: t1,
+      updatedAt: at,
+    );
+
+    StoredRecord v3(int n, DateTime at, {required bool withPasskey}) =>
+        withBlob(
+          n,
+          at,
+          LoginContent(
+            name: 'GitHub',
+            passkeys: withPasskey ? [passkey] : const [],
+          ).toJsonBytes(),
+        );
+
+    /// 1.10'un yazdığı sürüm 2 kayıt: passkey alanı yok.
+    StoredRecord v2(int n, DateTime at, {String name = 'GitHub'}) {
+      final json =
+          jsonDecode(utf8.decode(LoginContent(name: name).toJsonBytes()))
+                as Map<String, Object?>
+            ..['version'] = 2
+            ..remove('passkeys');
+      return withBlob(n, at, utf8.encode(jsonEncode(json)));
+    }
+
+    test('eski telefonun sürüm 2 kaydı kazanınca passkey korunuyor', () {
+      // A (1.11) passkey ekledi (t1); B (1.10) aynı kaydın adını değiştirdi
+      // (t2). B'nin kaydı passkey'i bilmez.
+      final plan = merge(local([v3(1, t1, withPasskey: true)]), [
+        source('b00001', [v2(1, t2, name: 'GitHub İş')]),
+      ]);
+
+      final rescued = plan.changes.put.single;
+      expect(rescued.updatedAt, t2.add(const Duration(milliseconds: 1)));
+      final value = content(rescued);
+      expect(value.name, 'GitHub İş');
+      expect(value.passkeys, [passkey]);
+    });
+
+    test('iki telefon aynı sonuca varıyor', () {
+      final a = v3(1, t1, withPasskey: true);
+      final b = v2(1, t2, name: 'GitHub İş');
+      final onPhoneA = merge(local([a]), [
+        source('b00001', [b]),
+      ]).changes.put.single;
+      final onPhoneB = merge(local([b]), [
+        source('a00001', [a]),
+      ]).changes.put.single;
+
+      expect(onPhoneA.updatedAt, onPhoneB.updatedAt);
+      expect(content(onPhoneA).toJsonBytes(), content(onPhoneB).toJsonBytes());
+    });
+
+    test('passkey bilen kazanan sildiyse geri gelmiyor', () {
+      // A passkey'i sildi (t3); C'nin eski dosyasında passkey hâlâ var.
+      final plan = merge(local([v3(1, t3, withPasskey: false)]), [
+        source('c00001', [v3(1, t1, withPasskey: true)]),
+      ]);
+
+      expect(plan.isEmpty, isTrue);
+    });
+
+    test(
+      'en yeni passkey bilen sürüm sildiyse eski telefon geri getirmiyor',
+      () {
+        // A passkey'i sildi (t2); B (1.10) sonra adı değiştirdi (t3); C'nin
+        // eski dosyasında passkey var (t1).
+        final plan = merge(local([v3(1, t2, withPasskey: false)]), [
+          source('b00001', [v2(1, t3, name: 'Yeni')]),
+          source('c00001', [v3(1, t1, withPasskey: true)]),
+        ]);
+
+        final put = plan.changes.put.single;
+        expect(content(put).name, 'Yeni');
+        expect(content(put).passkeys, isEmpty);
+      },
+    );
   });
 
   group('kaybeden parola', () {

@@ -86,16 +86,15 @@ final class BackupCodec {
 
   /// Yazılan içerik sürümü. Sürüm 2 kart ve notu, sürüm 3 ayar kaydının
   /// sürüm 6'sını ve Steam hesaplarını, sürüm 4 ayar kaydının sürüm 7'sini ve
-  /// senkron dosyasının `sync` nesnesini, sürüm 5 ayar kaydının sürüm 8'ini
-  /// getirdi. Kayıtlar şifreli olduğundan içleri burada görünmez; her yedek
-  /// bu sürümle yazılır ve eski uygulamalar onu "daha yeni yedek" diye
-  /// reddeder.
-  static const payloadVersion = 5;
+  /// senkron dosyasının `sync` nesnesini, sürüm 5 ayar kaydının sürüm 8'ini,
+  /// sürüm 6 parola kaydının sürüm 3'ünü (passkey) getirdi. Kayıtlar şifreli
+  /// olduğundan içleri burada görünmez; her yedek ve senkron dosyası bu
+  /// sürümle yazılır ve eski uygulamalar onu "daha yeni" diye reddeder.
+  static const payloadVersion = 6;
 
-  /// `sync` nesnesinin taşınabildiği ilk içerik sürümü. Senkron dosyası bu
-  /// sürümle yazılır: ayar kaydı taşımadığı için sürüm 5'in getirdiği
-  /// değişiklik ona dokunmaz ve 1.8.0-1.9.x telefonlarla eşitleme sürer.
-  static const _syncPayloadVersion = 4;
+  /// `sync` nesnesinin taşınabildiği ilk içerik sürümü. 1.8.0-1.10.x
+  /// telefonların sürüm 4 senkron dosyaları okunmaya devam eder.
+  static const _firstSyncPayloadVersion = 4;
 
   /// Ayar kaydının türü; senkron dosyasına girmez.
   static const _settingsType = 'settings';
@@ -365,7 +364,7 @@ final class BackupCodec {
       });
     }
     return jsonEncode({
-      'version': sync == null ? payloadVersion : _syncPayloadVersion,
+      'version': payloadVersion,
       'createdAt': createdAt.millisecondsSinceEpoch,
       'records': entries,
       if (sync != null) 'sync': _syncJson(sync),
@@ -423,7 +422,7 @@ final class BackupCodec {
     if (version is! int || version < legacyPayloadVersion) {
       throw const InvalidBackupException('Desteklenmeyen içerik sürümü.');
     }
-    if (hasSync && version < _syncPayloadVersion) {
+    if (hasSync && version < _firstSyncPayloadVersion) {
       throw const InvalidBackupException('Bu sürümde senkron bilgisi olamaz.');
     }
     final allowed = version == legacyPayloadVersion

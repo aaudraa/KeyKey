@@ -172,6 +172,7 @@ Sürüm derlemesinin `releaseRuntimeClasspath` yapılandırmasındaki kütüphan
 |---|---|---|---|
 | `androidx.biometric:biometric` | 1.1.0 | KeyKey | Parmak iziyle açma (`BiometricPrompt`, `CryptoObject`) |
 | `androidx.autofill:autofill` | 1.3.0 | KeyKey | Otomatik doldurmanın klavye şeridindeki öneri görünümü |
+| `androidx.credentials:credentials` | 1.6.0 | KeyKey | Passkey sağlayıcısı (1.11.0): Credential Manager'ın sağlayıcı servisi ve istek/yanıt türleri. Google Play hizmetleri gerektirmez; `credentials-play-services-auth` bilerek eklenmez. Lisansları ekranında "AndroidX" satırına girer |
 | `org.jetbrains.kotlinx:kotlinx-coroutines-android` | 1.11.0 | KeyKey | Pigeon köprüsünün eşzamansız çağrıları |
 | `org.jetbrains.kotlin:kotlin-stdlib` | 2.4.21 | KeyKey | Kotlin |
 | `io.flutter:*` | motor `89c39edf` | Flutter | Flutter motoru (BSD-3-Clause) |
@@ -181,7 +182,7 @@ Sürüm derlemesinin `releaseRuntimeClasspath` yapılandırmasındaki kütüphan
 | `androidx.fragment`, `appcompat`, `activity`, `lifecycle`, `core` ve diğer AndroidX | | biometric, eklentiler | Ortak Android altyapısı |
 | JSpecify, Error Prone, J2ObjC, AutoValue ve JetBrains notasyonları | | çeşitli | Yalnızca derleme notasyonları |
 
-Testlerde kullanılan `junit` (EPL-1.0) uygulamaya girmez.
+Testlerde kullanılan `junit` (EPL-1.0) ve `org.json:json` (JSON License; Android'in `org.json`'u JVM testlerinde sahte olduğu için passkey testlerinde gerçeği kullanılır) uygulamaya girmez.
 
 ## Yerel kütüphaneler
 

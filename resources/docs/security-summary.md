@@ -1,6 +1,6 @@
 # KeyKey Security Design: Summary in English
 
-KeyKey is an open-source password manager and TOTP/HOTP authenticator for Android with no account and no server of its own, written in Flutter with small Kotlin parts. Since 1.8.0 it can sync the vault, end-to-end encrypted, through a WebDAV folder the user provides. It needs Android 11 (API 30) or newer.
+KeyKey is an open-source password manager and TOTP/HOTP authenticator for Android with no account and no server of its own, written in Flutter with small Kotlin parts. Since 1.8.0 it can sync the vault, end-to-end encrypted, through a WebDAV folder the user provides. Since 1.11.0 it can be a passkey provider on Android 14+. It needs Android 11 (API 30) or newer.
 
 This page summarises the security design for reviewers who don't read Turkish. The full and authoritative design is the Turkish [security design document](guvenlik-tasarimi.md); the [self-audit against OWASP MASVS](guvenlik-denetimi.md) is also in Turkish. Section links below point into those documents. If this summary and the Turkish document disagree, the Turkish document wins, and the disagreement is a bug worth reporting.
 
@@ -119,7 +119,7 @@ record = version (1 byte, 0x01) || nonce (24 bytes) || ciphertext and tag
 
 - The plaintext is padded to 256-byte blocks (`sodium_pad`), so the length doesn't reveal the password length.
 - `otp` records use the OTP key; all other types use the record key.
-- Record types are `login`, `otp`, `settings` and, since 1.4.0, `card` and `note`. Each content is strict JSON with a version; unknown versions, missing or extra fields are rejected. A card stores the number as digits only (up to 19), expiry month and year, a security code (up to 4 digits) and a PIN (up to 12 digits); the brand is derived from the number, never stored. A note holds at most 64 KiB of text. Details: [Kart kaydının içeriği](guvenlik-tasarimi.md#kart-kaydının-içeriği), [Not kaydının içeriği](guvenlik-tasarimi.md#not-kaydının-içeriği).
+- Record types are `login`, `otp`, `settings` and, since 1.4.0, `card` and `note`. Each content is strict JSON with a version; unknown versions, missing or extra fields are rejected. A card stores the number as digits only (up to 19), expiry month and year, a security code (up to 4 digits) and a PIN (up to 12 digits); the brand is derived from the number, never stored. A note holds at most 64 KiB of text. Since 1.11.0 (login content version 3) a login can carry up to 20 passkeys (see [Passkeys](#passkeys)). Details: [Kart kaydının içeriği](guvenlik-tasarimi.md#kart-kaydının-içeriği), [Not kaydının içeriği](guvenlik-tasarimi.md#not-kaydının-içeriği).
 - AD: `keykey/v1/record`, `vaultId`, record ID (16 bytes), type.
 
 **Storage.** A single SQLite file in the app's private directory. The file as a whole isn't encrypted; protection comes from per-record encryption. `secure_delete` is on and `journal_mode` is `DELETE`. Android backup and device transfer are disabled. Details: [Depolama](guvenlik-tasarimi.md#depolama).
@@ -156,6 +156,7 @@ chunk = length (4 bytes BE) || encrypted chunk
 - Restore checks the structure, decrypts and validates every record before writing anything, and writes in one SQLite transaction.
 - Limits: 64 MiB per file and 100 000 records. The file size is computed before encryption and an oversized backup is not written.
 - Payload version 2 (1.4.0) adds `card` and `note`. A backup without cards or notes is still written as version 1, so older apps can open it; 1.3.0 and earlier reject a version 2 backup as damaged. Newer file or payload versions are reported as "update the app".
+- Whenever a record content version changes, the payload version changes too (a test pins them together). Version 6 (1.11.0) comes with login content version 3 (passkeys); every backup and sync file is written with it, and 1.10.x and earlier report it as "update the app".
 
 Details: [Yedekleme](guvenlik-tasarimi.md#yedekleme).
 
@@ -163,7 +164,7 @@ Details: [Yedekleme](guvenlik-tasarimi.md#yedekleme).
 
 Sync (1.8.0) is off by default. The user enters a WebDAV folder (Nextcloud, ownCloud or another server), a username and an app password. Design: [senkron.md](senkron.md) (Turkish).
 
-- **Files.** Each phone writes one file, `keykey-sync-<6 hex>.keykey`, in the backup format above (payload version 4 with a `sync` object holding the device ID, model, deletion records and the password/recovery slot times). The settings record and the app password are never in it. The server sees names, sizes and times, not content.
+- **Files.** Each phone writes one file, `keykey-sync-<6 hex>.keykey`, in the backup format above (payload version 6 since 1.11.0, 4 before, with a `sync` object holding the device ID, model, deletion records and the password/recovery slot times). The settings record and the app password are never in it. The server sees names, sizes and times, not content.
 - **Client.** HTTPS with system CAs only (plain `http` only on loopback); no user info, query or fragment in the address; redirects are not followed; no cookies; HTTP Basic on every request; 10 s connect and 60 s request timeouts; 1 MiB listing and 64 MiB file limits. Writes go to a `.tmp` file, are read back and compared byte by byte, then moved into place. Error messages carry neither the path nor the credentials.
 - **App password** is stored only inside the vault, in the encrypted settings record; it is part of the (encrypted) backups.
 - **Merge** is per record: every remote record is decrypted with the open vault's key and validated, and one bad record makes the whole file ignored. The newest `updatedAt` wins; a deletion record wins when it is at least as new. A file with any time more than 24 hours in the future is ignored. A losing login password is kept in the winner's password history. Password and recovery slots merge separately by their own change times.
@@ -183,6 +184,18 @@ Details: [Senkron](guvenlik-tasarimi.md#senkron).
 - **Cards (1.5.0).** Payment forms get a separate "Fill card with KeyKey" suggestion. A card isn't bound to any site or app, so it is always picked from the list after unlocking, and the list title names the target. The card PIN is never filled, nothing is copied to the clipboard, and plain `http` pages ask for confirmation. Card security-code fields are no longer mistaken for passwords, so KeyKey doesn't offer to save them.
 
 Details: [Otomatik doldurma](guvenlik-tasarimi.md#otomatik-doldurma), [Kart doldurma](guvenlik-tasarimi.md#kart-doldurma).
+
+## Passkeys
+
+Since 1.11.0, on Android 14+, KeyKey can be the Credential Manager passkey provider. Design: [passkey.md](passkey.md) (Turkish); details: [Passkey](guvenlik-tasarimi.md#passkey).
+
+- **Storage.** Passkeys live inside the login record (`passkeys`, at most 20): credential ID, `rpId`, user handle, user name and display name, the P-256 private key (PKCS#8) and the creation time. They are encrypted with the record and travel with backups and sync. Android Keystore is not used, because the key must move to a new phone. Passkeys are never written to the plain-text export.
+- **Crypto.** ES256 only. Key generation and `SHA256withECDSA` signing use Android's own provider in Kotlin; the private key bytes are wiped there after each call. `authenticatorData` uses flags `UP|UV|BE|BS` (plus `AT` on creation), a sign counter of 0 and KeyKey's AAGUID `b3c1e1d0-6b2a-4f3e-9c7a-4b6579b4b579`; attestation is always `none`.
+- **Origin.** `rpId` must be a valid domain and not a public suffix. In a browser the origin is taken only from trusted browsers (the same embedded list as autofill) via `CallingAppInfo.getOrigin`, must be `https://` and its host must be `rpId` or a subdomain. For an app the origin is `android:apk-key-hash:<SHA-256 of the signature>`; if KeyKey can't verify that the app belongs to the `rpId` site (Android's verified domains or, if enabled, `assetlinks.json`), the window warns and asks for confirmation.
+- **Locked vault.** The provider service never touches the vault. It offers a single "KeyKey" entry for creation and an "Unlock KeyKey" action for sign-in, so nobody can learn which sites have passkeys while the vault is locked.
+- **Sign-in.** After unlocking, KeyKey prepares a response for each matching passkey and keeps only the responses (not the keys) in process memory for at most 2 minutes, then locks. The user picks an account in Android's sheet; a small non-Flutter activity returns that response and clears the rest. No site gets a signature before the user picks an account.
+- **Imports.** Bitwarden JSON (`fido2Credentials`) and KeePassXC (`KPEX_PASSKEY_*`) passkeys are imported after the key's PKCS#8 structure and P-256 curve are checked; others are skipped and counted.
+- **No new user permission.** The service is protected by `BIND_CREDENTIAL_PROVIDER_SERVICE`. Dependency: `androidx.credentials` (Apache 2.0, no Google Play services).
 
 ## Other protections
 
@@ -210,6 +223,8 @@ These are accepted risks, numbered as in the [Turkish list](guvenlik-tasarimi.md
 11. **Deletion records are unencrypted and spread.** Their count and times are visible in the database. Someone who can write to the database can affect a record on every phone through sync with a deletion or version up to 24 hours in the future; before sync it affected only that phone.
 12. **The server can delay.** By withholding, deleting or rolling back a phone's file the server can delay changes; an old file can't undo newer changes because merging only applies what is newer.
 13. **A password change is not a revocation.** An unused phone's sync file and the server's file history open with the old password, and the unchanged vault key also opens later files. A lost phone is stopped by revoking its app password on the server.
+14. **The passkey sign counter is always 0.** A passkey moves between phones with the vault, so a counter can't stay consistent; a site can't detect a cloned passkey from the counter. A site may reject an imported passkey whose counter was above 0.
+15. **A passkey's private key has the vault's protection, not hardware's.** Anything that opens the vault or a backup also yields the passkeys. This is the cost of passkeys that can be backed up and moved (the BE and BS flags tell the site so).
 
 Also: Android 11-13 offer no way to hide the app from accessibility services, and a malicious keyboard sees everything that is typed.
 

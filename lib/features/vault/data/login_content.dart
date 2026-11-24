@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show immutable, listEquals;
+import 'package:keykey/features/vault/data/login_passkey.dart';
 
 /// Parola kaydının içeriği bu sürümün okuyabileceği biçimde değil.
 ///
@@ -114,6 +115,7 @@ final class LoginContent {
     this.folder,
     this.trashedAt,
     this.passwordHistory = const [],
+    this.passkeys = const [],
   });
 
   /// JSON baytlarını katı kurallarla okur.
@@ -127,11 +129,17 @@ final class LoginContent {
     } on FormatException {
       throw const InvalidLoginContentException('Geçersiz JSON.');
     }
-    // Sürüm 1'de `apps` yoktu; beklenen alanlar sürüme göre seçilir.
+    // Sürüm 1'de `apps`, sürüm 2'de `passkeys` yoktu; beklenen alanlar
+    // sürüme göre seçilir.
     final version = decoded is Map<String, Object?> ? decoded['version'] : null;
     final root = switch (version) {
       1 => _object(decoded, _keysV1),
-      currentVersion => _object(decoded, const {..._keysV1, 'apps'}),
+      2 => _object(decoded, const {..._keysV1, 'apps'}),
+      currentVersion => _object(decoded, const {
+        ..._keysV1,
+        'apps',
+        'passkeys',
+      }),
       _ => throw const InvalidLoginContentException('Desteklenmeyen sürüm.'),
     };
     return LoginContent(
@@ -168,11 +176,18 @@ final class LoginContent {
             );
           })
           .toList(growable: false),
+      passkeys: version == currentVersion
+          ? _passkeys(root['passkeys'])
+          : const [],
     );
   }
 
-  /// Sürüm 2 `apps` alanını ekledi. Sürüm 1 okunmaya devam eder.
-  static const currentVersion = 2;
+  /// Sürüm 2 `apps`, sürüm 3 `passkeys` alanını ekledi. Eski sürümler
+  /// okunmaya devam eder.
+  static const currentVersion = 3;
+
+  /// Bir kayıttaki en fazla passkey.
+  static const maxPasskeys = 20;
 
   static const _keysV1 = {
     'version',
@@ -205,6 +220,9 @@ final class LoginContent {
   final DateTime? trashedAt;
   final List<PasswordHistoryEntry> passwordHistory;
 
+  /// Bu hesabın passkey'leri. Sürüm 1 ve 2 kayıtlarda boştur.
+  final List<LoginPasskey> passkeys;
+
   bool get isTrashed => trashedAt != null;
 
   Uint8List toJsonBytes() => utf8.encode(
@@ -233,6 +251,7 @@ final class LoginContent {
             'changedAt': entry.changedAt.millisecondsSinceEpoch,
           },
       ],
+      'passkeys': [for (final passkey in passkeys) passkey.toJson()],
     }),
   );
 
@@ -249,6 +268,7 @@ final class LoginContent {
     Object? folder = _keep,
     Object? trashedAt = _keep,
     List<PasswordHistoryEntry>? passwordHistory,
+    List<LoginPasskey>? passkeys,
   }) {
     return LoginContent(
       name: name ?? this.name,
@@ -264,6 +284,7 @@ final class LoginContent {
           ? this.trashedAt
           : trashedAt as DateTime?,
       passwordHistory: passwordHistory ?? this.passwordHistory,
+      passkeys: passkeys ?? this.passkeys,
     );
   }
 
@@ -289,9 +310,13 @@ final class LoginContent {
   );
 
   /// [edited] içeriğini alır. Parola değiştiyse eskisini geçmişe ekler.
+  /// Passkey'ler formda düzenlenmez; kayıttakiler korunur.
   LoginContent applyEdit(LoginContent edited, DateTime now) {
     if (edited.password == password || password.isEmpty) {
-      return edited.copyWith(passwordHistory: passwordHistory);
+      return edited.copyWith(
+        passwordHistory: passwordHistory,
+        passkeys: passkeys,
+      );
     }
     final history = [
       PasswordHistoryEntry(password: password, changedAt: now),
@@ -301,6 +326,7 @@ final class LoginContent {
       passwordHistory: history.length > maxPasswordHistory
           ? history.sublist(0, maxPasswordHistory)
           : history,
+      passkeys: passkeys,
     );
   }
 
@@ -341,6 +367,32 @@ final class LoginContent {
       );
     }
     return LoginApp(packageName: packageName, certsSha256: certs);
+  }
+
+  static List<LoginPasskey> _passkeys(Object? value) {
+    final list = _list(value, 'passkeys');
+    if (list.length > maxPasskeys) {
+      throw const InvalidLoginContentException('Çok fazla passkey.');
+    }
+    return [
+      for (final item in list)
+        () {
+          final entry = _object(item, LoginPasskey.keys);
+          for (final key in const [
+            'credentialId',
+            'rpId',
+            'userHandle',
+            'userName',
+            'userDisplayName',
+            'privateKey',
+          ]) {
+            _string(entry[key], 'passkeys.$key');
+          }
+          _time(entry['createdAt'], 'passkeys.createdAt');
+          return LoginPasskey.tryParse(entry) ??
+              (throw const InvalidLoginContentException('Geçersiz passkey.'));
+        }(),
+    ];
   }
 
   static Map<String, Object?> _object(Object? value, Set<String> keys) {

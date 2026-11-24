@@ -764,6 +764,39 @@ void main() {
       expect(setup.opened, isEmpty);
     });
 
+    testWidgets('passkey sağlayıcısı satırı yoksa görünmüyor', (tester) async {
+      await pumpWith(
+        tester,
+        const AutofillSetupState(supported: true, enabled: true),
+      );
+
+      expect(find.text('Passkey sağlayıcısı'), findsNothing);
+    });
+
+    testWidgets('passkey sağlayıcısı satırı sistem ayarını açıyor', (
+      tester,
+    ) async {
+      final setup = await pumpWith(
+        tester,
+        const AutofillSetupState(
+          supported: true,
+          enabled: true,
+          passkeysSupported: true,
+        ),
+      );
+
+      await tester.scrollUntilVisible(find.text('Passkey sağlayıcısı'), 100);
+      await Scrollable.ensureVisible(
+        tester.element(find.text('Passkey sağlayıcısı')),
+        alignment: 0.5,
+      );
+      await tester.pumpAndSettle();
+      expect(find.textContaining('tercih edilen hizmet'), findsOneWidget);
+      await tester.tap(find.text('Passkey sağlayıcısı'));
+      await tester.pump();
+      expect(setup.opened, ['credentialProvider']);
+    });
+
     testWidgets('ayar açılamazsa söylüyor', (tester) async {
       final setup = FakeAutofillSetup()..canOpen = false;
       await pumpKeyKey(

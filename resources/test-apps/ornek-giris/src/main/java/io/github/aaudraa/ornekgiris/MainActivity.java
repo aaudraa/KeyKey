@@ -48,6 +48,8 @@ public class MainActivity extends Activity {
         layout.addView(link("Kart formu", CardActivity.class));
         layout.addView(link("Kart formu (ipucusuz)", CardWordsActivity.class));
         layout.addView(link("Kart formu (web)", CardWebActivity.class));
+        // Passkey denemesi (#186).
+        layout.addView(link("Passkey", PasskeyActivity.class));
         setContentView(layout);
     }
 

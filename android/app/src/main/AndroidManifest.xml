@@ -101,6 +101,58 @@
                 android:name="flutter_deeplinking_enabled"
                 android:value="false" />
         </activity>
+        <!-- Passkey sağlayıcısı (Android 14+). Yalnızca sistem bağlanabilir
+             (BIND_CREDENTIAL_PROVIDER_SERVICE). Kasaya dokunmaz; oluşturmada ve
+             girişte passkey penceresini açan seçenekler verir. -->
+        <service
+            android:name=".passkey.KeyKeyCredentialService"
+            android:enabled="@bool/passkeys_supported"
+            android:exported="true"
+            android:label="@string/passkey_account_name"
+            android:icon="@mipmap/ic_launcher"
+            android:permission="android.permission.BIND_CREDENTIAL_PROVIDER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.credentials.CredentialProviderService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.credentials.provider"
+                android:resource="@xml/credential_provider" />
+        </service>
+        <!-- Passkey penceresi. Dışarıya açık değil; yalnızca servisin sisteme verdiği
+             PendingIntent ile açılır. -->
+        <activity
+            android:name=".passkey.PasskeyActivity"
+            android:enabled="@bool/passkeys_supported"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@style/AutofillTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+            <meta-data
+                android:name="io.flutter.embedding.android.NormalTheme"
+                android:resource="@style/AutofillTheme" />
+            <meta-data
+                android:name="flutter_deeplinking_enabled"
+                android:value="false" />
+        </activity>
+        <!-- Hesap seçilince hazır yanıtı veren görünmez ekran. -->
+        <activity
+            android:name=".passkey.PasskeyResponseActivity"
+            android:enabled="@bool/passkeys_supported"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <!-- Flutter'sız; yine de APK denetiminin "her etkinlikte deep link
+                 kapalı" kuralına uyar. -->
+            <meta-data
+                android:name="flutter_deeplinking_enabled"
+                android:value="false" />
+        </activity>
         <!-- Pano temizliği: uygulama arka plandayken alarmla çalışır, dışarıya açık değil. -->
         <receiver
             android:name=".ClipboardClearReceiver"

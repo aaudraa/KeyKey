@@ -185,7 +185,7 @@ void main() {
         utf8.decode([for (final m in plain) ...m.message]),
       ) as Map<String, dynamic>;
       expect(json.keys, unorderedEquals(['version', 'createdAt', 'records']));
-      expect(json['version'], 5);
+      expect(json['version'], 6);
       expect(json['createdAt'], createdAt.millisecondsSinceEpoch);
       final first = (json['records'] as List).first as Map<String, dynamic>;
       expect(
@@ -207,12 +207,12 @@ void main() {
       });
     });
 
-    test('yalnızca eski türler olsa da içerik sürümü 5', () async {
-      // Sürüm 8 ayar kaydını 1.9.0 okuyamaz; içerik sürümü 5 ona "daha yeni
-      // yedek" dedirtir. Şifreli kayıtların içi burada görünmediği için her
-      // yedek bu sürümle yazılır.
+    test('yalnızca eski türler olsa da içerik sürümü 6', () async {
+      // Sürüm 3 parola kaydını (passkey) 1.10 okuyamaz; içerik sürümü 6 ona
+      // "daha yeni yedek" dedirtir. Şifreli kayıtların içi burada görünmediği
+      // için her yedek bu sürümle yazılır.
       final contents = await decode(await encode(sampleRecords()));
-      expect(contents.version, 5);
+      expect(contents.version, 6);
       expect(contents.sync, isNull);
     });
 
@@ -231,21 +231,21 @@ void main() {
           'payload': BackupCodec.payloadVersion,
         },
         {
-          'login': 2,
+          'login': 3,
           'otp': 1,
           'settings': 8,
           'card': 1,
           'note': 1,
-          'payload': 5,
+          'payload': 6,
         },
       );
     });
 
-    test('kart ve not içerik sürümü 5 ile gidip geliyor', () async {
+    test('kart ve not içerik sürümü 6 ile gidip geliyor', () async {
       for (final type in ['card', 'note']) {
         final records = [...sampleRecords(), record(9, type: type)];
         final contents = await decode(await encode(records));
-        expect(contents.version, 5, reason: type);
+        expect(contents.version, 6, reason: type);
         expectSame(contents.records, records);
       }
     });
@@ -555,7 +555,7 @@ void main() {
 
     test('daha yeni içerik sürümü ayrı hatayla reddediliyor', () async {
       await expectLater(
-        decode(await withPayload({...payload([]), 'version': 6})),
+        decode(await withPayload({...payload([]), 'version': 7})),
         throwsA(isA<NewerBackupException>()),
       );
     });
@@ -567,19 +567,19 @@ void main() {
         // "bozuk" sanmamalı.
         await expectLater(
           decode(
-            await withPayload({...payload([]), 'version': 6, 'app': '1.5.0'}),
+            await withPayload({...payload([]), 'version': 7, 'app': '1.5.0'}),
           ),
           throwsA(isA<NewerBackupException>()),
         );
         await expectLater(
-          decode(await withPayload({'version': 6, 'items': <Object>[]})),
+          decode(await withPayload({'version': 7, 'items': <Object>[]})),
           throwsA(isA<NewerBackupException>()),
         );
       },
     );
 
-    test('sürüm 2, 3, 4 ve 5 içerikte kart ve not açılıyor', () async {
-      for (final version in [2, 3, 4, 5]) {
+    test('sürüm 2-6 içerikte kart ve not açılıyor', () async {
+      for (final version in [2, 3, 4, 5, 6]) {
         final contents = await decode(
           await withPayload({
             ...payload([
@@ -673,7 +673,16 @@ void main() {
         );
       });
 
-      test('yalnızca sürüm 4 senkron bilgisi taşıyabilir', () async {
+      test('sürüm 4 ve sonrası senkron bilgisi taşıyabilir', () async {
+        for (final version in [5, 6]) {
+          final contents = await decode(
+            await withPayload({
+              ...v4([entry()], sync()),
+              'version': version,
+            }),
+          );
+          expect(contents.sync?.device, 'a1b2c3', reason: '$version');
+        }
         await expectInvalid({
           ...payload([entry()]),
           'sync': sync(),
@@ -758,7 +767,7 @@ void main() {
           sync: info,
         );
         final contents = await decode(bytes);
-        expect(contents.version, 4);
+        expect(contents.version, 6);
         expect(contents.records, hasLength(2));
         expect(contents.sync?.device, 'a1b2c3');
         expect(contents.sync?.passwordChangedAt, createdAt);

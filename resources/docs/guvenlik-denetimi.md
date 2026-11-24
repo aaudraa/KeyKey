@@ -98,7 +98,7 @@ TalkBack'in korumalı pencerede çalışmaya devam ettiği [Erişilebilirlik](#e
 | İzinler yalnızca izin listesindekiler; `INTERNET` 1.6.0'dan beri listede, gerekçesiyle | Tamam |
 | `usesCleartextTraffic` kapalı, ağ güvenliği yapılandırması tanımlı (1.6.0) | Tamam |
 | `debuggable` kapalı, `allowBackup` kapalı, `dataExtractionRules` tanımlı | Tamam |
-| R8 açık: kendi paketimizden adı korunan sınıflar yalnızca manifestteki dört bileşen (`MainActivity`, `AutofillActivity`, `KeyKeyAutofillService`, `ClipboardClearReceiver`) ve 1.9.0'dan beri yerel kodun adıyla bağladığı JNI sınıfı `Argon2Native`; geri kalanların adı kısaltılmış | Tamam |
+| R8 açık: kendi paketimizden adı korunan sınıflar yalnızca manifestteki bileşenler (`MainActivity`, `AutofillActivity`, `KeyKeyAutofillService`, `ClipboardClearReceiver`; 1.11.0'dan beri passkey servisi ve iki ekranı) ve 1.9.0'dan beri yerel kodun adıyla bağladığı JNI sınıfı `Argon2Native`; geri kalanların adı kısaltılmış | Tamam |
 | Yerel kütüphanelerde (`libapp`, `libflutter`, `libsodium`, `libsqlite3`, `libflutter_zxing` ve diğerleri, 3 mimari, 24 dosya) hata ayıklama bölümü (`.debug_*`) ve tam sembol tablosu (`.symtab`) yok. Kalan dinamik semboller kütüphanenin Dart'tan çağrılabilmesi için gerekli | Tamam |
 | Anahtar deposu, `.env`, `.keykey` yedeği, test fixture'ı veya `DebugProbesKt.bin` yok | `DebugProbesKt.bin` (kotlinx-coroutines'in hata ayıklama dosyası) vardı, paketten çıkarıldı |
 | [Deneme değerlerinden](../scripts/deneme-degerleri.txt) (test parolaları, kurtarma anahtarı, 2FA anahtarı, kullanıcı adları) hiçbiri APK'nın hiçbir dosyasında yok | Tamam |
@@ -303,6 +303,8 @@ Telefon Android 13 olduğu için hassas işaretli pencere orada yok. Android 14+
 | `KeyKeyAutofillService` | Evet | `BIND_AUTOFILL_SERVICE` izni: yalnızca sistem bağlanabilir |
 | `AutofillActivity` | Hayır | Yalnızca servisin `PendingIntent`'iyle açılır |
 | `ClipboardClearReceiver` | Hayır | Yalnızca kendi alarmımız; yaptığı tek şey panoda hâlâ bizim kopyamız varsa silmek |
+| `KeyKeyCredentialService` (1.11.0) | Evet | `BIND_CREDENTIAL_PROVIDER_SERVICE` izni: yalnızca sistem bağlanabilir. Yalnızca Android 14+'ta etkin; kasaya dokunmaz |
+| `PasskeyActivity`, `PasskeyResponseActivity` (1.11.0) | Hayır | Yalnızca servisin sisteme verdiği `PendingIntent`'le açılır; passkey penceresinde deep link kapalı |
 | `androidx.profileinstaller.ProfileInstallReceiver` | Evet | `DUMP` izni: yalnızca adb ve sistem |
 
 İçerik sağlayıcı (`provider`) yok. Emülatörde kabuk kullanıcısıyla denendi: `AutofillActivity` "Permission Denial ... not exported" ile reddedildi.

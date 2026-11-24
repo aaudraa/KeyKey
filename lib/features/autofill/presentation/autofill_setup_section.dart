@@ -76,6 +76,21 @@ class _AutofillSetupSectionState extends ConsumerState<AutofillSetupSection> {
   List<Widget> _statusRows(AppLocalizations l10n) {
     final status = _status;
     if (status == null) return const [];
+    return [
+      ..._autofillRows(l10n, status),
+      if (status.passkeysSupported)
+        ListTile(
+          leading: const KkIconBox(icon: Icons.key_rounded),
+          title: Text(l10n.passkeySetupTitle),
+          subtitle: KkRowSubtitle(l10n.passkeySetupHelp),
+          trailing: const Icon(Icons.open_in_new),
+          onTap: () =>
+              unawaited(_open((b) => b.openCredentialProviderSettings())),
+        ),
+    ];
+  }
+
+  List<Widget> _autofillRows(AppLocalizations l10n, AutofillSetupState status) {
     if (!status.supported) {
       return [
         ListTile(

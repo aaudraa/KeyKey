@@ -29,3 +29,8 @@ android {
         buildTypes.getByName("debug").signingConfig = signingConfigs.getByName("sahte")
     }
 }
+
+dependencies {
+    // Passkey denemesi (#186): KeyKey'in kullandığı sürüm.
+    implementation("androidx.credentials:credentials:1.6.0")
+}

@@ -2,6 +2,32 @@
 
 KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesinde](docs/yayin.md#sürüm-numarası). `v1.0.0`'dan önceki sürümler fazların sonunu işaretler ve hata ayıklama anahtarıyla imzalıdır; kalıcı bir kurulum için kullanılmamalıdır.
 
+## 1.11.0 (2026-11-24): Passkey sağlayıcısı
+
+Android 14 ve üstünde KeyKey passkey sağlayıcısı olabiliyor ([#186](https://github.com/aaudraa/KeyKey/issues/186)). Tasarım: [passkey sağlayıcısı](docs/passkey.md). Veritabanı şeması değişmedi.
+
+### Yeni
+
+- **Passkey oluşturma ve giriş.** Ayarlar → Otomatik doldurma → **Passkey sağlayıcısı** ile Android'in ayarında KeyKey seçilince sitelerde ve uygulamalarda passkey KeyKey'de oluşturuluyor; girişte "KeyKey'in kilidini aç" ile kasa açılıyor, o sitenin hesapları aynı pencerede listeleniyor. Passkey aynı sitenin, aynı kullanıcı adlı kaydına ekleniyor; yoksa yeni kayıt açılıyor.
+- **Kayıtta passkey'ler.** Kayıt ayrıntısında her passkey'in sitesi, hesabı ve oluşturulma tarihi görünüyor ve onayla silinebiliyor; listede passkey'li kayıtta küçük bir anahtar simgesi var.
+- **Passkey'leri içe aktarma.** Bitwarden JSON'daki ve KeePassXC `.kdbx` dosyasındaki passkey'ler kayıtlarıyla birlikte geliyor; önizleme kaç passkey alınacağını ve alınamayanları söylüyor.
+- Passkey'ler kasanın içinde şifreli; yedekle, otomatik yedekle ve senkronla taşınıyor, yeni telefona geçiyor.
+- **Simgesi olmayan uygulamalar** ([#71](https://github.com/aaudraa/KeyKey/issues/71)): ana ekranda simgesi olmayan bir uygulamada da (başka bir uygulamanın içinden açılan giriş ekranları) kayıt ilk kaydetmede uygulamaya bağlanıyor.
+
+### Güvenlik
+
+- Anahtar üretimi ve imza Android'in kendi kripto sağlayıcısında (P-256, ES256); özel anahtar kasanın dışında hiçbir yerde şifresiz durmuyor ve düz metin dışa aktarmaya yazılmıyor.
+- Kasa kilitliyken KeyKey hangi sitelerde passkey olduğunu söylemiyor. Hiçbir site, kullanıcı bir hesap seçmeden imza almıyor; girişte hazırlanan yanıtlar en çok 2 dakika bellekte duruyor.
+- Başka bir sitenin adına gelen istek reddediliyor: `rpId` public suffix olamaz, tarayıcıda origin yalnızca güvenilen tarayıcılardan alınıyor ve `rpId`'ye uymalı. Passkey'i bir uygulama istiyorsa ve uygulamanın o siteye ait olduğu doğrulanamıyorsa KeyKey uyarıyor; uygulamanın imza için verdiği hazır özet kullanılmıyor, imza her zaman uygulamanın kendi kimliğine atılıyor.
+- Küçük bulgular kapatıldı: site doğrulaması ([#182](https://github.com/aaudraa/KeyKey/issues/182)), KeePass içe aktarma ([#180](https://github.com/aaudraa/KeyKey/issues/180)) ve arayüz incelemesi ([#174](https://github.com/aaudraa/KeyKey/issues/174)); liste okunamazsa "Yeniden dene", ayrıntı ekranında yazma hatası söyleniyor.
+
+### Uyumluluk
+
+- **Bütün telefonlarını güncelle.** Parola kaydı sürüm 3, yedeğin ve senkron dosyasının içerik sürümü 6. 1.10.x ve öncesi 1.11.0 yedeklerini "daha yeni yedek" diye açmaz; senkronda "başka bir telefonda daha yeni KeyKey var" der. 1.11.0, eski sürümlerin yedeklerini ve senkron dosyalarını okumaya devam eder. Güncelleme sürerken 1.10 telefonda düzenlenen bir kayıt senkronda passkey'lerini yitirmez.
+- Passkey sağlayıcısı yalnızca Android 14 ve üstünde; eski sürümlerde içe aktarılan passkey'ler kasada durur.
+- Yeni izin: bütün uygulamaları görme (`QUERY_ALL_PACKAGES`, #71). KeyKey yalnızca o an kaydedilen ya da doldurulan uygulamanın adını, imza özetini ve simgesini okur ([gizlilik](docs/gizlilik.md#izinler)). Passkey için kullanıcıdan istenen yeni bir izin yok.
+- Yeni bağımlılık: `androidx.credentials` 1.6.0 (Apache 2.0); Google Play hizmetleri gerekmez.
+
 ## 1.10.0 (2026-11-22): Uygulama ve site eşleştirme
 
 Bir sitenin kaydı, o sitenin resmî uygulamasında da kendiliğinden eşleşiyor ([#178](https://github.com/aaudraa/KeyKey/issues/178)). Tasarım: [uygulama ve site eşleştirme](docs/uygulama-site-eslestirme.md). Yeni izin yok; veritabanı şeması değişmedi.

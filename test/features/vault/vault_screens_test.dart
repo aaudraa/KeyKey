@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,6 +25,7 @@ import 'package:keykey/features/vault/application/vault_entries.dart';
 import 'package:keykey/features/vault/data/card_content.dart';
 import 'package:keykey/features/vault/data/card_number.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
+import 'package:keykey/features/vault/data/login_passkey.dart';
 import 'package:keykey/features/vault/data/note_content.dart';
 import 'package:keykey/features/vault/presentation/card_detail_screen.dart';
 import 'package:keykey/features/vault/presentation/login_detail_screen.dart';
@@ -1260,6 +1263,115 @@ void main() {
       final content = logins.items.first.content;
       expect(content.apps, isEmpty);
       expect(content.urls, ['https://mail.example.com']);
+    });
+  });
+
+  group("passkey'ler", () {
+    LoginPasskey passkey(int id, String user, {String rpId = 'github.com'}) =>
+        LoginPasskey(
+          credentialId: Uint8List.fromList(List.filled(16, id)),
+          rpId: rpId,
+          userHandle: utf8.encode(user),
+          userName: user,
+          userDisplayName: user,
+          privateKey: Uint8List.fromList([id]),
+          createdAt: DateTime.utc(2026, 3, 5, 12),
+        );
+
+    setUp(() {
+      logins.items[0] = FakeLoginRepository.item(
+        logins.items[0].content.copyWith(
+          passkeys: [
+            passkey(1, 'furkan'),
+            passkey(2, 'keykey', rpId: 'example.com'),
+          ],
+        ),
+        id: 1,
+      );
+    });
+
+    Future<void> openDetail(WidgetTester tester) async {
+      await pumpVault(tester);
+      await tester.tap(find.text('Posta'));
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> tapDelete(WidgetTester tester, String site) async {
+      final button = find.descendant(
+        of: find.ancestor(
+          of: find.textContaining(site),
+          matching: find.byType(ListTile),
+        ),
+        matching: find.byTooltip("Passkey'i sil"),
+      );
+      await tapVisible(tester, button);
+    }
+
+    testWidgets('ayrıntıda site, kullanıcı adı ve tarih görünüyor', (
+      tester,
+    ) async {
+      await openDetail(tester);
+
+      expect(find.text('Passkey'), findsNWidgets(2));
+      expect(find.textContaining('github.com · furkan'), findsOneWidget);
+      expect(find.textContaining('example.com · keykey'), findsOneWidget);
+      expect(find.textContaining('Oluşturuldu: 5 Mar 2026'), findsNWidgets(2));
+    });
+
+    testWidgets('silme onaylanınca passkey kayıttan çıkıyor', (tester) async {
+      await openDetail(tester);
+      await tapDelete(tester, 'github.com');
+
+      expect(find.text('Passkey silinsin mi?'), findsOneWidget);
+      await tester.tap(find.widgetWithText(FilledButton, 'Sil'));
+      await tester.pumpAndSettle();
+
+      final content = logins.items.first.content;
+      expect(content.passkeys.map((p) => p.userName), ['keykey']);
+      expect(content.password, 'posta-parolasi');
+      expect(find.textContaining('github.com · furkan'), findsNothing);
+      expect(find.text('Passkey silindi.'), findsOneWidget);
+    });
+
+    testWidgets('vazgeçilince passkey kalıyor', (tester) async {
+      await openDetail(tester);
+      await tapDelete(tester, 'github.com');
+
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Vazgeç'));
+      await tester.pumpAndSettle();
+
+      expect(logins.items.first.content.passkeys, hasLength(2));
+      expect(find.textContaining('github.com · furkan'), findsOneWidget);
+    });
+
+    testWidgets('silme yazılamazsa söyleniyor, passkey kalıyor', (
+      tester,
+    ) async {
+      logins.metadataError = const FileSystemException('disk');
+      await openDetail(tester);
+      await tapDelete(tester, 'github.com');
+      await tester.tap(find.widgetWithText(FilledButton, 'Sil'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Değişiklik kaydedilemedi. Yeniden dene.'), findsOne);
+      expect(logins.items.first.content.passkeys, hasLength(2));
+    });
+
+    testWidgets("listede yalnızca passkey'li kayıtta anahtar simgesi var", (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await pumpVault(tester);
+
+      Finder mark(String name) => find.descendant(
+        of: find.widgetWithText(KkCard, name),
+        matching: find.byIcon(Icons.key_rounded),
+      );
+      expect(mark('Posta'), findsOneWidget);
+      expect(mark('Zeka Oyunu'), findsNothing);
+      expect(visibleNames(tester), contains('Posta'));
+      expect(find.bySemanticsLabel(RegExp('Passkey var')), findsOneWidget);
+      semantics.dispose();
     });
   });
 

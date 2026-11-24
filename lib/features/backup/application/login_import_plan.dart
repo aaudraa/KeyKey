@@ -60,6 +60,7 @@ final class LoginImportPlan {
     required this.skippedOtps,
     this.cards = const [],
     this.notes = const [],
+    this.skippedPasskeys = 0,
   });
 
   final LoginExportSource source;
@@ -76,6 +77,15 @@ final class LoginImportPlan {
   /// Okunamayan veya desteklenmeyen (örneğin Yandex) 2FA anahtarları. Kaydın
   /// kendisi yine eklenir.
   final int skippedOtps;
+
+  /// Kayıtlarla birlikte gelen passkey'ler.
+  int get passkeys => candidates.fold(
+    0,
+    (sum, candidate) => sum + candidate.content.passkeys.length,
+  );
+
+  /// Alınamayan passkey'ler (P-256 olmayan, bozuk ya da sınırı aşan).
+  final int skippedPasskeys;
 }
 
 /// Okunan dosyayı kasadaki kayıtlarla karşılaştırıp listeyi hazırlar.
@@ -117,6 +127,7 @@ LoginImportPlan planLoginImport(
             hidden: field.hidden,
           ),
       ],
+      passkeys: login.passkeys,
     );
     OtpContent? otp;
     final totp = login.totp;
@@ -162,6 +173,7 @@ LoginImportPlan planLoginImport(
     ],
     skipped: export.skipped,
     skippedOtps: skippedOtps,
+    skippedPasskeys: export.skippedPasskeys,
   );
 }
 

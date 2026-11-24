@@ -95,8 +95,10 @@ Future<void> exportPlaintext(BuildContext context, WidgetRef ref) async {
   if (opened is! VaultOpen) return;
   final exporter = ref.read(plaintextExporterProvider);
   final bool hasCards;
+  final bool hasPasskeys;
   try {
     hasCards = await exporter.hasCards(opened.session);
+    hasPasskeys = await exporter.hasPasskeys(opened.session);
   } on VaultLockedException {
     return;
   }
@@ -106,7 +108,9 @@ Future<void> exportPlaintext(BuildContext context, WidgetRef ref) async {
   final warned = await showKkConfirm(
     context,
     title: l10n.exportWarningTitle,
-    message: l10n.exportWarningBody,
+    message: hasPasskeys
+        ? '${l10n.exportWarningBody}\n\n${l10n.exportPasskeysNote}'
+        : l10n.exportWarningBody,
     confirmLabel: l10n.exportWarningContinue,
     cancelLabel: l10n.exportWarningCancel,
   );

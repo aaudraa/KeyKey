@@ -1,8 +1,11 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:keykey/features/authenticator/data/base32.dart';
 import 'package:keykey/features/backup/data/import/kdbx/kdbx_xml.dart';
 import 'package:keykey/features/backup/data/import/login_import.dart';
+import 'package:keykey/features/passkey/domain/p256_key.dart';
+import 'package:keykey/features/vault/data/login_passkey.dart';
 import 'package:keykey/features/vault/data/note_content.dart';
 
 /// KeePass kayıtlarını içe aktarma önizlemesinin biçimine çevirir.
@@ -23,6 +26,7 @@ LoginExport kdbxToLoginExport(KdbxDatabase db) {
   final notes = <NoteContent>[];
   var skipped = 0;
   var withAttachments = 0;
+  var skippedPasskeys = 0;
 
   for (final entry in db.entries) {
     if (entry.attachments > 0) withAttachments++;
@@ -50,8 +54,11 @@ LoginExport kdbxToLoginExport(KdbxDatabase db) {
     final username = value('UserName');
     final password = value('Password');
     final text = value('Notes');
+    final passkey = _passkey(entry);
+    if (passkey == null && _hasPasskeyFields(entry)) skippedPasskeys++;
 
     final hasLoginData =
+        passkey != null ||
         username.trim().isNotEmpty ||
         password.isNotEmpty ||
         totp != null ||
@@ -84,6 +91,7 @@ LoginExport kdbxToLoginExport(KdbxDatabase db) {
       folder: folder,
       fields: fields,
       totp: totp?.uri,
+      passkeys: [?passkey],
     );
     if (login == null) {
       skipped++;
@@ -99,7 +107,37 @@ LoginExport kdbxToLoginExport(KdbxDatabase db) {
     skipped: skipped,
     withAttachments: withAttachments,
     inRecycleBin: db.recycledEntries,
+    skippedPasskeys: skippedPasskeys,
   );
+}
+
+bool _hasPasskeyFields(KdbxEntry entry) =>
+    entry.strings.keys.any((key) => key.startsWith('KPEX_PASSKEY_'));
+
+/// KeePassXC'in `KPEX_PASSKEY_*` alanlarından passkey: kimlik ve kullanıcı
+/// kimliği base64url, anahtar PKCS#8 PEM. KeePassXC oluşturma tarihini bu
+/// alanlarda tutmaz; içe aktarma anı yazılır. Eksik, bozuk ya da P-256
+/// olmayan passkey `null`.
+LoginPasskey? _passkey(KdbxEntry entry) {
+  String field(String name) =>
+      entry.strings['KPEX_PASSKEY_$name']?.value.trim() ?? '';
+  final key = p256Pkcs8FromPem(field('PRIVATE_KEY_PEM'));
+  final id = field('CREDENTIAL_ID');
+  if (key == null || id.isEmpty) return null;
+  try {
+    final handle = field('USER_HANDLE');
+    return LoginPasskey.tryNew(
+      credentialId: base64UrlDecodeNoPad(id),
+      rpId: field('RELYING_PARTY'),
+      userHandle: handle.isEmpty ? Uint8List(0) : base64UrlDecodeNoPad(handle),
+      userName: field('USERNAME'),
+      userDisplayName: '',
+      privateKey: key,
+      createdAt: DateTime.now().toUtc(),
+    );
+  } on FormatException {
+    return null;
+  }
 }
 
 const _standardKeys = {'Title', 'UserName', 'Password', 'URL', 'Notes'};

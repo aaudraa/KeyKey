@@ -659,7 +659,9 @@ data class AutofillSetupStatus (
   /** Seçili otomatik doldurma servisi KeyKey. */
   val enabled: Boolean,
   /** Kurulu Chrome'un ana sürümü; Chrome yoksa `null`. */
-  val chromeMajorVersion: Long? = null
+  val chromeMajorVersion: Long? = null,
+  /** KeyKey bu cihazda passkey sağlayıcısı olabilir (Android 14+). */
+  val passkeysSupported: Boolean
 )
  {
   companion object {
@@ -667,7 +669,8 @@ data class AutofillSetupStatus (
       val supported = pigeonVar_list[0] as Boolean
       val enabled = pigeonVar_list[1] as Boolean
       val chromeMajorVersion = pigeonVar_list[2] as Long?
-      return AutofillSetupStatus(supported, enabled, chromeMajorVersion)
+      val passkeysSupported = pigeonVar_list[3] as Boolean
+      return AutofillSetupStatus(supported, enabled, chromeMajorVersion, passkeysSupported)
     }
   }
   fun toList(): List<Any?> {
@@ -675,6 +678,7 @@ data class AutofillSetupStatus (
       supported,
       enabled,
       chromeMajorVersion,
+      passkeysSupported,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -685,7 +689,7 @@ data class AutofillSetupStatus (
       return true
     }
     val other = other as AutofillSetupStatus
-    return PlatformApiPigeonUtils.deepEquals(this.supported, other.supported) && PlatformApiPigeonUtils.deepEquals(this.enabled, other.enabled) && PlatformApiPigeonUtils.deepEquals(this.chromeMajorVersion, other.chromeMajorVersion)
+    return PlatformApiPigeonUtils.deepEquals(this.supported, other.supported) && PlatformApiPigeonUtils.deepEquals(this.enabled, other.enabled) && PlatformApiPigeonUtils.deepEquals(this.chromeMajorVersion, other.chromeMajorVersion) && PlatformApiPigeonUtils.deepEquals(this.passkeysSupported, other.passkeysSupported)
   }
 
   override fun hashCode(): Int {
@@ -693,10 +697,11 @@ data class AutofillSetupStatus (
     result = 31 * result + PlatformApiPigeonUtils.deepHash(this.supported)
     result = 31 * result + PlatformApiPigeonUtils.deepHash(this.enabled)
     result = 31 * result + PlatformApiPigeonUtils.deepHash(this.chromeMajorVersion)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.passkeysSupported)
     return result
   }
   override fun toString(): String {
-    return "AutofillSetupStatus(supported=$supported, enabled=$enabled, chromeMajorVersion=$chromeMajorVersion)"
+    return "AutofillSetupStatus(supported=$supported, enabled=$enabled, chromeMajorVersion=$chromeMajorVersion, passkeysSupported=$passkeysSupported)"
   }
 }
 
@@ -795,6 +800,181 @@ data class FolderPickResult (
     return "FolderPickResult(status=$status, uri=$uri, name=$name)"
   }
 }
+
+/**
+ * Passkey'in P-256 anahtar çifti: PKCS#8 DER özel anahtar ve açık noktanın
+ * 32'şer baytlık koordinatları.
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class PasskeyKeyPair (
+  val privateKey: ByteArray,
+  val x: ByteArray,
+  val y: ByteArray
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): PasskeyKeyPair {
+      val privateKey = pigeonVar_list[0] as ByteArray
+      val x = pigeonVar_list[1] as ByteArray
+      val y = pigeonVar_list[2] as ByteArray
+      return PasskeyKeyPair(privateKey, x, y)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      privateKey,
+      x,
+      y,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as PasskeyKeyPair
+    return PlatformApiPigeonUtils.deepEquals(this.privateKey, other.privateKey) && PlatformApiPigeonUtils.deepEquals(this.x, other.x) && PlatformApiPigeonUtils.deepEquals(this.y, other.y)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.privateKey)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.x)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.y)
+    return result
+  }
+  override fun toString(): String {
+    return "PasskeyKeyPair(privateKey=${privateKey.contentToString()}, x=${x.contentToString()}, y=${y.contentToString()})"
+  }
+}
+
+/**
+ * Passkey penceresini açan istek; kasaya bakmadan bilinenler.
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class PasskeyRequestInfo (
+  /** `create` ya da `get`. */
+  val kind: String,
+  /** Credential Manager'ın verdiği WebAuthn seçenekleri. */
+  val requestJson: String,
+  val packageName: String,
+  /** Küçük harfli onaltılık SHA-256 özetleri; okunamadıysa boş. */
+  val certsSha256: List<String>,
+  val appLabel: String? = null,
+  /** Güvenilen tarayıcının bildirdiği origin; uygulamada `null`. */
+  val browserOrigin: String? = null,
+  /** Tarayıcının verdiği clientDataJSON özeti. */
+  val clientDataHash: ByteArray? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): PasskeyRequestInfo {
+      val kind = pigeonVar_list[0] as String
+      val requestJson = pigeonVar_list[1] as String
+      val packageName = pigeonVar_list[2] as String
+      val certsSha256 = pigeonVar_list[3] as List<String>
+      val appLabel = pigeonVar_list[4] as String?
+      val browserOrigin = pigeonVar_list[5] as String?
+      val clientDataHash = pigeonVar_list[6] as ByteArray?
+      return PasskeyRequestInfo(kind, requestJson, packageName, certsSha256, appLabel, browserOrigin, clientDataHash)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      kind,
+      requestJson,
+      packageName,
+      certsSha256,
+      appLabel,
+      browserOrigin,
+      clientDataHash,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as PasskeyRequestInfo
+    return PlatformApiPigeonUtils.deepEquals(this.kind, other.kind) && PlatformApiPigeonUtils.deepEquals(this.requestJson, other.requestJson) && PlatformApiPigeonUtils.deepEquals(this.packageName, other.packageName) && PlatformApiPigeonUtils.deepEquals(this.certsSha256, other.certsSha256) && PlatformApiPigeonUtils.deepEquals(this.appLabel, other.appLabel) && PlatformApiPigeonUtils.deepEquals(this.browserOrigin, other.browserOrigin) && PlatformApiPigeonUtils.deepEquals(this.clientDataHash, other.clientDataHash)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.kind)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.requestJson)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.packageName)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.certsSha256)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.appLabel)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.browserOrigin)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.clientDataHash)
+    return result
+  }
+  override fun toString(): String {
+    return "PasskeyRequestInfo(kind=$kind, requestJson=$requestJson, packageName=$packageName, certsSha256=$certsSha256, appLabel=$appLabel, browserOrigin=$browserOrigin, clientDataHash=${clientDataHash?.contentToString()})"
+  }
+}
+
+/**
+ * Kasa açılınca hesaplanan, kullanıcının seçmesini bekleyen bir giriş
+ * yanıtı.
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class PasskeyAssertion (
+  /** base64url, dolgusuz. */
+  val credentialId: String,
+  val userName: String,
+  val displayName: String,
+  val responseJson: String
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): PasskeyAssertion {
+      val credentialId = pigeonVar_list[0] as String
+      val userName = pigeonVar_list[1] as String
+      val displayName = pigeonVar_list[2] as String
+      val responseJson = pigeonVar_list[3] as String
+      return PasskeyAssertion(credentialId, userName, displayName, responseJson)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      credentialId,
+      userName,
+      displayName,
+      responseJson,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as PasskeyAssertion
+    return PlatformApiPigeonUtils.deepEquals(this.credentialId, other.credentialId) && PlatformApiPigeonUtils.deepEquals(this.userName, other.userName) && PlatformApiPigeonUtils.deepEquals(this.displayName, other.displayName) && PlatformApiPigeonUtils.deepEquals(this.responseJson, other.responseJson)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.credentialId)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.userName)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.displayName)
+    result = 31 * result + PlatformApiPigeonUtils.deepHash(this.responseJson)
+    return result
+  }
+  override fun toString(): String {
+    return "PasskeyAssertion(credentialId=$credentialId, userName=$userName, displayName=$displayName, responseJson=$responseJson)"
+  }
+}
 private open class PlatformApiPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -868,6 +1048,21 @@ private open class PlatformApiPigeonCodec : StandardMessageCodec() {
           FolderPickResult.fromList(it)
         }
       }
+      143.toByte() -> {
+        (readValue(buffer) as? List<Any?>)?.let {
+          PasskeyKeyPair.fromList(it)
+        }
+      }
+      144.toByte() -> {
+        (readValue(buffer) as? List<Any?>)?.let {
+          PasskeyRequestInfo.fromList(it)
+        }
+      }
+      145.toByte() -> {
+        (readValue(buffer) as? List<Any?>)?.let {
+          PasskeyAssertion.fromList(it)
+        }
+      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -927,6 +1122,18 @@ private open class PlatformApiPigeonCodec : StandardMessageCodec() {
       }
       is FolderPickResult -> {
         stream.write(142)
+        writeValue(stream, value.toList())
+      }
+      is PasskeyKeyPair -> {
+        stream.write(143)
+        writeValue(stream, value.toList())
+      }
+      is PasskeyRequestInfo -> {
+        stream.write(144)
+        writeValue(stream, value.toList())
+      }
+      is PasskeyAssertion -> {
+        stream.write(145)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -1455,6 +1662,8 @@ interface AutofillSetupApi {
   fun openAutofillSettings(): Boolean
   /** Chrome'un otomatik doldurma ayarını açar. Açılamazsa `false`. */
   fun openChromeAutofillSettings(): Boolean
+  /** Sistemin passkey sağlayıcısı seçimini açar. Açılamazsa `false`. */
+  fun openCredentialProviderSettings(): Boolean
 
   companion object {
     /** The codec used by AutofillSetupApi. */
@@ -1501,6 +1710,21 @@ interface AutofillSetupApi {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
               listOf(api.openChromeAutofillSettings())
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.AutofillSetupApi.openCredentialProviderSettings$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.openCredentialProviderSettings())
             } catch (exception: Throwable) {
               PlatformApiPigeonUtils.wrapError(exception)
             }
@@ -1725,6 +1949,218 @@ interface BackupFolderApi {
             val folderUriArg = args[0] as String
             val wrapped: List<Any?> = try {
               api.release(folderUriArg)
+              listOf(null)
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}
+/**
+ * Passkey kriptosu, Android'in kendi sağlayıcısıyla. Anahtar Android
+ * Keystore'da değil kasada durur; Kotlin'e gelen özel anahtar baytları
+ * kullanıldıktan sonra sıfırlanır.
+ *
+ * Generated interface from Pigeon that represents a handler of messages from Flutter.
+ */
+interface PasskeyCryptoApi {
+  /** Yeni bir P-256 anahtar çifti. */
+  fun generate(): PasskeyKeyPair
+  /** `SHA256withECDSA`, DER imza. */
+  fun sign(privateKey: ByteArray, data: ByteArray): ByteArray
+
+  companion object {
+    /** The codec used by PasskeyCryptoApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      PlatformApiPigeonCodec()
+    }
+    /** Sets up an instance of `PasskeyCryptoApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: PasskeyCryptoApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.PasskeyCryptoApi.generate$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.generate())
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.PasskeyCryptoApi.sign$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val privateKeyArg = args[0] as ByteArray
+            val dataArg = args[1] as ByteArray
+            val wrapped: List<Any?> = try {
+              listOf(api.sign(privateKeyArg, dataArg))
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}
+/**
+ * Passkey penceresi ile `PasskeyActivity` arasındaki köprü.
+ *
+ * Generated interface from Pigeon that represents a handler of messages from Flutter.
+ */
+interface PasskeyApi {
+  fun request(): PasskeyRequestInfo?
+  /** Otomatik doldurmadaki gibi: paketin imzası özetlerin hepsiyle tutuyor mu. */
+  fun hasSigningCertificates(packageName: String, certsSha256: List<String>): Boolean
+  /** Otomatik doldurmadaki gibi: paketin bildirdiği alan adları (Android 12+). */
+  fun appDomains(packageName: String): List<AppDomain>
+  /** Oluşturma bitti; yanıt `RegistrationResponseJSON`. */
+  fun finishCreate(responseJson: String)
+  /** Kilit açıldı; sistem bu hesapları gösterir. Boşsa "passkey yok". */
+  fun finishGet(assertions: List<PasskeyAssertion>)
+  /**
+   * İstek reddedildi: `invalidRequest`, `unsupportedAlgorithm`,
+   * `alreadyExists`, `rpIdMismatch`.
+   */
+  fun fail(error: String)
+  fun cancel()
+
+  companion object {
+    /** The codec used by PasskeyApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      PlatformApiPigeonCodec()
+    }
+    /** Sets up an instance of `PasskeyApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: PasskeyApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.PasskeyApi.request$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.request())
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.PasskeyApi.hasSigningCertificates$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val packageNameArg = args[0] as String
+            val certsSha256Arg = args[1] as List<String>
+            val wrapped: List<Any?> = try {
+              listOf(api.hasSigningCertificates(packageNameArg, certsSha256Arg))
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.PasskeyApi.appDomains$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val packageNameArg = args[0] as String
+            val wrapped: List<Any?> = try {
+              listOf(api.appDomains(packageNameArg))
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.PasskeyApi.finishCreate$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val responseJsonArg = args[0] as String
+            val wrapped: List<Any?> = try {
+              api.finishCreate(responseJsonArg)
+              listOf(null)
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.PasskeyApi.finishGet$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val assertionsArg = args[0] as List<PasskeyAssertion>
+            val wrapped: List<Any?> = try {
+              api.finishGet(assertionsArg)
+              listOf(null)
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.PasskeyApi.fail$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val errorArg = args[0] as String
+            val wrapped: List<Any?> = try {
+              api.fail(errorArg)
+              listOf(null)
+            } catch (exception: Throwable) {
+              PlatformApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.keykey.PasskeyApi.cancel$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              api.cancel()
               listOf(null)
             } catch (exception: Throwable) {
               PlatformApiPigeonUtils.wrapError(exception)

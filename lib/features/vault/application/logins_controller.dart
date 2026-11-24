@@ -187,6 +187,14 @@ class LoginsController extends Notifier<LoginsState> {
   Future<void> moveToFolder(LoginItem item, String? folder) =>
       _updateMetadata(item, (content) => content.copyWith(folder: folder));
 
+  /// Passkey ekler ya da siler (gerekirse uygulamayı da bağlar). Düzenleme
+  /// passkey'lere dokunmadığı için ayrı yol; parola geçmişine dokunmaz.
+  /// [change] kaydın en son haline uygulanır.
+  Future<void> changePasskeys(
+    LoginItem item,
+    LoginContent Function(LoginContent) change,
+  ) => _updateMetadata(item, change);
+
   Future<void> restore(LoginItem item) =>
       _updateMetadata(item, (content) => content.copyWith(trashedAt: null));
 

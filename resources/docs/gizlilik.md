@@ -13,7 +13,7 @@ KeyKey hiçbir veri toplamaz. Hesap ve KeyKey'in bir sunucusu yoktur; kasan bu t
 
 ## Cihazda tutulanlar
 
-- Girdiğin parolalar, kartlar, güvenli notlar, 2FA hesapları ve ayarlar yalnızca senin cihazında, ana parolandan türetilen anahtarla şifrelenmiş bir veritabanında durur. Şifreleme ayrıntıları [güvenlik tasarımında](guvenlik-tasarimi.md).
+- Girdiğin parolalar, passkey'ler, kartlar, güvenli notlar, 2FA hesapları ve ayarlar yalnızca senin cihazında, ana parolandan türetilen anahtarla şifrelenmiş bir veritabanında durur. Şifreleme ayrıntıları [güvenlik tasarımında](guvenlik-tasarimi.md).
 - Android'in bulut yedeği kapalıdır; kasa Google hesabına yedeklenmez.
 - Senkronu açarsan klasör adresi, kullanıcı adı ve uygulama parolası kasanın içinde, ayar kaydında şifreli durur. Kasanın yedeğine de girer (yedek şifreli).
 - İki istisna var, ikisi de uygulamanın kendi klasöründe ayrı, şifresiz küçük birer dosya ve başka hiçbir bilgi içermez:
@@ -38,6 +38,15 @@ Konum, rehber ve depolama izinleri istenmez.
 KeyKey'i doldurma servisi olarak seçersen Android, bir giriş formuna dokunduğunda formun yapısını (alan türleri, uygulamanın paket adı, tarayıcıdaysa sitenin alan adı) KeyKey'e verir. KeyKey bunu yalnızca doğru kaydı önermek için kullanır ve saklamaz. Kaydetme önerisini kabul edersen yalnızca senin onayladığın kullanıcı adı ve parola kasaya eklenir. Kayıtları uygulamalara bağlayabilmek için KeyKey telefondaki uygulamaları görebilir (1.11.0'dan beri bütün uygulamaları; önceden yalnızca ana ekranda simgesi olanları).
 
 Bir uygulamada doldururken KeyKey, Android'in o uygulama için doğruladığı siteleri de okur (Android 12 ve üstü). Bu bilgi telefonda kalır; ağa çıkılmaz.
+
+## Passkey'ler
+
+Android 14 ve üstünde KeyKey'i passkey sağlayıcısı olarak seçersen (Ayarlar → Otomatik doldurma → **Passkey sağlayıcısı**), bir site ya da uygulama passkey istediğinde Android isteği KeyKey'e verir: sitenin adı, hesabın adı, sitenin meydan okuması ve isteyen uygulamanın paket adı ile imza özeti. KeyKey bunları yalnızca passkey'i oluşturmak ya da onunla imzalamak için kullanır.
+
+- **Ne saklanır:** Oluşturduğun ya da içe aktardığın passkey'ler (özel anahtarı dahil) kasanın içinde, kayıtla birlikte şifreli durur ve yedeğine ve senkrona girer. İstekler saklanmaz.
+- **Ne gider:** Yanıt (oluşturmada açık anahtar, girişte imza ve hesabın kimliği) Android üzerinden yalnızca passkey'i isteyen siteye ya da uygulamaya gider; özel anahtar hiçbir yere gitmez. Passkey'i bir uygulama istediyse ve [uygulamanın sitesini doğrulama](#uygulamanın-sitesini-doğrulama) açıksa, KeyKey o sitenin `assetlinks.json` dosyasını aynı kuralla okuyabilir.
+- **Kasa kilitliyken** KeyKey isteğe hangi sitelerde passkey'in olduğunu söylemez; yalnızca "KeyKey'in kilidini aç" seçeneğini verir.
+- Passkey'ler şifresiz dışa aktarma dosyasına yazılmaz.
 
 ## Pano
 

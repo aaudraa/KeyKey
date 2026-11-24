@@ -36,6 +36,17 @@ final class PlaintextExporter {
     return cards.items.any((item) => !item.content.isTrashed);
   }
 
+  /// Çöp dışında passkey'li bir giriş var mı; varsa uyarı passkey'lerin
+  /// dosyaya yazılmadığını söyler.
+  Future<bool> hasPasskeys(VaultSession session) async {
+    final logins = await _ref
+        .read(loginRepositoryFactoryProvider)(session)
+        .loadAll();
+    return logins.items.any(
+      (item) => !item.content.isTrashed && item.content.passkeys.isNotEmpty,
+    );
+  }
+
   /// Dosyanın baytları, UTF-8. Kaydedildikten sonra sıfırlamak çağıranın işi.
   Future<Uint8List> build(VaultSession session, ExportFormat format) async {
     final logins = await _ref

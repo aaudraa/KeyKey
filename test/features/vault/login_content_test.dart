@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
+import 'package:keykey/features/vault/data/login_passkey.dart';
 
 /// Sınamalar için 64 haneli geçerli bir imza özeti.
 String digest(int seed) => seed.toRadixString(16).padLeft(64, '0');
@@ -58,6 +59,7 @@ void main() {
     expect(actual.folder, expected.folder);
     expect(actual.trashedAt, expected.trashedAt);
     expect(actual.passwordHistory, expected.passwordHistory);
+    expect(actual.passkeys, expected.passkeys);
   }
 
   group('biçim', () {
@@ -100,6 +102,108 @@ void main() {
     });
   });
 
+  group('sürüm 3: passkey', () {
+    Matcher rejected() => throwsA(isA<InvalidLoginContentException>());
+
+    LoginPasskey passkey({
+      int idLength = 16,
+      String rpId = 'github.com',
+      int handleLength = 32,
+    }) => LoginPasskey(
+      credentialId: Uint8List(idLength)..[0] = 7,
+      rpId: rpId,
+      userHandle: Uint8List(handleLength)..[0] = 9,
+      userName: 'furkan',
+      userDisplayName: 'Furkan',
+      privateKey: Uint8List.fromList(List.generate(138, (i) => i)),
+      createdAt: DateTime.utc(2026, 11, 24, 10),
+    );
+
+    test('passkey yazılıp aynen okunuyor, sürüm 3', () {
+      final content = full.copyWith(passkeys: [passkey()]);
+      final written = json(content);
+      expect(written['version'], 3);
+      final first = (written['passkeys']! as List).first as Map;
+      expect(first['credentialId'], 'BwAAAAAAAAAAAAAAAAAAAA');
+      expect(first['rpId'], 'github.com');
+      expectSame(LoginContent.fromJsonBytes(content.toJsonBytes()), content);
+    });
+
+    test('sabit sürüm 3 örnek dosyası açılıyor', () {
+      // Bu dosya değişmez: eski kasalar her sürümde açılmalı.
+      final fixture = File('test/fixtures/vault/login-v3.json')
+          .readAsBytesSync();
+      final passkey = LoginContent.fromJsonBytes(fixture).passkeys.single;
+      expect(passkey.credentialId, List.generate(16, (i) => i + 1));
+      expect(passkey.rpId, 'example.com');
+      expect(utf8.decode(passkey.userHandle), 'keykey');
+      expect(passkey.userName, 'furkan');
+      expect(passkey.privateKey, [0, 1, 2]);
+      expect(passkey.createdAt.millisecondsSinceEpoch, 1795000000000);
+    });
+
+    test('sürüm 2 kayıt boş passkey listesiyle okunuyor', () {
+      final fixture = File('test/fixtures/vault/login-v2.json')
+          .readAsBytesSync();
+      expect(LoginContent.fromJsonBytes(fixture).passkeys, isEmpty);
+    });
+
+    test('sürüm 2 kayıtta passkeys alanı olamaz, sürüm 3 kayıtta zorunlu', () {
+      final withPasskeys = json(full)..['version'] = 2;
+      expect(() => LoginContent.fromJsonBytes(bytes(withPasskeys)), rejected());
+      final missing = json(full)..remove('passkeys');
+      expect(() => LoginContent.fromJsonBytes(bytes(missing)), rejected());
+    });
+
+    test('sınırlar: 20 passkey, 255 baytlık kimlik, 64 baytlık tanıtıcı', () {
+      LoginContent read(List<LoginPasskey> list) => LoginContent.fromJsonBytes(
+        full.copyWith(passkeys: list).toJsonBytes(),
+      );
+      expect(read(List.filled(20, passkey())).passkeys, hasLength(20));
+      expect(() => read(List.filled(21, passkey())), rejected());
+      expect(read([passkey(idLength: 255)]).passkeys, hasLength(1));
+      expect(() => passkey(idLength: 256), throwsArgumentError);
+      expect(() => passkey(idLength: 0), throwsArgumentError);
+      expect(() => passkey(handleLength: 65), throwsArgumentError);
+      expect(() => passkey(rpId: 'GitHub.com'), throwsArgumentError);
+      expect(() => passkey(rpId: '1.2.3.4'), throwsArgumentError);
+      expect(() => passkey(rpId: ''), throwsArgumentError);
+    });
+
+    test('bozuk passkey alanı reddediliyor', () {
+      final map = json(full.copyWith(passkeys: [passkey()]));
+      final entry = (map['passkeys']! as List).first as Map<String, Object?>;
+      for (final change in <void Function(Map<String, Object?>)>[
+        (e) => e['extra'] = 1,
+        (e) => e.remove('userName'),
+        (e) => e['credentialId'] = 'geçersiz*',
+        (e) => e['privateKey'] = 42,
+        (e) => e['rpId'] = 'Kötü site',
+      ]) {
+        final copy = Map<String, Object?>.of(entry);
+        change(copy);
+        final broken = Map<String, Object?>.of(map)..['passkeys'] = [copy];
+        expect(() => LoginContent.fromJsonBytes(bytes(broken)), rejected());
+      }
+    });
+
+    test('düzenleme ve yeniden temellendirme passkeyleri korur', () {
+      final original = full.copyWith(passkeys: [passkey()]);
+      const edited = LoginContent(name: 'Yeni ad', password: 'yeni');
+      expect(original.applyEdit(edited, DateTime.utc(2026)).passkeys, [
+        passkey(),
+      ]);
+      final latest = original.copyWith(password: 'başka');
+      expect(
+        original
+            .copyWith(name: 'x')
+            .rebase(original: original, latest: latest)
+            .passkeys,
+        [passkey()],
+      );
+    });
+  });
+
   group('sürüm 2: bağlı uygulamalar', () {
     Matcher rejected() => throwsA(isA<InvalidLoginContentException>());
 
@@ -126,9 +230,9 @@ void main() {
       final content = LoginContent.fromJsonBytes(fixture);
       expect(content.apps, isEmpty);
 
-      // Yeniden yazılınca sürüm 2 olur.
+      // Yeniden yazılınca güncel sürüm olur.
       final written = json(content);
-      expect(written['version'], 2);
+      expect(written['version'], LoginContent.currentVersion);
       expect(written['apps'], isEmpty);
     });
 
@@ -219,7 +323,7 @@ void main() {
     });
 
     test('bilinmeyen sürüm', () {
-      final map = json(full)..['version'] = 3;
+      final map = json(full)..['version'] = 4;
       expect(() => LoginContent.fromJsonBytes(bytes(map)), rejected());
     });
 

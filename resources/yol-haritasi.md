@@ -2,7 +2,7 @@
 
 KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uygulaması. 1.5.0'a kadar tamamen çevrimdışıydı; 2026-11-19'da internet gerektiren özelliklere de açılma kararı alındı ([İnternet](#temel-kararlar)). Bu belge neyi, hangi sırayla ve neden yaptığımızın tek kaynağıdır. Her faz bittiğinde güncellenir.
 
-**Son güncelleme:** 2026-11-23 · **Şu anki faz:** 25 bitti; sıradaki 21, passkey sağlayıcısı. [1.10.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.10.0) yayında (uygulama ve site eşleştirme: Android'in doğruladığı siteler ve isteğe bağlı `assetlinks.json` doğrulaması, [#178](https://github.com/aaudraa/KeyKey/issues/178); koşullar sürüm 4, yedek içerik sürümü 5; küçük bulgular [#182](https://github.com/aaudraa/KeyKey/issues/182)'de). [1.9.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.9.0) yayında (KeePass `.kdbx` dosyalarını doğrudan açıp içe aktarma, [#177](https://github.com/aaudraa/KeyKey/issues/177); Argon2 yerel kodda, F-Droid karşılaştırması yeşil). [1.8.2](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.2) yayında (düzeltme sürümü: ultra review'a girmeyen arayüz kodunun incelemesi, [#173](https://github.com/aaudraa/KeyKey/issues/173); kalan dört küçük bulgu [#174](https://github.com/aaudraa/KeyKey/issues/174)'te). [1.8.1](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.1) (düzeltme sürümü: projenin bütününün ultra review bulguları, [#168](https://github.com/aaudraa/KeyKey/issues/168); gömülü çerçeveye parola yazılmaması N9 gerçek Chrome'da denendi; navbar yalnızca simge, #163). [1.8.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.0) (kendi WebDAV sunucusu üzerinden uçtan uca şifreli senkron, senkrondan kurma, başka kasası olan telefonu katma; Nextcloud ile ilk deneme ve 1.4.0'dan beri gelenlerle birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
+**Son güncelleme:** 2026-11-24 · **Şu anki faz:** 21, passkey sağlayıcısı (1.11.0, [#186](https://github.com/aaudraa/KeyKey/issues/186)); küçük bulgular #182, #180, #174 ve #71 `main`'de, 1.11.0 ile yayımlanacak. [1.10.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.10.0) yayında (uygulama ve site eşleştirme: Android'in doğruladığı siteler ve isteğe bağlı `assetlinks.json` doğrulaması, [#178](https://github.com/aaudraa/KeyKey/issues/178); koşullar sürüm 4, yedek içerik sürümü 5; küçük bulgular [#182](https://github.com/aaudraa/KeyKey/issues/182)'de). [1.9.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.9.0) yayında (KeePass `.kdbx` dosyalarını doğrudan açıp içe aktarma, [#177](https://github.com/aaudraa/KeyKey/issues/177); Argon2 yerel kodda, F-Droid karşılaştırması yeşil). [1.8.2](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.2) yayında (düzeltme sürümü: ultra review'a girmeyen arayüz kodunun incelemesi, [#173](https://github.com/aaudraa/KeyKey/issues/173); kalan dört küçük bulgu [#174](https://github.com/aaudraa/KeyKey/issues/174)'te). [1.8.1](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.1) (düzeltme sürümü: projenin bütününün ultra review bulguları, [#168](https://github.com/aaudraa/KeyKey/issues/168); gömülü çerçeveye parola yazılmaması N9 gerçek Chrome'da denendi; navbar yalnızca simge, #163). [1.8.0](https://github.com/aaudraa/KeyKey/releases/tag/v1.8.0) (kendi WebDAV sunucusu üzerinden uçtan uca şifreli senkron, senkrondan kurma, başka kasası olan telefonu katma; Nextcloud ile ilk deneme ve 1.4.0'dan beri gelenlerle birlikte telefon denemesi Obtainium güncellemesinden sonra); otomatik yedek ve yeni kurtarma anahtarı proje sahibinin telefonunda denendi; F-Droid başvurusu ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)) kabul edilmedi
 
 > [!IMPORTANT]
 > **KeyKey 1.0 yayında.** Projenin kendi güvenlik denetimi tamamlandı, ama bağımsız bir denetim yapılmadı. Şifreli yedeğini düzenli al ve telefonun dışında da sakla.
@@ -34,7 +34,7 @@ KeyKey, Android için açık kaynak bir parola yöneticisi ve 2FA doğrulama uyg
 | 18 | Kilit süresi, klavye, toplu seçim, Steam Guard | M | 14 | `faz/18-kullanim-kolayligi` | Tamamlandı (1.7.0) |
 | 19 | Senkron (WebDAV; Google Drive ayrı) | XL | 16 | `faz/19-senkron` | Tamamlandı (1.8.0) |
 | 20 | KeePass (`.kdbx`) içe aktarma | L | 14 | `faz/20-keepass` | Bitti (1.9.0) |
-| 21 | Passkey sağlayıcısı | XL | 15 | `faz/21-passkey` | Sıradaki |
+| 21 | Passkey sağlayıcısı | XL | 15 | `faz/21-passkey` | Sürüyor (1.11.0) |
 | 22 | İşlemciye göre APK ve kendi F-Droid deposu | M | — | `faz/22-dagitim` | Planlandı |
 | 23 | KeyKey klavyesi | XL | 15 | `faz/23-klavye` | Planlandı |
 | 24 | Windows sürümü | XL | 19 | `faz/24-windows` | Planlandı |
@@ -827,6 +827,29 @@ Bir karar plandan saptı: ayar kaydının sürümü artınca yedeğin içerik s�
 1.10.0 olarak yayımlandı (2026-11-23, [#183](https://github.com/aaudraa/KeyKey/pull/183)). İmza sertifikası aynı (`66ff7b5c…`); F-Droid'in kendi derlemesi APK'yla bayt bayt aynı çıktı. Android 17 emülatöründe bütün entegrasyon testleri geçti (40 test). Yeni izin yok.
 
 **Cihazda (2026-11-22, Android 17 emülatörü):** Örnek giriş uygulamasının `autoVerify` alan adı sistemde "approved" yapıldı; bağsız `example.com` kaydı liste açılmadan doldu ve uygulama kayda bağlandı. F-Droid'deki Wikipedia'nın imzası `wikipedia.org` dosyasında listeli; sistemin doğrulaması geri alınıp ayar açıldı, `en.wikipedia.org` kaydı giriş ekranında liste açılmadan doldu ve `org.wikipedia` bağlandı.
+
+### Faz 21 — Passkey sağlayıcısı
+
+Android 14 ve üstünde KeyKey'i Credential Manager'ın passkey sağlayıcısı yapmak: oluşturma, giriş, kasada saklama, görme ve silme, içe aktarma ([#186](https://github.com/aaudraa/KeyKey/issues/186)). Proje sahibi 2026-11-24'te "faz 21'i ve küçük işlerin tamamını halledelim" dedi; kararlar benim. Tasarım: [`passkey.md`](docs/passkey.md), plan: [`passkey-plani.md`](docs/passkey-plani.md).
+
+- [x] Parola kaydı sürüm 3 (`passkeys`); yedek ve senkron dosyası içerik sürümü 6
+- [x] WebAuthn biçimleri ve CBOR; `rpId` ve origin kuralları
+- [x] Android sağlayıcı servisi, P-256 anahtar ve imza (Android'in kripto sağlayıcısı), `androidx.credentials` 1.6.0
+- [x] Passkey penceresi (Flutter) ve Pigeon köprüsü; girişte yanıtlar 2 dakika bellekte
+- [x] Kayıt ayrıntısında passkey'ler ve silme, listede anahtar simgesi, Ayarlar'da "Passkey sağlayıcısı"
+- [x] Bitwarden JSON ve KeePassXC passkey'lerini içe aktarma; şifresiz dışa aktarma passkey yazmaz
+- [x] Güvenlik tasarımı, gizlilik, kılavuz, bağımlılıklar, değişiklik günlüğü
+- [x] Cihazda: örnek giriş uygulaması ve Chrome'da webauthn.io (Android 17 emülatörü)
+- [x] Son gözden geçirme ([#187](https://github.com/aaudraa/KeyKey/issues/187))
+- [ ] 1.11.0
+
+Plandan sapan kararlar: senkron dosyası da içerik sürümü 6 ile yazılıyor (5 olamazdı: 1.10 sürüm 5'i okuyup sürüm 3 kaydı açmaya çalışırdı), bu yüzden passkey'li kasayı eşitleyen bütün telefonlar güncellenmeli. Kullanım koşulları değişmedi: passkey yeni bir ağ isteği eklemiyor, uygulamanın sitesini doğrulamak Faz 25'in ayarı ve istemcisiyle yapılıyor.
+
+**Cihazda (2026-11-24, Android 17 emülatörü, Chrome 157):** KeyKey Ayarlar'daki satırla Android'in ayarında tercih edilen hizmet seçildi. Örnek giriş uygulamasında passkey oluşturuldu ve onunla girildi; uygulama yanıtı bir sunucu gibi denetledi (meydan okuma, origin, `rpId` özeti, bayraklar, oluşturmada saklanan açık anahtarla imza). Alan adı doğrulanmamışken pencere uyardı, `pm set-app-links` ile onaylanınca uyarmadı. Kasa kilitliyken Android'in penceresinde yalnızca "Unlock KeyKey" vardı, hesap yoktu. Chrome'da webauthn.io'da kayıt ve giriş başarılı ("You're logged in!"). Kayıt listede "Has a passkey" etiketiyle, ayrıntıda site, hesap ve tarihle göründü. Entegrasyon testlerinin hepsi geçti. Deneme iki hata buldu, ikisi de düzeltildi: sağlayıcının yetenek adı `android.` önekliydi (doğrusu `androidx.credentials.TYPE_PUBLIC_KEY_CREDENTIAL`), Android KeyKey'i hiç sormuyordu; ayar satırının yardımı Android 14'ün ekran adını kullanıyordu.
+
+**Son gözden geçirme:** Taze bir alt ajan (Opus) dalın bütününü inceledi. Kritik bulgu düzeltildi: bir uygulamanın verdiği hazır `clientDataHash` de imzalanıyordu; kötü niyetli bir uygulama başka bir sitenin origin'iyle kurduğu clientDataJSON'un özetini verip tek uyarıdan sonra o sitenin geçerli web imzasını alabilirdi. Artık hazır özet yalnızca güvenilen tarayıcıdan alınıyor. Önemli bulgu düzeltildi: 1.10 telefonda düzenlenen kayıt senkronda kazanınca passkey'in özel anahtarı kalıcı olarak gidiyordu; artık passkey'i bilmeyen sürüm kazanınca passkey'ler korunuyor. Dokuz küçük bulgu [#187](https://github.com/aaudraa/KeyKey/issues/187)'de.
+
+**Bitti sayılması için:** örnek uygulamada ve Chrome'da passkey oluşturulup onunla giriş yapılıyor; kasa kilitliyken hiçbir hesap görünmüyor; passkey'ler yedekten ve senkron dosyasından eksiksiz geri geliyor (testlerle); eski sürümler yeni yedeğe "daha yeni" diyor.
 
 ## 1.0 sonrası
 

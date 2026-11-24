@@ -13,7 +13,7 @@ KeyKey collects no data. There is no account and KeyKey has no server; your vaul
 
 ## What stays on your device
 
-- Your passwords, cards, secure notes, 2FA accounts and settings live only on your device, in a database encrypted with a key derived from your master password. Encryption details are in the [security summary](security-summary.md).
+- Your passwords, passkeys, cards, secure notes, 2FA accounts and settings live only on your device, in a database encrypted with a key derived from your master password. Encryption details are in the [security summary](security-summary.md).
 - Android cloud backup is disabled; the vault is not backed up to your Google account.
 - If you turn on sync, the folder address, username and app password are stored encrypted inside the vault, in the settings record. They are also part of the vault's backup (the backup is encrypted).
 - There are two exceptions, each a small, separate, unencrypted file in the app's own folder that holds nothing else:
@@ -38,6 +38,15 @@ KeyKey does not request location, contacts or storage permissions.
 If you select KeyKey as your autofill service, Android gives KeyKey the structure of a login form when you tap it (field types, the app's package name, the site's domain in a browser). KeyKey uses this only to suggest the right entry and does not store it. If you accept a save prompt, only the username and password you confirm are added to the vault. To link entries to apps, KeyKey can see the apps on the phone (all apps since 1.11.0; before that, only apps with a launcher icon).
 
 When you fill in an app, KeyKey also reads the websites Android has verified for that app (Android 12 and later). This stays on the phone; nothing goes online.
+
+## Passkeys
+
+On Android 14 and later, if you choose KeyKey as your passkey provider (Settings → Autofill → **Passkey provider**), Android hands a site's or app's passkey request to KeyKey: the site name, the account name, the site's challenge, and the requesting app's package name and signature digest. KeyKey uses these only to create the passkey or to sign with it.
+
+- **What is stored:** The passkeys you create or import (including their private keys) stay inside the vault, encrypted with the entry, and go into your backups and sync. Requests are not stored.
+- **What is sent:** The response (the public key when creating, the signature and account ID when signing in) goes through Android only to the site or app that asked for the passkey; the private key goes nowhere. If an app asked for the passkey and [verifying an app's website](#verifying-an-apps-website) is on, KeyKey may read that site's `assetlinks.json` file under the same rules.
+- **While the vault is locked** KeyKey does not tell the request which sites you have passkeys for; it only offers "Unlock KeyKey".
+- Passkeys are not written to the plain-text export file.
 
 ## Clipboard
 
