@@ -390,6 +390,12 @@ final class SyncMerger {
   /// Kaybeden sürümlerin parolaları kazananın geçmişine eklenmiş, yeniden
   /// şifrelenmiş kayıt; eklenecek parola yoksa `null`.
   ///
+  /// Passkey'ler (1.11.0): kazanan, passkey'i bilmeyen eski bir sürümün
+  /// kaydıysa (içerik sürümü 3'ten küçük), passkey'leri bilen en yeni
+  /// kaybedenin passkey'leri korunur. Yoksa 1.10 telefonda yapılan bir
+  /// düzenleme özel anahtarı kalıcı olarak silerdi. Kazanan passkey'i
+  /// biliyorsa onun listesi geçerlidir; silinen passkey geri gelmez.
+  ///
   /// Kaybedenler eskiden yeniye işlenir, en yenisi geçmişin başında kalır.
   /// `updatedAt` kazananınkinden 1 ms sonrasıdır: kurtarılmış sürüm öteki
   /// telefonlarda da düz kazananı yener. İki telefon aynı kurtarmayı yaparsa
@@ -405,17 +411,29 @@ final class SyncMerger {
         if (!_same(version.$1, winner)) version,
     ]..sort((a, b) => _compare(a.$1, b.$1));
     if (losers.isEmpty) return null;
-    var content = _openLogin(winner, winnerSource);
-    if (content == null) return null;
+    final opened = _openLogin(winner, winnerSource);
+    if (opened == null) return null;
+    var content = opened.content;
+    LoginContent? passkeyAware;
     var changed = false;
     for (final (loser, source) in losers) {
       final lost = _openLogin(loser, source);
       if (lost == null) continue;
-      final next = content!.withRescuedPassword(lost.password, loser.updatedAt);
+      if (lost.version >= _firstPasskeyVersion) passkeyAware = lost.content;
+      final next = content.withRescuedPassword(
+        lost.content.password,
+        loser.updatedAt,
+      );
       if (next != null) {
         content = next;
         changed = true;
       }
+    }
+    if (opened.version < _firstPasskeyVersion &&
+        passkeyAware != null &&
+        passkeyAware.passkeys.isNotEmpty) {
+      content = content.copyWith(passkeys: passkeyAware.passkeys);
+      changed = true;
     }
     if (!changed) return null;
     return StoredRecord(
@@ -424,16 +442,23 @@ final class SyncMerger {
       blob: _cipher.encrypt(
         recordId: winner.id,
         type: winner.type,
-        plainText: content!.toJsonBytes(),
+        plainText: content.toJsonBytes(),
       ),
       createdAt: winner.createdAt,
       updatedAt: winner.updatedAt.add(const Duration(milliseconds: 1)),
     );
   }
 
-  /// Parola kaydını çözer. Uzak kayıt açılmazsa dosyası düşer; yerel kayıt
-  /// açılmazsa (bozuk yerel kasa) kurtarma yapılmaz.
-  LoginContent? _openLogin(StoredRecord record, SyncSource? source) {
+  /// Passkey'leri taşıyan ilk parola kaydı içerik sürümü.
+  static const _firstPasskeyVersion = 3;
+
+  /// Parola kaydını ve yazıldığı içerik sürümünü çözer. Uzak kayıt açılmazsa
+  /// dosyası düşer; yerel kayıt açılmazsa (bozuk yerel kasa) kurtarma
+  /// yapılmaz.
+  ({LoginContent content, int version})? _openLogin(
+    StoredRecord record,
+    SyncSource? source,
+  ) {
     try {
       final plain = _cipher.decrypt(
         recordId: record.id,
@@ -441,7 +466,10 @@ final class SyncMerger {
         blob: record.blob,
       );
       try {
-        return LoginContent.fromJsonBytes(plain);
+        final content = LoginContent.fromJsonBytes(plain);
+        // fromJsonBytes sürümü denetledi; burada yalnızca okunur.
+        final root = jsonDecode(utf8.decode(plain)) as Map<String, Object?>;
+        return (content: content, version: root['version']! as int);
       } finally {
         plain.fillRange(0, plain.length, 0);
       }
