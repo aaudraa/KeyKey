@@ -79,3 +79,17 @@ description = "Yayın sertifikasının herkese açık SHA-256 özeti"
 regexes = [
   '''^66ff7b5c0c009a8530d0a55dd1d80a3af35de48bd0667c456a0cf86a6d1129a0$''',
 ]
+
+# Passkey içe aktarma testlerinin deneme anahtarları (1.11.0): openssl ile
+# bu testler için üretilmiş P-256 ve P-384 anahtarları, hiçbir hesaba bağlı
+# değil. p256_key.dart anahtar değil yalnızca PEM'i tanıyan düzenli ifadeyi
+# taşır. İzin yalnızca bu üç dosyada ve yalnızca private-key kuralı için;
+# başka bir kural bu dosyalarda yakalamaya devam eder.
+[[allowlists]]
+description = "Passkey testlerinin deneme anahtarları ve PEM ayrıştırıcısı"
+targetRules = ["private-key"]
+paths = [
+  '''^test/support/passkey_test_keys\.dart$''',
+  '''^test/features/passkey/p256_key_test\.dart$''',
+  '''^lib/features/passkey/domain/p256_key\.dart$''',
+]
