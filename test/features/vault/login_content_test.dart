@@ -131,9 +131,8 @@ void main() {
 
     test('sabit sürüm 3 örnek dosyası açılıyor', () {
       // Bu dosya değişmez: eski kasalar her sürümde açılmalı.
-      final fixture = File(
-        'test/fixtures/vault/login-v3.json',
-      ).readAsBytesSync();
+      final fixture = File('test/fixtures/vault/login-v3.json')
+          .readAsBytesSync();
       final passkey = LoginContent.fromJsonBytes(fixture).passkeys.single;
       expect(passkey.credentialId, List.generate(16, (i) => i + 1));
       expect(passkey.rpId, 'example.com');
