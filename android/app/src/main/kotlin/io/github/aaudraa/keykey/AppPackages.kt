@@ -8,9 +8,8 @@ import android.os.Build
 import java.io.ByteArrayOutputStream
 
 /**
- * Kayda bağlı uygulamaların simgeleri. Yalnızca KeyKey'in görebildiği
- * (ana ekranda simgesi olan) uygulamalar okunur; `QUERY_ALL_PACKAGES`
- * istenmez. Simgeler diske yazılmaz.
+ * Kayda bağlı uygulamaların simgeleri (`QUERY_ALL_PACKAGES` ile bütün
+ * uygulamalar görünür). Simgeler diske yazılmaz.
  */
 class AppPackages(private val context: Context) : AppPackagesApi {
     override fun appIcon(packageName: String, sizePx: Long): ByteArray? {

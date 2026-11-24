@@ -21,6 +21,14 @@
          sızıntı kontrolü). Parolalar gönderilmez; bkz.
          resources/docs/internet-ve-sizinti.md. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Kaydetme ekranını hedef uygulama başlatmadığı için Android, KeyKey'e
+         o uygulamayı kendiliğinden göstermiyor. Ana ekranda simgesi olmayan
+         bir uygulamada da (başka bir uygulamanın içinden açılan giriş
+         ekranları) ilk kaydetmede uygulamanın adı ve imzası okunabilsin diye
+         bütün uygulamalar görünür (#71, 1.11.0). Liste cihazdan çıkmaz. -->
+    <uses-permission
+        android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
     <application
         android:label="KeyKey"
         android:usesCleartextTraffic="false"
@@ -113,16 +121,9 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
-        <!-- Kaydetme ekranını hedef uygulama başlatmadığı için Android, KeyKey'e
-             o uygulamayı kendiliğinden göstermiyor. Uygulamanın adı ve imzası
-             ilk kaydetmede de okunabilsin diye ana ekranda simgesi olan
-             uygulamalar görünür. Bütün paketleri görme izni istenmez. -->
-        <intent>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent>
-        <!-- Güvenilen tarayıcılar ayrıca adıyla bildirilir: ana ekranda
-             simgesi olmasa da imzaları okunur ve site adresine güvenilir. -->
+        <!-- Güvenilen tarayıcılar ayrıca adıyla bildirilir. QUERY_ALL_PACKAGES
+             onları da görünür yapıyor; liste izin kaldırılırsa da çalışsın diye
+             duruyor ve TrustedBrowsersTest onu tarayıcı listesiyle eşit tutuyor. -->
         <!-- güvenilen-tarayıcılar: başla. trusted-browsers.mjs üretir; elle düzenlenmez. -->
         <package android:name="ai.perplexity.comet" />
         <package android:name="app.vanadium.browser" />
