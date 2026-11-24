@@ -84,14 +84,31 @@ class _AutofillPickScreenState extends ConsumerState<AutofillPickScreen> {
       if (item == null || _busy) return;
       _busy = true;
       setState(() => _directFilling = true);
-      unawaited(
-        _bindIfVerifiedSite(
-          item,
-          value,
-        ).then(_fill).whenComplete(() => _busy = false),
-      );
+      unawaited(_fillDirectly(item, value));
     } else if (next is AsyncError) {
       _directChecked = true;
+    }
+  }
+
+  /// Tek kesin eşleşmeyi doldurur. Beklenmedik bir hatada (örneğin bağlama
+  /// `Exception` dışında bir şey fırlatırsa) ekran yükleniyor görünümünde
+  /// kalmaz, liste gösterilir; hata yine bildirilir.
+  Future<void> _fillDirectly(LoginItem item, LoginMatches matches) async {
+    try {
+      await _fill(await _bindIfVerifiedSite(item, matches));
+    } on Object catch (error, stack) {
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: error,
+          stack: stack,
+          library: 'KeyKey doldurma',
+        ),
+      );
+    } finally {
+      _busy = false;
+      if (mounted && !ref.read(autofillDoneProvider)) {
+        setState(() => _directFilling = false);
+      }
     }
   }
 

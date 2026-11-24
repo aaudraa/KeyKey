@@ -50,9 +50,12 @@ final class AssetLinksClient implements AssetLinksSource {
     if (name == null || DomainName.isIpAddress(name)) return null;
     final uri = locate(name);
     if (!isSecureServiceUrl(uri)) return null;
+    // Sıkıştırma istenmez: açılmış veri sınırı aşsa da tek bir parçanın
+    // tamamı bellekte açılırdı.
     final client = HttpClient()
       ..connectionTimeout = connectTimeout
-      ..userAgent = 'KeyKey';
+      ..userAgent = 'KeyKey'
+      ..autoUncompress = false;
     try {
       return await _get(client, uri).timeout(requestTimeout);
     } on TimeoutException {
@@ -71,8 +74,11 @@ final class AssetLinksClient implements AssetLinksSource {
       ..followRedirects = false
       ..maxRedirects = 0
       ..persistentConnection = false;
+    request.headers.set(HttpHeaders.acceptEncodingHeader, 'identity');
     final response = await request.close();
-    if (response.statusCode != HttpStatus.ok) {
+    final encoding = response.headers.value(HttpHeaders.contentEncodingHeader);
+    if (response.statusCode != HttpStatus.ok ||
+        (encoding != null && encoding.toLowerCase() != 'identity')) {
       await response.drain<void>();
       return null;
     }

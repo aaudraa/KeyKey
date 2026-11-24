@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -67,6 +68,17 @@ void main() {
       await request.response.close();
     };
     expect(await client().fetch('github.com'), isNull);
+  });
+
+  test('sıkıştırma istenmez, sıkıştırılmış yanıt reddedilir', () async {
+    handler = (request) async {
+      request.response
+        ..headers.set('content-encoding', 'gzip')
+        ..add(gzip.encode(utf8.encode('[]')));
+      await request.response.close();
+    };
+    expect(await client().fetch('github.com'), isNull);
+    expect(requests.single.headers.value('accept-encoding'), 'identity');
   });
 
   test('zaman aşımında null', () async {

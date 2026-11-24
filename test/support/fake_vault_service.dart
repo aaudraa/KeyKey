@@ -426,6 +426,9 @@ class FakeLoginRepository implements LoginRepository {
   /// Verilirse ekleme ve güncelleme bu tamamlanana kadar sürer.
   Completer<void>? writeGate;
 
+  /// Verilirse güncelleme bunu fırlatır.
+  Error? updateError;
+
   static LoginItem item(
     LoginContent content, {
     int id = 0,
@@ -460,8 +463,10 @@ class FakeLoginRepository implements LoginRepository {
   }
 
   @override
-  Future<LoginItem> update(LoginItem item, LoginContent edited) =>
-      _replace(item, item.content.applyEdit(edited, now));
+  Future<LoginItem> update(LoginItem item, LoginContent edited) async {
+    if (updateError case final error?) throw error;
+    return await _replace(item, item.content.applyEdit(edited, now));
+  }
 
   @override
   Future<LoginItem> updateMetadata(LoginItem item, LoginContent content) =>
