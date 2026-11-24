@@ -28,5 +28,6 @@
         <activity android:name=".CardActivity" />
         <activity android:name=".CardWordsActivity" />
         <activity android:name=".CardWebActivity" />
+        <activity android:name=".PasskeyActivity" />
     </application>
 </manifest>
