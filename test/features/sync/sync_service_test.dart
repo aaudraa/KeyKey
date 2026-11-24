@@ -526,7 +526,7 @@ void main() {
     final codec = BackupCodec(sodium);
     final file = codec.parse(folder.files.values.single.bytes);
     final contents = await codec.open(file, a.session.vaultKey);
-    expect(contents.version, 4);
+    expect(contents.version, 6);
     expect(contents.sync!.device, 'a1b2c3');
     expect(contents.sync!.deviceName, 'Telefon a1b2c3');
     expect([for (final r in contents.records) r.type], ['login']);

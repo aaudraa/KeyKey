@@ -13,7 +13,7 @@
 ## Genel kısıtlar
 
 - Yalnızca Android 14 (API 34) ve üstünde servis etkin; minSdk 30 kalır.
-- `LoginContent.currentVersion = 3`, `BackupCodec.payloadVersion = 6`, senkron dosyası sürümü 5.
+- `LoginContent.currentVersion = 3`, `BackupCodec.payloadVersion = 6`, senkron dosyası da 6 ile yazılır (4 ve 5 okunur).
 - Kayıt başına en çok 20 passkey; `credentialId` en çok 255 bayt, `userHandle` en çok 64 bayt.
 - Yalnızca ES256 (`-7`); `fmt: "none"`; sayaç 0; bayraklar `UP|UV|BE|BS` (+`AT`).
 - AAGUID `b3c1e1d0-6b2a-4f3e-9c7a-4b6579b4b579`.
@@ -37,7 +37,7 @@
 
 **Üretir:** `final class LoginPasskey { new({required Uint8List credentialId, required String rpId, required Uint8List userHandle, required String userName, required String userDisplayName, required Uint8List privateKey, required DateTime createdAt}); Map<String,Object?> toJson(); static LoginPasskey fromJson(Object?) }`; `LoginContent.passkeys: List<LoginPasskey>`, `copyWith(passkeys:)`.
 
-- [ ] Testler: v3 gidiş-dönüş; v2 ve v1 okunur (`passkeys` boş); 21 passkey, 256 baytlık kimlik, 65 baytlık `userHandle`, geçersiz `rpId`, fazla alan reddedilir; `applyEdit` passkey'leri korur; sürüm sabitleri testi `login: 3, payload: 6`; senkron dosyası 5 yazılır, 4 okunur, 6 "daha yeni".
+- [ ] Testler: v3 gidiş-dönüş; v2 ve v1 okunur (`passkeys` boş); 21 passkey, 256 baytlık kimlik, 65 baytlık `userHandle`, geçersiz `rpId`, fazla alan reddedilir; `applyEdit` passkey'leri korur; sürüm sabitleri testi `login: 3, payload: 6`; senkron dosyası 6 yazılır, 4 okunur, 7 "daha yeni".
 - [ ] Kırmızıyı gör, uygula, yeşili gör, `flutter analyze`.
 - [ ] Commit: `özellik(kasa): parola kaydında passkey alanı, kayıt sürümü 3`.
 

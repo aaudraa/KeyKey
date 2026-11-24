@@ -1,0 +1,25 @@
+{
+  "version": 3,
+  "name": "Örnek",
+  "username": "furkan",
+  "password": "",
+  "urls": ["https://example.com"],
+  "apps": [],
+  "notes": "",
+  "customFields": [],
+  "favorite": false,
+  "folder": null,
+  "trashedAt": null,
+  "passwordHistory": [],
+  "passkeys": [
+    {
+      "credentialId": "AQIDBAUGBwgJCgsMDQ4PEA",
+      "rpId": "example.com",
+      "userHandle": "a2V5a2V5",
+      "userName": "furkan",
+      "userDisplayName": "Furkan",
+      "privateKey": "AAEC",
+      "createdAt": 1795000000000
+    }
+  ]
+}

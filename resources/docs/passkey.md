@@ -87,7 +87,7 @@ Sistem, sağlayıcıdan istek gelir gelmez (kasa açılmadan) hangi hesapları g
 | `createdAt` | zaman | |
 
 - Sürüm 1 ve 2 okunmaya devam eder (`passkeys` boş). Yazılan her kayıt sürüm 3.
-- Kayıt içerik sürümü artınca yedeğin içerik sürümü de artar (bir test sabitliyor): **yedek 6**, **senkron dosyası 5**. 1.10 ve öncesi yedeğe ve senkron dosyasına "daha yeni KeyKey" der; kasadaki kaydı okunamayan sayar ve dokunmaz. Kılavuz ve değişiklik günlüğü "bütün telefonları güncelle" der.
+- Kayıt içerik sürümü artınca yedeğin içerik sürümü de artar (bir test sabitliyor): **yedek ve senkron dosyası 6**. Senkron dosyası 5 olamaz: 1.10 içerik sürümü 5'i zaten okuyor, ona "daha yeni" demez ve sürüm 3 kaydı okumaya çalışırdı. 1.11, 1.8-1.10'un sürüm 4 senkron dosyalarını okumaya devam eder. 1.10 ve öncesi yedeğe ve senkron dosyasına "daha yeni KeyKey" der; kasadaki kaydı okunamayan sayar ve dokunmaz. Kılavuz ve değişiklik günlüğü "bütün telefonları güncelle" der.
 - Birleştirmede passkey'ler kaydın diğer alanları gibi davranır (kazanan sürüm).
 - Kayıt düzenlenince (`applyEdit`) passkey'ler korunur.
 
