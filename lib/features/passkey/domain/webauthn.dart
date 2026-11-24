@@ -20,6 +20,9 @@ enum PasskeyError {
 
   /// `rpId` origin'e ya da kurala uymuyor.
   rpIdMismatch,
+
+  /// Kayıtta passkey sınırı doldu.
+  tooMany,
 }
 
 final class PasskeyRequestException implements Exception {
