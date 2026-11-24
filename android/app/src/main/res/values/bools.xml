@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Passkey sağlayıcısı Android 14 (API 34) ve üstünde etkin. -->
+    <bool name="passkeys_supported">false</bool>
+</resources>

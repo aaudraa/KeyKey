@@ -92,6 +92,9 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
     // Otomatik doldurmanın klavye şeridindeki (satır içi) öneri görünümü.
     implementation("androidx.autofill:autofill:1.3.0")
+    // Passkey sağlayıcısı (Android 14+). Google Play hizmetleri gerektirmez;
+    // credentials-play-services-auth eklenmez.
+    implementation("androidx.credentials:credentials:1.6.0")
 
     constraints {
         // CameraX eklentisi 33.5.0'ı getiriyor; GHSA-xxph-c9ww-hj94 33.7.2'de
@@ -102,6 +105,8 @@ dependencies {
 
     // Otomatik doldurmanın saf Kotlin kısımları (alan tespiti, eşleştirme) JVM'de sınanır.
     testImplementation("junit:junit:4.13.2")
+    // Android'in org.json'u JVM testlerinde sahte; gerçeği yalnızca testlerde.
+    testImplementation("org.json:json:20260814")
 }
 
 flutter {
