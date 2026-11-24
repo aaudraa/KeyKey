@@ -35,6 +35,9 @@ import 'package:sodium/sodium_sumo.dart';
 import '../../support/add_flow.dart';
 import '../../support/fake_vault_service.dart';
 
+const listLoadFailed =
+    'Kayıtlar okunamadı. Telefonun depolamasında geçici bir sorun olabilir.';
+
 void main() {
   late SodiumSumo sodium;
   late FakeVaultService service;
@@ -123,6 +126,36 @@ void main() {
   }
 
   group('liste', () {
+    testWidgets('okunamazsa yükleniyorda kalmıyor, yeniden denenebiliyor', (
+      tester,
+    ) async {
+      logins.loadErrors.add(const FileSystemException('disk'));
+      await pumpVault(tester);
+
+      expect(find.text(listLoadFailed), findsOneWidget);
+      await tester.tap(find.text('Yeniden dene'));
+      await tester.pumpAndSettle();
+      expect(find.text(listLoadFailed), findsNothing);
+      expect(visibleNames(tester), contains('Posta'));
+    });
+
+    testWidgets('kart okunamazsa da liste hata gösteriyor', (tester) async {
+      final cards = FakeRecordRepository<CardContent>()
+        ..loadErrors.add(const FileSystemException('disk'));
+      await pumpKeyKey(
+        tester,
+        status: VaultOpen(service.newSession()),
+        service: service,
+        logins: logins,
+        cards: cards,
+      );
+
+      expect(find.text(listLoadFailed), findsOneWidget);
+      await tester.tap(find.text('Yeniden dene'));
+      await tester.pumpAndSettle();
+      expect(visibleNames(tester), contains('Posta'));
+    });
+
     testWidgets('kayıtlar ada göre sıralı', (tester) async {
       await pumpVault(tester);
 
@@ -1253,6 +1286,32 @@ void main() {
       await tester.pumpAndSettle();
       expect(logins.items.first.content.isTrashed, isFalse);
       expect(visibleNames(tester), contains('Posta'));
+    });
+
+    testWidgets('çöpe taşıma yazılamazsa ayrıntıda kalınıp söyleniyor', (
+      tester,
+    ) async {
+      logins.metadataError = const FileSystemException('disk');
+      await trashPosta(tester);
+
+      expect(find.text('Değişiklik kaydedilemedi. Yeniden dene.'), findsOne);
+      expect(find.text('Geri al'), findsNothing);
+      expect(find.text('ali@example.com'), findsOneWidget);
+      expect(logins.items.first.content.isTrashed, isFalse);
+    });
+
+    testWidgets('favori yazılamazsa söyleniyor', (tester) async {
+      logins.metadataError = const FileSystemException('disk');
+      await pumpVault(tester);
+      await tester.tap(find.text('Posta'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Diğer işlemler'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Favorilere ekle'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Değişiklik kaydedilemedi. Yeniden dene.'), findsOne);
+      expect(logins.items.first.content.favorite, isFalse);
     });
 
     testWidgets('çöp kutusundan geri alınıyor', (tester) async {

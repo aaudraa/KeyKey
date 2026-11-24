@@ -20,6 +20,11 @@ final class RecordsLoading<C> extends RecordsState<C> {
   const new();
 }
 
+/// Kayıtlar depodan okunamadı; ekran hatayı ve "yeniden dene"yi gösterir.
+final class RecordsFailed<C> extends RecordsState<C> {
+  const new();
+}
+
 final class RecordsLoaded<C extends VaultItemContent<C>>
     extends RecordsState<C> {
   const new({required this.items, required this.unreadableCount});
@@ -127,10 +132,27 @@ class RecordsController<C extends VaultItemContent<C>>
       } on VaultLockedException {
         if (generation == _generation) rethrow;
         return;
+      } on Exception {
+        if (generation == _generation && state is! RecordsLoaded<C>) {
+          state = RecordsFailed<C>();
+        }
+        return;
       }
       if (generation != _generation) return;
     } while (writes != _writes);
     state = RecordsLoaded(items: kept, unreadableCount: loaded.unreadableCount);
+  }
+
+  /// Yükleme başarısız olduysa yeniden dener.
+  Future<void> retry() async {
+    final repository = _repository;
+    if (repository == null || state is! RecordsFailed<C>) return;
+    state = RecordsLoading<C>();
+    try {
+      await _load(repository, ++_generation);
+    } on VaultLockedException {
+      // Okuma sürerken kilitlendi; kilit ekranı zaten geliyor.
+    }
   }
 
   VaultRecordRepository<C> get _openRepository {

@@ -370,9 +370,14 @@ class FakeRecordRepository<C extends VaultItemContent<C>>
     );
   }
 
+  /// Doluysa sıradaki okumalar bunları sırayla fırlatır.
+  final loadErrors = <Exception>[];
+
   @override
-  Future<LoadedRecords<C>> loadAll() async =>
-      LoadedRecords(items: [...items], unreadableCount: unreadableCount);
+  Future<LoadedRecords<C>> loadAll() async {
+    if (loadErrors.isNotEmpty) throw loadErrors.removeAt(0);
+    return LoadedRecords(items: [...items], unreadableCount: unreadableCount);
+  }
 
   @override
   Future<VaultRecord<C>> add(C content) async {
@@ -443,9 +448,17 @@ class FakeLoginRepository implements LoginRepository {
     );
   }
 
+  /// Doluysa sıradaki okumalar bunları sırayla fırlatır.
+  final loadErrors = <Exception>[];
+
+  /// Verilirse sık kullanılan, çöp ve geri al bunu fırlatır.
+  Exception? metadataError;
+
   @override
-  Future<LoadedLogins> loadAll() async =>
-      LoadedLogins(items: [...items], unreadableCount: unreadableCount);
+  Future<LoadedLogins> loadAll() async {
+    if (loadErrors.isNotEmpty) throw loadErrors.removeAt(0);
+    return LoadedLogins(items: [...items], unreadableCount: unreadableCount);
+  }
 
   @override
   Future<LoginItem> add(LoginContent content) async {
@@ -469,8 +482,10 @@ class FakeLoginRepository implements LoginRepository {
   }
 
   @override
-  Future<LoginItem> updateMetadata(LoginItem item, LoginContent content) =>
-      _replace(item, content);
+  Future<LoginItem> updateMetadata(LoginItem item, LoginContent content) async {
+    if (metadataError case final error?) throw error;
+    return await _replace(item, content);
+  }
 
   @override
   Future<void> deletePermanently(LoginItem item) async {
@@ -878,9 +893,14 @@ class FakeOtpRepository implements OtpRepository {
     updatedAt: DateTime.utc(2026),
   );
 
+  /// Doluysa sıradaki okumalar bunları sırayla fırlatır.
+  final loadErrors = <Exception>[];
+
   @override
-  Future<LoadedOtps> loadAll() async =>
-      LoadedOtps(items: [...items], unreadableCount: unreadableCount);
+  Future<LoadedOtps> loadAll() async {
+    if (loadErrors.isNotEmpty) throw loadErrors.removeAt(0);
+    return LoadedOtps(items: [...items], unreadableCount: unreadableCount);
+  }
 
   @override
   Future<OtpItem> add(OtpContent content) async {

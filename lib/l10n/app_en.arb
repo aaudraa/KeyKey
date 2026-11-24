@@ -2390,6 +2390,18 @@
   "@breachRetry": {
     "description": "Button to repeat a failed breach check."
   },
+  "listLoadFailed": "Your items could not be read. The phone's storage may have a temporary problem.",
+  "@listLoadFailed": {
+    "description": "Shown instead of a list when items cannot be loaded from storage."
+  },
+  "listLoadRetry": "Try again",
+  "@listLoadRetry": {
+    "description": "Button under listLoadFailed."
+  },
+  "recordActionFailed": "The change could not be saved. Try again.",
+  "@recordActionFailed": {
+    "description": "Snack when favourite, move to trash or undo fails on a detail screen."
+  },
   "breachClean": "No passwords seen in breaches.",
   "@breachClean": {
     "description": "Breach check finished and found nothing."

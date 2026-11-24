@@ -56,7 +56,7 @@ class _LinkedOtpTileState extends ConsumerState<LinkedOtpTile> {
       if (!mounted) return;
       final shownFor = switch (ref.read(otpsControllerProvider)) {
         OtpsLoaded(:final byId) => byId(widget.item.id)?.content.parameters,
-        OtpsLoading() => null,
+        OtpsLoading() || OtpsFailed() => null,
       };
       setState(() {
         _hotpCode = code;

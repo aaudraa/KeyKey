@@ -12,6 +12,7 @@ import 'package:keykey/app/ui/kk_animated_items.dart';
 import 'package:keykey/app/ui/kk_backdrop.dart';
 import 'package:keykey/app/ui/kk_bars.dart';
 import 'package:keykey/app/ui/kk_glass.dart';
+import 'package:keykey/app/ui/kk_load_failed.dart';
 import 'package:keykey/app/ui/kk_menu.dart';
 import 'package:keykey/app/ui/kk_sheet.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
@@ -82,7 +83,7 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
       if (!mounted) return;
       final shownFor = switch (ref.read(otpsControllerProvider)) {
         OtpsLoaded(:final byId) => byId(item.id)?.content.parameters,
-        OtpsLoading() => null,
+        OtpsLoading() || OtpsFailed() => null,
       };
       setState(() => _hotpCodes[otpIdHex(item)] = (code, shownFor));
     } on VaultLockedException {
@@ -166,6 +167,10 @@ class _AuthenticatorScreenState extends ConsumerState<AuthenticatorScreen> {
       ),
       body: switch (state) {
         OtpsLoading() => const Center(child: CircularProgressIndicator()),
+        OtpsFailed() => KkLoadFailed(
+          onRetry: () =>
+              unawaited(ref.read(otpsControllerProvider.notifier).retry()),
+        ),
         OtpsLoaded() => switch (ref.watch(otpCodesVisibleProvider)) {
           null => const Center(child: CircularProgressIndicator()),
           false => const OtpGate(),

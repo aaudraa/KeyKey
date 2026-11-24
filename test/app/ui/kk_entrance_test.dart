@@ -180,6 +180,64 @@ void main() {
     expect(_opacity(tester, 'öğe 30'), 1);
   });
 
+  testWidgets('alan büyüyünce (klavye kapanınca) bekleyen öğe belirir', (
+    tester,
+  ) async {
+    final height = ValueNotifier<double>(300);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Scaffold(
+          body: ValueListenableBuilder<double>(
+            valueListenable: height,
+            builder: (context, value, _) => Align(
+              alignment: Alignment.topCenter,
+              child: SizedBox(
+                height: value,
+                child: KkEntranceScope(
+                  child: ListView(
+                    children: [
+                      for (var i = 0; i < 80; i++)
+                        KkEntrance(
+                          index: i,
+                          child: SizedBox(height: 60, child: Text('öğe $i')),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(ListView), const Offset(0, -900));
+    await tester.pumpAndSettle();
+    double opacityOf(String label) => tester
+        .widget<Opacity>(
+          find
+              .ancestor(
+                of: find.text(label, skipOffstage: false),
+                matching: find.byType(Opacity, skipOffstage: false),
+              )
+              .last,
+        )
+        .opacity;
+    // Alanın hemen altında, önbellekte kurulup gizli bekleyen öğe.
+    final waiting = [
+      for (var i = 0; i < 80; i++)
+        if (find.text('öğe $i', skipOffstage: false).evaluate().isNotEmpty &&
+            opacityOf('öğe $i') == 0)
+          'öğe $i',
+    ];
+    expect(waiting, isNotEmpty);
+
+    height.value = 600;
+    await tester.pumpAndSettle();
+    expect(opacityOf(waiting.last), 1);
+  });
+
   testWidgets('sekmeye dönünce (TickerMode) giriş yeniden oynar', (
     tester,
   ) async {

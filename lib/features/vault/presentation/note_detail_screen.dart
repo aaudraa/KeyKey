@@ -58,7 +58,11 @@ class NoteDetailScreen extends ConsumerWidget {
             tooltip: l10n.screenMore,
             onSelected: (action) => switch (action) {
               _DetailAction.favorite => unawaited(
-                controller.setFavorite(item, favorite: !content.favorite),
+                runRecordAction(
+                  context,
+                  () =>
+                      controller.setFavorite(item, favorite: !content.favorite),
+                ),
               ),
               _DetailAction.trash => unawaited(
                 moveRecordToTrash(context, controller, item, l10n),

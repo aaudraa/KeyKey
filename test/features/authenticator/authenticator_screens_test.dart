@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
@@ -132,6 +133,22 @@ void main() {
   }
 
   group('liste', () {
+    testWidgets('hesaplar okunamazsa yeniden denenebiliyor', (tester) async {
+      otps.loadErrors.add(const FileSystemException('disk'));
+      await openAuthenticator(tester);
+
+      expect(
+        find.text(
+          'Kayıtlar okunamadı. Telefonun depolamasında geçici bir sorun '
+          'olabilir.',
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Yeniden dene'));
+      await settle(tester);
+      expect(find.text('Yeniden dene'), findsNothing);
+    });
+
     // Telefon denemesi 4-5: arama kutusu listeyle kayar, gidince üst
     // çubukta simge olur; başlık çubukta sabit durur.
     testWidgets('arama kutusu listeyle kayar, gidince çubukta simge olur', (

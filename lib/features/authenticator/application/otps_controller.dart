@@ -28,6 +28,11 @@ final class OtpsLoading extends OtpsState {
   const new();
 }
 
+/// Hesaplar depodan okunamadı; ekran hatayı ve "yeniden dene"yi gösterir.
+final class OtpsFailed extends OtpsState {
+  const new();
+}
+
 final class OtpsLoaded extends OtpsState {
   const new({required this.items, required this.unreadableCount});
 
@@ -111,9 +116,26 @@ class OtpsController extends Notifier<OtpsState> {
       // Yükleme sürerken kilitlendi, anahtarlar artık yok.
       if (generation == _generation) rethrow;
       return;
+    } on Exception {
+      if (generation == _generation && state is! OtpsLoaded) {
+        state = const OtpsFailed();
+      }
+      return;
     }
     if (generation != _generation) return;
     state = OtpsLoaded(items: kept, unreadableCount: loaded.unreadableCount);
+  }
+
+  /// Yükleme başarısız olduysa yeniden dener.
+  Future<void> retry() async {
+    final repository = _repository;
+    if (repository == null || state is! OtpsFailed) return;
+    state = const OtpsLoading();
+    try {
+      await _load(repository, ++_generation);
+    } on VaultLockedException {
+      // Okuma sürerken kilitlendi; kilit ekranı zaten geliyor.
+    }
   }
 
   OtpRepository get _openRepository {

@@ -11,6 +11,8 @@ import 'package:keykey/app/ui/kk_motion.dart';
 /// - Kaydırırken ekrana giren öğe de, sıra gecikmesi olmadan, belirir.
 /// - Sekmeye dönünce (`TickerMode` yeniden açılınca) ve üstteki alt ekran
 ///   kapanmaya başlayınca görünen öğeler girişi yeniden oynar.
+/// - Kaydırma alanı büyüyünce (klavye kapanınca) altta bekleyen öğeler de
+///   belirir; yalnızca kaydırma bildirimi yetmiyordu (#174, S5).
 class KkEntranceScope extends StatefulWidget {
   const new({required this.child, super.key});
 
@@ -25,6 +27,9 @@ class _KkEntranceScopeState extends State<KkEntranceScope> {
 
   /// Her yeniden oynamada bir artar.
   final _replay = ValueNotifier<int>(0);
+
+  /// Kaydırma alanının ölçüleri her değiştiğinde bir artar.
+  final _metrics = ValueNotifier<int>(0);
 
   ValueListenable<TickerModeData>? _ticker;
   bool _tickerWasOn = true;
@@ -68,12 +73,24 @@ class _KkEntranceScopeState extends State<KkEntranceScope> {
     _ticker?.removeListener(_onTicker);
     _cover?.removeStatusListener(_onCover);
     _replay.dispose();
+    _metrics.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) =>
-      _EntranceInherited(gate: _gate, replay: _replay, child: widget.child);
+      NotificationListener<ScrollMetricsNotification>(
+        onNotification: (_) {
+          _metrics.value++;
+          return false;
+        },
+        child: _EntranceInherited(
+          gate: _gate,
+          replay: _replay,
+          metrics: _metrics,
+          child: widget.child,
+        ),
+      );
 }
 
 class _EntranceGate {
@@ -81,10 +98,16 @@ class _EntranceGate {
 }
 
 class _EntranceInherited extends InheritedWidget {
-  const new({required this.gate, required this.replay, required super.child});
+  const new({
+    required this.gate,
+    required this.replay,
+    required this.metrics,
+    required super.child,
+  });
 
   final _EntranceGate gate;
   final ValueListenable<int> replay;
+  final ValueListenable<int> metrics;
 
   @override
   bool updateShouldNotify(_EntranceInherited old) => false;
@@ -172,6 +195,7 @@ class _KkEntranceState extends State<KkEntrance>
     _controller.value = 0;
     _waitingToShow = true;
     _position = position..addListener(_checkVisible);
+    _scope?.metrics.addListener(_checkVisible);
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkVisible());
   }
 
@@ -192,6 +216,7 @@ class _KkEntranceState extends State<KkEntrance>
     _waitingToShow = false;
     _position?.removeListener(_checkVisible);
     _position = null;
+    _scope?.metrics.removeListener(_checkVisible);
   }
 
   void _onReplay() {

@@ -9,6 +9,7 @@ import 'package:keykey/app/ui/kk_metrics.dart';
 import 'package:keykey/app/ui/kk_secret_text.dart';
 import 'package:keykey/app/ui/kk_snack.dart';
 import 'package:keykey/app/web_page.dart';
+import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/vault/application/records_controller.dart';
 import 'package:keykey/features/vault/data/record_content.dart';
 import 'package:keykey/features/vault/data/vault_record_repository.dart';
@@ -138,6 +139,26 @@ class _DetailFieldState extends ConsumerState<DetailField> {
   }
 }
 
+/// Ayrıntı ekranındaki bir depolama işlemini (sık kullanılan, çöpe taşıma,
+/// geri al) çalıştırır. Yazılamazsa kullanıcıya söyler ve `false` döner;
+/// kasa kilitlendiyse bir şey söylemez, kilit ekranı geliyor (#174, V6).
+Future<bool> runRecordAction(
+  BuildContext context,
+  Future<void> Function() action,
+) async {
+  final rootContext = Navigator.of(context, rootNavigator: true).context;
+  final message = AppLocalizations.of(context).recordActionFailed;
+  try {
+    await action();
+    return true;
+  } on VaultLockedException {
+    return false;
+  } on Exception {
+    if (rootContext.mounted) showKkSnack(rootContext, message);
+    return false;
+  }
+}
+
 /// Kaydı çöp kutusuna taşır, ayrıntıyı kapatır ve geri alma bildirimi
 /// gösterir. Kart ve not ayrıntısı ortak kullanır.
 Future<void> moveRecordToTrash<C extends VaultItemContent<C>>(
@@ -147,7 +168,11 @@ Future<void> moveRecordToTrash<C extends VaultItemContent<C>>(
   AppLocalizations l10n,
 ) async {
   final rootContext = Navigator.of(context, rootNavigator: true).context;
-  await controller.moveToTrash(item, DateTime.now().toUtc());
+  final moved = await runRecordAction(
+    context,
+    () => controller.moveToTrash(item, DateTime.now().toUtc()),
+  );
+  if (!moved) return;
   if (context.mounted) context.pop();
   if (!rootContext.mounted) {
     hideKkSnack();
@@ -158,7 +183,9 @@ Future<void> moveRecordToTrash<C extends VaultItemContent<C>>(
     l10n.loginMovedToTrash,
     action: KkSnackAction(
       label: l10n.loginUndo,
-      onPressed: () => unawaited(controller.restoreById(item.id)),
+      onPressed: () => unawaited(
+        runRecordAction(rootContext, () => controller.restoreById(item.id)),
+      ),
     ),
   );
 }
