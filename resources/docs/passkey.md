@@ -107,7 +107,8 @@ Sistem, sağlayıcıdan istek gelir gelmez (kasa açılmadan) hangi hesapları g
 - **Algoritma:** Yalnızca ES256 (`-7`). İstekte yoksa "desteklenmiyor".
 - **excludeCredentials:** Kasada (çöp dışı) o `rpId` için listedeki bir kimlik varsa "bu hesap için zaten passkey var".
 - **clientDataJSON:** `{"type","challenge","origin","crossOrigin":false}`. Tarayıcı `clientDataHash` verdiyse imzada o kullanılır (tarayıcı kendi JSON'unu koyar).
-- **Yanıt:** `RegistrationResponseJSON` / `AuthenticationResponseJSON`; `authenticatorAttachment: "platform"`, `transports: ["internal","hybrid"]`, `clientExtensionResults: {"credProps":{"rk":true}}` (oluşturmada). `userHandle` girişte döner.
+- **Yanıt:** `RegistrationResponseJSON` / `AuthenticationResponseJSON`; `authenticatorAttachment: "platform"`, `transports: ["internal","hybrid"]`, `clientExtensionResults: {"credProps":{"rk":true}}` (oluşturmada). `userHandle` girişte döner; passkey'in kullanıcı kimliği yoksa (bazı KeePassXC passkey'leri) alan hiç yazılmaz.
+- **Meydan okuma:** 1-1024 bayt. WebAuthn'in 16 baytı yalnızca öneri; tarayıcılar daha kısasını reddetmediği için KeyKey de reddetmez.
 
 ### Origin ve çağıranın doğrulanması (Kotlin + Dart)
 

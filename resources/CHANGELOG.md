@@ -2,6 +2,22 @@
 
 KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesinde](docs/yayin.md#sürüm-numarası). `v1.0.0`'dan önceki sürümler fazların sonunu işaretler ve hata ayıklama anahtarıyla imzalıdır; kalıcı bir kurulum için kullanılmamalıdır.
 
+## 1.11.1 (2026-11-25): Passkey düzeltmeleri
+
+Faz 21'in son gözden geçirmesinden ertelenen küçük bulgular ([#187](https://github.com/aaudraa/KeyKey/issues/187)). Her düzeltme önce bulguyu gösteren bir testle doğrulandı. Yedek biçimi ve veritabanı şeması değişmedi; yeni izin yok.
+
+### Düzeltmeler
+
+- **Yeniden içe aktarma passkey'leri getiriyor.** 1.10'da Bitwarden'dan aktarılan bir kayıt 1.11'de aynı dosyayla yeniden aktarılınca "Kasanda var" diye seçilmiyor ve passkey'ler gelmiyordu. Artık bu satır seçili geliyor; yeni kayıt açılmadan yalnızca eksik passkey'ler kasadaki kayda ekleniyor.
+- **Bozuk bir passkey o sitenin diğerlerini bozmuyor.** İmza atılamayan bir passkey (bozuk içe aktarılmış anahtar) o sitenin bütün hesaplarını düşürüyordu; artık atlanıyor. İçe aktarmada anahtarın içi de denetleniyor.
+- **Açık düzenleme passkey'i silmiyor.** Uygulama arka plandan dönerken, liste yeniden okunmadan kaydedilen bir düzenleme passkey penceresinin az önce eklediği passkey'i silebiliyordu.
+- Kullanıcı kimliği olmayan KeePassXC passkey'lerinde yanıta boş `userHandle` yazılmıyor; 16 bayttan kısa meydan okumalar, tarayıcılar gibi kabul ediliyor.
+
+### Güvenlik
+
+- Girişte bekleyen yanıtlar yeni bir istekte siliniyor; süreleri saat değişince kaymıyor. Her isteğin hesap bağlantıları ayrı: yeni bir istek, eski pencerenin bağlantılarına kendi yanıtlarını koyamıyor.
+- Güvenlik tasarımındaki "özel anahtar baytları sıfırlanır" cümlesi düzeltildi: yalnızca Kotlin'in aldığı dizi sıfırlanıyor, köprü tamponları ve Android'in anahtar nesnesi sıfırlanamıyor.
+
 ## 1.11.0 (2026-11-24): Passkey sağlayıcısı
 
 Android 14 ve üstünde KeyKey passkey sağlayıcısı olabiliyor ([#186](https://github.com/aaudraa/KeyKey/issues/186)). Tasarım: [passkey sağlayıcısı](docs/passkey.md). Veritabanı şeması değişmedi.
