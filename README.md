@@ -59,7 +59,14 @@ KeyKey Android 11 ve üstünde çalışır.
   ```
 
 - **Obtainium:** [Obtainium'a ekle](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22io.github.aaudraa.keykey%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Faaudraa%2FKeyKey%22%2C%22author%22%3A%22aaudraa%22%2C%22name%22%3A%22KeyKey%22%7D); yeni sürümler GitHub'dan kendiliğinden gelir. Obtainium telefonun işlemcisine uyan APK'yı kendisi seçer.
-- **F-Droid:** Şimdilik yok. İlk başvuru 2026-11-18'de kabul edilmedi ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)); derleme F-Droid'in aracıyla birebir aynı çıkmaya devam ediyor.
+- **F-Droid deposu:** KeyKey'in kendi deposu. Telefonda F-Droid kuruluyken [depoyu F-Droid'e ekle](https://fdroid.link/#https://aaudraa.github.io/KeyKey/fdroid/repo?fingerprint=B24F450A8428FAF05CC51F3FAEE16339167FFB64C422DB981F5ECD3449BE5925); F-Droid depo ekleme ekranını açar, ekleyince KeyKey listede görünür ve güncellemeler F-Droid'den gelir. Elle eklemek için adres `https://aaudraa.github.io/KeyKey/fdroid/repo`, deponun parmak izi:
+
+  ```
+  b24f450a8428faf05cc51f3faee16339167ffb64c422db981f5ecd3449be5925
+  ```
+
+  APK'lar GitHub'dakilerin aynısı ve aynı anahtarla imzalı; birinden kurup ötekinden güncelleyebilirsin. Adım adım ekleme [kılavuzda](resources/docs/kullanim.md#kurulum).
+- **F-Droid ana deposu:** Şimdilik yok. İlk başvuru 2026-11-18'de kabul edilmedi ([fdroiddata!57995](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57995)); derleme F-Droid'in aracıyla birebir aynı çıkmaya devam ediyor.
 
 İlk kasa, otomatik doldurma, 2FA, yedekleme ve bilinen sınırlar ekran görüntüleriyle [kullanım kılavuzunda](resources/docs/kullanim.md). Eski bir `v0.x` deneme sürümü kullanıyorsan önce [geçiş adımlarını](resources/docs/yayin.md#eski-sürümlerden-geçiş) oku.
 
@@ -131,6 +138,7 @@ KeyKey is an open-source password manager and 2FA authenticator for Android 11+,
 - Most of the code was written with an AI coding assistant; the owner set the direction and tested it on their own phone. It has not had an independent security audit. Findings of a multi-agent AI review of its most critical parts (crypto, lock, sync, backup, autofill) are listed openly in [#168](https://github.com/aaudraa/KeyKey/issues/168).
 - English documents: [security design summary](resources/docs/security-summary.md), [privacy policy](resources/docs/privacy.md), [terms of use](resources/docs/terms.md) and [security policy](.github/SECURITY.md#security-policy).
 - Download the APK from [the latest release](https://github.com/aaudraa/KeyKey/releases/latest) (`keykey-<version>-arm64-v8a.apk` for most phones, `keykey-<version>.apk` works on all) or add it to [Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22io.github.aaudraa.keykey%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Faaudraa%2FKeyKey%22%2C%22author%22%3A%22aaudraa%22%2C%22name%22%3A%22KeyKey%22%7D). Signing certificate SHA-256: `66ff7b5c0c009a8530d0a55dd1d80a3af35de48bd0667c456a0cf86a6d1129a0`.
+- F-Droid users can [add KeyKey's own repository](https://fdroid.link/#https://aaudraa.github.io/KeyKey/fdroid/repo?fingerprint=B24F450A8428FAF05CC51F3FAEE16339167FFB64C422DB981F5ECD3449BE5925) (`https://aaudraa.github.io/KeyKey/fdroid/repo`, fingerprint `b24f450a8428faf05cc51f3faee16339167ffb64c422db981f5ecd3449be5925`). It serves the same APKs as the GitHub releases, signed with the same key.
 
 ## Lisans
 

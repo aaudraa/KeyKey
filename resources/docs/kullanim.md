@@ -22,13 +22,29 @@ Görüntülerdeki kayıtlar örnektir.
 
 ## Kurulum
 
-KeyKey Android 11 ve üstünde çalışır. Şimdilik yalnızca GitHub'dan dağıtılıyor.
+KeyKey Android 11 ve üstünde çalışır. GitHub'dan ve KeyKey'in kendi F-Droid deposundan dağıtılıyor.
 
 1. [Sürümler sayfasından](https://github.com/aaudraa/KeyKey/releases) son sürümün APK'sını indir. Telefonların çoğu için `keykey-<sürüm>-arm64-v8a.apk` doğru dosya ve evrenselin üçte biri kadar. Eski ya da ucuz bir telefonda (32 bit) `armeabi-v7a`, bilgisayardaki emülatörde `x86_64` gerekir. Emin değilsen her telefonda çalışan `keykey-<sürüm>.apk`'yı indir. Hepsi aynı anahtarla imzalı ve aynı derlemeden; birini kurup sonra ötekiyle güncelleyebilirsin.
 2. Dosyayı aç. Telefon, tarayıcının ya da dosya uygulamasının uygulama yüklemesine izin vermeni isteyebilir; izin verip kur.
 3. Google Play Protect, KeyKey'i daha önce görmediği için uygulama taraması önerebilir. Taramayı seçersen APK Google'a gönderilir. Göndermek istemezsen "Diğer ayrıntılar"ı açıp "Taramadan yükle"ye dokun (İngilizce arayüzde "More details" → "Install without scanning").
 
 **Güncellemeler için:** [Obtainium](https://github.com/ImranR98/Obtainium) uygulamasına bu deponun adresini (`https://github.com/aaudraa/KeyKey`) eklersen yeni sürüm çıktığında haber verir ve kurar. Telefonda Obtainium kuruluysa [bu bağlantıyla](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22io.github.aaudraa.keykey%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Faaudraa%2FKeyKey%22%2C%22author%22%3A%22aaudraa%22%2C%22name%22%3A%22KeyKey%22%7D) KeyKey'i tek dokunuşla ekleyebilirsin. Bağlantı önce tarayıcıda Obtainium'un yönlendirme sayfasını açar. Chrome'da Obtainium kendiliğinden açılır; açılmazsa (Firefox'ta böyle) sayfadaki "Click here if you are not redirected" düğmesine dokun. Obtainium kurulu değilse aynı sayfada indirme bağlantısı var. Obtainium telefonun işlemcisine uyan APK'yı kendisi seçer (ayarlardaki "Attempt to filter APKs by CPU architecture" açıkken; varsayılanı bu). Obtainium içe aktarmayı onaylamanı ister; eklendikten sonra en son sürüm "Bilinmeyen" görünürse listeyi aşağı çekip yenile. KeyKey telefonda henüz yoksa listede "Kurulu değil" görünür: üstüne dokunup kur düğmesine bas. Android ilk seferde Obtainium'a uygulama yükleme izni vermeni ister (Samsung'da "Bilinmeyen uygulamaları yükle" listesinde Obtainium'un düğmesini aç, sonra geri dön); Play Protect de yukarıdaki uyarıyı gösterebilir.
+
+**F-Droid ile:** [F-Droid](https://f-droid.org) kuruluysa KeyKey'in kendi deposunu ekleyebilirsin; güncellemeler sonra F-Droid'den gelir. Düğme adları F-Droid 2.0.3'ün Türkçe arayüzünden.
+
+1. Telefonda [bu bağlantıya](https://fdroid.link/#https://aaudraa.github.io/KeyKey/fdroid/repo?fingerprint=B24F450A8428FAF05CC51F3FAEE16339167FFB64C422DB981F5ECD3449BE5925) dokun. F-Droid kendiliğinden açılır ve "Depo ekle" ekranında KeyKey deposunu gösterir.
+2. "Depo ekle"ye dokun. F-Droid bildirim izni isteyebilir. Depo eklenince KeyKey listede görünür.
+3. KeyKey'e dokunup "Yükle"ye bas. Android ilk seferde F-Droid'e uygulama yükleme izni vermeni ister: "Ayarlar"a dokun, "Bu kaynaktan izin ver"i aç, geri dön ve "Yükle"ye yeniden bas.
+
+Bağlantı açılmazsa depoyu elle ekle: F-Droid'in ana ekranında üstteki "Depolar" simgesine, sonra alttaki "Yeni depo" (+) düğmesine dokun, "Depo URL'sini elle girin"i aç, şu adresi yapıştırıp "Ekle"ye bas. Adresin sonundaki parmak izi sayesinde F-Droid deponun gerçekten KeyKey'in deposu olduğunu kendisi denetler:
+
+```
+https://aaudraa.github.io/KeyKey/fdroid/repo?fingerprint=b24f450a8428faf05cc51f3faee16339167ffb64c422db981f5ecd3449be5925
+```
+
+Bilgisayarda [depo sayfasını](https://aaudraa.github.io/KeyKey/fdroid/repo/) açıp aynı ekrandaki "QR kodunu tarayın" ile sayfadaki QR kodunu da okutabilirsin. Depo eklendikten sonra parmak izi F-Droid'de deponun sayfasında "İmzalama anahtarı parmak izi (SHA-256)" altında görünür; F-Droid onu büyük harfle ve ikişer ikişer ayırarak yazar (`B2 4F 45 …`).
+
+F-Droid telefonun işlemcisine uyan APK'yı kurar; telefonların çoğunda `arm64-v8a`. Depodaki APK'lar GitHub'dakilerin aynısı ve aynı anahtarla imzalı; KeyKey'i GitHub'dan ya da Obtainium'la kurduysan F-Droid onu güncelleyebilir, tersi de olur.
 
 **İndirdiğin uygulamanın gerçekten KeyKey olduğunu denetlemek için:** [AppVerifier](https://github.com/soupslurpr/AppVerifier) gibi bir uygulamayla KeyKey'in imza özetine bak. Şu değer olmalı:
 
