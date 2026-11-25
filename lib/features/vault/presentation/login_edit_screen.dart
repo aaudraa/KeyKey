@@ -190,14 +190,9 @@ class _LoginEditScreenState extends ConsumerState<LoginEditScreen> {
       if (original == null) {
         saved = await controller.add(content);
       } else {
-        // Form açıkken kayıt değişmiş olabilir (arka planda bekleme
-        // süresinde doldurma ekranı yeni parola kaydetti); dokunulmayan
-        // alanlar onun yazdığı gibi kalır.
-        final latest = controller.latest(original);
-        saved = await controller.update(
-          latest,
-          content.rebase(original: original.content, latest: latest.content),
-        );
+        // Form açıkken kayıt değişmiş olabilir; dokunulmayan alanlar kaydın
+        // en son halinden gelir.
+        saved = await controller.saveEdit(original, content);
       }
       _dirty = false;
       lastSaved.mark(savedLoginKey(loginIdHex(saved.id)));

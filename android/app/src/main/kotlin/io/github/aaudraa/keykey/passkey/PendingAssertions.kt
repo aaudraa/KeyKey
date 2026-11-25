@@ -1,5 +1,6 @@
 package io.github.aaudraa.keykey.passkey
 
+import android.os.SystemClock
 import java.security.SecureRandom
 import java.util.Timer
 import kotlin.concurrent.schedule
@@ -8,7 +9,9 @@ import kotlin.concurrent.schedule
  * Kasa açılınca hesaplanan giriş yanıtları; kullanıcı sistem penceresinde bir
  * hesap seçene kadar süreç belleğinde bekler. Özel anahtar burada yoktur,
  * yalnızca imzalı yanıtlar. Bir yanıt alınınca o isteğin bütün yanıtları
- * silinir; [TTL_MILLIS] sonra da silinir. Süreç kapanırsa hepsi gider.
+ * silinir; yeni bir giriş isteği gelince eskilerin hepsi, [TTL_MILLIS] sonra
+ * da silinir. Süreç kapanırsa hepsi gider. Android hesap penceresi kapanınca
+ * sağlayıcıya haber vermediği için "pencere kapanınca silinir" yapılamıyor.
  */
 object PendingAssertions {
     const val TTL_MILLIS = 2 * 60 * 1000L
@@ -19,13 +22,14 @@ object PendingAssertions {
     private val random = SecureRandom()
     private val timer by lazy { Timer("keykey-passkey", true) }
 
-    /** Saat; testler değiştirir. */
-    internal var clock: () -> Long = { System.currentTimeMillis() }
+    /** Açılıştan beri geçen süre: duvar saati değişince kaymaz. Testler değiştirir. */
+    internal var clock: () -> Long = { SystemClock.elapsedRealtime() }
 
     /** [responses]: kimlik (base64url) → yanıt JSON'u. Dönen anahtar niyete konur. */
     @Synchronized
     fun put(responses: Map<String, String>): String {
-        prune()
+        // Aynı anda tek giriş isteği olur; eskinin yanıtları artık gerekmez.
+        batches.clear()
         val bytes = ByteArray(16).also(random::nextBytes)
         val token = bytes.joinToString("") { "%02x".format(it) }
         batches[token] = Batch(responses.toMap(), clock())

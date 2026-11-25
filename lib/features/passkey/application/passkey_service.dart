@@ -157,28 +157,39 @@ final class PasskeyService {
     );
   }
 
-  /// Her passkey için imzalı giriş yanıtı.
+  /// Her passkey için imzalı giriş yanıtı. İmza atılamayan passkey (bozuk
+  /// içe aktarılmış anahtar gibi) atlanır, diğerleri yine verilir; hiçbirine
+  /// imza atılamazsa ilk hata fırlatılır.
   Future<List<PasskeyAssertion>> assertions({
     required PasskeyPrompt prompt,
     required List<(LoginItem, LoginPasskey)> passkeys,
   }) async {
     final keys = _ref.read(passkeyKeysProvider);
-    return [
-      for (final (item, passkey) in passkeys)
-        PasskeyAssertion(
-          credentialId: passkey.credentialIdB64,
-          userName: passkeyAccountName(passkey, item),
-          displayName: passkey.userDisplayName,
-          responseJson: await assertionResponse(
-            options: prompt.assertion!,
-            rpId: prompt.rpId,
-            passkey: passkey,
-            origin: prompt.origin,
-            clientDataHash: prompt.clientDataHash,
-            sign: keys.sign,
+    final result = <PasskeyAssertion>[];
+    Exception? firstError;
+    for (final (item, passkey) in passkeys) {
+      try {
+        result.add(
+          PasskeyAssertion(
+            credentialId: passkey.credentialIdB64,
+            userName: passkeyAccountName(passkey, item),
+            displayName: passkey.userDisplayName,
+            responseJson: await assertionResponse(
+              options: prompt.assertion!,
+              rpId: prompt.rpId,
+              passkey: passkey,
+              origin: prompt.origin,
+              clientDataHash: prompt.clientDataHash,
+              sign: keys.sign,
+            ),
           ),
-        ),
-    ];
+        );
+      } on Exception catch (error) {
+        firstError ??= error;
+      }
+    }
+    if (result.isEmpty && firstError != null) throw firstError;
+    return result;
   }
 
   LoginApp? _app(PasskeyCaller caller) {

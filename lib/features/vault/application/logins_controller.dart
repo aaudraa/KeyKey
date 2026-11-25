@@ -135,12 +135,19 @@ class LoginsController extends Notifier<LoginsState> {
   Future<void> reload() async {
     final repository = _repository;
     if (repository == null) return;
+    final loading = _load(repository, ++_generation);
+    _reloading = loading;
     try {
-      await _load(repository, ++_generation);
+      await loading;
     } on VaultLockedException {
       // Okuma sürerken kilitlendi; kilit ekranı zaten geliyor.
+    } finally {
+      if (identical(_reloading, loading)) _reloading = null;
     }
   }
+
+  /// Sürmekte olan [reload]; bitince `null`.
+  Future<void>? _reloading;
 
   LoginRepository get _openRepository {
     final repository = _repository;
@@ -169,11 +176,45 @@ class LoginsController extends Notifier<LoginsState> {
     return added;
   }
 
-  /// Parola değiştiyse eskisi geçmişe eklenir.
+  /// Parola değiştiyse eskisi geçmişe eklenir. Düzenleme passkey'lere ve
+  /// geçmişe dokunmaz; onlar kaydın en son halinden gelir. Bu yüzden sürmekte
+  /// olan yeniden okuma beklenir: arka plandayken passkey penceresinin
+  /// eklediği passkey, eski kopyayla yazılıp kaybolmasın.
   Future<LoginItem> update(LoginItem item, LoginContent edited) async {
-    final updated = await _openRepository.update(item, edited);
+    await _settled();
+    final updated = await _openRepository.update(latest(item), edited);
     _swap(updated);
     return updated;
+  }
+
+  /// Düzenleme formunun kaydı. Form açıkken kayıt değişmiş olabilir (arka
+  /// planda doldurma yeni parola kaydetti, passkey penceresi passkey ekleyip
+  /// uygulama bağladı); yeniden okumalar bitince formda dokunulmayan alanlar
+  /// kaydın en son halinden alınır.
+  Future<LoginItem> saveEdit(LoginItem original, LoginContent form) async {
+    await _settled();
+    final current = latest(original);
+    return await update(
+      current,
+      form.rebase(original: original.content, latest: current.content),
+    );
+  }
+
+  /// Sürmekte olan yeniden okumaların hepsini bekler; okuma sürerken yenisi
+  /// başlarsa onu da.
+  Future<void> _settled() async {
+    for (
+      var reloading = _reloading;
+      reloading != null;
+      reloading = _reloading
+    ) {
+      try {
+        await reloading;
+      } on Exception {
+        // Okuma başarısızsa eldeki liste kullanılır.
+      }
+      if (identical(_reloading, reloading)) return;
+    }
   }
 
   Future<void> setFavorite(LoginItem item, {required bool favorite}) =>
@@ -197,6 +238,17 @@ class LoginsController extends Notifier<LoginsState> {
 
   Future<void> restore(LoginItem item) =>
       _updateMetadata(item, (content) => content.copyWith(trashedAt: null));
+
+  /// Kaydın durumdaki en son hali; liste yüklü değilse ya da kayıt artık
+  /// yoksa (kalıcı silindi) `null`.
+  LoginItem? current(LoginItem item) {
+    if (state case LoginsLoaded(:final items)) {
+      for (final current in items) {
+        if (_sameId(current, item)) return current;
+      }
+    }
+    return null;
+  }
 
   /// Kaydın durumdaki en son hali; yoksa verilen. Ekranın elindeki kopya
   /// eskimiş olabilir: arka planda bekleme süresinde doldurma ekranı kaydı

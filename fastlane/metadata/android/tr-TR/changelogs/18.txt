@@ -1,0 +1,1 @@
+Passkey düzeltmeleri: yeniden içe aktarma artık passkey'leri kasadaki kayda ekliyor; bozuk bir passkey o sitenin diğer hesaplarını bozmuyor; arka plandan dönerken kaydedilen düzenleme yeni eklenen passkey'i silmiyor. Bekleyen giriş yanıtları yeni istekte siliniyor.

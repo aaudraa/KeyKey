@@ -7,6 +7,7 @@ import 'package:keykey/features/authenticator/data/otpauth_uri.dart';
 import 'package:keykey/features/backup/data/import/login_import.dart';
 import 'package:keykey/features/vault/data/card_content.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
+import 'package:keykey/features/vault/data/login_passkey.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:keykey/features/vault/data/note_content.dart';
 import 'package:keykey/features/vault/data/vault_record_repository.dart';
@@ -18,6 +19,8 @@ final class LoginImportCandidate {
     required this.duplicate,
     this.otp,
     this.otpAlreadySaved = false,
+    this.addPasskeysTo,
+    this.newPasskeys = const [],
   });
 
   final LoginContent content;
@@ -31,6 +34,14 @@ final class LoginImportCandidate {
 
   /// Aynı gizli anahtar kasada zaten var; 2FA hesabı yeniden eklenmez.
   final bool otpAlreadySaved;
+
+  /// Kayıt kasada var ama dosyadaki bazı passkey'leri yok (passkey'siz
+  /// sürümde aktarılmış kayıt gibi). Seçilirse yeni kayıt açılmaz,
+  /// [newPasskeys] bu kayda eklenir; varsayılan olarak seçilir.
+  final LoginItem? addPasskeysTo;
+
+  /// Kasadaki kayıtta olmayan passkey'ler.
+  final List<LoginPasskey> newPasskeys;
 }
 
 /// İçe aktarılabilecek bir kart ya da not.
@@ -104,7 +115,9 @@ LoginImportPlan planLoginImport(
     for (final item in existingNotes)
       (item.content.name.trim(), item.content.text),
   };
-  final known = {for (final item in existingLogins) _fingerprint(item.content)};
+  final known = [
+    for (final item in existingLogins) (_fingerprint(item.content), item),
+  ];
   final secrets = {
     for (final item in existingOtps) _secretKey(item.content.parameters.secret),
   };
@@ -141,12 +154,28 @@ LoginImportPlan planLoginImport(
         otp != null && secrets.contains(_secretKey(otp.parameters.secret));
     // Kasadaki her girişle karşılaştırılır; bir kez hesaplanır.
     final fingerprint = _fingerprint(content);
+    final same = [
+      for (final (other, item) in known)
+        if (other.matches(fingerprint)) item,
+    ];
+    // Passkey yalnızca çöp dışındaki kayda eklenir: çöpteki kaydın
+    // passkey'i girişte kullanılmaz ve çöp boşalınca silinir.
+    final target = same.where((item) => !item.content.isTrashed).firstOrNull;
+    final newPasskeys = target == null
+        ? const <LoginPasskey>[]
+        : _missingPasskeys(target.content, content.passkeys);
+    final canAdd =
+        newPasskeys.isNotEmpty &&
+        target!.content.passkeys.length + newPasskeys.length <=
+            LoginContent.maxPasskeys;
     candidates.add(
       LoginImportCandidate(
         content: content,
-        duplicate: known.any((other) => other.matches(fingerprint)),
+        duplicate: same.isNotEmpty,
         otp: otp,
         otpAlreadySaved: otpAlreadySaved,
+        addPasskeysTo: canAdd ? target : null,
+        newPasskeys: canAdd ? newPasskeys : const [],
       ),
     );
   }
@@ -238,6 +267,35 @@ OtpContent? otpFromImport(
 }
 
 String _secretKey(List<int> secret) => secret.join(',');
+
+/// [incoming] içinden [content]'te olmayan passkey'ler (site ve kimlikle).
+List<LoginPasskey> _missingPasskeys(
+  LoginContent content,
+  List<LoginPasskey> incoming,
+) {
+  final saved = {
+    for (final passkey in content.passkeys)
+      (passkey.rpId, passkey.credentialIdB64),
+  };
+  return [
+    for (final passkey in incoming)
+      if (saved.add((passkey.rpId, passkey.credentialIdB64))) passkey,
+  ];
+}
+
+/// [content]'e, kayıtta olmayan [passkeys]'i ekler; kaydetme anında kaydın en
+/// son haline uygulanır. Sınırı aşan passkey'ler eklenmez.
+LoginContent withImportedPasskeys(
+  LoginContent content,
+  List<LoginPasskey> passkeys,
+) {
+  final missing = _missingPasskeys(content, passkeys);
+  final room = LoginContent.maxPasskeys - content.passkeys.length;
+  if (missing.isEmpty || room <= 0) return content;
+  return content.copyWith(
+    passkeys: [...content.passkeys, ...missing.take(room)],
+  );
+}
 
 /// Yinelenen kayıt karşılaştırması: kullanıcı adı ve parola aynı, adreslerden
 /// biri ortak ya da ikisinde de adres yok.

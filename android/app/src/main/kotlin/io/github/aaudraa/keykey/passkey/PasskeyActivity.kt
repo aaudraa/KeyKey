@@ -4,6 +4,7 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.SigningInfo
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.MotionEvent
@@ -227,7 +228,11 @@ class PasskeyActivity : FlutterFragmentActivity(), PasskeyApi {
     }
 
     private fun responseIntent(token: String, credentialId: String, index: Int): PendingIntent {
+        // Android aynı istek kodlu ve eşit niyetli PendingIntent'i yeniden
+        // kullanır; veri URI'si her isteği ayırır, yoksa yeni istek eski
+        // pencerenin bağlantılarının ek verisini kendi yanıtlarıyla değiştirirdi.
         val intent = Intent(this, PasskeyResponseActivity::class.java)
+            .setData(Uri.fromParts("keykey-passkey", token, index.toString()))
             .putExtra(PasskeyResponseActivity.EXTRA_TOKEN, token)
             .putExtra(PasskeyResponseActivity.EXTRA_CREDENTIAL_ID, credentialId)
         return PendingIntent.getActivity(

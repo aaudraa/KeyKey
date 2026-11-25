@@ -12,6 +12,7 @@ import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
+import 'package:keykey/features/vault/data/login_passkey.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:sodium/sodium_sumo.dart';
 
@@ -402,6 +403,89 @@ void main() {
         'yeni',
       );
     });
+
+    test(
+      "yeniden okuma bitmeden kaydedilen düzenleme passkey'i silmiyor",
+      () async {
+        await loaded();
+        final item = await controller().add(
+          const LoginContent(name: 'A', password: 'p'),
+        );
+        // Arka plandayken passkey penceresi kayda passkey ekledi.
+        final passkey = LoginPasskey(
+          credentialId: Uint8List.fromList([1]),
+          rpId: 'github.com',
+          userHandle: Uint8List.fromList([1]),
+          userName: 'furkan',
+          userDisplayName: '',
+          privateKey: Uint8List.fromList([1]),
+          createdAt: now,
+        );
+        await repositoryFor(session)
+            .updateMetadata(item, item.content.copyWith(passkeys: [passkey]));
+
+        // Dönüşte yeniden okuma başladı; bitmeden açık form kaydedildi.
+        final reloading = controller().reload();
+        final latest = controller().latest(item);
+        await controller().update(
+          latest,
+          latest.content.copyWith(notes: 'not'),
+        );
+        await reloading;
+
+        final saved = (await repositoryFor(session).loadAll()).items.single;
+        expect(saved.content.notes, 'not');
+        expect(saved.content.passkeys, hasLength(1));
+      },
+    );
+
+    test(
+      'form kaydı yeniden okumaları bekleyip son hale uygulanıyor',
+      () async {
+        await loaded();
+        final original = await controller().add(
+          const LoginContent(name: 'A', password: 'eski'),
+        );
+        // Arka planda: passkey penceresi passkey ekleyip uygulamayı bağladı,
+        // doldurma da yeni parolayı kaydetti.
+        final app = LoginApp(
+          packageName: 'com.github.android',
+          certsSha256: const [
+            'abababababababababababababababababababababababababababababababab',
+          ],
+        );
+        final passkey = LoginPasskey(
+          credentialId: Uint8List.fromList([1]),
+          rpId: 'github.com',
+          userHandle: Uint8List.fromList([1]),
+          userName: 'furkan',
+          userDisplayName: '',
+          privateKey: Uint8List.fromList([1]),
+          createdAt: now,
+        );
+        final background = await repositoryFor(session).updateMetadata(
+          original,
+          original.content.copyWith(passkeys: [passkey], apps: [app]),
+        );
+        await repositoryFor(session)
+            .update(background, background.content.copyWith(password: 'yeni'));
+
+        // Dönüşte iki yeniden okuma üst üste; form ikisi bitmeden kaydedildi.
+        final first = controller().reload();
+        final second = controller().reload();
+        await controller().saveEdit(
+          original,
+          original.content.copyWith(notes: 'not'),
+        );
+        await Future.wait([first, second]);
+
+        final saved = (await repositoryFor(session).loadAll()).items.single;
+        expect(saved.content.notes, 'not');
+        expect(saved.content.password, 'yeni');
+        expect(saved.content.passkeys, hasLength(1));
+        expect(saved.content.apps, [app]);
+      },
+    );
 
     test('ekleme, düzenleme ve silme durumu güncelliyor', () async {
       await loaded();

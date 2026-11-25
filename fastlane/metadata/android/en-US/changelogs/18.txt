@@ -1,0 +1,1 @@
+Passkey fixes: importing again now adds the passkeys to the entry already in your vault; one broken passkey no longer breaks the other accounts for that site; saving an edit while returning from the background no longer drops a passkey just added. Pending sign-in responses are cleared on a new request.

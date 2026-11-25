@@ -9,6 +9,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import java.math.BigInteger
 import java.security.AlgorithmParameters
@@ -87,15 +88,17 @@ class PrivilegedBrowsersTest {
 class PendingAssertionsTest {
     private var now = 1_000L
 
-    @After
-    fun reset() {
-        PendingAssertions.clear()
-        PendingAssertions.clock = { System.currentTimeMillis() }
+    // Gerçek saat (SystemClock) JVM testlerinde yok; her test kendi saatini kullanır.
+    @Before
+    fun useTestClock() {
+        PendingAssertions.clock = { now }
     }
+
+    @After
+    fun reset() = PendingAssertions.clear()
 
     @Test
     fun `yanıt bir kez verilir, sonra hepsi silinir`() {
-        PendingAssertions.clock = { now }
         val token = PendingAssertions.put(mapOf("a" to "{1}", "b" to "{2}"))
         assertEquals("{2}", PendingAssertions.take(token, "b"))
         assertNull(PendingAssertions.take(token, "a"))
@@ -103,10 +106,17 @@ class PendingAssertionsTest {
 
     @Test
     fun `süre dolunca silinir`() {
-        PendingAssertions.clock = { now }
         val token = PendingAssertions.put(mapOf("a" to "{1}"))
         now += PendingAssertions.TTL_MILLIS + 1
         assertNull(PendingAssertions.take(token, "a"))
+    }
+
+    @Test
+    fun `yeni istek eski isteğin yanıtlarını siliyor`() {
+        val old = PendingAssertions.put(mapOf("a" to "{1}"))
+        val new = PendingAssertions.put(mapOf("a" to "{2}"))
+        assertNull(PendingAssertions.take(old, "a"))
+        assertEquals("{2}", PendingAssertions.take(new, "a"))
     }
 
     @Test
@@ -132,5 +142,37 @@ class CredentialProviderXmlTest {
             listOf(androidx.credentials.PublicKeyCredential.TYPE_PUBLIC_KEY_CREDENTIAL),
             names,
         )
+    }
+}
+
+class CredentialServiceIsolationTest {
+    @Test
+    fun `servis kasaya, Flutter'a ve köprüye dokunmadan yanıt veriyor`() {
+        // Kilitliyken hangi sitede passkey olduğu söylenmemeli: servis yalnızca
+        // Android'in ve androidx'in sınıflarıyla, kasayı açmadan yanıt kurar.
+        // Kasa ya da köprü kullanılmaya başlanırsa bu test düşer.
+        val source = java.io.File(
+            "src/main/kotlin/io/github/aaudraa/keykey/passkey/KeyKeyCredentialService.kt",
+        ).readText()
+        val imports = Regex("""^import (\S+)""", RegexOption.MULTILINE)
+            .findAll(source).map { it.groupValues[1] }.toList()
+        assertTrue(imports.isNotEmpty())
+        val foreign = imports.filterNot {
+            it.startsWith("android.") ||
+                it.startsWith("androidx.") ||
+                it == "io.github.aaudraa.keykey.R"
+        }
+        assertEquals(emptyList<String>(), foreign)
+        // Aynı paketin sınıfları import gerektirmez; dosya adlarından toplanır.
+        // Servisin açtığı tek sınıf kilit penceresi PasskeyActivity'dir.
+        val samePackage = java.io.File(
+            "src/main/kotlin/io/github/aaudraa/keykey/passkey",
+        ).listFiles()!!.map { it.nameWithoutExtension }
+            .filterNot { it == "KeyKeyCredentialService" || it == "PasskeyActivity" }
+        assertTrue(samePackage.contains("PendingAssertions"))
+        for (name in samePackage + listOf("PasskeyApi", "FlutterEngine", "Vault")) {
+            val word = Regex("""\b""" + name + """\b""")
+            assertTrue("$name kullanılmamalı", !word.containsMatchIn(source))
+        }
     }
 }

@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/core/network/asset_links_client.dart';
@@ -67,6 +67,9 @@ class FakePasskeyBridge implements PasskeyBridge {
 class FakeKeys implements PasskeyKeys {
   final signed = <Uint8List>[];
 
+  /// İlk baytı buradaki anahtarlarla imza atılamaz (bozuk içe aktarma).
+  final broken = <int>{};
+
   @override
   Future<PasskeyKeyPair> generate() async => PasskeyKeyPair(
     privateKey: Uint8List.fromList([9, 9, 9]),
@@ -76,6 +79,9 @@ class FakeKeys implements PasskeyKeys {
 
   @override
   Future<Uint8List> sign(Uint8List privateKey, Uint8List data) async {
+    if (broken.contains(privateKey.first)) {
+      throw PlatformException(code: 'InvalidKeySpecException');
+    }
     signed.add(privateKey);
     return Uint8List.fromList([0x30, 0x00]);
   }
@@ -233,6 +239,35 @@ void main() {
       expect(locked(tester), isTrue);
     });
 
+    testWidgets('iki aday kayıt varsa seçilene ekleniyor', (tester) async {
+      logins.items.add(
+        FakeLoginRepository.item(
+          const LoginContent(
+            name: 'GitHub iş',
+            username: 'Furkan',
+            urls: ['https://gist.github.com'],
+          ),
+          id: 3,
+        ),
+      );
+      final bridge = await pump(
+        tester,
+        status: VaultOpen(service.newSession()),
+        request: create(chrome),
+      );
+      expect(find.text('GitHub'), findsOneWidget);
+      expect(find.text('GitHub iş'), findsOneWidget);
+      await tester.tap(find.text('GitHub iş'));
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Passkey oluştur'));
+      await tester.pumpAndSettle();
+
+      expect(logins.items, hasLength(3));
+      expect(logins.items[0].content.passkeys, isEmpty);
+      expect(logins.items[2].content.passkeys, hasLength(1));
+      expect(bridge.created, isNotNull);
+    });
+
     testWidgets('"Yeni kayıt" seçilirse yeni kayıt açılıyor', (tester) async {
       final bridge = await pump(
         tester,
@@ -388,6 +423,34 @@ void main() {
         [2],
       ]);
       expect(locked(tester), isTrue);
+    });
+
+    testWidgets('imza atılamayan passkey atlanıyor, diğeri veriliyor', (
+      tester,
+    ) async {
+      addPasskeys();
+      keys.broken.add(1);
+      final bridge = await pump(
+        tester,
+        status: VaultOpen(service.newSession()),
+        request: get(chrome),
+      );
+      expect(bridge.failed, isNull);
+      expect(bridge.got!.map((a) => a.userName), ['keykey']);
+    });
+
+    testWidgets('hiçbirine imza atılamazsa istek hatayla bitiyor', (
+      tester,
+    ) async {
+      addPasskeys();
+      keys.broken.addAll([1, 2]);
+      final bridge = await pump(
+        tester,
+        status: VaultOpen(service.newSession()),
+        request: get(chrome),
+      );
+      expect(bridge.got, isNull);
+      expect(bridge.failed, PasskeyError.invalidRequest);
     });
 
     testWidgets('passkey yoksa söyleniyor ve boş liste dönüyor', (

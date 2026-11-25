@@ -8,8 +8,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/core/platform/document_files.dart';
 import 'package:keykey/features/lock/application/external_activity_gate.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
+import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/card_content.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
+import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:keykey/features/vault/data/note_content.dart';
 import 'package:sodium/sodium_sumo.dart';
 
@@ -165,6 +167,194 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(logins.items.map((item) => item.content.passkeys.length), [2, 1]);
+  });
+
+  testWidgets("kasadaki kayda passkey'leri ekleniyor, yeni kayıt açılmıyor", (
+    tester,
+  ) async {
+    // 1.10'da passkey'siz aktarılmış kayıt; 1.11'de aynı dosya yeniden.
+    logins.items.add(
+      FakeLoginRepository.item(
+        const LoginContent(
+          name: 'GitHub',
+          username: 'furkan',
+          password: 'parola',
+        ),
+      ),
+    );
+    Map<String, Object?> credential(String id) => {
+      'credentialId': id,
+      'keyType': 'public-key',
+      'keyAlgorithm': 'ECDSA',
+      'keyCurve': 'P-256',
+      'keyValue': p256Pkcs8B64Url,
+      'rpId': 'github.com',
+      'userHandle': 'AQ',
+      'userName': 'furkan',
+      'userDisplayName': '',
+      'creationDate': '2026-03-05T12:00:00.000Z',
+    };
+    documents.nextOpen = DocumentOpened(
+      Uint8List.fromList(
+        utf8.encode(
+          jsonEncode({
+            'encrypted': false,
+            'items': [
+              {
+                'type': 1,
+                'name': 'GitHub',
+                'login': {
+                  'username': 'furkan',
+                  'password': 'parola',
+                  'fido2Credentials': [
+                    credential('b64.AQ'),
+                    credential('b64.Ag'),
+                  ],
+                },
+              },
+            ],
+          }),
+        ),
+      ),
+    );
+    await openImport(tester);
+
+    expect(
+      find.text("furkan · Passkey ile · Passkey'ler kasadaki kayda eklenecek"),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('1 kaydı ekle'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tamam'));
+    await tester.pumpAndSettle();
+
+    final item = logins.items.single;
+    expect(item.content.name, 'GitHub');
+    expect(item.content.passkeys, hasLength(2));
+  });
+
+  Map<String, Object?> githubCredential(String id) => {
+    'credentialId': id,
+    'keyType': 'public-key',
+    'keyAlgorithm': 'ECDSA',
+    'keyCurve': 'P-256',
+    'keyValue': p256Pkcs8B64Url,
+    'rpId': 'github.com',
+    'userHandle': 'AQ',
+    'userName': 'furkan',
+    'userDisplayName': '',
+    'creationDate': '2026-03-05T12:00:00.000Z',
+  };
+
+  Map<String, Object?> bitwardenLogin(
+    String name, {
+    String? totp,
+    List<Map<String, Object?>> passkeys = const [],
+  }) => {
+    'type': 1,
+    'name': name,
+    'login': {
+      'username': 'furkan',
+      'password': 'parola-$name',
+      'totp': ?totp,
+      'fido2Credentials': passkeys,
+    },
+  };
+
+  testWidgets('karışık seçimde 2FA doğru kayda bağlanıyor, ayrı sayılıyor', (
+    tester,
+  ) async {
+    logins.items.add(
+      FakeLoginRepository.item(
+        const LoginContent(
+          name: 'GitHub',
+          username: 'furkan',
+          password: 'parola-GitHub',
+        ),
+        id: 7,
+      ),
+    );
+    documents.nextOpen = DocumentOpened(
+      Uint8List.fromList(
+        utf8.encode(
+          jsonEncode({
+            'encrypted': false,
+            'items': [
+              bitwardenLogin('Forum', totp: 'JBSWY3DPEHPK3PXP'),
+              bitwardenLogin(
+                'GitHub',
+                totp: 'GEZDGNBVGY3TQOJQ',
+                passkeys: [githubCredential('b64.AQ')],
+              ),
+              bitwardenLogin('Banka', totp: 'MFRGGZDFMZTWQ2LK'),
+            ],
+          }),
+        ),
+      ),
+    );
+    await openImport(tester);
+    await tester.tap(find.text('3 kaydı ekle'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('2 kayıt eklendi, 1 kayda passkey eklendi.'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Tamam'));
+    await tester.pumpAndSettle();
+
+    final byName = {for (final item in logins.items) item.content.name: item};
+    expect(byName.keys, unorderedEquals(['GitHub', 'Forum', 'Banka']));
+    expect(byName['GitHub']!.content.passkeys, hasLength(1));
+    String issuerOf(LoginItem item) => otps.items
+        .singleWhere((otp) => listEquals(otp.content.loginId, item.id))
+        .content
+        .issuer;
+    expect(issuerOf(byName['Forum']!), 'Forum');
+    expect(issuerOf(byName['GitHub']!), 'GitHub');
+    expect(issuerOf(byName['Banka']!), 'Banka');
+  });
+
+  testWidgets('hedef kayıt bu arada silindiyse yeni kayıt açılıyor', (
+    tester,
+  ) async {
+    logins.items.add(
+      FakeLoginRepository.item(
+        const LoginContent(
+          name: 'GitHub',
+          username: 'furkan',
+          password: 'parola-GitHub',
+        ),
+        id: 7,
+      ),
+    );
+    documents.nextOpen = DocumentOpened(
+      Uint8List.fromList(
+        utf8.encode(
+          jsonEncode({
+            'encrypted': false,
+            'items': [
+              bitwardenLogin('GitHub', passkeys: [githubCredential('b64.AQ')]),
+            ],
+          }),
+        ),
+      ),
+    );
+    await openImport(tester);
+    // Önizleme açıkken kayıt kalıcı silindi (örneğin senkronla).
+    final container = ProviderScope.containerOf(
+      tester.element(find.text('1 kaydı ekle')),
+    );
+    final controller = container.read(loginsControllerProvider.notifier);
+    await controller.deletePermanently(logins.items.single);
+    await tester.tap(find.text('1 kaydı ekle'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tamam'));
+    await tester.pumpAndSettle();
+
+    final item = logins.items.single;
+    expect(item.id[0], 200, reason: 'silinen kayıt geri yazılmadı, yenisi');
+    expect(item.content.passkeys, hasLength(1));
   });
 
   testWidgets('kasada olan kayıt seçilmemiş geliyor', (tester) async {

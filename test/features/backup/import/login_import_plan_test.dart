@@ -9,6 +9,7 @@ import 'package:keykey/features/backup/data/import/login_import.dart';
 import 'package:keykey/features/vault/data/card_content.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/data/login_passkey.dart';
+import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:keykey/features/vault/data/note_content.dart';
 
 import '../../../support/fake_vault_service.dart';
@@ -327,5 +328,105 @@ void main() {
     expect(plan.candidates[2].content.passkeys, isEmpty);
     expect(plan.passkeys, 3);
     expect(plan.skippedPasskeys, 4);
+  });
+
+  _passkeyMergeTests();
+}
+
+void _passkeyMergeTests() {
+  LoginPasskey key(int id) => LoginPasskey(
+    credentialId: Uint8List.fromList([id]),
+    rpId: 'github.com',
+    userHandle: Uint8List(0),
+    userName: 'ali',
+    userDisplayName: '',
+    privateKey: Uint8List.fromList([id]),
+    createdAt: DateTime.utc(2026),
+  );
+  LoginImportCandidate against(List<LoginPasskey> saved, List<int> file) =>
+      planLoginImport(
+        LoginExport(
+          source: LoginExportSource.bitwardenJson,
+          logins: [
+            ImportedLogin(
+              name: 'GitHub',
+              username: 'ali',
+              password: 'p',
+              passkeys: [for (final id in file) key(id)],
+            ),
+          ],
+          skipped: 0,
+        ),
+        existingLogins: [
+          FakeLoginRepository.item(
+            LoginContent(
+              name: 'GitHub',
+              username: 'ali',
+              password: 'p',
+              passkeys: saved,
+            ),
+          ),
+        ],
+        existingOtps: const [],
+      ).candidates.single;
+
+  group('yinelenen kayda passkey ekleme', () {
+    test('kasadaki kayıtta olmayan passkey o kayda eklenecek', () {
+      final candidate = against([key(1)], [1, 2]);
+      expect(candidate.duplicate, isTrue);
+      expect(candidate.addPasskeysTo, isNotNull);
+      expect(candidate.newPasskeys.map((p) => p.credentialId), [
+        [2],
+      ]);
+    });
+
+    test("passkey'lerin hepsi kasada varsa düz yinelenen", () {
+      final candidate = against([key(1), key(2)], [2, 1]);
+      expect(candidate.duplicate, isTrue);
+      expect(candidate.addPasskeysTo, isNull);
+      expect(candidate.newPasskeys, isEmpty);
+    });
+
+    test('çöpteki kayda eklenmiyor, çöp dışındaki seçiliyor', () {
+      LoginItem saved(int id, {DateTime? trashedAt}) =>
+          FakeLoginRepository.item(
+            LoginContent(
+              name: 'GitHub',
+              username: 'ali',
+              password: 'p',
+              trashedAt: trashedAt,
+            ),
+            id: id,
+          );
+      LoginImportCandidate plan(List<LoginItem> items) => planLoginImport(
+        LoginExport(
+          source: LoginExportSource.bitwardenJson,
+          logins: [
+            ImportedLogin(
+              name: 'GitHub',
+              username: 'ali',
+              password: 'p',
+              passkeys: [key(1)],
+            ),
+          ],
+          skipped: 0,
+        ),
+        existingLogins: items,
+        existingOtps: const [],
+      ).candidates.single;
+
+      final trashed = saved(1, trashedAt: DateTime.utc(2026));
+      expect(plan([trashed]).addPasskeysTo, isNull);
+      expect(plan([trashed]).duplicate, isTrue);
+      expect(plan([trashed, saved(2)]).addPasskeysTo!.id[15], 2);
+    });
+
+    test('sınır aşılacaksa eklenmiyor', () {
+      final candidate = against(
+        [for (var i = 0; i < LoginContent.maxPasskeys; i++) key(100 + i)],
+        [1],
+      );
+      expect(candidate.addPasskeysTo, isNull);
+    });
   });
 }
