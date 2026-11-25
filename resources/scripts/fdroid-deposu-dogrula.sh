@@ -31,9 +31,18 @@ for aday in python3 python; do
 done
 [[ -n "$py" ]] || { echo "HATA: Python yok." >&2; exit 1; }
 
+# fdroid update index-v1.jar'ı eski istemciler için bilerek SHA-1 ile
+# imzalar; JDK 21 bunu zayıf sayıp imzasız gösterir. Yalnızca o jar için
+# SHA-1'i kapatan kural kaldırılır (entry.jar SHA-256 ile ve tam kuralla).
+eski_kural="$(mktemp)"
+trap 'rm -f "$eski_kural"' EXIT
+echo 'jdk.jar.disabledAlgorithms=MD2, MD5, RSA keySize < 1024, DSA keySize < 1024' > "$eski_kural"
+
 for jar in entry.jar index-v1.jar; do
   [[ -f "$repo/$jar" ]] || { echo "HATA: $jar yok." >&2; exit 1; }
-  cikti="$(jarsigner -verify "$repo/$jar" 2>&1 || true)"
+  jvm=()
+  [[ "$jar" == index-v1.jar ]] && jvm=("-J-Djava.security.properties=$eski_kural")
+  cikti="$(jarsigner "${jvm[@]}" -verify "$repo/$jar" 2>&1 || true)"
   if ! grep -q "^jar verified" <<< "$(tr -d '\r' <<< "$cikti")"; then
     echo "HATA: $jar imzası geçersiz:" >&2
     printf '%s\n' "$cikti" >&2

@@ -45,10 +45,11 @@ for jar in ("entry.jar", "index-v1.jar"):
     with zipfile.ZipFile(os.path.join(d, jar), "w") as z:
         z.writestr("icerik.json", "{}")
 EOF
-  for jar in entry.jar index-v1.jar; do
-    jarsigner -keystore "$gecici/a.jks" -storepass:env DENEME_PAROLA \
-      "$d/$jar" deneme >/dev/null 2>&1
-  done
+  # fdroid update gibi: entry.jar SHA-256, index-v1.jar eski istemciler için SHA-1.
+  jarsigner -keystore "$gecici/a.jks" -storepass:env DENEME_PAROLA \
+    "$d/entry.jar" deneme >/dev/null 2>&1
+  jarsigner -keystore "$gecici/a.jks" -storepass:env DENEME_PAROLA \
+    -sigalg SHA1withRSA -digestalg SHA1 "$d/index-v1.jar" deneme >/dev/null 2>&1
 }
 
 # bekle <geçmeli|düşmeli> <açıklama> <betik argümanları...>
