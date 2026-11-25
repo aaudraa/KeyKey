@@ -57,7 +57,10 @@ while true; do
 done
 unset ARCHIVE_PW2
 
-work="$(mktemp -d)"
+# Yol çevirisi yukarıda kapalı olduğu için keytool ve 7z "/tmp/..." yolunu
+# bulamaz; geçici klasör Windows yolu (C:/...) olarak verilir. 2026-11-25'te
+# keytool bu yüzden sessizce başarısız oldu.
+work="$(cygpath -m "$(mktemp -d)")"
 cleanup() { rm -rf "$work"; }
 trap cleanup EXIT
 
@@ -71,7 +74,7 @@ echo "Anahtar oluşturuluyor (RSA 4096, 30 yıl)..."
 "$KEYTOOL" -genkeypair -keystore "$work/$NAME.jks" -storetype PKCS12 \
   -alias "$ALIAS" -keyalg RSA -keysize 4096 -validity 10950 \
   -dname "CN=KeyKey F-Droid repo" \
-  -storepass:env STORE_PW -keypass:env STORE_PW >/dev/null
+  -storepass:env STORE_PW -keypass:env STORE_PW
 
 cert="$("$KEYTOOL" -list -v -keystore "$work/$NAME.jks" -storepass:env STORE_PW \
   | sed -n 's/^[[:space:]]*SHA256: //p' | head -n 1 | tr -d ':\r' | tr 'A-F' 'a-f')"
