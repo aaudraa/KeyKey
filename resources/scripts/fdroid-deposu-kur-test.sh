@@ -77,5 +77,21 @@ if compgen -G "$gecici/apk/*.apk" >/dev/null; then
   hata=1
 fi
 
+# Depo metadata'sı: tarifin derleme alanları atılır, izinli imza anahtarı
+# kalır; provada --izinli-anahtar onu tek kullanımlık anahtarla değiştirir.
+bilgi="$(bash "$betik" --uygulama-bilgisi)"
+if grep -qE '^(RepoType|Builds|AutoUpdateMode):' <<< "$bilgi" ||
+    ! grep -q '^AllowedAPKSigningKeys: 66ff7b5c' <<< "$bilgi"; then
+  echo "BAŞARISIZ: uygulama bilgisi beklenen gibi değil:" >&2
+  echo "$bilgi" >&2
+  hata=1
+fi
+bilgi="$(bash "$betik" --uygulama-bilgisi --izinli-anahtar "$(printf 'a%.0s' {1..64})")"
+if [[ "$(grep -c '^AllowedAPKSigningKeys:' <<< "$bilgi")" -ne 1 ]] ||
+    ! grep -q "^AllowedAPKSigningKeys: $(printf 'a%.0s' {1..64})\$" <<< "$bilgi"; then
+  echo "BAŞARISIZ: --izinli-anahtar uygulanmadı" >&2
+  hata=1
+fi
+
 if [[ $hata -ne 0 ]]; then exit 1; fi
 echo "fdroid-deposu-kur: bütün durumlar geçti"

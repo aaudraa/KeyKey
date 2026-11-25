@@ -252,6 +252,8 @@ jobs:
           for abi in arm64-v8a armeabi-v7a x86_64; do
             cp "out/bizim-${abi}.apk" "abi-apk/keykey-${surum}-${abi}.apk"
           done
-          bash resources/scripts/fdroid-deposu-kur.sh --kur --yerel abi-apk --cikti abi-site
+          # APK'lar tek kullanımlık anahtarla imzalı; tarifteki izinli anahtar onunla değişir.
+          anahtar="$(bash resources/scripts/imza-ozeti.sh "abi-apk/keykey-${surum}.apk")"
+          bash resources/scripts/fdroid-deposu-kur.sh --kur --yerel abi-apk --cikti abi-site             --izinli-anahtar "$anahtar"
           # Dördü de indekste olmalı; olmazsa üretim --yalniz-evrensel'e geçer.
           bash resources/scripts/fdroid-deposu-dogrula.sh abi-site/fdroid/repo --apk-sayisi 4

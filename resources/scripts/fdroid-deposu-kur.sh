@@ -14,7 +14,7 @@
 #       Sürümleri indirir, fdroid update ile depoyu kurar ve imzalar; Pages'e
 #       yüklenecek site <çıktı>/fdroid/repo altına yazılır. Çalışma klasörü
 #       (yapılandırma, anahtar yolu) siteye girmez.
-#   fdroid-deposu-kur.sh --kur --yerel <klasör> --cikti <klasör>
+#   fdroid-deposu-kur.sh --kur --yerel <klasör> --cikti <klasör> [--izinli-anahtar <sha256>]
 #       Sürüm indirmek yerine klasördeki keykey-*.apk dosyalarıyla kurar
 #       (PR provası: işlemciye özel APK'lar, tek kullanımlık anahtar).
 #
@@ -40,7 +40,7 @@ for aday in python3 python; do
 done
 [[ -n "$py" ]] || { echo "HATA: Python yok." >&2; exit 1; }
 
-kip="" surumler=3 etiket="" apk_klasoru="" cikti="" yalniz_evrensel=0 yerel=""
+kip="" surumler=3 etiket="" apk_klasoru="" cikti="" yalniz_evrensel=0 yerel="" izinli_anahtar=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --surum-listesi) kip=liste ;;
@@ -51,6 +51,8 @@ while [[ $# -gt 0 ]]; do
     --cikti) cikti="$2"; shift ;;
     --yalniz-evrensel) yalniz_evrensel=1 ;;
     --yerel) yerel="$2"; shift ;;
+    --izinli-anahtar) izinli_anahtar="$2"; shift ;;
+    --uygulama-bilgisi) kip=bilgi ;;
     *) echo "HATA: bilinmeyen argüman: $1" >&2; exit 2 ;;
   esac
   shift
@@ -132,10 +134,16 @@ fdroid_calistir() {
   PATH="$fs:$PATH" PYTHONPATH="$fs:$fs/examples" fdroid "$@"
 }
 
-# Tarifin depoya ait kısmı: derleme ve güncelleme denetimi alanları atılır.
+# Tarifin depoya ait kısmı: derleme ve güncelleme denetimi alanları atılır,
+# izinli imza anahtarı kalır. --izinli-anahtar onu değiştirir (PR provasında
+# APK'lar tek kullanımlık anahtarla imzalı).
 uygulama_bilgisi() {
   sed -e '/^RepoType:/,$d' "$tarif"
-  sed -n '/^AllowedAPKSigningKeys:/p' "$tarif"
+  if [[ -n "$izinli_anahtar" ]]; then
+    echo "AllowedAPKSigningKeys: $izinli_anahtar"
+  else
+    sed -n '/^AllowedAPKSigningKeys:/p' "$tarif"
+  fi
 }
 
 kur() {
@@ -192,5 +200,6 @@ case "$kip" in
     [[ -n "$apk_klasoru" ]] || { echo "HATA: --apk-klasoru gerekli." >&2; exit 2; }
     indir "$etiket" "$apk_klasoru" ;;
   kur) kur ;;
+  bilgi) uygulama_bilgisi ;;
   *) echo "Kullanım: bkz. betiğin başı" >&2; exit 2 ;;
 esac
