@@ -12,6 +12,7 @@ import 'package:keykey/core/vault/vault_session.dart';
 import 'package:keykey/features/lock/application/vault_controller.dart';
 import 'package:keykey/features/vault/application/logins_controller.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
+import 'package:keykey/features/vault/data/login_passkey.dart';
 import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:sodium/sodium_sumo.dart';
 
@@ -402,6 +403,41 @@ void main() {
         'yeni',
       );
     });
+
+    test(
+      "yeniden okuma bitmeden kaydedilen düzenleme passkey'i silmiyor",
+      () async {
+        await loaded();
+        final item = await controller().add(
+          const LoginContent(name: 'A', password: 'p'),
+        );
+        // Arka plandayken passkey penceresi kayda passkey ekledi.
+        final passkey = LoginPasskey(
+          credentialId: Uint8List.fromList([1]),
+          rpId: 'github.com',
+          userHandle: Uint8List.fromList([1]),
+          userName: 'furkan',
+          userDisplayName: '',
+          privateKey: Uint8List.fromList([1]),
+          createdAt: now,
+        );
+        await repositoryFor(session)
+            .updateMetadata(item, item.content.copyWith(passkeys: [passkey]));
+
+        // Dönüşte yeniden okuma başladı; bitmeden açık form kaydedildi.
+        final reloading = controller().reload();
+        final latest = controller().latest(item);
+        await controller().update(
+          latest,
+          latest.content.copyWith(notes: 'not'),
+        );
+        await reloading;
+
+        final saved = (await repositoryFor(session).loadAll()).items.single;
+        expect(saved.content.notes, 'not');
+        expect(saved.content.passkeys, hasLength(1));
+      },
+    );
 
     test('ekleme, düzenleme ve silme durumu güncelliyor', () async {
       await loaded();

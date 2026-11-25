@@ -135,12 +135,19 @@ class LoginsController extends Notifier<LoginsState> {
   Future<void> reload() async {
     final repository = _repository;
     if (repository == null) return;
+    final loading = _load(repository, ++_generation);
+    _reloading = loading;
     try {
-      await _load(repository, ++_generation);
+      await loading;
     } on VaultLockedException {
       // Okuma sürerken kilitlendi; kilit ekranı zaten geliyor.
+    } finally {
+      if (identical(_reloading, loading)) _reloading = null;
     }
   }
+
+  /// Sürmekte olan [reload]; bitince `null`.
+  Future<void>? _reloading;
 
   LoginRepository get _openRepository {
     final repository = _repository;
@@ -169,9 +176,17 @@ class LoginsController extends Notifier<LoginsState> {
     return added;
   }
 
-  /// Parola değiştiyse eskisi geçmişe eklenir.
+  /// Parola değiştiyse eskisi geçmişe eklenir. Düzenleme passkey'lere ve
+  /// geçmişe dokunmaz; onlar kaydın en son halinden gelir. Bu yüzden sürmekte
+  /// olan yeniden okuma beklenir: arka plandayken passkey penceresinin
+  /// eklediği passkey, eski kopyayla yazılıp kaybolmasın.
   Future<LoginItem> update(LoginItem item, LoginContent edited) async {
-    final updated = await _openRepository.update(item, edited);
+    try {
+      await _reloading;
+    } on Exception {
+      // Okuma başarısızsa eldeki liste kullanılır.
+    }
+    final updated = await _openRepository.update(latest(item), edited);
     _swap(updated);
     return updated;
   }
