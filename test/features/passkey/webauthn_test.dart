@@ -169,6 +169,18 @@ void main() {
       expect(() => RequestOptions.parse('[]'), invalid());
     });
 
+    test('16 bayttan kısa meydan okuma kabul, boşu reddediliyor', () {
+      final short = _decode(fixture('webauthn_io_get.json'))
+        ..['challenge'] = base64UrlNoPad(Uint8List(8));
+      expect(RequestOptions.parse(jsonEncode(short)).challenge, hasLength(8));
+      final empty = _decode(fixture('webauthn_io_get.json'))
+        ..['challenge'] = '';
+      expect(
+        () => RequestOptions.parse(jsonEncode(empty)),
+        throwsA(isA<PasskeyRequestException>()),
+      );
+    });
+
     test('giriş isteği okunuyor', () {
       final options = RequestOptions.parse(fixture('webauthn_io_get.json'));
       expect(options.rpId, 'webauthn.io');
@@ -252,10 +264,10 @@ void main() {
       expect(_b64(response['authenticatorData']), hasLength(148));
     });
 
-    LoginPasskey passkey() => LoginPasskey(
+    LoginPasskey passkey({String user = 'furkan'}) => LoginPasskey(
       credentialId: credentialId,
       rpId: 'webauthn.io',
-      userHandle: utf8.encode('furkan'),
+      userHandle: utf8.encode(user),
       userName: 'furkan',
       userDisplayName: 'Furkan',
       privateKey: key.d,
@@ -283,6 +295,20 @@ void main() {
         ...sha256.convert(clientData).bytes,
       ]);
       expect(key.verify(signed, _b64(response['signature'])), isTrue);
+    });
+
+    test('kullanıcı kimliği boşsa yanıtta userHandle yok', () async {
+      final json = _decode(
+        await assertionResponse(
+          options: RequestOptions.parse(fixture('webauthn_io_get.json')),
+          rpId: 'webauthn.io',
+          passkey: passkey(user: ''),
+          origin: 'https://webauthn.io',
+          sign: key.sign,
+        ),
+      );
+      final response = json['response']! as Map<String, Object?>;
+      expect(response.containsKey('userHandle'), isFalse);
     });
 
     test('tarayıcının verdiği clientDataHash imzalanıyor', () async {

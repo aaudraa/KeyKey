@@ -259,7 +259,10 @@ Future<String> assertionResponse({
       'clientDataJSON': base64UrlNoPad(clientData),
       'authenticatorData': base64UrlNoPad(authData),
       'signature': base64UrlNoPad(signature),
-      'userHandle': base64UrlNoPad(passkey.userHandle),
+      // KeePassXC'nin bazı passkey'lerinde kullanıcı kimliği yok; alan boş
+      // yazılmaz, hiç yazılmaz.
+      if (passkey.userHandle.isNotEmpty)
+        'userHandle': base64UrlNoPad(passkey.userHandle),
     },
     'clientExtensionResults': <String, Object?>{},
   });
@@ -303,10 +306,11 @@ Uint8List _bytes(Object? value) {
   }
 }
 
-/// WebAuthn en az 16 bayt ister; çok uzun meydan okuma da reddedilir.
+/// WebAuthn'in 16 baytı yalnızca öneri, tarayıcılar daha kısasını da
+/// kabul ediyor; boş ya da çok uzun meydan okuma reddedilir.
 Uint8List _challenge(Object? value) {
   final bytes = _bytes(value);
-  if (bytes.length < 16 || bytes.length > 1024) {
+  if (bytes.isEmpty || bytes.length > 1024) {
     throw const PasskeyRequestException(PasskeyError.invalidRequest);
   }
   return bytes;
