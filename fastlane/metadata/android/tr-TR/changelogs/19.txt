@@ -1,0 +1,1 @@
+Her sürümde işlemciye özel, daha küçük APK'lar: arm64-v8a, armeabi-v7a ve x86_64. Evrensel APK yerinde duruyor. Hepsi aynı derlemeden ve aynı anahtarla imzalı; evrenselin alt kümesi oldukları her sürümde denetleniyor. Uygulamada değişiklik yok.

@@ -26,8 +26,12 @@ defaults:
 jobs:
   kur:
     name: Depoyu kur ve imzala
-    # Ön sürümler (deneme ve Obtainium denemesi gibi) depoya girmez.
-    if: github.event_name == 'workflow_dispatch' || !github.event.release.prerelease
+    # Ön sürümler (deneme ve Obtainium denemesi gibi) depoya girmez. Depo
+    # anahtarı henüz yoksa (depo-anahtari-olustur.sh FDROID_DEPOSU_HAZIR'ı
+    # koymadıysa) iş kırmızıya düşmek yerine atlanır.
+    if: >-
+      vars.FDROID_DEPOSU_HAZIR == '1' &&
+      (github.event_name == 'workflow_dispatch' || !github.event.release.prerelease)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     # Depo anahtarı bu ortamın gizli değerlerinde; ortam yalnızca v* etiketlerine açık.

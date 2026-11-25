@@ -85,11 +85,12 @@ Gerçek yayın anahtarı yerine deneme anahtarı kullanıldı; Android için iki
 İş akışının yaptıkları:
 
 1. Etiketin `pubspec.yaml` ile uyuştuğunu denetler.
-2. APK ve AAB'yi F-Droid'in derleme imajında, `/home/vagrant/build/io.github.aaudraa.keykey` yolunda, tarifteki adımlarla imzasız derler ([`f-droid-yolunda-derle.sh`](../scripts/f-droid-yolunda-derle.sh)); onay gelince yayın anahtarıyla imzalar.
-3. APK'yı [`check-release-apk.sh`](../scripts/check-release-apk.sh) ile denetler: izinler, dışa açık bileşenler, R8, semboller, deneme değerleri.
-4. İmzayı `apksigner` ile doğrular ([`imza-ozeti.sh`](../scripts/imza-ozeti.sh)); sertifika F-Droid tarifindeki `AllowedAPKSigningKeys` değeri değilse durur ([imza denetimi](#imza-denetimi)).
+2. APK ve AAB'yi F-Droid'in derleme imajında, `/home/vagrant/build/io.github.aaudraa.keykey` yolunda, tarifteki adımlarla imzasız derler ([`f-droid-yolunda-derle.sh`](../scripts/f-droid-yolunda-derle.sh)); aynı derlemeden işlemciye özel üç APK'yı çıkarır ve evrenselin alt kümesi olduklarını denetler ([işlemciye özel APK'lar](#işlemciye-özel-apklar)). Onay gelince dördünü de yayın anahtarıyla imzalar.
+3. Her APK'yı [`check-release-apk.sh`](../scripts/check-release-apk.sh) ile denetler: izinler, dışa açık bileşenler, R8, semboller, deneme değerleri.
+4. Her APK'nın imzasını `apksigner` ile doğrular ([`imza-ozeti.sh`](../scripts/imza-ozeti.sh)); sertifika F-Droid tarifindeki `AllowedAPKSigningKeys` değeri değilse durur ([imza denetimi](#imza-denetimi)).
 5. Aynı commit'i F-Droid'in kendi aracıyla, imajın güncel haliyle derler ([`f-droid-derle.sh`](../scripts/f-droid-derle.sh)) ve imzalı APK'yla karşılaştırır ([`f-droid-karsilastir.sh`](../scripts/f-droid-karsilastir.sh)).
-6. Karşılaştırma yeşilse taslağa şunları koyar: `keykey-<sürüm>.apk`, `keykey-<sürüm>.aab`, `keykey-<sürüm>-mapping.txt` (R8'in ad tablosu, yığın izlerini okumak için) ve hepsinin SHA-256 özetlerini içeren `SHA256SUMS`. Notlara APK'nın ve imza sertifikasının özetini yazar.
+6. Karşılaştırma yeşilse taslağa şunları koyar: `keykey-<sürüm>.apk` (evrensel), `keykey-<sürüm>-arm64-v8a.apk`, `keykey-<sürüm>-armeabi-v7a.apk`, `keykey-<sürüm>-x86_64.apk`, `keykey-<sürüm>.aab`, `keykey-<sürüm>-mapping.txt` (R8'in ad tablosu, yığın izlerini okumak için) ve hepsinin SHA-256 özetlerini içeren `SHA256SUMS`. Notlara evrensel APK'nın, işlemciye özel APK'ların ve imza sertifikasının özetini yazar.
+7. Taslak yayımlanınca [F-Droid deposu](#f-droid-deposu) iş akışı depoyu yeniden kurar.
 
 Yayın zincirinin tamamı (AAB dahil derleme, imzalama, APK denetimi, imza denetimi, karşılaştırma) her PR'da ve haftada bir [`f-droid.yml`](../../.github/workflows/f-droid.yml)'da tek kullanımlık bir anahtarla denenir; etiket bu yüzden ilk kez çalışan bir zinciri tetiklemez.
 
@@ -103,9 +104,30 @@ Yayın zincirinin tamamı (AAB dahil derleme, imzalama, APK denetimi, imza denet
 
 Bizim derleme F-Droid imajının sabit bir özetiyle yapılır (`yayin.yml`'daki `derle`, `f-droid.yml`'daki `bizim` işi; ikisi aynı olmalı). F-Droid'in karşılaştırma derlemesi imajın güncel halini kullanır. Haftalık `f-droid.yml` çalışması kırmızı olur ve fark ortamdan geliyorsa (JDK, NDK, araçlar) özet güncellenir: başarılı bir çalışmanın F-Droid işinin günlüğündeki `Digest: sha256:…` satırı yeni özettir. İki dosyada değiştirilip PR açılır; PR'daki `f-droid.yml` çalışması yeşil olmalı.
 
+## İşlemciye özel APK'lar
+
+Evrensel APK üç işlemcinin yerel kodunu (Flutter motoru, libsodium, Argon2) birlikte taşıyor. 1.12.0'dan beri her sürümde yanında `arm64-v8a`, `armeabi-v7a` ve `x86_64` APK'ları da var; her biri yalnızca kendi işlemcisinin kodunu taşıdığı için evrenselin üçte biri kadar.
+
+- Aynı derlemeden çıkarlar: `f-droid-yolunda-derle.sh` evrenseli derledikten sonra aynı klasörde `flutter build apk --split-per-abi -Pforce-version-code-ignoring-abi=true` çalıştırır. Sürüm kodları evrenselinkiyle aynıdır; böylece biri kurulu telefona öteki güncelleme olarak gelir.
+- F-Droid evrenseli doğruluyor, işlemciye özel olanları değil. Bu yüzden [`abi-apk-denetle.sh`](../scripts/abi-apk-denetle.sh) her birinin evrenselin alt kümesi olduğunu denetler: `META-INF/` dışındaki her dosya evrenselde aynı baytlarla var, evrenseldeki her dosya da (başka işlemcilerin `lib/` klasörleri hariç) onda var. Böylece yeniden üretilebilirlik güvencesi onlara da geçer. Betiği [`abi-apk-denetle-test.sh`](../scripts/abi-apk-denetle-test.sh) yapay APK'larla sınar.
+- Yayında ve her PR'da dördü aynı anahtarla imzalanır, `check-release-apk.sh` ve imza denetiminden geçer.
+
+Obtainium (1.7.4) bir sürümde birden çok APK görünce telefonun işlemcisine uyanı kendisi seçiyor ("Attempt to filter APKs by CPU architecture", varsayılan açık). 2026-11-25'te x86_64 emülatörde var olan bir kayıtla denendi: `keykey-<sürüm>-x86_64.apk`'yı seçip kurulum ekranına geldi.
+
+## F-Droid deposu
+
+KeyKey'in kendi F-Droid deposu: `https://aaudraa.github.io/KeyKey/fdroid/repo`. Tasarım: [dağıtım](dagitim.md).
+
+- **İş akışı:** [`fdroid-deposu.yml`](../../.github/workflows/fdroid-deposu.yml). Bir sürüm yayımlanınca (ön sürümler hariç) [`fdroid-deposu-kur.sh`](../scripts/fdroid-deposu-kur.sh) yayımlanmış son üç sürümün APK'larını indirir, her birinin `SHA256SUMS`'a uyduğunu ve yayın anahtarıyla imzalı olduğunu denetler, `fdroid update` ile depoyu baştan kurar ve indeksi depo anahtarıyla imzalar. [`fdroid-deposu-dogrula.sh`](../scripts/fdroid-deposu-dogrula.sh) indeksin imzasını, APK özetlerini ve siteye yapılandırma ya da anahtar girmediğini denetler; site GitHub Pages'e yüklenir. Saklanan durum yok: depo her seferinde sürümlerden yeniden üretilir.
+- **Prova:** Her PR'da `f-droid.yml`'daki "Depo provası" aynı betikleri tek kullanımlık bir anahtarla, gerçek yayımlanmış sürümlerle ve PR'ın kendi APK'larıyla çalıştırır; yayımlamaz.
+- **Elle çalıştırmak:** Actions → "F-Droid deposu" → "Run workflow", dal olarak son `v*` etiketi seçilir. Ortamlar (`fdroid-deposu`, `github-pages`) yalnızca `v*` etiketlerine açık.
+- **Depo anahtarı:** Yayın anahtarından ayrı; APK'yı değil depo indeksini imzalar. Proje sahibinin bilgisayarında [`depo-anahtari-olustur.sh`](../scripts/depo-anahtari-olustur.sh) ile oluşturulur. Betik yayın anahtarınınkiyle aynı kuralları izler: rastgele parola, AES-256 şifreli arşiv, E: ve D: kopyaları, üçüncü kopya Google Drive. Betik anahtarı GitHub'daki `fdroid-deposu` ortamına (`FDROID_KEYSTORE_BASE64`, `FDROID_KEYSTORE_PASSWORD`, `FDROID_KEY_PASSWORD`, `FDROID_KEY_ALIAS`) yükler ve `FDROID_DEPOSU_HAZIR` depo değişkenini koyar. Bu değişken yoksa iş akışı kırmızıya düşmek yerine atlanır.
+- **Anahtar kaybolursa:** Depo yeni bir anahtarla kurulur, kullanıcılar depoyu yeni parmak iziyle yeniden ekler. Uygulama ve veri etkilenmez, çünkü APK'lar yayın anahtarıyla imzalı.
+- **Anahtar sızarsa:** Sızdıran kişi sahte bir indeks imzalayabilir, ama kurulu KeyKey'e başka anahtarla imzalı bir güncelleme kurulamaz. Yeni kurulumlar için risk var: anahtar değiştirilir ve README'deki parmak izi güncellenir.
+
 ## İndirilen APK'yı doğrulamak
 
-1. Özeti karşılaştır: `sha256sum keykey-1.0.0.apk` çıktısı, sürüm notlarındaki ve `SHA256SUMS` dosyasındaki değerle aynı olmalı.
+1. Özeti karşılaştır: `sha256sum keykey-1.0.0.apk` çıktısı, sürüm notlarındaki ve `SHA256SUMS` dosyasındaki değerle aynı olmalı. İşlemciye özel APK'ların özetleri de ikisinde var.
 2. İmzayı denetle: `apksigner verify --print-certs keykey-1.0.0.apk` çıktısındaki "certificate SHA-256 digest" değeri şu olmalı: `66ff7b5c0c009a8530d0a55dd1d80a3af35de48bd0667c456a0cf86a6d1129a0`. Telefonda kurulu uygulama için [AppVerifier](https://github.com/soupslurpr/AppVerifier) gibi bir araç aynı özeti gösterir.
 
 Aynı özet README'de ve [güvenlik özetinde](security-summary.md#release-signing) de yayımlıdır; üçü birbirini tutmalı.

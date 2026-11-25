@@ -107,6 +107,8 @@ base64 -w0 "$work/$NAME.jks" | gh secret set FDROID_KEYSTORE_BASE64 --env "$ENV"
 printf '%s' "$STORE_PW" | gh secret set FDROID_KEYSTORE_PASSWORD --env "$ENV" --repo "$REPO"
 printf '%s' "$STORE_PW" | gh secret set FDROID_KEY_PASSWORD --env "$ENV" --repo "$REPO"
 printf '%s' "$ALIAS" | gh secret set FDROID_KEY_ALIAS --env "$ENV" --repo "$REPO"
+# fdroid-deposu.yml bu değişken olmadan çalışmaz (anahtarsız kırmızı iş yerine atlanır).
+gh variable set FDROID_DEPOSU_HAZIR --body 1 --repo "$REPO"
 unset STORE_PW ARCHIVE_PW
 
 echo
