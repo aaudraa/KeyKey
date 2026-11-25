@@ -136,13 +136,29 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
         plan.notes,
         plan.candidates.length + plan.cards.length,
       );
-      final items = chosen.isEmpty
+      final controller = ref.read(loginsControllerProvider.notifier);
+      final fresh = [
+        for (final candidate in chosen)
+          if (candidate.addPasskeysTo == null) candidate.content,
+      ];
+      final added = fresh.isEmpty
           ? const <LoginItem>[]
-          : await ref.read(loginsControllerProvider.notifier).addAll([
-              for (final candidate in chosen) candidate.content,
-            ]);
-      // 2FA hesapları eklenen kayıtlara bağlanır.
-      final otps = importedOtps(chosen, [for (final item in items) item.id]);
+          : await controller.addAll(fresh);
+      // Kasada olan kayda yalnızca eksik passkey'leri eklenir.
+      for (final candidate in chosen) {
+        if (candidate.addPasskeysTo case final target?) {
+          await controller.changePasskeys(
+            target,
+            (content) => withImportedPasskeys(content, candidate.newPasskeys),
+          );
+        }
+      }
+      // 2FA hesapları eklenen ya da passkey'i eklenen kayıtlara bağlanır.
+      final addedIds = added.map((item) => item.id).iterator;
+      final otps = importedOtps(chosen, [
+        for (final candidate in chosen)
+          candidate.addPasskeysTo?.id ?? (addedIds..moveNext()).current,
+      ]);
       if (otps.isNotEmpty) {
         await ref.read(otpsControllerProvider.notifier).addAll(otps);
       }
@@ -159,7 +175,7 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
       if (!mounted) return;
       // Kayıt bitti; hatırlatma açıkken düğmede ilerleme halkası dönmesin.
       setState(() => _saving = false);
-      snack(l10n.loginImportDone(items.length + cards.length + notes.length));
+      snack(l10n.loginImportDone(chosen.length + cards.length + notes.length));
       // KeePass dosyası şifreli; yalnızca düz metin dışa aktarmalar için.
       if (plan.source != LoginExportSource.keepassKdbx) {
         await _remindToDelete(l10n);
@@ -212,8 +228,10 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
         existingCards: cards.items,
         existingNotes: notes.items,
       );
+      // Passkey'leri kasadaki kayda eklenecek aday yinelenen olsa da seçilir.
       final duplicates = [
-        for (final candidate in plan.candidates) candidate.duplicate,
+        for (final candidate in plan.candidates)
+          candidate.duplicate && candidate.addPasskeysTo == null,
         for (final candidate in plan.cards) candidate.duplicate,
         for (final candidate in plan.notes) candidate.duplicate,
       ];
@@ -251,7 +269,10 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
               l10n.loginImportWithOtp,
             if (candidate.content.passkeys.isNotEmpty)
               l10n.loginImportWithPasskey,
-            if (candidate.duplicate) l10n.loginImportDuplicate,
+            if (candidate.addPasskeysTo != null)
+              l10n.loginImportAddsPasskeys
+            else if (candidate.duplicate)
+              l10n.loginImportDuplicate,
           ]),
         ),
       for (final candidate in plan.cards)
@@ -278,7 +299,7 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
   Widget _list(AppLocalizations l10n, LoginImportPlan plan) {
     final rows = _rows(l10n, plan);
     final hasDuplicates =
-        plan.candidates.any((c) => c.duplicate) ||
+        plan.candidates.any((c) => c.duplicate && c.addPasskeysTo == null) ||
         plan.cards.any((c) => c.duplicate) ||
         plan.notes.any((c) => c.duplicate);
     final notices = [

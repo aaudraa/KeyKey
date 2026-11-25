@@ -167,6 +167,70 @@ void main() {
     expect(logins.items.map((item) => item.content.passkeys.length), [2, 1]);
   });
 
+  testWidgets("kasadaki kayda passkey'leri ekleniyor, yeni kayıt açılmıyor", (
+    tester,
+  ) async {
+    // 1.10'da passkey'siz aktarılmış kayıt; 1.11'de aynı dosya yeniden.
+    logins.items.add(
+      FakeLoginRepository.item(
+        const LoginContent(
+          name: 'GitHub',
+          username: 'furkan',
+          password: 'parola',
+        ),
+      ),
+    );
+    Map<String, Object?> credential(String id) => {
+      'credentialId': id,
+      'keyType': 'public-key',
+      'keyAlgorithm': 'ECDSA',
+      'keyCurve': 'P-256',
+      'keyValue': p256Pkcs8B64Url,
+      'rpId': 'github.com',
+      'userHandle': 'AQ',
+      'userName': 'furkan',
+      'userDisplayName': '',
+      'creationDate': '2026-03-05T12:00:00.000Z',
+    };
+    documents.nextOpen = DocumentOpened(
+      Uint8List.fromList(
+        utf8.encode(
+          jsonEncode({
+            'encrypted': false,
+            'items': [
+              {
+                'type': 1,
+                'name': 'GitHub',
+                'login': {
+                  'username': 'furkan',
+                  'password': 'parola',
+                  'fido2Credentials': [
+                    credential('b64.AQ'),
+                    credential('b64.Ag'),
+                  ],
+                },
+              },
+            ],
+          }),
+        ),
+      ),
+    );
+    await openImport(tester);
+
+    expect(
+      find.text("furkan · Passkey ile · Passkey'ler kasadaki kayda eklenecek"),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('1 kaydı ekle'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tamam'));
+    await tester.pumpAndSettle();
+
+    final item = logins.items.single;
+    expect(item.content.name, 'GitHub');
+    expect(item.content.passkeys, hasLength(2));
+  });
+
   testWidgets('kasada olan kayıt seçilmemiş geliyor', (tester) async {
     logins.items.add(
       FakeLoginRepository.item(

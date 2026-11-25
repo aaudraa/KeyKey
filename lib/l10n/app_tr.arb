@@ -486,6 +486,7 @@
   "loginImportDuplicate": "Kasanda var",
   "loginImportWithOtp": "2FA ile",
   "loginImportWithPasskey": "Passkey ile",
+  "loginImportAddsPasskeys": "Passkey'ler kasadaki kayda eklenecek",
   "loginImportPasskeys": "Kayıtlarla birlikte {count} passkey alınacak.",
   "loginImportSkippedPasskeys": "{count} passkey alınamadı: KeyKey yalnızca P-256 (ES256) passkey'leri kullanabiliyor, kayıt başına en çok 20. Kayıtların kendisi yine eklenir.",
   "loginImportNothing": "Bu dosyada içe aktarılacak kayıt yok.",

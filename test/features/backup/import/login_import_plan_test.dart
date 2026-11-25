@@ -328,4 +328,70 @@ void main() {
     expect(plan.passkeys, 3);
     expect(plan.skippedPasskeys, 4);
   });
+
+  _passkeyMergeTests();
+}
+
+void _passkeyMergeTests() {
+  LoginPasskey key(int id) => LoginPasskey(
+    credentialId: Uint8List.fromList([id]),
+    rpId: 'github.com',
+    userHandle: Uint8List(0),
+    userName: 'ali',
+    userDisplayName: '',
+    privateKey: Uint8List.fromList([id]),
+    createdAt: DateTime.utc(2026),
+  );
+  LoginImportCandidate against(List<LoginPasskey> saved, List<int> file) =>
+      planLoginImport(
+        LoginExport(
+          source: LoginExportSource.bitwardenJson,
+          logins: [
+            ImportedLogin(
+              name: 'GitHub',
+              username: 'ali',
+              password: 'p',
+              passkeys: [for (final id in file) key(id)],
+            ),
+          ],
+          skipped: 0,
+        ),
+        existingLogins: [
+          FakeLoginRepository.item(
+            LoginContent(
+              name: 'GitHub',
+              username: 'ali',
+              password: 'p',
+              passkeys: saved,
+            ),
+          ),
+        ],
+        existingOtps: const [],
+      ).candidates.single;
+
+  group('yinelenen kayda passkey ekleme', () {
+    test('kasadaki kayıtta olmayan passkey o kayda eklenecek', () {
+      final candidate = against([key(1)], [1, 2]);
+      expect(candidate.duplicate, isTrue);
+      expect(candidate.addPasskeysTo, isNotNull);
+      expect(candidate.newPasskeys.map((p) => p.credentialId), [
+        [2],
+      ]);
+    });
+
+    test("passkey'lerin hepsi kasada varsa düz yinelenen", () {
+      final candidate = against([key(1), key(2)], [2, 1]);
+      expect(candidate.duplicate, isTrue);
+      expect(candidate.addPasskeysTo, isNull);
+      expect(candidate.newPasskeys, isEmpty);
+    });
+
+    test('sınır aşılacaksa eklenmiyor', () {
+      final candidate = against(
+        [for (var i = 0; i < LoginContent.maxPasskeys; i++) key(100 + i)],
+        [1],
+      );
+      expect(candidate.addPasskeysTo, isNull);
+    });
+  });
 }

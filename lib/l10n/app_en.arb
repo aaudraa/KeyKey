@@ -2203,6 +2203,10 @@
   "@loginImportWithPasskey": {
     "description": "Marks an imported entry that brings passkeys."
   },
+  "loginImportAddsPasskeys": "Passkeys go to the entry in your vault",
+  "@loginImportAddsPasskeys": {
+    "description": "Marks an imported entry that is already in the vault without some of its passkeys; saving adds the passkeys to that entry instead of creating a new one."
+  },
   "loginImportPasskeys": "{count, plural, =1{1 passkey comes with the entries.} other{{count} passkeys come with the entries.}}",
   "@loginImportPasskeys": {
     "description": "How many passkeys an import brings.",
