@@ -239,6 +239,35 @@ void main() {
       expect(locked(tester), isTrue);
     });
 
+    testWidgets('iki aday kayıt varsa seçilene ekleniyor', (tester) async {
+      logins.items.add(
+        FakeLoginRepository.item(
+          const LoginContent(
+            name: 'GitHub iş',
+            username: 'Furkan',
+            urls: ['https://gist.github.com'],
+          ),
+          id: 3,
+        ),
+      );
+      final bridge = await pump(
+        tester,
+        status: VaultOpen(service.newSession()),
+        request: create(chrome),
+      );
+      expect(find.text('GitHub'), findsOneWidget);
+      expect(find.text('GitHub iş'), findsOneWidget);
+      await tester.tap(find.text('GitHub iş'));
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Passkey oluştur'));
+      await tester.pumpAndSettle();
+
+      expect(logins.items, hasLength(3));
+      expect(logins.items[0].content.passkeys, isEmpty);
+      expect(logins.items[2].content.passkeys, hasLength(1));
+      expect(bridge.created, isNotNull);
+    });
+
     testWidgets('"Yeni kayıt" seçilirse yeni kayıt açılıyor', (tester) async {
       final bridge = await pump(
         tester,
