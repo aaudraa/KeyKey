@@ -864,7 +864,7 @@ Her sürümde evrenselin yanında işlemciye özel APK'lar ve F-Droid istemcisin
 - [x] Kılavuz, README, yayın ve güvenlik belgeleri, değişiklik günlüğü
 - [x] Son gözden geçirme (taze alt ajan: 2 kritik, 4 önemli, 6 küçük bulgu; hepsi ele alındı, [#194](https://github.com/aaudraa/KeyKey/pull/194), [#196](https://github.com/aaudraa/KeyKey/pull/196))
 - [x] 1.12.0 (2026-11-25); Maven Central'ın 429 hatasında derlemeler yeniden deniyor ([#195](https://github.com/aaudraa/KeyKey/issues/195))
-- [ ] Depo anahtarı: proje sahibi USB takılıyken Git Bash'te `bash resources/scripts/depo-anahtari-olustur.sh` çalıştırır (2026-11-25'te sonraya bırakıldı)
+- [ ] Depo anahtarı: proje sahibi Git Bash'te `bash resources/scripts/depo-anahtari-olustur.sh` çalıştırır; arşiv D:'ye (USB takılıysa E:'ye de) ve Drive'a gider, USB zorunlu değil (2026-11-25)
 - [ ] Depo iş akışı `v1.12.0` etiketinde elle; README ve kılavuzda bağlantı ve parmak izi; emülatörde F-Droid istemcisiyle deneme; faz sonu repo kontrolü
 
 **Bitti sayılması için:** sürümde dört APK ve özetleri var; Obtainium doğru APK'yı seçiyor; depo F-Droid istemcisine eklenince KeyKey görünüyor ve doğru APK kuruluyor.

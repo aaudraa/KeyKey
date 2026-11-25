@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 # KeyKey'in F-Droid deposu anahtarını oluşturur, şifreli arşive koyar, arşivi
-# USB'ye (E:) ve D: diskine kopyalar, anahtarı GitHub'daki "fdroid-deposu"
-# ortamına yükler ve şifresiz dosyaları siler.
+# D: diskine (takılıysa USB'ye, E:, de) kopyalar, anahtarı GitHub'daki
+# "fdroid-deposu" ortamına yükler ve şifresiz dosyaları siler.
+#
+# USB isteğe bağlı: bu anahtar kaybolursa kullanıcılar depoyu yeni parmak
+# iziyle yeniden ekler, uygulama ve veri etkilenmez. D: (ikinci fiziksel disk)
+# ve Google Drive'daki şifreli arşiv yeter.
 #
 # Bu anahtar APK'yı değil, deponun indeksini imzalar; APK'lar yine yayın
 # anahtarıyla imzalıdır. Betik yayin-anahtari-olustur.sh'nin aynısıdır.
@@ -22,13 +26,15 @@ REPO="aaudraa/KeyKey"
 ENV="fdroid-deposu"
 NAME="keykey-fdroid-deposu-anahtari"
 ALIAS="keykey-depo"
-TARGETS=("/e/KeyKey-fdroid-deposu-anahtari" "/d/KeyKey-fdroid-deposu-anahtari")
+TARGETS=("/d/KeyKey-fdroid-deposu-anahtari")
+if [[ -d /e ]]; then TARGETS+=("/e/KeyKey-fdroid-deposu-anahtari"); fi
 
 for tool in "$KEYTOOL" "$SEVENZIP"; do
   [[ -x "$tool" ]] || { echo "HATA: bulunamadı: $tool" >&2; exit 1; }
 done
 command -v gh >/dev/null || { echo "HATA: gh yok." >&2; exit 1; }
-[[ -d /e ]] || { echo "HATA: USB bellek (E:) takılı değil." >&2; exit 1; }
+[[ -d /d ]] || { echo "HATA: D: diski bulunamadı." >&2; exit 1; }
+[[ -d /e ]] || echo "Bilgi: USB (E:) takılı değil; arşiv yalnızca D:'ye kopyalanacak."
 for target in "${TARGETS[@]}"; do
   if [[ -e "$target/$NAME.7z" ]]; then
     echo "HATA: $target/$NAME.7z zaten var. Var olan bir anahtarın üstüne yazılmaz." >&2

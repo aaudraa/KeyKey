@@ -79,7 +79,7 @@ Durum: uygulandı (2026-11-25, 1.12.0). Proje sahibi önerilen sırayla devam et
 - **Depo anahtarı:** Yayın anahtarından ayrı, yeni bir anahtar (depo indeksini imzalar, APK'yı değil). APK'lar yine yayın anahtarıyla imzalı olduğu için depo anahtarı sızarsa bile kurulu KeyKey'e başka imzalı bir güncelleme kurulamaz; yeni kurulumlar için risk vardır, bu yüzden anahtar yayın anahtarı gibi korunur.
   - Proje sahibinin bilgisayarında yeni betik `depo-anahtari-olustur.sh` ile oluşturulur (yayın anahtarı betiğinin aynısı: rastgele parola, AES-256 şifreli arşiv, CR temizliği). Parmak izi belgeye ve README'ye yazılır.
   - GitHub'da yeni `fdroid-deposu` ortamının gizli değerlerinde durur; ortam yalnızca `v*` etiketlerine açıktır. Ayrı bir onay istemez: depoya girecek sürümü proje sahibi zaten taslağı yayımlayarak seçiyor.
-  - Yedekler yayın anahtarınınkiyle aynı kurala uyar (üç kopya, iki ortam, biri evden uzakta).
+  - Yedekler: D: diski (ikinci fiziksel disk) ve Google Drive, USB takılıysa o da. Yayın anahtarının üç kopya kuralı burada gevşetildi, çünkü kaybın bedeli depoyu yeniden eklemek (proje sahibinin kararı, 2026-11-25).
 - **Pages:** Repo ayarında Pages, kaynak "GitHub Actions" olarak açılır. Repo kökünde Pages'e giden başka bir şey yok; yalnızca `fdroid/` yayımlanır.
 
 - **Prova (benim kararım):** `release: published` ve elle çalıştırma iş akışını etiketin commit'inden okur; etikete girmiş bir hata yeni etiket atmadan düzeltilemez. Bu yüzden depo kurulumu PR'larda tek kullanımlık bir anahtarla prova edilir: aynı betik son yayımlanmış sürümlerin APK'larıyla `fdroid update`'i çalıştırır, indeksin imzasını ve içeriğini (paket, sürüm, APK özetleri) doğrular, yayımlamaz. Depo anahtarının ortamı yalnızca `v*` etiketlerine açık kalır.
