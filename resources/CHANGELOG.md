@@ -10,7 +10,7 @@ Dağıtım sürümü ([#193](https://github.com/aaudraa/KeyKey/issues/193)); uyg
 
 - **İşlemciye özel APK'lar.** Her sürümde evrenselin yanında `arm64-v8a`, `armeabi-v7a` ve `x86_64` APK'ları var. Her biri yalnızca kendi işlemcisinin kodunu taşıdığı için evrenselin üçte biri kadar. Telefonların çoğu için `arm64-v8a`; emin değilsen evrensel APK her telefonda çalışır. Obtainium uyanı kendisi seçiyor.
 - Dördü aynı derlemeden çıkıyor, aynı sürüm koduna sahip ve aynı anahtarla imzalı; birini kurup ötekiyle güncelleyebilirsin. F-Droid'in doğruladığı evrensel APK'nın alt kümesi oldukları her PR'da ve her sürümde denetleniyor.
-- **Kendi F-Droid deposunun altyapısı.** Sürüm yayımlanınca depo son üç sürümden kurulup GitHub Pages'e yükleniyor; her PR'da tek kullanımlık anahtarla provası yapılıyor. Depo, anahtarı oluşturulunca açılacak; bağlantı ve parmak izi o zaman README'ye girecek.
+- **Kendi F-Droid deposunun altyapısı.** Sürüm yayımlanınca depo son üç sürümden kurulup GitHub Pages'e yükleniyor; her PR'da tek kullanımlık anahtarla provası yapılıyor. Depo 2026-11-25'te açıldı: `https://aaudraa.github.io/KeyKey/fdroid/repo`, parmak izi `b24f450a8428faf05cc51f3faee16339167ffb64c422db981f5ecd3449be5925`; eklemek için bağlantı README'de ve kılavuzda.
 
 ## 1.11.1 (2026-11-25): Passkey düzeltmeleri
 

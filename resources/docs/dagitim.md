@@ -69,7 +69,7 @@ Durum: uygulandı (2026-11-25, 1.12.0). Proje sahibi önerilen sırayla devam et
 
 ### 3. Kendi F-Droid deposu
 
-- **Adres:** `https://aaudraa.github.io/KeyKey/fdroid/repo`. Eklemek için bağlantı: `fdroidrepos://aaudraa.github.io/KeyKey/fdroid/repo?fingerprint=<parmak izi>`; README'de bağlantı ve parmak izi, kılavuzda adım adım ekleme.
+- **Adres:** `https://aaudraa.github.io/KeyKey/fdroid/repo`. Eklemek için bağlantı: `https://fdroid.link/#https://aaudraa.github.io/KeyKey/fdroid/repo?fingerprint=B24F450A8428FAF05CC51F3FAEE16339167FFB64C422DB981F5ECD3449BE5925` (GitHub `fdroidrepos://` bağlantılarını tıklanabilir göstermediği için F-Droid'in `fdroid.link` yönlendiricisi; `fdroid update`'in depo sayfası da bunu kullanıyor). Parmak izi `b24f450a8428faf05cc51f3faee16339167ffb64c422db981f5ecd3449be5925`. README'de bağlantı ve parmak izi, kılavuzda adım adım ekleme.
 - **İş akışı** `.github/workflows/fdroid-deposu.yml`: `release: published` olayında ve elle (`workflow_dispatch`) çalışır. Taslaklar `published` olayı üretmez.
   1. Son üç yayımlanmış sürümün (`gh release list`, taslak ve ön sürüm hariç) APK'larını indirir; her birinin imza sertifikasının `66ff7b5c…` olduğunu ve `SHA256SUMS`'a uyduğunu denetler.
   2. F-Droid'in imajında `fdroid update` çalıştırır. Uygulama bilgisi tarif dosyasından (`Builds` bloğu atılarak), açıklamalar ve ekran görüntüleri `fastlane/`'den gelir.
