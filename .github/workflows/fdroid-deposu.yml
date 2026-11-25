@@ -79,8 +79,17 @@ jobs:
       - name: Anahtarı sil
         if: always()
         run: rm -f "${RUNNER_TEMP}/depo.jks"
+      # Parmak izi depo-anahtari-olustur.sh'nin koyduğu değişkenden: ortamdaki
+      # anahtar değişmişse istemcilerin reddedeceği bir indeks yayımlanmaz.
       - name: İndeksi doğrula
-        run: bash resources/scripts/fdroid-deposu-dogrula.sh site/fdroid/repo
+        env:
+          PARMAK_IZI: ${{ vars.FDROID_DEPOSU_PARMAK_IZI }}
+        run: |
+          if [[ -z "$PARMAK_IZI" ]]; then
+            echo "HATA: FDROID_DEPOSU_PARMAK_IZI depo değişkeni yok." >&2
+            exit 1
+          fi
+          bash resources/scripts/fdroid-deposu-dogrula.sh site/fdroid/repo --parmak-izi "$PARMAK_IZI"
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: site

@@ -23,6 +23,9 @@ on:
       - "resources/scripts/imzala.sh"
       - "resources/scripts/check-release-apk.sh"
       - "resources/scripts/imza-ozeti*"
+      - "resources/scripts/abi-apk-denetle*"
+      - "resources/scripts/fdroid-deposu-*"
+      - "fastlane/**"
 
 permissions:
   contents: read
@@ -223,7 +226,9 @@ jobs:
             -alias deneme -keyalg RSA -keysize 4096 -validity 1 -dname CN=deneme \
             -storepass:env FDROID_KEYSTORE_PASSWORD -keypass:env FDROID_KEY_PASSWORD
       - name: Betik testleri
-        run: bash resources/scripts/fdroid-deposu-kur-test.sh
+        run: |
+          bash resources/scripts/fdroid-deposu-kur-test.sh
+          bash resources/scripts/fdroid-deposu-dogrula-test.sh
       - name: Yayımlanmış sürümlerle kur
         env:
           GH_TOKEN: ${{ github.token }}
@@ -238,20 +243,15 @@ jobs:
       # (tasarımda uygulayıcıya kalan soru). Bu PR'ın APK'larıyla, betiksiz.
       - name: İşlemciye özel APK'larla kur
         run: |
-          export FDROID_KEYSTORE="$RUNNER_TEMP/depo.jks"
-          mkdir -p abi/repo abi/metadata
-          cp out/bizim.apk out/bizim-*.apk abi/repo/
-          cat > abi/config.yml <<CONFIG
-          repo_url: https://example.invalid/fdroid/repo
-          repo_name: KeyKey deneme
-          repo_description: Prova.
-          archive_older: 0
-          keystore: $FDROID_KEYSTORE
-          repo_keyalias: deneme
-          keystorepass: {env: FDROID_KEYSTORE_PASSWORD}
-          keypass: {env: FDROID_KEY_PASSWORD}
-          CONFIG
-          sed -e '/^RepoType:/,$d' resources/f-droid/io.github.aaudraa.keykey.yml > abi/metadata/io.github.aaudraa.keykey.yml
-          (cd abi && fdroid update --pretty) 2>&1 | tee abi-update.txt
-          bash resources/scripts/fdroid-deposu-dogrula.sh abi/repo | tee abi-surumler.txt
-          echo "İndekse giren APK sayısı: $(grep -c '\.apk' abi-surumler.txt)"
+          # shellcheck disable=SC1091
+          source /etc/profile.d/bsenv.sh
+          export ANDROID_HOME=/opt/android-sdk FDROID_KEYSTORE="$RUNNER_TEMP/depo.jks"
+          surum="$(sed -n 's/^version: *\([^+ ]*\)+.*$/\1/p' pubspec.yaml)"
+          mkdir -p abi-apk
+          cp out/bizim.apk "abi-apk/keykey-${surum}.apk"
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            cp "out/bizim-${abi}.apk" "abi-apk/keykey-${surum}-${abi}.apk"
+          done
+          bash resources/scripts/fdroid-deposu-kur.sh --kur --yerel abi-apk --cikti abi-site
+          # Dördü de indekste olmalı; olmazsa üretim --yalniz-evrensel'e geçer.
+          bash resources/scripts/fdroid-deposu-dogrula.sh abi-site/fdroid/repo --apk-sayisi 4

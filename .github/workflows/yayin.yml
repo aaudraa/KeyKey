@@ -52,6 +52,14 @@ jobs:
           python3 resources/scripts/check-fastlane.py
       - name: APK ve AAB
         run: bash resources/scripts/f-droid-yolunda-derle.sh "$GITHUB_SHA" out/imzasiz.apk appbundle
+      # İşlemciye özel APK'lar F-Droid'in doğruladığı evrenselin alt kümesi
+      # değilse yayın durur (f-droid.yml'daki "bizim" işiyle aynı denetim).
+      - name: İşlemciye özel APK denetimi
+        run: |
+          bash resources/scripts/abi-apk-denetle-test.sh
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            bash resources/scripts/abi-apk-denetle.sh out/imzasiz.apk "$abi" "out/imzasiz-${abi}.apk"
+          done
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: imzasiz
@@ -210,10 +218,14 @@ jobs:
         with:
           name: fdroid
           path: out
-      - run: |
+      # F-Droid yalnızca evrensel APK'yı derler; işlemciye özel olanlar
+      # derle işinde onun alt kümesi olarak denetlendi.
+      - env:
+          VERSION: ${{ needs.yayin.outputs.version }}
+        run: |
           apt-get update -qq && apt-get install -qy apksigcopier >/dev/null
           sha256sum dist/*.apk out/*.apk
-          bash resources/scripts/f-droid-karsilastir.sh dist/keykey-*.apk out/fdroid.apk
+          bash resources/scripts/f-droid-karsilastir.sh "dist/keykey-${VERSION}.apk" out/fdroid.apk
 
   # Taslak ancak F-Droid karşılaştırması yeşilse oluşur.
   taslak:

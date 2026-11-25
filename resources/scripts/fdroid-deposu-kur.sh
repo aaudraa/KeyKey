@@ -14,6 +14,12 @@
 #       Sürümleri indirir, fdroid update ile depoyu kurar ve imzalar; Pages'e
 #       yüklenecek site <çıktı>/fdroid/repo altına yazılır. Çalışma klasörü
 #       (yapılandırma, anahtar yolu) siteye girmez.
+#   fdroid-deposu-kur.sh --kur --yerel <klasör> --cikti <klasör>
+#       Sürüm indirmek yerine klasördeki keykey-*.apk dosyalarıyla kurar
+#       (PR provası: işlemciye özel APK'lar, tek kullanımlık anahtar).
+#
+# fdroid PATH'te yoksa fdroidserver'ın ana dalı klonlanır (f-droid-derle.sh
+# gibi; F-Droid imajında fdroid komutu kurulu değil).
 #
 # --kur için ortam: FDROID_KEYSTORE (dosya yolu), FDROID_KEY_ALIAS,
 # FDROID_KEYSTORE_PASSWORD, FDROID_KEY_PASSWORD. Parolalar yapılandırma
@@ -34,7 +40,7 @@ for aday in python3 python; do
 done
 [[ -n "$py" ]] || { echo "HATA: Python yok." >&2; exit 1; }
 
-kip="" surumler=3 etiket="" apk_klasoru="" cikti="" yalniz_evrensel=0
+kip="" surumler=3 etiket="" apk_klasoru="" cikti="" yalniz_evrensel=0 yerel=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --surum-listesi) kip=liste ;;
@@ -44,6 +50,7 @@ while [[ $# -gt 0 ]]; do
     --apk-klasoru) apk_klasoru="$2"; shift ;;
     --cikti) cikti="$2"; shift ;;
     --yalniz-evrensel) yalniz_evrensel=1 ;;
+    --yerel) yerel="$2"; shift ;;
     *) echo "HATA: bilinmeyen argüman: $1" >&2; exit 2 ;;
   esac
   shift
@@ -102,6 +109,29 @@ indir() {
   echo "$etiket: $sayi APK doğrulandı"
 }
 
+# fdroid_calistir <argümanlar...>: fdroid'i bulur ya da klonlayıp çalıştırır.
+fdroid_calistir() {
+  if command -v fdroid >/dev/null; then
+    fdroid "$@"
+    return
+  fi
+  local fs="${FDROIDSERVER:-}" deneme
+  if [[ -z "$fs" ]]; then
+    fs="$(mktemp -d)/fdroidserver"
+    for deneme in 1 2 3; do
+      rm -rf "$fs"
+      if git clone --quiet --depth 1 https://gitlab.com/fdroid/fdroidserver.git "$fs"; then
+        break
+      fi
+      [[ $deneme == 3 ]] && { echo "HATA: fdroidserver klonlanamadı." >&2; return 1; }
+      echo "fdroidserver klonlanamadı, yeniden deneniyor ($deneme)" >&2
+      sleep 30
+    done
+    echo "fdroidserver: $(git -C "$fs" rev-parse HEAD)" >&2
+  fi
+  PATH="$fs:$PATH" PYTHONPATH="$fs:$fs/examples" fdroid "$@"
+}
+
 # Tarifin depoya ait kısmı: derleme ve güncelleme denetimi alanları atılır.
 uygulama_bilgisi() {
   sed -e '/^RepoType:/,$d' "$tarif"
@@ -112,14 +142,21 @@ kur() {
   : "${FDROID_KEYSTORE:?}" "${FDROID_KEY_ALIAS:?}"
   : "${FDROID_KEYSTORE_PASSWORD:?}" "${FDROID_KEY_PASSWORD:?}"
   [[ -n "$cikti" ]] || { echo "HATA: --cikti gerekli." >&2; exit 2; }
-  local calisma etiketler
+  local etiketler
   calisma="$(mktemp -d)"
+  trap 'rm -rf "$calisma"' EXIT
   mkdir -p "$calisma/repo" "$calisma/metadata"
-  etiketler="$(surum_listesi)"
-  [[ -n "$etiketler" ]] || { echo "HATA: yayımlanmış sürüm yok." >&2; exit 1; }
-  while IFS= read -r etiket; do
-    indir "$etiket" "$calisma/repo"
-  done <<< "$etiketler"
+  if [[ -n "$yerel" ]]; then
+    etiketler="yerel: $yerel"
+    compgen -G "$yerel/keykey-*.apk" >/dev/null || { echo "HATA: $yerel içinde APK yok." >&2; exit 1; }
+    cp "$yerel"/keykey-*.apk "$calisma/repo/"
+  else
+    etiketler="$(surum_listesi)"
+    [[ -n "$etiketler" ]] || { echo "HATA: yayımlanmış sürüm yok." >&2; exit 1; }
+    while IFS= read -r etiket; do
+      indir "$etiket" "$calisma/repo"
+    done <<< "$etiketler"
+  fi
 
   uygulama_bilgisi > "$calisma/metadata/$appid.yml"
   cp -r "$kok/fastlane/metadata/android/." "$calisma/metadata/$appid/"
@@ -141,12 +178,11 @@ keystorepass: {env: FDROID_KEYSTORE_PASSWORD}
 keypass: {env: FDROID_KEY_PASSWORD}
 EOF
   chmod 600 "$calisma/config.yml"
-  (cd "$calisma" && fdroid update --pretty)
+  (cd "$calisma" && fdroid_calistir update --pretty)
 
   mkdir -p "$cikti/fdroid"
   rm -rf "$cikti/fdroid/repo"
   cp -r "$calisma/repo" "$cikti/fdroid/repo"
-  rm -rf "$calisma"
   echo "Depo kuruldu: $cikti/fdroid/repo ($(tr '\n' ' ' <<< "$etiketler"))"
 }
 

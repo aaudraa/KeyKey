@@ -4,14 +4,25 @@
 # - index-v2.json'da KeyKey var; her sürümün APK'sı klasörde ve özeti tutuyor,
 # - siteye yapılandırma, anahtar ya da metadata girmemiş.
 #
-# Kullanım: fdroid-deposu-dogrula.sh <repo-klasörü> [beklenen-parmak-izi]
-#   Parmak izi verilirse indeksi imzalayan sertifikanın SHA-256'sı ona eşit
-#   olmalı (gerçek depo); verilmezse yalnızca imzanın geçerliliğine bakılır
-#   (prova, tek kullanımlık anahtar).
+# Kullanım: fdroid-deposu-dogrula.sh <repo-klasörü> [--parmak-izi <sha256>] [--apk-sayisi N]
+#   --parmak-izi  İndeksi imzalayan sertifikanın SHA-256'sı buna eşit olmalı
+#                 (gerçek depo). Verilmezse yalnızca imzanın geçerliliğine
+#                 bakılır (prova, tek kullanımlık anahtar).
+#   --apk-sayisi  İndekste tam bu kadar APK olmalı (işlemciye özel APK provası).
+# Test: fdroid-deposu-dogrula-test.sh
 set -euo pipefail
 
 repo="${1:?repo klasörü}"
-beklenen="${2:-}"
+shift
+beklenen="" apk_sayisi=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --parmak-izi) beklenen="$2"; shift ;;
+    --apk-sayisi) apk_sayisi="$2"; shift ;;
+    *) echo "HATA: bilinmeyen argüman: $1" >&2; exit 2 ;;
+  esac
+  shift
+done
 appid=io.github.aaudraa.keykey
 
 py=""
@@ -22,29 +33,32 @@ done
 
 for jar in entry.jar index-v1.jar; do
   [[ -f "$repo/$jar" ]] || { echo "HATA: $jar yok." >&2; exit 1; }
-  cikti="$(jarsigner -verify -verbose -certs "$repo/$jar")"
-  grep -q "^jar verified" <<< "$cikti" || { echo "HATA: $jar imzası geçersiz." >&2; exit 1; }
-done
-
-if [[ -n "$beklenen" ]]; then
-  gercek="$(unzip -p "$repo/entry.jar" 'META-INF/*.RSA' 'META-INF/*.EC' 2>/dev/null |
-    keytool -printcert 2>/dev/null | sed -n 's/^[[:space:]]*SHA256: //p' | head -n 1 |
-    tr -d ':\r' | tr 'A-F' 'a-f')"
-  if [[ "$gercek" != "$beklenen" ]]; then
-    echo "HATA: indeks '$gercek' ile imzalı, beklenen '$beklenen'." >&2
+  cikti="$(jarsigner -verify "$repo/$jar" 2>&1 || true)"
+  if ! grep -q "^jar verified" <<< "$(tr -d '\r' <<< "$cikti")"; then
+    echo "HATA: $jar imzası geçersiz:" >&2
+    printf '%s\n' "$cikti" >&2
     exit 1
   fi
-fi
+  if [[ -n "$beklenen" ]]; then
+    gercek="$(keytool -printcert -jarfile "$repo/$jar" 2>/dev/null |
+      sed -n 's/^[[:space:]]*SHA256: //p' | head -n 1 | tr -d ':\r' | tr 'A-F' 'a-f' || true)"
+    if [[ "$gercek" != "$beklenen" ]]; then
+      echo "HATA: $jar '${gercek}' ile imzalı, beklenen '${beklenen}'." >&2
+      exit 1
+    fi
+  fi
+done
 
-"$py" - "$repo" "$appid" <<'EOF'
+"$py" - "$repo" "$appid" "$apk_sayisi" <<'EOF'
 import hashlib, json, os, sys
-repo, appid = sys.argv[1], sys.argv[2]
+repo, appid, beklenen_sayi = sys.argv[1], sys.argv[2], sys.argv[3]
 with open(os.path.join(repo, "index-v2.json"), encoding="utf-8") as f:
     index = json.load(f)
 paket = index.get("packages", {}).get(appid)
 if not paket or not paket.get("versions"):
     sys.exit(f"HATA: indekste {appid} ya da sürümü yok.")
-for surum in paket["versions"].values():
+surumler = paket["versions"].values()
+for surum in surumler:
     dosya = surum["file"]
     yol = os.path.join(repo, dosya["name"].lstrip("/"))
     with open(yol, "rb") as f:
@@ -54,6 +68,8 @@ for surum in paket["versions"].values():
     m = surum["manifest"]
     print(f"{m['versionName']} ({m['versionCode']}) {dosya['name']} "
           f"{','.join(m.get('nativecode', [])) or 'evrensel'}")
+if beklenen_sayi and len(surumler) != int(beklenen_sayi):
+    sys.exit(f"HATA: indekste {len(surumler)} APK var, beklenen {beklenen_sayi}.")
 EOF
 
 yasak="$(find "$repo" \( -name '*.jks' -o -name 'config.yml' -o -name '*.keystore' -o -path '*/metadata/*' \) -print)"

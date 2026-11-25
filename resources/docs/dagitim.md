@@ -1,6 +1,6 @@
 # Dağıtım: işlemciye göre APK ve kendi F-Droid deposu (Faz 22)
 
-Durum: tasarım (2026-11-25). Proje sahibi önerilen sırayla devam etmemi istedi; kararlar benim, proje sahibine kalan adımlar ayrıca yazılı. Plan: [`dagitim-plani.md`](dagitim-plani.md).
+Durum: uygulandı (2026-11-25, 1.12.0). Proje sahibi önerilen sırayla devam etmemi istedi; kararlar benim, proje sahibine kalan adımlar ayrıca yazılı. Plan: [`dagitim-plani.md`](dagitim-plani.md). Uygulamada değişen kararlar "Uygulamada" notlarında.
 
 ## Amaç
 
@@ -64,7 +64,7 @@ Durum: tasarım (2026-11-25). Proje sahibi önerilen sırayla devam etmemi isted
 ### 2. Obtainium
 
 - Obtainium'un bir sürümde birden çok APK görünce işlemciye göre süzüp süzmediği belgelerden kesinleşmedi. Uygulama sırasında emülatörde (Android 17, `arm64` olmayan emülatörde `x86_64`) gerçek yoldan denenir: var olan bir Obtainium kaydı yeni sürümü nasıl görüyor, yeni ekleme hangi APK'yı seçiyor.
-- README'deki "Obtainium'a ekle" bağlantısının JSON'una evrenseli seçen bir `apkFilterRegEx` (`^keykey-[0-9.]+\.apk$`) eklenir; bu yalnızca bağlantıdan yeni eklenen kayıtlara uygulanır. Kılavuz, işlemciye özel APK isteyenin süzgeci nasıl değiştireceğini anlatır.
+- ~~README'deki bağlantıya evrenseli seçen bir `apkFilterRegEx` eklenir.~~ **Uygulamada (2026-11-25):** gerekmedi. Obtainium 1.7.4 var olan bir kayıtta ("Attempt to filter APKs by CPU architecture" varsayılan açık) x86_64 emülatörde `keykey-<sürüm>-x86_64.apk`'yı kendisi seçip kurulum ekranına geldi; soru sormadı. İşlemciye özel APK'lar Release'e ayrı `.apk` olarak konuyor, evrensel süzme çalışmayan cihazlar için duruyor.
 - **Var olan kayıtlar (benim kararım):** Bugünkü bir Obtainium kullanıcısına her güncellemede "hangi APK?" diye sorulması kırılma sayılır. Denemede böyle çıkarsa işlemciye özel APK'lar Release'e ayrı `.apk` olarak konmaz: tek bir `keykey-<sürüm>-abi.zip` içinde gider (Obtainium yalnızca `.apk`'lara bakar) ve ayrı ayrı yalnızca F-Droid deposunda sunulur. Depo iş akışı onları bu zip'ten alır.
 
 ### 3. Kendi F-Droid deposu
@@ -87,7 +87,7 @@ Durum: tasarım (2026-11-25). Proje sahibi önerilen sırayla devam etmemi isted
 
 ### 4. Sürüm
 
-- Faz 1.12.0 olarak çıkar. İlk depo kurulumu 1.12.0'ın yayımlanmasıyla olur; 1.12.0'dan önceki sürümler depoya girmez.
+- Faz 1.12.0 olarak çıkar. İlk depo kurulumu depo anahtarı gelince olur ve yayımlanmış son üç sürümü alır; 1.12.0'dan öncekilerde (1.11.1, 1.11.0) yalnızca evrensel APK var.
 - **Depo anahtarı gecikirse (benim kararım):** 1.12.0 beklemez, işlemciye özel APK'larla çıkar. Anahtar gelince depo iş akışı `v1.12.0` etiketinde elle çalıştırılır ve depo 1.12.0'la kurulur; README'deki depo bölümü o zaman ayrı bir belge PR'ıyla eklenir.
 
 ### 5. Belgeler
@@ -110,6 +110,6 @@ Durum: tasarım (2026-11-25). Proje sahibi önerilen sırayla devam etmemi isted
 
 ## Riskler
 
-- **Obtainium'un davranışı:** kesinleşmedi; gerçek yolda denenir, gerekirse bağlantıya süzgeç eklenir.
+- **Obtainium'un davranışı:** emülatörde denendi, işlemciye uyan APK'yı kendisi seçiyor (bkz. §2).
 - **Depo anahtarı kaybolursa:** kullanıcılar depoyu yeni parmak iziyle yeniden eklemek zorunda kalır; uygulama ve veri etkilenmez.
 - **GitHub Pages kesintisi:** depo güncellemesi gecikir; GitHub sürümü ve Obtainium etkilenmez.

@@ -24,7 +24,7 @@ Görüntülerdeki kayıtlar örnektir.
 
 KeyKey Android 11 ve üstünde çalışır. Şimdilik yalnızca GitHub'dan dağıtılıyor.
 
-1. [Sürümler sayfasından](https://github.com/aaudraa/KeyKey/releases) son sürümün APK'sını indir. Telefonların çoğu için `keykey-<sürüm>-arm64-v8a.apk` doğru dosya ve evrenselin yarısından küçük. Eski ya da ucuz bir telefonda (32 bit) `armeabi-v7a`, bilgisayardaki emülatörde `x86_64` gerekir. Emin değilsen her telefonda çalışan `keykey-<sürüm>.apk`'yı indir. Hepsi aynı anahtarla imzalı ve aynı derlemeden; birini kurup sonra ötekiyle güncelleyebilirsin.
+1. [Sürümler sayfasından](https://github.com/aaudraa/KeyKey/releases) son sürümün APK'sını indir. Telefonların çoğu için `keykey-<sürüm>-arm64-v8a.apk` doğru dosya ve evrenselin üçte biri kadar. Eski ya da ucuz bir telefonda (32 bit) `armeabi-v7a`, bilgisayardaki emülatörde `x86_64` gerekir. Emin değilsen her telefonda çalışan `keykey-<sürüm>.apk`'yı indir. Hepsi aynı anahtarla imzalı ve aynı derlemeden; birini kurup sonra ötekiyle güncelleyebilirsin.
 2. Dosyayı aç. Telefon, tarayıcının ya da dosya uygulamasının uygulama yüklemesine izin vermeni isteyebilir; izin verip kur.
 3. Google Play Protect, KeyKey'i daha önce görmediği için uygulama taraması önerebilir. Taramayı seçersen APK Google'a gönderilir. Göndermek istemezsen "Diğer ayrıntılar"ı açıp "Taramadan yükle"ye dokun (İngilizce arayüzde "More details" → "Install without scanning").
 
