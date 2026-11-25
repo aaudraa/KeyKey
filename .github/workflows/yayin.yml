@@ -57,6 +57,9 @@ jobs:
           name: imzasiz
           path: out/
           if-no-files-found: error
+          # İmzalı yayın işi dağıtım onayını bekler; GitHub onayı en çok 30 gün
+          # bekletir, dosyalar o süre boyunca kalmalı. Kalıcı kopya GitHub Release'te.
+          retention-days: 30
 
   # F-Droid'in aracı, imajın güncel haliyle: F-Droid'in bugün derleyeceği APK.
   f-droid:
@@ -78,6 +81,7 @@ jobs:
           name: fdroid
           path: out/fdroid.apk
           if-no-files-found: error
+          retention-days: 30
 
   yayin:
     name: İmzalı yayın
@@ -172,6 +176,7 @@ jobs:
           name: dist
           path: dist/
           if-no-files-found: error
+          retention-days: 30
 
   karsilastir:
     name: F-Droid karşılaştırması

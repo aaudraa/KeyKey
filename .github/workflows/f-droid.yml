@@ -61,6 +61,9 @@ jobs:
           name: imzasiz
           path: out/
           if-no-files-found: error
+          # Yalnızca bu çalıştırmanın işleri arasında taşınır; karşılaştırma
+          # bozulursa incelemek için bir hafta yeter.
+          retention-days: 7
 
   imzala:
     name: İmza ve denetim (tek kullanımlık anahtar)
@@ -111,6 +114,7 @@ jobs:
           name: bizim
           path: out/bizim.apk
           if-no-files-found: error
+          retention-days: 7
 
   f-droid:
     name: F-Droid derlemesi (fdroid build, lint)
@@ -135,6 +139,7 @@ jobs:
           name: fdroid
           path: out/fdroid.apk
           if-no-files-found: error
+          retention-days: 7
 
   karsilastir:
     name: Karşılaştır
