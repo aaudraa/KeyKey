@@ -492,6 +492,7 @@
   "loginImportNothing": "Bu dosyada içe aktarılacak kayıt yok.",
   "loginImportAdd": "{count, plural, =0{Ekle} other{{count} kaydı ekle}}",
   "loginImportDone": "{count} kayıt eklendi.",
+  "loginImportDoneWithPasskeys": "{count} kayıt eklendi, {updated} kayda passkey eklendi.",
   "loginImportDeleteTitle": "Kaynak dosyayı sil",
   "loginImportDeleteBody": "İçe aktardığın dosya şifresiz; bütün parolaların düz metin olarak içinde. KeyKey bu dosyayı silemez. Dosyalar uygulamasından ya da Drive'dan kendin sil.",
   "loginImportDeleteOk": "Tamam",

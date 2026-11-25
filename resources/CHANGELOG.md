@@ -8,9 +8,9 @@ Faz 21'in son gözden geçirmesinden ertelenen küçük bulgular ([#187](https:/
 
 ### Düzeltmeler
 
-- **Yeniden içe aktarma passkey'leri getiriyor.** 1.10'da Bitwarden'dan aktarılan bir kayıt 1.11'de aynı dosyayla yeniden aktarılınca "Kasanda var" diye seçilmiyor ve passkey'ler gelmiyordu. Artık bu satır seçili geliyor; yeni kayıt açılmadan yalnızca eksik passkey'ler kasadaki kayda ekleniyor.
+- **Yeniden içe aktarma passkey'leri getiriyor.** 1.10'da Bitwarden'dan aktarılan bir kayıt 1.11'de aynı dosyayla yeniden aktarılınca "Kasanda var" diye seçilmiyor ve passkey'ler gelmiyordu. Artık bu satır seçili geliyor; yeni kayıt açılmadan yalnızca eksik passkey'ler kasadaki (çöpte olmayan) kayda ekleniyor.
 - **Bozuk bir passkey o sitenin diğerlerini bozmuyor.** İmza atılamayan bir passkey (bozuk içe aktarılmış anahtar) o sitenin bütün hesaplarını düşürüyordu; artık atlanıyor. İçe aktarmada anahtarın içi de denetleniyor.
-- **Açık düzenleme passkey'i silmiyor.** Uygulama arka plandan dönerken, liste yeniden okunmadan kaydedilen bir düzenleme passkey penceresinin az önce eklediği passkey'i silebiliyordu.
+- **Açık düzenleme arka plandaki değişiklikleri silmiyor.** Uygulama arka plandan dönerken, liste yeniden okunmadan kaydedilen bir düzenleme passkey penceresinin az önce eklediği passkey'i ve bağladığı uygulamayı ya da doldurmanın kaydettiği yeni parolayı silebiliyordu. Kayıt artık yeniden okumalar bitince yazılıyor.
 - Kullanıcı kimliği olmayan KeePassXC passkey'lerinde yanıta boş `userHandle` yazılmıyor; 16 bayttan kısa meydan okumalar, tarayıcılar gibi kabul ediliyor.
 
 ### Güvenlik

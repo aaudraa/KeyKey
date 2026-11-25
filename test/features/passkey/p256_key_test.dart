@@ -38,7 +38,12 @@ void main() {
       expect(isP256Pkcs8(pkcs8(ecKey(1, d))), isTrue);
       expect(isP256Pkcs8(pkcs8(const [1, 2, 3])), isFalse);
       expect(isP256Pkcs8(pkcs8(ecKey(2, d))), isFalse);
-      expect(isP256Pkcs8(pkcs8(ecKey(1, d.sublist(1)))), isFalse);
+      // Bazı araçlar baştaki sıfır baytı atıyor; Android'in sağlayıcısı
+      // kısa ya da başı sıfırlı 33 baytlık değeri de kabul ediyor.
+      expect(isP256Pkcs8(pkcs8(ecKey(1, d.sublist(1)))), isTrue);
+      expect(isP256Pkcs8(pkcs8(ecKey(1, [0, ...d]))), isTrue);
+      expect(isP256Pkcs8(pkcs8(ecKey(1, [1, ...d]))), isFalse);
+      expect(isP256Pkcs8(pkcs8(ecKey(1, const []))), isFalse);
       expect(isP256Pkcs8(pkcs8(ecKey(1, List.filled(32, 0)))), isFalse);
     });
 

@@ -34,9 +34,11 @@ bool isP256Pkcs8(List<int> der) {
       _isEcPrivateKey(der.sublist(key.start, key.end));
 }
 
-/// RFC 5915 `ECPrivateKey`: sürüm 1 ve sıfır olmayan 32 baytlık gizli sayı.
-/// Ardından gelen isteğe bağlı eğri ve açık anahtar alanlarına bakılmaz;
-/// eğri dıştaki algoritmada zaten denetlendi.
+/// RFC 5915 `ECPrivateKey`: sürüm 1 ve sıfır olmayan gizli sayı. RFC 32
+/// bayt ister ama bazı araçlar baştaki sıfırları atar ya da bir sıfır
+/// ekler; Android'in sağlayıcısı bunları da kabul ettiği için 1-32 bayt ve
+/// başı sıfır olan 33 bayt geçer. Ardından gelen isteğe bağlı eğri ve açık
+/// anahtar alanlarına bakılmaz; eğri dıştaki algoritmada zaten denetlendi.
 bool _isEcPrivateKey(List<int> der) {
   final outer = _header(der, 0, 0x30);
   if (outer == null || outer.end != der.length) return false;
@@ -44,8 +46,10 @@ bool _isEcPrivateKey(List<int> der) {
   if (!_startsWith(der, at, const [0x02, 0x01, 0x01])) return false;
   at += 3;
   final secret = _header(der, at, 0x04);
-  if (secret == null || secret.end - secret.start != 32) return false;
-  return der.sublist(secret.start, secret.end).any((b) => b != 0);
+  if (secret == null) return false;
+  var bytes = der.sublist(secret.start, secret.end);
+  if (bytes.length == 33 && bytes.first == 0) bytes = bytes.sublist(1);
+  return bytes.isNotEmpty && bytes.length <= 32 && bytes.any((b) => b != 0);
 }
 
 /// `-----BEGIN PRIVATE KEY-----` PEM'inin DER'i; P-256 PKCS#8 değilse ya da

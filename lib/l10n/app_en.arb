@@ -2247,6 +2247,18 @@
       }
     }
   },
+  "loginImportDoneWithPasskeys": "{count, plural, =1{1 entry added} other{{count} entries added}}, {updated, plural, =1{passkeys added to 1 entry.} other{passkeys added to {updated} entries.}}",
+  "@loginImportDoneWithPasskeys": {
+    "description": "Snackbar after importing when some passkeys went to entries already in the vault.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "updated": {
+        "type": "int"
+      }
+    }
+  },
   "loginImportDeleteTitle": "Delete the source file",
   "@loginImportDeleteTitle": {
     "description": "Title of the dialog after importing."

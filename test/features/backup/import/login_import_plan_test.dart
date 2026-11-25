@@ -9,6 +9,7 @@ import 'package:keykey/features/backup/data/import/login_import.dart';
 import 'package:keykey/features/vault/data/card_content.dart';
 import 'package:keykey/features/vault/data/login_content.dart';
 import 'package:keykey/features/vault/data/login_passkey.dart';
+import 'package:keykey/features/vault/data/login_repository.dart';
 import 'package:keykey/features/vault/data/note_content.dart';
 
 import '../../../support/fake_vault_service.dart';
@@ -384,6 +385,40 @@ void _passkeyMergeTests() {
       expect(candidate.duplicate, isTrue);
       expect(candidate.addPasskeysTo, isNull);
       expect(candidate.newPasskeys, isEmpty);
+    });
+
+    test('çöpteki kayda eklenmiyor, çöp dışındaki seçiliyor', () {
+      LoginItem saved(int id, {DateTime? trashedAt}) =>
+          FakeLoginRepository.item(
+            LoginContent(
+              name: 'GitHub',
+              username: 'ali',
+              password: 'p',
+              trashedAt: trashedAt,
+            ),
+            id: id,
+          );
+      LoginImportCandidate plan(List<LoginItem> items) => planLoginImport(
+        LoginExport(
+          source: LoginExportSource.bitwardenJson,
+          logins: [
+            ImportedLogin(
+              name: 'GitHub',
+              username: 'ali',
+              password: 'p',
+              passkeys: [key(1)],
+            ),
+          ],
+          skipped: 0,
+        ),
+        existingLogins: items,
+        existingOtps: const [],
+      ).candidates.single;
+
+      final trashed = saved(1, trashedAt: DateTime.utc(2026));
+      expect(plan([trashed]).addPasskeysTo, isNull);
+      expect(plan([trashed]).duplicate, isTrue);
+      expect(plan([trashed, saved(2)]).addPasskeysTo!.id[15], 2);
     });
 
     test('sınır aşılacaksa eklenmiyor', () {

@@ -137,27 +137,40 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
         plan.candidates.length + plan.cards.length,
       );
       final controller = ref.read(loginsControllerProvider.notifier);
-      final fresh = [
-        for (final candidate in chosen)
-          if (candidate.addPasskeysTo == null) candidate.content,
-      ];
-      final added = fresh.isEmpty
-          ? const <LoginItem>[]
-          : await controller.addAll(fresh);
-      // Kasada olan kayda yalnızca eksik passkey'leri eklenir.
-      for (final candidate in chosen) {
-        if (candidate.addPasskeysTo case final target?) {
-          await controller.changePasskeys(
-            target,
-            (content) => withImportedPasskeys(content, candidate.newPasskeys),
-          );
-        }
+      // Passkey'leri eklenecek kayıt; önizleme açıkken çöpe gittiyse ya da
+      // silindiyse aday yeni kayıt olarak eklenir, eski kopya geri yazılmaz.
+      LoginItem? targetOf(LoginImportCandidate candidate) {
+        final target = candidate.addPasskeysTo;
+        if (target == null) return null;
+        final current = controller.current(target);
+        return current == null || current.content.isTrashed ? null : current;
+      }
+
+      final targets = [for (final candidate in chosen) targetOf(candidate)];
+      final added = await controller.addAll([
+        for (final (index, candidate) in chosen.indexed)
+          if (targets[index] == null) candidate.content,
+      ]);
+      var updated = 0;
+      for (final (index, candidate) in chosen.indexed) {
+        final target = targets[index];
+        if (target == null) continue;
+        final next = withImportedPasskeys(
+          target.content,
+          candidate.newPasskeys,
+        );
+        if (identical(next, target.content)) continue;
+        await controller.changePasskeys(
+          target,
+          (content) => withImportedPasskeys(content, candidate.newPasskeys),
+        );
+        updated++;
       }
       // 2FA hesapları eklenen ya da passkey'i eklenen kayıtlara bağlanır.
       final addedIds = added.map((item) => item.id).iterator;
       final otps = importedOtps(chosen, [
-        for (final candidate in chosen)
-          candidate.addPasskeysTo?.id ?? (addedIds..moveNext()).current,
+        for (final target in targets)
+          target?.id ?? (addedIds..moveNext()).current,
       ]);
       if (otps.isNotEmpty) {
         await ref.read(otpsControllerProvider.notifier).addAll(otps);
@@ -175,7 +188,12 @@ class _LoginImportScreenState extends ConsumerState<LoginImportScreen> {
       if (!mounted) return;
       // Kayıt bitti; hatırlatma açıkken düğmede ilerleme halkası dönmesin.
       setState(() => _saving = false);
-      snack(l10n.loginImportDone(chosen.length + cards.length + notes.length));
+      final count = added.length + cards.length + notes.length;
+      snack(
+        updated == 0
+            ? l10n.loginImportDone(count)
+            : l10n.loginImportDoneWithPasskeys(count, updated),
+      );
       // KeePass dosyası şifreli; yalnızca düz metin dışa aktarmalar için.
       if (plan.source != LoginExportSource.keepassKdbx) {
         await _remindToDelete(l10n);

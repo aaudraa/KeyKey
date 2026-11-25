@@ -158,7 +158,9 @@ LoginImportPlan planLoginImport(
       for (final (other, item) in known)
         if (other.matches(fingerprint)) item,
     ];
-    final target = same.firstOrNull;
+    // Passkey yalnızca çöp dışındaki kayda eklenir: çöpteki kaydın
+    // passkey'i girişte kullanılmaz ve çöp boşalınca silinir.
+    final target = same.where((item) => !item.content.isTrashed).firstOrNull;
     final newPasskeys = target == null
         ? const <LoginPasskey>[]
         : _missingPasskeys(target.content, content.passkeys);
@@ -169,7 +171,7 @@ LoginImportPlan planLoginImport(
     candidates.add(
       LoginImportCandidate(
         content: content,
-        duplicate: target != null,
+        duplicate: same.isNotEmpty,
         otp: otp,
         otpAlreadySaved: otpAlreadySaved,
         addPasskeysTo: canAdd ? target : null,

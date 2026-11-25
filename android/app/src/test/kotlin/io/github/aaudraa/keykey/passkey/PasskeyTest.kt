@@ -163,8 +163,16 @@ class CredentialServiceIsolationTest {
                 it == "io.github.aaudraa.keykey.R"
         }
         assertEquals(emptyList<String>(), foreign)
-        for (name in listOf("PasskeyApi", "FlutterEngine", "PendingAssertions", "Vault")) {
-            assertTrue("$name kullanılmamalı", name !in source)
+        // Aynı paketin sınıfları import gerektirmez; dosya adlarından toplanır.
+        // Servisin açtığı tek sınıf kilit penceresi PasskeyActivity'dir.
+        val samePackage = java.io.File(
+            "src/main/kotlin/io/github/aaudraa/keykey/passkey",
+        ).listFiles()!!.map { it.nameWithoutExtension }
+            .filterNot { it == "KeyKeyCredentialService" || it == "PasskeyActivity" }
+        assertTrue(samePackage.contains("PendingAssertions"))
+        for (name in samePackage + listOf("PasskeyApi", "FlutterEngine", "Vault")) {
+            val word = Regex("""\b""" + name + """\b""")
+            assertTrue("$name kullanılmamalı", !word.containsMatchIn(source))
         }
     }
 }
