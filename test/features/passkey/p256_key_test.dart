@@ -18,6 +18,30 @@ void main() {
       expect(isP256Pkcs8(base64.decode(p384Pkcs8B64)), isFalse);
     });
 
+    test('içteki EC anahtarı denetleniyor', () {
+      // Dış yapı doğru, içi [inner] olan PKCS#8.
+      List<int> pkcs8(List<int> inner) {
+        final body = [
+          0x02, 0x01, 0x00, //
+          ...p256.sublist(6, 27), // P-256 algoritması
+          0x04, inner.length, ...inner,
+        ];
+        return [0x30, body.length, ...body];
+      }
+
+      List<int> ecKey(int version, List<int> d) {
+        final body = [0x02, 0x01, version, 0x04, d.length, ...d];
+        return [0x30, body.length, ...body];
+      }
+
+      final d = List.generate(32, (i) => i + 1);
+      expect(isP256Pkcs8(pkcs8(ecKey(1, d))), isTrue);
+      expect(isP256Pkcs8(pkcs8(const [1, 2, 3])), isFalse);
+      expect(isP256Pkcs8(pkcs8(ecKey(2, d))), isFalse);
+      expect(isP256Pkcs8(pkcs8(ecKey(1, d.sublist(1)))), isFalse);
+      expect(isP256Pkcs8(pkcs8(ecKey(1, List.filled(32, 0)))), isFalse);
+    });
+
     test('kesik ya da sonu fazla bayt reddediliyor', () {
       expect(isP256Pkcs8(p256.sublist(0, p256.length - 1)), isFalse);
       expect(isP256Pkcs8([...p256, 0]), isFalse);

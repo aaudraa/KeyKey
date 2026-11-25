@@ -15,7 +15,8 @@ const _p256Algorithm = [
 ];
 
 /// [der] bir P-256 PKCS#8 `PrivateKeyInfo` mı: sürüm 0, P-256 algoritması ve
-/// tam olarak yapının sonuna kadar süren bir özel anahtar dizisi.
+/// tam olarak yapının sonuna kadar süren bir özel anahtar dizisi. Dizinin
+/// içi de bir `ECPrivateKey` olmalı (bkz. [_isEcPrivateKey]).
 bool isP256Pkcs8(List<int> der) {
   final outer = _header(der, 0, 0x30);
   if (outer == null || outer.end != der.length) return false;
@@ -28,7 +29,23 @@ bool isP256Pkcs8(List<int> der) {
   final key = _header(der, at, 0x04);
   // İsteğe bağlı öznitelikler KeePassXC ve Bitwarden'da yok; sonda başka
   // bayt kalmamalı.
-  return key != null && key.end == der.length && key.end > key.start;
+  return key != null &&
+      key.end == der.length &&
+      _isEcPrivateKey(der.sublist(key.start, key.end));
+}
+
+/// RFC 5915 `ECPrivateKey`: sürüm 1 ve sıfır olmayan 32 baytlık gizli sayı.
+/// Ardından gelen isteğe bağlı eğri ve açık anahtar alanlarına bakılmaz;
+/// eğri dıştaki algoritmada zaten denetlendi.
+bool _isEcPrivateKey(List<int> der) {
+  final outer = _header(der, 0, 0x30);
+  if (outer == null || outer.end != der.length) return false;
+  var at = outer.start;
+  if (!_startsWith(der, at, const [0x02, 0x01, 0x01])) return false;
+  at += 3;
+  final secret = _header(der, at, 0x04);
+  if (secret == null || secret.end - secret.start != 32) return false;
+  return der.sublist(secret.start, secret.end).any((b) => b != 0);
 }
 
 /// `-----BEGIN PRIVATE KEY-----` PEM'inin DER'i; P-256 PKCS#8 değilse ya da

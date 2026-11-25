@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keykey/core/network/asset_links_client.dart';
@@ -67,6 +68,9 @@ class FakePasskeyBridge implements PasskeyBridge {
 class FakeKeys implements PasskeyKeys {
   final signed = <Uint8List>[];
 
+  /// İlk baytı buradaki anahtarlarla imza atılamaz (bozuk içe aktarma).
+  final broken = <int>{};
+
   @override
   Future<PasskeyKeyPair> generate() async => PasskeyKeyPair(
     privateKey: Uint8List.fromList([9, 9, 9]),
@@ -76,6 +80,9 @@ class FakeKeys implements PasskeyKeys {
 
   @override
   Future<Uint8List> sign(Uint8List privateKey, Uint8List data) async {
+    if (broken.contains(privateKey.first)) {
+      throw PlatformException(code: 'InvalidKeySpecException');
+    }
     signed.add(privateKey);
     return Uint8List.fromList([0x30, 0x00]);
   }
@@ -388,6 +395,34 @@ void main() {
         [2],
       ]);
       expect(locked(tester), isTrue);
+    });
+
+    testWidgets('imza atılamayan passkey atlanıyor, diğeri veriliyor', (
+      tester,
+    ) async {
+      addPasskeys();
+      keys.broken.add(1);
+      final bridge = await pump(
+        tester,
+        status: VaultOpen(service.newSession()),
+        request: get(chrome),
+      );
+      expect(bridge.failed, isNull);
+      expect(bridge.got!.map((a) => a.userName), ['keykey']);
+    });
+
+    testWidgets('hiçbirine imza atılamazsa istek hatayla bitiyor', (
+      tester,
+    ) async {
+      addPasskeys();
+      keys.broken.addAll([1, 2]);
+      final bridge = await pump(
+        tester,
+        status: VaultOpen(service.newSession()),
+        request: get(chrome),
+      );
+      expect(bridge.got, isNull);
+      expect(bridge.failed, PasskeyError.invalidRequest);
     });
 
     testWidgets('passkey yoksa söyleniyor ve boş liste dönüyor', (
