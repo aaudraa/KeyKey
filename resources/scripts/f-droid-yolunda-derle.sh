@@ -54,6 +54,8 @@ chown -R vagrant "$home_vagrant"
 
 # Tarifteki prebuild ve build adımları; F-Droid, prebuild ile build arasında
 # scandelete'teki .pub-cache'i siler, build paketleri yeniden indirir.
+# Adımlar baştan çalıştırılabilir; Maven Central 429 verirse (#195) yeniden denenir.
+derle() {
 sudo --preserve-env=ANDROID_HOME,PATH --user vagrant env HOME="$home_vagrant" \
   bash -euo pipefail -c "
     cd '$build'
@@ -71,6 +73,10 @@ sudo --preserve-env=ANDROID_HOME,PATH --user vagrant env HOME="$home_vagrant" \
       '$flutter/bin/flutter' build apk --release --split-per-abi -Pforce-version-code-ignoring-abi=true
     fi
   "
+}
+# shellcheck source=resources/scripts/yeniden-dene.sh
+source "$repo/resources/scripts/yeniden-dene.sh"
+yeniden_dene_429 3 120 derle
 
 mkdir -p "$(dirname "$out")"
 cp "$build/build/evrensel.apk" "$out"

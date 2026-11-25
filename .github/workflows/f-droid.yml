@@ -25,6 +25,7 @@ on:
       - "resources/scripts/imza-ozeti*"
       - "resources/scripts/abi-apk-denetle*"
       - "resources/scripts/fdroid-deposu-*"
+      - "resources/scripts/yeniden-dene*"
       - "fastlane/**"
 
 permissions:
@@ -63,6 +64,7 @@ jobs:
       - name: İşlemciye özel APK denetimi
         run: |
           bash resources/scripts/abi-apk-denetle-test.sh
+          bash resources/scripts/yeniden-dene-test.sh
           for abi in arm64-v8a armeabi-v7a x86_64; do
             bash resources/scripts/abi-apk-denetle.sh out/imzasiz.apk "$abi" "out/imzasiz-${abi}.apk"
           done
