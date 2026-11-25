@@ -23,6 +23,9 @@ on:
       - "resources/scripts/imzala.sh"
       - "resources/scripts/check-release-apk.sh"
       - "resources/scripts/imza-ozeti*"
+      - "resources/scripts/abi-apk-denetle*"
+      - "resources/scripts/fdroid-deposu-*"
+      - "fastlane/**"
 
 permissions:
   contents: read
@@ -56,6 +59,14 @@ jobs:
       - run: git config --global --add safe.directory '*'
       - name: APK ve AAB
         run: bash resources/scripts/f-droid-yolunda-derle.sh "$COMMIT" out/imzasiz.apk appbundle
+      # İşlemciye özel APK'lar F-Droid'in doğruladığı evrenselin alt kümesi mi.
+      - name: İşlemciye özel APK denetimi
+        run: |
+          bash resources/scripts/abi-apk-denetle-test.sh
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            bash resources/scripts/abi-apk-denetle.sh out/imzasiz.apk "$abi" "out/imzasiz-${abi}.apk"
+          done
+          ls -l out/
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: imzasiz
@@ -94,25 +105,35 @@ jobs:
             -keyalg RSA -keysize 4096 -validity 1 -dname CN=deneme \
             -storepass:env KEYKEY_KEYSTORE_PASSWORD -keypass:env KEYKEY_KEY_PASSWORD
           bash resources/scripts/imzala.sh out/imzasiz.apk out/bizim.apk out/imzasiz.aab out/bizim.aab
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            bash resources/scripts/imzala.sh "out/imzasiz-${abi}.apk" "out/bizim-${abi}.apk"
+          done
           # Beklenen özet: sertifikanın DER baytlarının SHA-256'sı (apksigner'ınkiyle aynı).
           keytool -exportcert -keystore "$KEYKEY_KEYSTORE" -alias deneme \
             -storepass:env KEYKEY_KEYSTORE_PASSWORD | sha256sum | cut -d' ' -f1 > beklenen-imza.txt
       - name: APK güvenlik denetimi
-        run: bash resources/scripts/check-release-apk.sh out/bizim.apk
+        run: |
+          for apk in out/bizim.apk out/bizim-*.apk; do
+            bash resources/scripts/check-release-apk.sh "$apk"
+          done
       # Yayındaki "İmza denetimi" ile aynı betik, burada tek kullanımlık anahtarla.
       - name: İmza denetimi
         run: |
           bash resources/scripts/imza-ozeti-test.sh
-          cert="$(bash resources/scripts/imza-ozeti.sh out/bizim.apk)"
           expected="$(cat beklenen-imza.txt)"
-          if [[ "$cert" != "$expected" ]]; then
-            echo "HATA: imza sertifikası '${cert}', beklenen '${expected}' (tek kullanımlık anahtar)." >&2
-            exit 1
-          fi
+          for apk in out/bizim.apk out/bizim-*.apk; do
+            cert="$(bash resources/scripts/imza-ozeti.sh "$apk")"
+            if [[ "$cert" != "$expected" ]]; then
+              echo "HATA: ${apk} imza sertifikası '${cert}', beklenen '${expected}' (tek kullanımlık anahtar)." >&2
+              exit 1
+            fi
+          done
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: bizim
-          path: out/bizim.apk
+          # Evrensel APK karşılaştırma içindir; işlemciye özel olanlar
+          # Obtainium ve depo denemeleri için (bkz. dagitim-plani.md).
+          path: out/bizim*.apk
           if-no-files-found: error
           retention-days: 7
 
@@ -166,3 +187,73 @@ jobs:
           apt-get update -qq && apt-get install -qy apksigcopier >/dev/null
           sha256sum out/*.apk
           bash resources/scripts/f-droid-karsilastir.sh out/bizim.apk out/fdroid.apk
+
+  # Kendi F-Droid deposunun provası (resources/docs/dagitim.md): gerçek
+  # yayımlanmış sürümlerle ve bu PR'ın APK'larıyla, tek kullanımlık anahtarla
+  # kurulur ve doğrulanır; hiçbir yere yayımlanmaz.
+  depo-provasi:
+    name: Depo provası (tek kullanımlık anahtar)
+    needs: imzala
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    container:
+      # yayin.yml ve fdroid-deposu.yml ile aynı özet.
+      image: registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie@sha256:1ea8bef1820bff06c2974e31b4fc4c79c364cd24231b86e71fa4b926797e0dac
+      options: --user root
+    env:
+      FDROID_KEYSTORE_PASSWORD: deneme-parola
+      FDROID_KEY_PASSWORD: deneme-parola
+      FDROID_KEY_ALIAS: deneme
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.COMMIT }}
+          persist-credentials: false
+      - run: git config --global --add safe.directory '*'
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: bizim
+          path: out
+      - name: Araçlar ve tek kullanımlık anahtar
+        run: |
+          apt-get update -qq
+          apt-get install -qy gh openjdk-21-jdk-headless >/dev/null
+          # apksigner imajda yok; derleme işinde onu Gradle kuruyor.
+          # shellcheck disable=SC1091
+          source /etc/profile.d/bsenv.sh
+          sdkmanager --install "build-tools;36.0.0" >/dev/null
+          keytool -genkeypair -keystore "$RUNNER_TEMP/depo.jks" -storetype PKCS12 \
+            -alias deneme -keyalg RSA -keysize 4096 -validity 1 -dname CN=deneme \
+            -storepass:env FDROID_KEYSTORE_PASSWORD -keypass:env FDROID_KEY_PASSWORD
+      - name: Betik testleri
+        run: |
+          bash resources/scripts/fdroid-deposu-kur-test.sh
+          bash resources/scripts/fdroid-deposu-dogrula-test.sh
+      - name: Yayımlanmış sürümlerle kur
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          # shellcheck disable=SC1091
+          source /etc/profile.d/bsenv.sh
+          export ANDROID_HOME=/opt/android-sdk FDROID_KEYSTORE="$RUNNER_TEMP/depo.jks"
+          bash resources/scripts/fdroid-deposu-kur.sh --kur --surumler 3 --cikti site
+          bash resources/scripts/fdroid-deposu-dogrula.sh site/fdroid/repo
+      # Aynı sürüm kodlu işlemciye özel APK'lar depoda birlikte durabiliyor mu
+      # (tasarımda uygulayıcıya kalan soru). Bu PR'ın APK'larıyla, betiksiz.
+      - name: İşlemciye özel APK'larla kur
+        run: |
+          # shellcheck disable=SC1091
+          source /etc/profile.d/bsenv.sh
+          export ANDROID_HOME=/opt/android-sdk FDROID_KEYSTORE="$RUNNER_TEMP/depo.jks"
+          surum="$(sed -n 's/^version: *\([^+ ]*\)+.*$/\1/p' pubspec.yaml)"
+          mkdir -p abi-apk
+          cp out/bizim.apk "abi-apk/keykey-${surum}.apk"
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            cp "out/bizim-${abi}.apk" "abi-apk/keykey-${surum}-${abi}.apk"
+          done
+          # APK'lar tek kullanımlık anahtarla imzalı; tarifteki izinli anahtar onunla değişir.
+          anahtar="$(bash resources/scripts/imza-ozeti.sh "abi-apk/keykey-${surum}.apk")"
+          bash resources/scripts/fdroid-deposu-kur.sh --kur --yerel abi-apk --cikti abi-site             --izinli-anahtar "$anahtar"
+          # Dördü de indekste olmalı; olmazsa üretim --yalniz-evrensel'e geçer.
+          bash resources/scripts/fdroid-deposu-dogrula.sh abi-site/fdroid/repo --apk-sayisi 4

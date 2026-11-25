@@ -5,7 +5,10 @@
 # çalıştırılır; derlemenin kendisi vagrant kullanıcısıyla yapılır.
 #
 # Kullanım: f-droid-yolunda-derle.sh <commit> <çıktı-apk> [appbundle]
-#   appbundle verilirse AAB de derlenir ve <çıktı-apk> yerine .aab ile yazılır.
+#   appbundle verilirse AAB de derlenir ve <çıktı-apk> yerine .aab ile yazılır;
+#   işlemciye özel APK'lar da derlenir ve <çıktı-apk>'nın yanına
+#   <ad>-<abi>.apk olarak yazılır (arm64-v8a, armeabi-v7a, x86_64). Hepsi
+#   evrenselle aynı sürüm kodunu taşır. Tasarım: resources/docs/dagitim.md
 #
 # Yolların neden önemli olduğu: resources/docs/yayin.md#yeniden-üretilebilir-derleme
 # Tarif: resources/f-droid/io.github.aaudraa.keykey.yml (adımlar onunla aynı kalmalı)
@@ -61,13 +64,21 @@ sudo --preserve-env=ANDROID_HOME,PATH --user vagrant env HOME="$home_vagrant" \
     rm -rf .pub-cache
     export PUB_CACHE=\$(pwd)/.pub-cache
     '$flutter/bin/flutter' build apk --release
-    if [[ -n '$bundle' ]]; then '$flutter/bin/flutter' build appbundle --release; fi
+    # Evrensel APK, sonraki derlemeler dokunmasın diye kenara alınır.
+    cp build/app/outputs/flutter-apk/app-release.apk build/evrensel.apk
+    if [[ -n '$bundle' ]]; then
+      '$flutter/bin/flutter' build appbundle --release
+      '$flutter/bin/flutter' build apk --release --split-per-abi -Pforce-version-code-ignoring-abi=true
+    fi
   "
 
 mkdir -p "$(dirname "$out")"
-cp "$build/build/app/outputs/flutter-apk/app-release.apk" "$out"
+cp "$build/build/evrensel.apk" "$out"
 if [[ -n "$bundle" ]]; then
   cp "$build/build/app/outputs/bundle/release/app-release.aab" "${out%.apk}.aab"
   cp "$build/build/app/outputs/mapping/release/mapping.txt" "${out%.apk}-mapping.txt"
+  for abi in arm64-v8a armeabi-v7a x86_64; do
+    cp "$build/build/app/outputs/flutter-apk/app-${abi}-release.apk" "${out%.apk}-${abi}.apk"
+  done
 fi
 echo "Derlendi: $out ($build, Flutter $flutter_version, NDK $ndk_version)"

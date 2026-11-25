@@ -2,6 +2,16 @@
 
 KeyKey'deki önemli değişiklikler. Sürüm numarası kuralı [yayın belgesinde](docs/yayin.md#sürüm-numarası). `v1.0.0`'dan önceki sürümler fazların sonunu işaretler ve hata ayıklama anahtarıyla imzalıdır; kalıcı bir kurulum için kullanılmamalıdır.
 
+## 1.12.0 (2026-11-25): İşlemciye göre APK ve kendi F-Droid deposu
+
+Dağıtım sürümü ([#193](https://github.com/aaudraa/KeyKey/issues/193)); uygulamada değişiklik yok. Tasarım: [dağıtım](docs/dagitim.md).
+
+### Yeni
+
+- **İşlemciye özel APK'lar.** Her sürümde evrenselin yanında `arm64-v8a`, `armeabi-v7a` ve `x86_64` APK'ları var. Her biri yalnızca kendi işlemcisinin kodunu taşıdığı için evrenselin üçte biri kadar. Telefonların çoğu için `arm64-v8a`; emin değilsen evrensel APK her telefonda çalışır. Obtainium uyanı kendisi seçiyor.
+- Dördü aynı derlemeden çıkıyor, aynı sürüm koduna sahip ve aynı anahtarla imzalı; birini kurup ötekiyle güncelleyebilirsin. F-Droid'in doğruladığı evrensel APK'nın alt kümesi oldukları her PR'da ve her sürümde denetleniyor.
+- **Kendi F-Droid deposunun altyapısı.** Sürüm yayımlanınca depo son üç sürümden kurulup GitHub Pages'e yükleniyor; her PR'da tek kullanımlık anahtarla provası yapılıyor. Depo, anahtarı oluşturulunca açılacak; bağlantı ve parmak izi o zaman README'ye girecek.
+
 ## 1.11.1 (2026-11-25): Passkey düzeltmeleri
 
 Faz 21'in son gözden geçirmesinden ertelenen küçük bulgular ([#187](https://github.com/aaudraa/KeyKey/issues/187)). Her düzeltme önce bulguyu gösteren bir testle doğrulandı. Yedek biçimi ve veritabanı şeması değişmedi; yeni izin yok.

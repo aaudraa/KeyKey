@@ -1,0 +1,1 @@
+Every release now also has smaller per-processor APKs: arm64-v8a, armeabi-v7a and x86_64. The universal APK stays. All come from the same build and are signed with the same key; each release checks that they are subsets of the universal APK. No changes in the app.

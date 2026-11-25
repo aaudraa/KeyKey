@@ -52,6 +52,14 @@ jobs:
           python3 resources/scripts/check-fastlane.py
       - name: APK ve AAB
         run: bash resources/scripts/f-droid-yolunda-derle.sh "$GITHUB_SHA" out/imzasiz.apk appbundle
+      # İşlemciye özel APK'lar F-Droid'in doğruladığı evrenselin alt kümesi
+      # değilse yayın durur (f-droid.yml'daki "bizim" işiyle aynı denetim).
+      - name: İşlemciye özel APK denetimi
+        run: |
+          bash resources/scripts/abi-apk-denetle-test.sh
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            bash resources/scripts/abi-apk-denetle.sh out/imzasiz.apk "$abi" "out/imzasiz-${abi}.apk"
+          done
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: imzasiz
@@ -140,32 +148,44 @@ jobs:
           KEYKEY_KEYSTORE_PASSWORD: ${{ secrets.KEYKEY_KEYSTORE_PASSWORD }}
           KEYKEY_KEY_ALIAS: ${{ secrets.KEYKEY_KEY_ALIAS }}
           KEYKEY_KEY_PASSWORD: ${{ secrets.KEYKEY_KEY_PASSWORD }}
-        run: bash resources/scripts/imzala.sh out/imzasiz.apk out/keykey.apk out/imzasiz.aab out/keykey.aab
+        run: |
+          bash resources/scripts/imzala.sh out/imzasiz.apk out/keykey.apk out/imzasiz.aab out/keykey.aab
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            bash resources/scripts/imzala.sh "out/imzasiz-${abi}.apk" "out/keykey-${abi}.apk"
+          done
 
       - name: Anahtarı sil
         if: always()
         run: rm -f "${RUNNER_TEMP}/keykey.jks"
 
       - name: APK güvenlik denetimi
-        run: bash resources/scripts/check-release-apk.sh out/keykey.apk
+        run: |
+          for apk in out/keykey.apk out/keykey-*.apk; do
+            bash resources/scripts/check-release-apk.sh "$apk"
+          done
 
       # Sertifika, F-Droid tarifindeki AllowedAPKSigningKeys ile aynı olmalı;
       # başka bir anahtarla imzalı APK'yı F-Droid kabul etmez.
       - id: denetim
         name: İmza denetimi
         run: |
-          cert="$(bash resources/scripts/imza-ozeti.sh out/keykey.apk)"
           expected="$(sed -n 's/^AllowedAPKSigningKeys: *//p' resources/f-droid/io.github.aaudraa.keykey.yml | tr -d '[:space:]')"
-          if [[ -z "$cert" || "$cert" != "$expected" ]]; then
-            echo "HATA: imza sertifikası '${cert}', beklenen '${expected}' (F-Droid tarifi)." >&2
-            exit 1
-          fi
+          for apk in out/keykey.apk out/keykey-*.apk; do
+            cert="$(bash resources/scripts/imza-ozeti.sh "$apk")"
+            if [[ -z "$cert" || "$cert" != "$expected" ]]; then
+              echo "HATA: ${apk} imza sertifikası '${cert}', beklenen '${expected}' (F-Droid tarifi)." >&2
+              exit 1
+            fi
+          done
           echo "cert=${cert}" >> "$GITHUB_OUTPUT"
 
       - name: Dosyaları topla
         run: |
           mkdir dist
           cp out/keykey.apk "dist/keykey-${VERSION}.apk"
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            cp "out/keykey-${abi}.apk" "dist/keykey-${VERSION}-${abi}.apk"
+          done
           cp out/keykey.aab "dist/keykey-${VERSION}.aab"
           cp out/imzasiz-mapping.txt "dist/keykey-${VERSION}-mapping.txt"
           (cd dist && sha256sum -- * > SHA256SUMS)
@@ -198,10 +218,14 @@ jobs:
         with:
           name: fdroid
           path: out
-      - run: |
+      # F-Droid yalnızca evrensel APK'yı derler; işlemciye özel olanlar
+      # derle işinde onun alt kümesi olarak denetlendi.
+      - env:
+          VERSION: ${{ needs.yayin.outputs.version }}
+        run: |
           apt-get update -qq && apt-get install -qy apksigcopier >/dev/null
           sha256sum dist/*.apk out/*.apk
-          bash resources/scripts/f-droid-karsilastir.sh dist/keykey-*.apk out/fdroid.apk
+          bash resources/scripts/f-droid-karsilastir.sh "dist/keykey-${VERSION}.apk" out/fdroid.apk
 
   # Taslak ancak F-Droid karşılaştırması yeşilse oluşur.
   taslak:
@@ -228,6 +252,11 @@ jobs:
             echo "HATA: APK özeti ya da sertifika özeti boş." >&2
             exit 1
           fi
+          abi_sums="$(grep -E "  keykey-${VERSION}-[a-z0-9_-]+\.apk$" dist/SHA256SUMS || true)"
+          if [[ "$(grep -c . <<< "$abi_sums")" -ne 3 ]]; then
+            echo "HATA: işlemciye özel üç APK'nın özeti yok." >&2
+            exit 1
+          fi
           cat > notlar.md <<EOF
           ## Doğrulama
 
@@ -235,6 +264,12 @@ jobs:
 
           \`\`\`
           ${apk_sha}
+          \`\`\`
+
+          İşlemciye özel APK'lar (telefonların çoğu için \`arm64-v8a\`; emin değilsen yukarıdaki evrensel APK'yı al). Her biri evrensel APK'yla aynı derlemeden ve onun alt kümesi olduğu denetlendi:
+
+          \`\`\`
+          ${abi_sums}
           \`\`\`
 
           İmza sertifikasının SHA-256 özeti:
