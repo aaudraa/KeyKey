@@ -45,6 +45,10 @@ jobs:
         run: |
           apt-get update -qq
           apt-get install -qy gh openjdk-21-jdk-headless >/dev/null
+          # apksigner imajda yok; derleme işinde onu Gradle kuruyor.
+          # shellcheck disable=SC1091
+          source /etc/profile.d/bsenv.sh
+          sdkmanager --install "build-tools;36.0.0" >/dev/null
       - name: Anahtarı hazırla
         env:
           FDROID_KEYSTORE_BASE64: ${{ secrets.FDROID_KEYSTORE_BASE64 }}

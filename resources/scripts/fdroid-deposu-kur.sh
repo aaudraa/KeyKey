@@ -80,8 +80,11 @@ indir() {
     if ! (cd "$gecici" && grep -E "  ${ad//./\\.}\$" SHA256SUMS | sha256sum -c --quiet -); then
       echo "HATA: $etiket: $ad özeti tutmuyor." >&2; return 1
     fi
-    if [[ "$(bash "$betikler/imza-ozeti.sh" "$apk" 2>/dev/null)" != "$beklenen" ]]; then
+    local ozet
+    if ! ozet="$(bash "$betikler/imza-ozeti.sh" "$apk" 2>"$gecici/imza.txt")" ||
+        [[ "$ozet" != "$beklenen" ]]; then
       echo "HATA: $etiket: $ad beklenen sertifikayla ($beklenen) imzalı değil." >&2
+      tail -n 5 "$gecici/imza.txt" >&2
       return 1
     fi
     sayi=$((sayi + 1))
