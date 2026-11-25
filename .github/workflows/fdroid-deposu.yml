@@ -1,7 +1,8 @@
 # KeyKey'in kendi F-Droid deposu: https://aaudraa.github.io/KeyKey/fdroid/repo
 #
-# Bir sürüm yayımlanınca (taslaklar "published" olayı üretmez) depo, en yeni
-# üç yayımlanmış sürümden baştan kurulur, depo anahtarıyla imzalanır ve
+# Bir sürüm yayımlanınca ya da bir ön sürüm tam sürüme çevrilince ("released";
+# taslaklar ve ön sürümler bu olayı üretmez) depo, en yeni üç yayımlanmış
+# sürümden baştan kurulur, depo anahtarıyla imzalanır ve
 # GitHub Pages'e yüklenir. Elle çalıştırmak için iş akışı bir v* etiketinde
 # başlatılır (ortamlar yalnızca v* etiketlerine açık).
 # Tasarım: resources/docs/dagitim.md; prova: f-droid.yml "Depo provası".
@@ -9,7 +10,7 @@ name: F-Droid deposu
 
 on:
   release:
-    types: [published]
+    types: [released]
   workflow_dispatch:
 
 permissions:
@@ -26,12 +27,10 @@ defaults:
 jobs:
   kur:
     name: Depoyu kur ve imzala
-    # Ön sürümler (deneme ve Obtainium denemesi gibi) depoya girmez. Depo
-    # anahtarı henüz yoksa (depo-anahtari-olustur.sh FDROID_DEPOSU_HAZIR'ı
-    # koymadıysa) iş kırmızıya düşmek yerine atlanır.
-    if: >-
-      vars.FDROID_DEPOSU_HAZIR == '1' &&
-      (github.event_name == 'workflow_dispatch' || !github.event.release.prerelease)
+    # Depo anahtarı henüz yoksa (depo-anahtari-olustur.sh FDROID_DEPOSU_HAZIR'ı
+    # koymadıysa) iş kırmızıya düşmek yerine atlanır. Ön sürümler betiğin
+    # sürüm listesine de girmez.
+    if: vars.FDROID_DEPOSU_HAZIR == '1'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     # Depo anahtarı bu ortamın gizli değerlerinde; ortam yalnızca v* etiketlerine açık.

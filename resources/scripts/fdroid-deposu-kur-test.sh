@@ -77,6 +77,44 @@ if compgen -G "$gecici/apk/*.apk" >/dev/null; then
   hata=1
 fi
 
+# adlar <klasör>: içindekilerin adları, sıralı ve boşlukla ayrılmış.
+adlar() {
+  find "$1" -mindepth 1 -maxdepth 1 -printf '%f\n' 2>/dev/null | LC_ALL=C sort | tr '\n' ' '
+}
+
+# Doğru imzalı sürüm: sahte imza denetimi (IMZA_OZETI) tarifteki anahtarı yazar.
+# Evrensel ve işlemciye özel APK birlikte gelir; --yalniz-evrensel yalnızca
+# evrenseli bırakır.
+izinli="$(sed -n 's/^AllowedAPKSigningKeys: *//p' "$(dirname "$betik")/../f-droid/io.github.aaudraa.keykey.yml" | tr -d '[:space:]')"
+printf '#!/usr/bin/env bash\necho %s\n' "$izinli" > "$gecici/imza-ozeti-sahte.sh"
+export IMZA_OZETI="$gecici/imza-ozeti-sahte.sh"
+mkdir -p "$gecici/dosyalar/v1.12.1"
+printf 'evrensel' > "$gecici/dosyalar/v1.12.1/keykey-1.12.1.apk"
+printf 'arm64' > "$gecici/dosyalar/v1.12.1/keykey-1.12.1-arm64-v8a.apk"
+# Yayındaki biçim ("<özet>  <ad>"); Git Bash'in sha256sum'ı ada '*' ekliyor.
+for f in keykey-1.12.1.apk keykey-1.12.1-arm64-v8a.apk; do
+  printf '%s  %s\n' "$(sha256sum < "$gecici/dosyalar/v1.12.1/$f" | cut -d' ' -f1)" "$f"
+done > "$gecici/dosyalar/v1.12.1/SHA256SUMS"
+bash "$betik" --indir v1.12.1 --apk-klasoru "$gecici/hepsi" >/dev/null 2>&1 || true
+if [[ "$(adlar "$gecici/hepsi")" != "keykey-1.12.1-arm64-v8a.apk keykey-1.12.1.apk " ]]; then
+  echo "BAŞARISIZ: doğru imzalı iki APK alınmadı: $(adlar "$gecici/hepsi")" >&2
+  hata=1
+fi
+bash "$betik" --indir v1.12.1 --apk-klasoru "$gecici/evrensel" --yalniz-evrensel >/dev/null 2>&1 || true
+if [[ "$(adlar "$gecici/evrensel")" != "keykey-1.12.1.apk " ]]; then
+  echo "BAŞARISIZ: --yalniz-evrensel: $(adlar "$gecici/evrensel")" >&2
+  hata=1
+fi
+unset IMZA_OZETI
+
+# İndirme yarıda düşse de geçici klasör kalmaz.
+mkdir -p "$gecici/tmp"
+TMPDIR="$gecici/tmp" bash "$betik" --indir v9.9.9 --apk-klasoru "$gecici/yok" >/dev/null 2>&1 || true
+if [[ -n "$(adlar "$gecici/tmp")" ]]; then
+  echo "BAŞARISIZ: düşen indirmeden geçici dosya kaldı: $(adlar "$gecici/tmp")" >&2
+  hata=1
+fi
+
 # Depo metadata'sı: tarifin derleme alanları atılır, izinli imza anahtarı
 # kalır; provada --izinli-anahtar onu tek kullanımlık anahtarla değiştirir.
 bilgi="$(bash "$betik" --uygulama-bilgisi)"

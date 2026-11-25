@@ -33,6 +33,11 @@ kok="$(cd "$betikler/../.." && pwd)"
 appid=io.github.aaudraa.keykey
 tarif="$kok/resources/f-droid/$appid.yml"
 repo_url="https://aaudraa.github.io/KeyKey/fdroid/repo"
+# İmza denetleyicisi; IMZA_OZETI yalnızca testte sahtesiyle değiştirilir.
+imza_ozeti="${IMZA_OZETI:-$betikler/imza-ozeti.sh}"
+# Bütün geçici klasörler bunun altında; betik nasıl biterse bitsin silinir.
+gecici_kok="$(mktemp -d)"
+trap 'rm -rf "$gecici_kok"' EXIT
 
 py=""
 for aday in python3 python; do
@@ -73,9 +78,7 @@ print("\n".join(secilen[:n]))
 # indir <etiket> <klasör>
 indir() {
   local etiket="$1" hedef="$2" gecici beklenen apk ad sayi=0
-  gecici="$(mktemp -d)"
-  # shellcheck disable=SC2064
-  trap "rm -rf '$gecici'" RETURN
+  gecici="$(mktemp -d "$gecici_kok/indir.XXXXXX")"
   gh release download "$etiket" --pattern 'keykey-*.apk' --pattern SHA256SUMS \
     --dir "$gecici" >/dev/null
   beklenen="$(sed -n 's/^AllowedAPKSigningKeys: *//p' "$tarif" | tr -d '[:space:]')"
@@ -90,7 +93,7 @@ indir() {
       echo "HATA: $etiket: $ad özeti tutmuyor." >&2; return 1
     fi
     local ozet
-    if ! ozet="$(bash "$betikler/imza-ozeti.sh" "$apk" 2>"$gecici/imza.txt")" ||
+    if ! ozet="$(bash "$imza_ozeti" "$apk" 2>"$gecici/imza.txt")" ||
         [[ "$ozet" != "$beklenen" ]]; then
       echo "HATA: $etiket: $ad beklenen sertifikayla ($beklenen) imzalı değil." >&2
       tail -n 5 "$gecici/imza.txt" >&2
@@ -151,8 +154,7 @@ kur() {
   : "${FDROID_KEYSTORE_PASSWORD:?}" "${FDROID_KEY_PASSWORD:?}"
   [[ -n "$cikti" ]] || { echo "HATA: --cikti gerekli." >&2; exit 2; }
   local etiketler
-  calisma="$(mktemp -d)"
-  trap 'rm -rf "$calisma"' EXIT
+  calisma="$(mktemp -d "$gecici_kok/calisma.XXXXXX")"
   mkdir -p "$calisma/repo" "$calisma/metadata"
   if [[ -n "$yerel" ]]; then
     etiketler="yerel: $yerel"

@@ -98,7 +98,20 @@ fdroid=(sudo --preserve-env --user vagrant
   env HOME="$home_vagrant"
   fdroid)
 "${fdroid[@]}" fetchsrclibs "$appid:$code" --verbose
-(unset CI; "${fdroid[@]}" build --verbose --test --refresh-scanner --on-server --no-tarball "$appid:$code")
+# fdroid build sudo'yu kaldırıyor; Maven Central 429 verirse (#195) yeniden
+# denemeden önce kurulur.
+fdroid_derle() {
+  # Bash sudo'nun yolunu önbellekte tutar; dosya silinince command -v yine
+  # bulur. Dosyanın kendisine bakılır, kurulunca önbellek boşaltılır.
+  if [[ ! -x /usr/bin/sudo ]]; then
+    apt-get install -qy sudo >/dev/null
+    hash -r
+  fi
+  (unset CI; "${fdroid[@]}" build --verbose --test --refresh-scanner --on-server --no-tarball "$appid:$code")
+}
+# shellcheck source=resources/scripts/yeniden-dene.sh
+source "$repo/resources/scripts/yeniden-dene.sh"
+yeniden_dene_429 3 120 fdroid_derle
 
 mkdir -p "$(dirname "$out")"
 cp "$home_vagrant/tmp/${appid}_${code}.apk" "$out"
